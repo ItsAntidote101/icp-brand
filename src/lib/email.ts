@@ -1,0 +1,176 @@
+import { Resend } from 'resend'
+
+const FROM = 'ICP Brand <noreply@icpbrand.co>'
+
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY ?? '')
+}
+
+// ─── Base template ────────────────────────────────────────────────────────────
+
+function base(content: string): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ICP Brand</title></head>
+<body style="margin:0;padding:0;background-color:#0a0a0f;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#0a0a0f;min-height:100vh;">
+    <tr><td align="center" style="padding:48px 20px;">
+      <table role="presentation" width="100%" style="max-width:560px;background-color:#0d0d17;border:1px solid rgba(255,255,255,0.08);border-radius:20px;overflow:hidden;">
+        <tr>
+          <td style="padding:28px 36px 22px;border-bottom:1px solid rgba(255,255,255,0.06);">
+            <table role="presentation" cellpadding="0" cellspacing="0"><tr>
+              <td style="width:26px;height:26px;background:linear-gradient(135deg,#6366f1 0%,#9333ea 100%);border-radius:7px;vertical-align:middle;"></td>
+              <td style="padding-left:10px;vertical-align:middle;"><span style="color:#ffffff;font-size:16px;font-weight:700;letter-spacing:-0.3px;">ICP Brand</span></td>
+            </tr></table>
+          </td>
+        </tr>
+        <tr><td style="padding:36px 36px 32px;">${content}</td></tr>
+        <tr>
+          <td style="padding:18px 36px 26px;border-top:1px solid rgba(255,255,255,0.06);">
+            <p style="margin:0;color:#374151;font-size:12px;line-height:1.6;">
+              You're receiving this because you have an account with ICP Brand.
+              Questions? <a href="mailto:support@icpbrand.co" style="color:#6366f1;text-decoration:none;">support@icpbrand.co</a>
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`
+}
+
+function cta(label: string, href: string): string {
+  return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:28px;"><tr>
+    <td style="background-color:#6366f1;border-radius:12px;">
+      <a href="${href}" style="display:inline-block;padding:14px 28px;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;letter-spacing:-0.2px;">${label} →</a>
+    </td>
+  </tr></table>`
+}
+
+// ─── Email 1: Welcome / Report ready ─────────────────────────────────────────
+
+export async function sendWelcomeEmail({
+  to, name, reportId, baseUrl,
+}: { to: string; name?: string; reportId: string; baseUrl?: string }) {
+  const url = `${baseUrl ?? 'https://icpbrand.co'}/report/${reportId}`
+  const first = name?.split(' ')[0] ?? 'there'
+
+  const rows = [
+    ['ICP Health Score',   'A 0–100 score showing how strong your customer profile is'],
+    ['Top 3 Findings',     'Issues costing you money, ranked by revenue impact'],
+    ['Quick Wins',         '3 specific actions you can take this week'],
+    ['Score Breakdown',    '6-dimension analysis: targeting, funnel, channels, and more'],
+  ]
+
+  const content = `
+<h1 style="margin:0 0 10px;color:#ffffff;font-size:26px;font-weight:800;line-height:1.2;letter-spacing:-0.5px;">Your ICP Diagnostic is ready</h1>
+<p style="margin:0 0 28px;color:#9ca3af;font-size:15px;line-height:1.7;">Hi ${first}, your report has been generated. Here's what's inside:</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:14px;margin-bottom:4px;">
+  <tr><td style="padding:20px 24px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+      ${rows.map(([label, desc]) => `<tr><td style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+        <p style="margin:0;color:#e5e7eb;font-size:14px;font-weight:600;">${label}</p>
+        <p style="margin:2px 0 0;color:#6b7280;font-size:13px;">${desc}</p>
+      </td></tr>`).join('')}
+    </table>
+  </td></tr>
+</table>
+${cta('View Your Report', url)}
+<p style="margin:18px 0 0;color:#4b5563;font-size:13px;">Or copy: <a href="${url}" style="color:#6366f1;text-decoration:none;">${url}</a></p>`
+
+  const { data, error } = await getResend().emails.send({
+    from: FROM, to,
+    subject: 'Your ICP Diagnostic is ready',
+    html: base(content),
+  })
+  if (error) console.error('[email] welcome error:', JSON.stringify(error))
+  else console.log('[email] welcome sent id:', data?.id, 'to:', to)
+  return { data, error }
+}
+
+// ─── Email 2: Subscription confirmation ──────────────────────────────────────
+
+export async function sendSubscriptionEmail({
+  to, name, tier, renewalDate, baseUrl,
+}: { to: string; name?: string; tier: string; renewalDate: string; baseUrl?: string }) {
+  const url = `${baseUrl ?? 'https://icpbrand.co'}/dashboard`
+  const first = name?.split(' ')[0] ?? 'there'
+  const tierLabel = tier.charAt(0).toUpperCase() + tier.slice(1)
+  const renewal = new Date(renewalDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+
+  const featMap: Record<string, string[]> = {
+    starter: ['Monthly ICP diagnostic report', 'Full 6-dimension score breakdown', 'Specific quick-win recommendations', 'Subscriber dashboard access'],
+    pro:     ['Everything in Starter', 'Priority re-diagnosis turnaround', 'Campaign CSV analysis', 'Score trend tracking'],
+    agency:  ['Everything in Pro', 'Multi-client reporting', 'Dedicated strategy review session', 'White-label report exports'],
+  }
+  const features = featMap[tier.toLowerCase()] ?? featMap.starter
+
+  const content = `
+<h1 style="margin:0 0 10px;color:#ffffff;font-size:26px;font-weight:800;line-height:1.2;letter-spacing:-0.5px;">Welcome to ICP Brand</h1>
+<p style="margin:0 0 28px;color:#9ca3af;font-size:15px;line-height:1.7;">Hi ${first}, your <strong style="color:#ffffff;">${tierLabel}</strong> subscription is active. Your dashboard is ready.</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:14px;margin-bottom:16px;">
+  <tr><td style="padding:20px 24px;">
+    <p style="margin:0 0 14px;color:#a5b4fc;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;">Your ${tierLabel} plan includes</p>
+    ${features.map(f => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px;"><tr>
+      <td style="width:20px;color:#6366f1;font-size:14px;vertical-align:top;padding-top:1px;">✓</td>
+      <td style="color:#e5e7eb;font-size:14px;line-height:1.5;">${f}</td>
+    </tr></table>`).join('')}
+  </td></tr>
+</table>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;">
+  <tr><td style="padding:14px 20px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+      <td style="color:#6b7280;font-size:13px;">Next renewal</td>
+      <td align="right" style="color:#ffffff;font-size:13px;font-weight:600;">${renewal}</td>
+    </tr></table>
+  </td></tr>
+</table>
+${cta('Go to Your Dashboard', url)}`
+
+  const { data, error } = await getResend().emails.send({
+    from: FROM, to,
+    subject: `Welcome to ICP Brand — Your ${tierLabel} dashboard is ready`,
+    html: base(content),
+  })
+  if (error) console.error('[email] subscription error:', JSON.stringify(error))
+  else console.log('[email] subscription sent id:', data?.id, 'to:', to)
+  return { data, error }
+}
+
+// ─── Email 3: Monthly reminder ────────────────────────────────────────────────
+
+export async function sendReminderEmail({
+  to, name, lastScore, baseUrl,
+}: { to: string; name?: string; lastScore?: number; baseUrl?: string }) {
+  const url = `${baseUrl ?? 'https://icpbrand.co'}/questionnaire`
+  const first = name?.split(' ')[0] ?? 'there'
+
+  const scoreHtml = lastScore !== undefined
+    ? lastScore >= 70
+      ? `Your last score was <strong style="color:#22c55e;">${lastScore}/100</strong> — strong. Let's see if you've pushed it even higher.`
+      : lastScore >= 40
+        ? `Your last score was <strong style="color:#f59e0b;">${lastScore}/100</strong>. There's meaningful ground to recover. Let's see where you stand now.`
+        : `Your last score was <strong style="color:#ef4444;">${lastScore}/100</strong>. A lot can change in 30 days — let's get a fresh read.`
+    : `Time to see where your ICP stands this month.`
+
+  const content = `
+<h1 style="margin:0 0 10px;color:#ffffff;font-size:26px;font-weight:800;line-height:1.2;letter-spacing:-0.5px;">Time for your monthly ICP check-in</h1>
+<p style="margin:0 0 28px;color:#9ca3af;font-size:15px;line-height:1.7;">Hi ${first}, it's been about 30 days since your last diagnostic. ${scoreHtml}</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;margin-bottom:4px;">
+  <tr><td style="padding:20px 24px;">
+    <p style="margin:0 0 10px;color:#9ca3af;font-size:14px;line-height:1.6;">Markets shift. Algorithms update. Your ICP needs a monthly re-calibration to stay sharp.</p>
+    <p style="margin:0;color:#9ca3af;font-size:14px;line-height:1.6;">Takes less than 5 minutes. Results are instant.</p>
+  </td></tr>
+</table>
+${cta('Run New Diagnosis', url)}`
+
+  const { data, error } = await getResend().emails.send({
+    from: FROM, to,
+    subject: 'Time for your monthly ICP check-in',
+    html: base(content),
+  })
+  if (error) console.error('[email] reminder error:', JSON.stringify(error))
+  else console.log('[email] reminder sent id:', data?.id, 'to:', to)
+  return { data, error }
+}

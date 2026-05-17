@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { sendSubscriptionEmail } from '@/lib/email'
 
 export async function GET(req: NextRequest) {
   const reference = req.nextUrl.searchParams.get('reference') ?? req.nextUrl.searchParams.get('trxref')
@@ -119,6 +120,17 @@ export async function GET(req: NextRequest) {
     }
   } else {
     console.warn('[verify] no user_id available — skipping subscriptions insert')
+  }
+
+  // ── Fire subscription confirmation email (non-blocking) ──────────────────
+  if (renewalDate) {
+    sendSubscriptionEmail({
+      to: email,
+      name: existingUser?.full_name ?? undefined,
+      tier,
+      renewalDate,
+      baseUrl: base,
+    }).catch(e => console.error('[verify] subscription email failed:', e))
   }
 
   const tierParam = encodeURIComponent(tier)

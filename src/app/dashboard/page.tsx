@@ -3,6 +3,10 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer,
+} from 'recharts'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -136,61 +140,21 @@ function ScoreDisplay({ score }: { score: number }) {
   return <>{displayed}</>
 }
 
-// ─── Progress chart ───────────────────────────────────────────────────────────
+// ─── Chart tooltip ───────────────────────────────────────────────────────────
 
-function ProgressChart({ data }: { data: Array<{ date: string; score: number }> }) {
-  const W = 600, H = 180, PX = 20, PY = 30
-  const innerW = W - PX * 2
-  const innerH = H - PY * 2
-
-  if (data.length < 2) return null
-
-  const pts = data.map((d, i) => ({
-    x: PX + (i / (data.length - 1)) * innerW,
-    y: PY + (1 - d.score / 100) * innerH,
-    ...d,
-  }))
-
-  const polyline = pts.map(p => `${p.x},${p.y}`).join(' ')
-  const area = [
-    `M${pts[0].x},${H - PY}`,
-    ...pts.map(p => `L${p.x},${p.y}`),
-    `L${pts[pts.length - 1].x},${H - PY}`,
-    'Z',
-  ].join(' ')
-
+function ChartTooltip({ active, payload, label }: {
+  active?: boolean
+  payload?: Array<{ value: number }>
+  label?: string
+}) {
+  if (!active || !payload?.length) return null
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" aria-hidden>
-      <defs>
-        <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#6366f1" stopOpacity="0.25" />
-          <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      {[25, 50, 75].map(v => (
-        <line
-          key={v}
-          x1={PX} x2={W - PX}
-          y1={PY + (1 - v / 100) * innerH}
-          y2={PY + (1 - v / 100) * innerH}
-          stroke="white" strokeOpacity="0.05" strokeWidth="1"
-        />
-      ))}
-      <path d={area} fill="url(#cg)" />
-      <polyline points={polyline} fill="none" stroke="#6366f1" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-      {pts.map((p, i) => (
-        <g key={i}>
-          <circle cx={p.x} cy={p.y} r="6" fill="#6366f1" />
-          <circle cx={p.x} cy={p.y} r="3" fill="#0a0a0f" />
-          <text x={p.x} y={p.y - 12} textAnchor="middle" fill="white" fontSize="13" fontWeight="700">
-            {p.score}
-          </text>
-          <text x={p.x} y={H - 4} textAnchor="middle" fill="#6b7280" fontSize="11">
-            {new Date(p.date).toLocaleDateString('en-GB', { month: 'short', year: '2-digit' })}
-          </text>
-        </g>
-      ))}
-    </svg>
+    <div style={{ background: '#12121f', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: '8px 14px' }}>
+      <p style={{ margin: 0, color: '#9ca3af', fontSize: 11 }}>{label}</p>
+      <p style={{ margin: '3px 0 0', color: '#ffffff', fontSize: 22, fontWeight: 700, lineHeight: 1 }}>
+        {payload[0].value}<span style={{ color: '#6b7280', fontSize: 13, fontWeight: 400 }}>/100</span>
+      </p>
+    </div>
   )
 }
 
@@ -215,6 +179,7 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab]     = useState<Tab>('overview')
   const [fixExpanded, setFixExpanded] = useState(false)
   const [cancelConfirm, setCancelConfirm] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
   // ── Auth ──────────────────────────────────────────────────────────────────
 
@@ -263,6 +228,7 @@ export default function DashboardPage() {
   }, [router, loadReports])
 
   useEffect(() => {
+    setMounted(true)
     const stored = localStorage.getItem('dashboard_email')
     if (stored) verifyEmail(stored, true)
     else setAuthStep('gate')
@@ -299,15 +265,22 @@ export default function DashboardPage() {
   const chartData = reports
     .slice()
     .reverse()
-    .map(r => ({ date: r.generated_at, score: parseDiagnosis(r.report_summary).health_score ?? 0 }))
+    .map(r => ({
+      label: new Date(r.generated_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
+      score: parseDiagnosis(r.report_summary).health_score ?? 0,
+    }))
     .filter(d => d.score > 0)
 
-  // Milestones: score changes between consecutive reports
-  const milestones = reports.slice(0, -1).map((r, i) => {
+  // Score-change milestones between consecutive reports (newest first)
+  const scoreMilestones = reports.slice(0, -1).map((r, i) => {
     const cur  = parseDiagnosis(r.report_summary).health_score ?? 0
     const prev = parseDiagnosis(reports[i + 1].report_summary).health_score ?? 0
     return { date: r.generated_at, score: cur, diff: cur - prev }
   })
+
+  const daysActive = user
+    ? Math.floor((Date.now() - new Date(user.created_at).getTime()) / (1000 * 60 * 60 * 24))
+    : 0
 
   const tierLabel = (t: string) => t ? t.charAt(0).toUpperCase() + t.slice(1) : ''
 
@@ -597,65 +570,124 @@ export default function DashboardPage() {
 
             {dataLoading ? (
               <div className="space-y-4">
-                <Skeleton className="h-48 w-full" />
+                <Skeleton className="h-56 w-full" />
+                <Skeleton className="h-32 w-full" />
                 <Skeleton className="h-24 w-full" />
                 <Skeleton className="h-24 w-full" />
               </div>
-            ) : chartData.length < 2 ? (
-              <section className="bg-white/5 border border-white/10 rounded-3xl p-10 text-center">
-                <p className="text-gray-400 mb-2">You need at least two diagnostics to see a trend.</p>
-                <p className="text-gray-600 text-sm mb-5">
-                  Run your next diagnosis after making changes to track improvement.
-                </p>
-                <Link
-                  href="/questionnaire"
-                  className="inline-block bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors"
-                >
-                  Run Diagnosis →
-                </Link>
-              </section>
             ) : (
               <>
-                {/* Chart */}
+                {/* Score chart */}
                 <section className="bg-white/5 border border-white/10 rounded-3xl p-6">
-                  <p className="text-xs text-gray-500 uppercase tracking-widest mb-4 font-semibold">Score Over Time</p>
-                  <ProgressChart data={chartData} />
+                  <p className="text-xs text-gray-500 uppercase tracking-widest mb-5 font-semibold">ICP Health Score Over Time</p>
+                  {chartData.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p className="text-gray-400 mb-4">No diagnostic data yet.</p>
+                      <Link href="/questionnaire" className="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors inline-block">
+                        Run your first diagnosis →
+                      </Link>
+                    </div>
+                  ) : chartData.length === 1 ? (
+                    <div className="text-center py-6">
+                      <p className="text-5xl font-black text-white mb-2">{chartData[0].score}</p>
+                      <p className="text-gray-500 text-sm">Your baseline score — {chartData[0].label}</p>
+                      <p className="text-gray-600 text-xs mt-3">Run another diagnosis to start tracking your trend.</p>
+                    </div>
+                  ) : mounted ? (
+                    <ResponsiveContainer width="100%" height={240}>
+                      <AreaChart data={chartData} margin={{ top: 20, right: 8, bottom: 0, left: -28 }}>
+                        <defs>
+                          <linearGradient id="scoreGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%"  stopColor="#6366f1" stopOpacity={0.2} />
+                            <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                        <XAxis
+                          dataKey="label"
+                          tick={{ fill: '#6b7280', fontSize: 11 }}
+                          tickLine={false}
+                          axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
+                        />
+                        <YAxis
+                          domain={[0, 100]}
+                          ticks={[0, 25, 50, 75, 100]}
+                          tick={{ fill: '#6b7280', fontSize: 11 }}
+                          tickLine={false}
+                          axisLine={false}
+                        />
+                        <Tooltip content={<ChartTooltip />} />
+                        <Area
+                          type="monotone"
+                          dataKey="score"
+                          stroke="#6366f1"
+                          strokeWidth={2.5}
+                          fill="url(#scoreGrad)"
+                          dot={{ fill: '#6366f1', r: 5, strokeWidth: 0 }}
+                          activeDot={{ r: 7, fill: '#818cf8', strokeWidth: 0 }}
+                          isAnimationActive
+                          animationDuration={800}
+                          animationEasing="ease-out"
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  ) : null}
                 </section>
 
                 {/* Milestones */}
-                {milestones.length > 0 && (
-                  <section className="bg-white/5 border border-white/10 rounded-3xl p-6">
-                    <p className="text-xs text-gray-500 uppercase tracking-widest mb-4 font-semibold">Milestones</p>
-                    <div className="space-y-3">
-                      {milestones.map((m, i) => (
-                        <div key={i} className="flex items-start gap-3">
-                          <span className={`text-sm font-bold ${m.diff > 0 ? 'text-emerald-400' : m.diff < 0 ? 'text-red-400' : 'text-gray-500'}`}>
-                            {m.diff > 0 ? `+${m.diff}` : m.diff < 0 ? String(m.diff) : '—'}
-                          </span>
+                <section className="bg-white/5 border border-white/10 rounded-3xl p-6">
+                  <p className="text-xs text-gray-500 uppercase tracking-widest mb-4 font-semibold">Milestones</p>
+                  <div className="space-y-3">
+                    {/* First diagnosis */}
+                    {reports.length > 0 && (() => {
+                      const first = reports[reports.length - 1]
+                      const firstScore = parseDiagnosis(first.report_summary).health_score
+                      return (
+                        <div className="flex items-start gap-3">
+                          <span className="text-indigo-400 font-bold shrink-0 text-base">★</span>
                           <p className="text-sm text-gray-300">
-                            <span className="text-gray-500">{formatDate(m.date)}</span>
-                            {' — '}
-                            {m.diff > 0
-                              ? `Score improved to ${m.score}. Keep applying the recommendations.`
-                              : m.diff < 0
-                                ? `Score dropped to ${m.score}. Review the latest findings.`
-                                : `Score held at ${m.score}.`
-                            }
+                            <span className="text-gray-500">{formatDate(first.generated_at)}</span>
+                            {' — '}First diagnosis completed.
+                            {firstScore !== undefined && <> Starting score: <span className="text-white font-semibold">{firstScore}/100</span>.</>}
                           </p>
                         </div>
-                      ))}
-                    </div>
-                  </section>
-                )}
+                      )
+                    })()}
+
+                    {/* Score improvements */}
+                    {scoreMilestones.filter(m => m.diff !== 0).map((m, i) => (
+                      <div key={i} className="flex items-start gap-3">
+                        <span className={`font-bold shrink-0 text-sm ${m.diff > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                          {m.diff > 0 ? `+${m.diff}` : m.diff}
+                        </span>
+                        <p className="text-sm text-gray-300">
+                          <span className="text-gray-500">{formatDate(m.date)}</span>
+                          {' — '}
+                          {m.diff > 0
+                            ? <>Score improved {m.diff} points to <span className="text-white font-semibold">{m.score}/100</span>. Keep applying the recommendations.</>
+                            : <>Score dropped to <span className="text-white font-semibold">{m.score}/100</span>. Review the latest findings.</>
+                          }
+                        </p>
+                      </div>
+                    ))}
+
+                    {/* Days active */}
+                    {daysActive >= 1 && (
+                      <div className="flex items-start gap-3">
+                        <span className="text-purple-400 font-bold shrink-0 text-sm">◈</span>
+                        <p className="text-sm text-gray-300">
+                          <span className="text-white font-semibold">{daysActive} days</span> active on the platform
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </section>
 
                 {/* All reports */}
                 <section className="bg-white/5 border border-white/10 rounded-3xl p-6">
                   <div className="flex items-center justify-between mb-4">
                     <p className="text-xs text-gray-500 uppercase tracking-widest font-semibold">All Reports</p>
-                    <Link
-                      href="/questionnaire"
-                      className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
-                    >
+                    <Link href="/questionnaire" className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors">
                       + New Diagnosis
                     </Link>
                   </div>
@@ -663,26 +695,29 @@ export default function DashboardPage() {
                     {reports.map((r, i) => {
                       const d = parseDiagnosis(r.report_summary)
                       const score = d.health_score
+                      const topFindingTitle = d.findings?.[0]?.title
                       return (
                         <Link
                           key={r.id}
                           href={`/report/${r.id}`}
                           className="flex items-center justify-between py-3 border-b border-white/5 last:border-0 hover:opacity-80 transition-opacity"
                         >
-                          <div>
-                            <p className="text-sm text-white font-medium">
-                              {i === 0 ? 'Latest report' : `Report — ${formatDate(r.generated_at)}`}
-                            </p>
-                            {i === 0 && (
-                              <p className="text-xs text-gray-500">{formatDate(r.generated_at)}</p>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="text-sm text-white font-medium">
+                                {formatDate(r.generated_at)}
+                              </p>
+                              {i === 0 && (
+                                <span className="text-xs bg-indigo-500/15 text-indigo-400 px-2 py-0.5 rounded-full">Latest</span>
+                              )}
+                            </div>
+                            {topFindingTitle && (
+                              <p className="text-xs text-gray-500 mt-0.5 truncate">{topFindingTitle}</p>
                             )}
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 shrink-0">
                             {score !== undefined && (
-                              <span
-                                className="text-lg font-bold"
-                                style={{ color: scoreColor(score) }}
-                              >
+                              <span className="text-lg font-bold" style={{ color: scoreColor(score) }}>
                                 {score}
                               </span>
                             )}

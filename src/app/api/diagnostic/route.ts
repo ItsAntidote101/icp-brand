@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import Anthropic from '@anthropic-ai/sdk'
+import { sendWelcomeEmail } from '@/lib/email'
 
 function buildRegionContext(region: string): string {
   if (region.includes('East Africa')) {
@@ -266,6 +267,28 @@ Rules:
     console.error('[diagnostic] reports insert error:', JSON.stringify(reportError))
   } else {
     console.log('[diagnostic] reports insert success — id:', reportRow?.id)
+  }
+
+  // ── Fire welcome email (non-blocking) ─────────────────────────────────────
+  if (questionnaire?.user_id) {
+    const proto   = req.headers.get('x-forwarded-proto') ?? 'https'
+    const host    = req.headers.get('x-forwarded-host') ?? req.headers.get('host') ?? 'icpbrand.co'
+
+    supabase
+      .from('users')
+      .select('email, full_name')
+      .eq('id', questionnaire.user_id)
+      .single()
+      .then(({ data: u }) => {
+        if (u?.email) {
+          sendWelcomeEmail({
+            to: u.email,
+            name: u.full_name ?? undefined,
+            reportId: data.id,
+            baseUrl: `${proto}://${host}`,
+          }).catch(e => console.error('[diagnostic] welcome email failed:', e))
+        }
+      })
   }
 
   return NextResponse.json({ id: data.id, diagnosis }, { status: 201 })
