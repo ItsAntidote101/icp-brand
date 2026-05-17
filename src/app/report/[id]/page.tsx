@@ -1,7 +1,16 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+
+type Currency = 'USD' | 'KES'
+type Tier = 'Starter' | 'Pro' | 'Agency'
+
+const PRICES: Record<Tier, Record<Currency, string>> = {
+  Starter: { USD: '$49',    KES: 'KES 6,500'  },
+  Pro:     { USD: '$99',    KES: 'KES 13,000' },
+  Agency:  { USD: '$199',   KES: 'KES 26,000' },
+}
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -222,6 +231,13 @@ export default function ReportPage({ params }: { params: { id: string } }) {
   const [report, setReport] = useState<ReportData | null>(null)
   const [loading, setLoading] = useState(true)
   const [animate, setAnimate] = useState(false)
+  const [currency, setCurrency] = useState<Currency>('USD')
+  const [showModal, setShowModal] = useState(false)
+  const [selectedTier, setSelectedTier] = useState<Tier>('Pro')
+  const [email, setEmail] = useState('')
+  const [subscribing, setSubscribing] = useState(false)
+  const [subscribeError, setSubscribeError] = useState('')
+  const emailRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     async function load() {
@@ -251,6 +267,36 @@ export default function ReportPage({ params }: { params: { id: string } }) {
     }
     load()
   }, [params.id])
+
+  // Focus email input when modal opens
+  useEffect(() => {
+    if (showModal) setTimeout(() => emailRef.current?.focus(), 50)
+  }, [showModal])
+
+  const openSubscribe = (tier: Tier) => {
+    setSelectedTier(tier)
+    setSubscribeError('')
+    setShowModal(true)
+  }
+
+  const handleSubscribe = async () => {
+    if (!email.trim()) { setSubscribeError('Please enter your email address.'); return }
+    setSubscribing(true)
+    setSubscribeError('')
+    try {
+      const res = await fetch('/api/paystack/initialize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim(), tier: selectedTier, currency }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? 'Could not initialize payment')
+      window.location.href = data.authorization_url
+    } catch (err) {
+      setSubscribeError(err instanceof Error ? err.message : 'Something went wrong')
+      setSubscribing(false)
+    }
+  }
 
   if (loading) return <LoadingSkeleton />
   if (!report) return <LoadingSkeleton />
@@ -424,8 +470,6 @@ export default function ReportPage({ params }: { params: { id: string } }) {
               <div className="h-px bg-white/10 my-4" />
               <p className="text-slate-400 text-xs">+ Monthly monitoring dashboards · Weekly performance snapshots · Quarterly deep-dive reports</p>
             </div>
-
-            {/* Gradient fade */}
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0a0a0f]/60 to-[#0a0a0f]" />
           </div>
 
@@ -442,35 +486,49 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                 Your report identified {report.breakdown.filter(b => b.score < 50).length} critical gaps costing you leads every day.
                 Get the complete week-by-week fix plan, monthly monitoring, and ongoing diagnostic updates.
               </p>
-              <p className="text-xs text-slate-600 mb-8">
+              <p className="text-xs text-slate-600 mb-6">
                 Monthly monitoring · Weekly snapshots · Quarterly deep-dive reports
               </p>
 
+              {/* Currency toggle */}
+              <div className="flex items-center justify-center gap-1 mb-8">
+                <span className="text-xs text-slate-500 mr-2">Currency:</span>
+                {(['USD', 'KES'] as Currency[]).map(c => (
+                  <button
+                    key={c}
+                    onClick={() => setCurrency(c)}
+                    className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                      currency === c
+                        ? 'bg-indigo-600 text-white'
+                        : 'border border-white/10 text-slate-400 hover:border-white/20 hover:text-white'
+                    }`}
+                  >
+                    {c === 'USD' ? '🇺🇸 USD' : '🇰🇪 KES'}
+                  </button>
+                ))}
+              </div>
+
               {/* Pricing tiers */}
               <div className="grid sm:grid-cols-3 gap-4 mb-8">
-                {[
-                  {
-                    name: 'Starter',
-                    price: '$49',
-                    period: '/mo',
-                    highlight: false,
-                    features: ['Full 12-week roadmap', 'Monthly diagnostic refresh', 'Email report delivery', '1 business'],
-                  },
-                  {
-                    name: 'Pro',
-                    price: '$99',
-                    period: '/mo',
-                    highlight: true,
-                    features: ['Everything in Starter', 'Weekly performance snapshots', 'Priority support', 'Up to 3 businesses'],
-                  },
-                  {
-                    name: 'Agency',
-                    price: '$199',
-                    period: '/mo',
-                    highlight: false,
-                    features: ['Everything in Pro', 'Quarterly deep-dive reports', 'White-label PDF export', 'Unlimited businesses'],
-                  },
-                ].map(tier => (
+                {(
+                  [
+                    {
+                      name: 'Starter' as Tier,
+                      highlight: false,
+                      features: ['Full 12-week roadmap', 'Monthly diagnostic refresh', 'Email report delivery', '1 business'],
+                    },
+                    {
+                      name: 'Pro' as Tier,
+                      highlight: true,
+                      features: ['Everything in Starter', 'Weekly performance snapshots', 'Priority support', 'Up to 3 businesses'],
+                    },
+                    {
+                      name: 'Agency' as Tier,
+                      highlight: false,
+                      features: ['Everything in Pro', 'Quarterly deep-dive reports', 'White-label PDF export', 'Unlimited businesses'],
+                    },
+                  ]
+                ).map(tier => (
                   <div
                     key={tier.name}
                     className={`relative rounded-xl p-5 text-left border transition-all ${
@@ -488,9 +546,9 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                     )}
                     <div className="mb-3">
                       <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">{tier.name}</p>
-                      <div className="flex items-baseline gap-0.5">
-                        <span className="text-3xl font-black text-white">{tier.price}</span>
-                        <span className="text-slate-500 text-sm">{tier.period}</span>
+                      <div className="flex items-baseline gap-0.5 flex-wrap">
+                        <span className="text-2xl font-black text-white">{PRICES[tier.name][currency]}</span>
+                        <span className="text-slate-500 text-sm">/mo</span>
                       </div>
                     </div>
                     <ul className="space-y-1.5 mb-5">
@@ -502,6 +560,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                       ))}
                     </ul>
                     <button
+                      onClick={() => openSubscribe(tier.name)}
                       className={`w-full py-2.5 rounded-lg text-sm font-semibold transition-all active:scale-95 ${
                         tier.highlight
                           ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow shadow-indigo-600/30'
@@ -520,6 +579,72 @@ export default function ReportPage({ params }: { params: { id: string } }) {
             </div>
           </div>
         </section>
+
+        {/* ── Email / Subscribe Modal ─────────────────────────────────────── */}
+        {showModal && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center px-4"
+            onClick={e => { if (e.target === e.currentTarget) setShowModal(false) }}
+          >
+            {/* Backdrop */}
+            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+
+            {/* Modal */}
+            <div className="relative w-full max-w-md bg-[#13131f] border border-indigo-500/20 rounded-2xl p-7 shadow-2xl shadow-indigo-950/60">
+              <button
+                onClick={() => setShowModal(false)}
+                className="absolute top-4 right-4 text-slate-500 hover:text-white transition-colors text-xl leading-none"
+              >
+                ✕
+              </button>
+
+              <span className="inline-block text-[10px] font-semibold uppercase tracking-widest text-indigo-400 bg-indigo-400/10 border border-indigo-400/20 px-2.5 py-1 rounded-full mb-4">
+                {selectedTier} — {PRICES[selectedTier][currency]}/mo
+              </span>
+
+              <h3 className="text-xl font-bold text-white mb-1">Enter your email to continue</h3>
+              <p className="text-slate-400 text-sm mb-5">
+                Your receipt and subscription details will be sent here.
+              </p>
+
+              <input
+                ref={emailRef}
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') handleSubscribe() }}
+                placeholder="you@company.com"
+                className="w-full bg-white/5 border border-white/10 focus:border-indigo-500 rounded-xl px-4 py-3 text-white placeholder-slate-500 text-sm outline-none transition-colors mb-3"
+              />
+
+              {subscribeError && (
+                <p className="text-xs text-red-400 mb-3">{subscribeError}</p>
+              )}
+
+              <button
+                onClick={handleSubscribe}
+                disabled={subscribing}
+                className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold transition-all active:scale-95 flex items-center justify-center gap-2"
+              >
+                {subscribing ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                    </svg>
+                    Redirecting to Paystack…
+                  </>
+                ) : (
+                  `Pay ${PRICES[selectedTier][currency]}/mo →`
+                )}
+              </button>
+
+              <p className="text-center text-xs text-slate-600 mt-3">
+                Secured by Paystack · Cancel anytime
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Footer */}
         <footer className="border-t border-white/10 pt-8 pb-4 text-center text-slate-600 text-xs">
