@@ -224,7 +224,48 @@ Rules:
     .single()
 
   if (error) {
+    console.error('[diagnostic] diagnostics insert error:', JSON.stringify(error))
     return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  console.log('[diagnostic] diagnostics insert success — id:', data.id)
+
+  // ── Look up user_id from the questionnaire ─────────────────────────────
+  const { data: questionnaire, error: qLookupError } = await supabase
+    .from('questionnaires')
+    .select('user_id')
+    .eq('id', questionnaireId)
+    .single()
+
+  if (qLookupError) {
+    console.warn('[diagnostic] questionnaire lookup error (non-fatal):', JSON.stringify(qLookupError))
+  } else {
+    console.log('[diagnostic] questionnaire user_id:', questionnaire?.user_id ?? '(none)')
+  }
+
+  // ── Write to reports table ─────────────────────────────────────────────
+  const reportsPayload = {
+    user_id:          questionnaire?.user_id ?? null,
+    questionnaire_id: questionnaireId,
+    report_summary:   JSON.stringify(diagnosis),
+    generated_at:     new Date().toISOString(),
+  }
+
+  console.log('[diagnostic] inserting to reports table:', JSON.stringify({
+    ...reportsPayload,
+    report_summary: '[omitted]',
+  }))
+
+  const { data: reportRow, error: reportError } = await supabase
+    .from('reports')
+    .insert([reportsPayload])
+    .select('id')
+    .single()
+
+  if (reportError) {
+    console.error('[diagnostic] reports insert error:', JSON.stringify(reportError))
+  } else {
+    console.log('[diagnostic] reports insert success — id:', reportRow?.id)
   }
 
   return NextResponse.json({ id: data.id, diagnosis }, { status: 201 })

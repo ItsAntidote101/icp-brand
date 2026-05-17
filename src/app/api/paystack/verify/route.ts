@@ -54,23 +54,23 @@ export async function GET(req: NextRequest) {
     process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
   )
 
-  // Fetch existing name so it is preserved (may have been set during questionnaire)
+  // Fetch existing user to preserve name and get id
   const { data: existingUser, error: lookupError } = await supabase
     .from('users')
-    .select('name')
+    .select('id, full_name')
     .eq('email', email)
     .single()
 
   if (lookupError && lookupError.code !== 'PGRST116') {
-    console.warn('[verify] users name lookup error:', lookupError)
+    console.warn('[verify] users lookup error:', lookupError)
   } else {
-    console.log('[verify] existing user name:', existingUser?.name ?? '(none)')
+    console.log('[verify] existing user id:', existingUser?.id ?? '(none)', '| full_name:', existingUser?.full_name ?? '(none)')
   }
 
   const renewalDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
   const upsertPayload = {
     email,
-    ...(existingUser?.name ? { name: existingUser.name } : {}),
+    ...(existingUser?.full_name ? { full_name: existingUser.full_name } : {}),
     subscription_tier:  tier.toLowerCase(),
     billing_status:     'active',
     renewal_date:       renewalDate,
@@ -83,12 +83,42 @@ export async function GET(req: NextRequest) {
   const { data: upsertData, error: upsertError } = await supabase
     .from('users')
     .upsert(upsertPayload, { onConflict: 'email' })
-    .select()
+    .select('id')
+    .single()
 
   if (upsertError) {
-    console.error('[verify] Supabase upsert error:', upsertError)
+    console.error('[verify] users upsert error:', JSON.stringify(upsertError))
   } else {
-    console.log('[verify] Supabase upsert success:', JSON.stringify(upsertData, null, 2))
+    console.log('[verify] users upsert success — id:', upsertData?.id)
+  }
+
+  // ── Write to subscriptions table ───────────────────────────────────────
+  const userId = upsertData?.id ?? existingUser?.id ?? null
+
+  if (userId) {
+    const subscriptionPayload = {
+      user_id:        userId,
+      tier:           tier.toLowerCase(),
+      billing_status: 'active',
+      renewal_date:   renewalDate,
+      created_at:     new Date().toISOString(),
+    }
+
+    console.log('[verify] inserting to subscriptions table:', JSON.stringify(subscriptionPayload, null, 2))
+
+    const { data: subData, error: subError } = await supabase
+      .from('subscriptions')
+      .insert([subscriptionPayload])
+      .select('id')
+      .single()
+
+    if (subError) {
+      console.error('[verify] subscriptions insert error:', JSON.stringify(subError))
+    } else {
+      console.log('[verify] subscriptions insert success — id:', subData?.id)
+    }
+  } else {
+    console.warn('[verify] no user_id available — skipping subscriptions insert')
   }
 
   const tierParam = encodeURIComponent(tier)
