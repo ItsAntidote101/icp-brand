@@ -3,13 +3,12 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 
-type Currency = 'USD' | 'KES'
 type Tier = 'Starter' | 'Pro' | 'Agency'
 
-const PRICES: Record<Tier, Record<Currency, string>> = {
-  Starter: { USD: '$49',    KES: 'KES 6,500'  },
-  Pro:     { USD: '$99',    KES: 'KES 13,000' },
-  Agency:  { USD: '$199',   KES: 'KES 26,000' },
+const PRICES: Record<Tier, string> = {
+  Starter: 'KES 6,500',
+  Pro:     'KES 13,000',
+  Agency:  'KES 26,000',
 }
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -231,7 +230,6 @@ export default function ReportPage({ params }: { params: { id: string } }) {
   const [report, setReport] = useState<ReportData | null>(null)
   const [loading, setLoading] = useState(true)
   const [animate, setAnimate] = useState(false)
-  const [currency, setCurrency] = useState<Currency>('USD')
   const [showModal, setShowModal] = useState(false)
   const [selectedTier, setSelectedTier] = useState<Tier>('Pro')
   const [email, setEmail] = useState('')
@@ -287,7 +285,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
       const res = await fetch('/api/paystack/initialize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim(), tier: selectedTier, currency }),
+        body: JSON.stringify({ email: email.trim(), tier: selectedTier }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Could not initialize payment')
@@ -490,24 +488,6 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                 Monthly monitoring · Weekly snapshots · Quarterly deep-dive reports
               </p>
 
-              {/* Currency toggle */}
-              <div className="flex items-center justify-center gap-1 mb-8">
-                <span className="text-xs text-slate-500 mr-2">Currency:</span>
-                {(['USD', 'KES'] as Currency[]).map(c => (
-                  <button
-                    key={c}
-                    onClick={() => setCurrency(c)}
-                    className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                      currency === c
-                        ? 'bg-indigo-600 text-white'
-                        : 'border border-white/10 text-slate-400 hover:border-white/20 hover:text-white'
-                    }`}
-                  >
-                    {c === 'USD' ? '🇺🇸 USD' : '🇰🇪 KES'}
-                  </button>
-                ))}
-              </div>
-
               {/* Pricing tiers */}
               <div className="grid sm:grid-cols-3 gap-4 mb-8">
                 {(
@@ -547,7 +527,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                     <div className="mb-3">
                       <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">{tier.name}</p>
                       <div className="flex items-baseline gap-0.5 flex-wrap">
-                        <span className="text-2xl font-black text-white">{PRICES[tier.name][currency]}</span>
+                        <span className="text-2xl font-black text-white">{PRICES[tier.name]}</span>
                         <span className="text-slate-500 text-sm">/mo</span>
                       </div>
                     </div>
@@ -599,7 +579,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
               </button>
 
               <span className="inline-block text-[10px] font-semibold uppercase tracking-widest text-indigo-400 bg-indigo-400/10 border border-indigo-400/20 px-2.5 py-1 rounded-full mb-4">
-                {selectedTier} — {PRICES[selectedTier][currency]}/mo
+                {selectedTier} — {PRICES[selectedTier]}/mo
               </span>
 
               <h3 className="text-xl font-bold text-white mb-1">Enter your email to continue</h3>
@@ -635,7 +615,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                     Redirecting to Paystack…
                   </>
                 ) : (
-                  `Pay ${PRICES[selectedTier][currency]}/mo →`
+                  `Pay ${PRICES[selectedTier]}/mo →`
                 )}
               </button>
 

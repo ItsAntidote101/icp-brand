@@ -1,31 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 type Tier = 'Starter' | 'Pro' | 'Agency'
-type Currency = 'USD' | 'KES'
 
-// Amounts in smallest currency unit (cents / Paystack kobo-equivalent)
-const PRICES: Record<Tier, Record<Currency, number>> = {
-  Starter: { USD: 4900,   KES: 650000  },
-  Pro:     { USD: 9900,   KES: 1300000 },
-  Agency:  { USD: 19900,  KES: 2600000 },
+// Amounts in KES cents (100 cents = 1 KES)
+const PRICES: Record<Tier, number> = {
+  Starter: 650000,
+  Pro:     1300000,
+  Agency:  2600000,
 }
 
 export async function POST(req: NextRequest) {
-  const { email, tier, currency } = (await req.json()) as {
+  const { email, tier } = (await req.json()) as {
     email: string
     tier: Tier
-    currency: Currency
   }
 
-  if (!email || !tier || !currency) {
-    return NextResponse.json({ error: 'email, tier, and currency are required' }, { status: 400 })
+  if (!email || !tier) {
+    return NextResponse.json({ error: 'email and tier are required' }, { status: 400 })
   }
 
   if (!PRICES[tier]) {
     return NextResponse.json({ error: 'Invalid tier' }, { status: 400 })
   }
 
-  const amount = PRICES[tier][currency]
+  const amount = PRICES[tier]
 
   // Build absolute callback URL from request host
   const proto = req.headers.get('x-forwarded-proto') ?? 'https'
@@ -41,9 +39,9 @@ export async function POST(req: NextRequest) {
     body: JSON.stringify({
       email,
       amount,
-      currency,
+      currency: 'KES',
       callback_url: callbackUrl,
-      metadata: { tier, currency },
+      metadata: { tier },
     }),
   })
 
