@@ -5,9 +5,10 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
-  const supabase = createClient(supabaseUrl, supabaseKey)
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
+    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
+  )
 
   const { data, error } = await supabase
     .from('diagnostics')

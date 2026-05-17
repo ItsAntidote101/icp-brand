@@ -49,9 +49,10 @@ export async function GET(req: NextRequest) {
   console.log('[verify] payment confirmed — email:', email, '| tier:', tier)
 
   // Update Supabase
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
-  const supabase = createClient(supabaseUrl, supabaseKey)
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
+    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
+  )
 
   // Fetch existing name so it is preserved (may have been set during questionnaire)
   const { data: existingUser, error: lookupError } = await supabase
