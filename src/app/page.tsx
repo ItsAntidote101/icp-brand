@@ -1,6 +1,6 @@
 import Link from 'next/link'
 
-export const dynamic = 'force-dynamic'
+export const dynamic = 'force-static'
 
 // ─── Design tokens (matches Ohio Demo 9) ─────────────────────────────────────
 const P   = '#302161'                    // primary
@@ -162,17 +162,16 @@ export default function Home() {
           {/* Center links — hidden on mobile */}
           <div style={{ display: 'flex', gap: 4 }} className="hidden sm:flex">
             {NAV_LINKS.map(l => (
-              <a key={l.label} href={l.href} style={{
-                color: Pbody,
-                textDecoration: 'none',
-                fontSize: 14,
-                fontWeight: 500,
-                padding: '8px 16px',
-                borderRadius: 24,
-                transition: 'background 0.15s',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(136,136,137,0.08)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+              <a key={l.label} href={l.href}
+                className="nav-link"
+                style={{
+                  color: Pbody,
+                  textDecoration: 'none',
+                  fontSize: 14,
+                  fontWeight: 500,
+                  padding: '8px 16px',
+                  borderRadius: 24,
+                }}>
                 {l.label}
               </a>
             ))}

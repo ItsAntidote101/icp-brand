@@ -47,6 +47,12 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+  .nav-link {
+    transition: background 0.15s;
+  }
+  .nav-link:hover {
+    background: rgba(136, 136, 137, 0.08);
+  }
 }
 
 /* Slider — dark theme */
