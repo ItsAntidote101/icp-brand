@@ -1,13 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 import Anthropic from '@anthropic-ai/sdk'
 
+type CsvAnalysis = {
+  summary: string
+  top_performers: Array<{ name: string; metric: string; why: string }>
+  underperformers: Array<{ name: string; metric: string; why: string }>
+  budget_waste: { estimated_amount: string; explanation: string }
+  audience_insights: string[]
+  recommendations: Array<{ action: string; impact: string; revenue_upside: string }>
+}
+
 export async function POST(req: NextRequest) {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
+    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
+  )
+
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY ?? '' })
 
   const body = await req.json()
-  const { csvText, fileName } = body as { csvText: string; fileName?: string }
+  const { csvText, fileName, userEmail } = body as {
+    csvText: string
+    fileName?: string
+    userEmail?: string
+  }
 
-  console.log('[csv-analysis] file:', fileName, '| chars:', csvText?.length)
+  console.log('[csv-analysis] file:', fileName, '| chars:', csvText?.length, '| user:', userEmail)
 
   if (!csvText) {
     return NextResponse.json({ error: 'csvText is required' }, { status: 400 })
@@ -15,62 +34,108 @@ export async function POST(req: NextRequest) {
 
   const message = await anthropic.messages.create({
     model: 'claude-opus-4-7',
-    max_tokens: 2048,
+    max_tokens: 3000,
     messages: [
       {
         role: 'user',
-        content: `You are an expert digital advertising analyst. Analyse the following advertising campaign CSV data.
+        content: `You are an expert media buyer analyzing advertising campaign data. The file is: ${fileName ?? 'campaign_data.csv'}
 
-FILE: ${fileName ?? 'campaign_data.csv'}
+Here is the CSV data:
+${csvText.slice(0, 10000)}
 
-CSV DATA:
-${csvText.slice(0, 8000)}
+Analyze this data and provide:
+1. Top 3 performing campaigns and why
+2. Bottom 3 underperforming campaigns and why
+3. Estimated budget being wasted and where
+4. Audience insights from the data
+5. Three specific optimization recommendations ranked by revenue impact
+
+Be specific with numbers from the data. Speak like a senior media buyer, not a robot.
 
 Return ONLY a valid JSON object with this exact structure (no markdown, no prose outside JSON):
 {
-  "summary": "<2-3 sentence overview of what you found>",
+  "summary": "<2-3 sentences: what this data shows at a glance, reference actual numbers>",
   "top_performers": [
-    { "name": "<campaign or ad set name>", "metric": "<key metric>", "insight": "<why it's working>" }
+    {
+      "name": "<exact campaign/ad set name from the data>",
+      "metric": "<the key metric that makes it a winner, e.g. ROAS 4.2x, CPA $12>",
+      "why": "<one sentence explaining why it works, referencing actual data>"
+    }
   ],
   "underperformers": [
-    { "name": "<campaign or ad set name>", "metric": "<key metric>", "insight": "<what's wrong>" }
+    {
+      "name": "<exact campaign/ad set name from the data>",
+      "metric": "<the key metric showing underperformance, e.g. CPA $180, CTR 0.2%>",
+      "why": "<one sentence on what's going wrong, referencing actual data>"
+    }
   ],
   "budget_waste": {
-    "estimated_waste_pct": <integer 0-100>,
-    "explanation": "<where budget is being wasted>"
+    "estimated_amount": "<specific amount or percentage, e.g. $2,400/month or 34% of spend>",
+    "explanation": "<two sentences: where the waste is happening and which campaigns are the culprit>"
   },
   "audience_insights": [
-    "<insight string>"
+    "<specific insight about audience behaviour visible in the data>"
   ],
   "recommendations": [
-    { "action": "<specific recommendation>", "impact": "<High|Medium|Low>", "effort": "<High|Medium|Low>" }
+    {
+      "action": "<specific action referencing the actual campaign or audience>",
+      "impact": "<High|Medium|Low>",
+      "revenue_upside": "<estimated revenue or cost saving, e.g. Save KES 15,000/month or +20% ROAS>"
+    }
   ]
 }
 
 Rules:
-- top_performers: 1-3 items
-- underperformers: 1-3 items
+- top_performers: exactly 3 (fewer only if data has less than 3 campaigns)
+- underperformers: exactly 3 (fewer only if data has less than 3 campaigns)
 - audience_insights: 2-4 items
-- recommendations: exactly 3 items ranked by impact
-- Be specific — reference actual campaign names, numbers, and percentages from the data`,
+- recommendations: exactly 3, ranked by revenue impact descending
+- Every number must come from the actual data — do not invent figures`,
       },
     ],
   })
 
   const block = message.content[0]
   const text = block.type === 'text' ? block.text : ''
-
-  // Strip markdown fences if present
   const stripped = text.replace(/^```(?:json)?\n?/i, '').replace(/\n?```$/i, '').trim()
 
-  let analysis: unknown
+  let analysis: CsvAnalysis | { raw: string }
   try {
-    analysis = JSON.parse(stripped)
+    analysis = JSON.parse(stripped) as CsvAnalysis
   } catch {
     analysis = { raw: text }
   }
 
-  console.log('[csv-analysis] analysis complete')
+  console.log('[csv-analysis] Claude response parsed — saving to diagnostics')
 
-  return NextResponse.json({ analysis }, { status: 200 })
+  // ── Look up user if email provided ────────────────────────────────────────
+  let userId: string | null = null
+  if (userEmail) {
+    const { data: user } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', userEmail)
+      .single()
+    userId = user?.id ?? null
+    console.log('[csv-analysis] resolved user_id:', userId)
+  }
+
+  // ── Save to diagnostics table ─────────────────────────────────────────────
+  const { data: saved, error: saveError } = await supabase
+    .from('diagnostics')
+    .insert([{
+      questionnaire_id: null,
+      diagnosis: { type: 'csv_analysis', file: fileName ?? 'upload.csv', user_id: userId, ...analysis },
+      created_at: new Date().toISOString(),
+    }])
+    .select('id')
+    .single()
+
+  if (saveError) {
+    console.error('[csv-analysis] diagnostics insert error:', JSON.stringify(saveError))
+  } else {
+    console.log('[csv-analysis] diagnostics insert success — id:', saved?.id)
+  }
+
+  return NextResponse.json({ analysis, diagnosticId: saved?.id ?? null }, { status: 200 })
 }
