@@ -1,8 +1,8 @@
 'use client'
 
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
+import { useEffect, Suspense } from 'react'
 import Link from 'next/link'
-import { Suspense } from 'react'
 
 const TIER_FEATURES: Record<string, string[]> = {
   starter: [
@@ -27,10 +27,23 @@ const TIER_FEATURES: Record<string, string[]> = {
 
 function SuccessContent() {
   const params = useSearchParams()
+  const router = useRouter()
   const tier   = (params.get('tier') ?? 'Starter').toLowerCase()
   const ref    = params.get('ref') ?? ''
-  const features = TIER_FEATURES[tier] ?? TIER_FEATURES['starter']
+  const email  = params.get('email') ?? ''
+  const features  = TIER_FEATURES[tier] ?? TIER_FEATURES['starter']
   const tierLabel = tier.charAt(0).toUpperCase() + tier.slice(1)
+
+  useEffect(() => {
+    if (email) {
+      localStorage.setItem('dashboard_email', email)
+    }
+  }, [email])
+
+  function handleDashboard() {
+    if (email) localStorage.setItem('dashboard_email', email)
+    router.push('/dashboard')
+  }
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white flex flex-col items-center justify-center px-6 py-16">
@@ -77,12 +90,12 @@ function SuccessContent() {
         )}
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Link
-            href="/"
+          <button
+            onClick={handleDashboard}
             className="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold transition-all active:scale-95"
           >
-            Go to Dashboard
-          </Link>
+            Go to Dashboard →
+          </button>
           <Link
             href="/questionnaire"
             className="px-6 py-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white text-sm font-semibold transition-all"

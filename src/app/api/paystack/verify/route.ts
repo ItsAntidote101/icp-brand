@@ -133,7 +133,8 @@ export async function GET(req: NextRequest) {
     }).catch(e => console.error('[verify] subscription email failed:', e))
   }
 
-  const tierParam = encodeURIComponent(tier)
-  console.log('[verify] redirecting to /success — tier:', tier, '| ref:', reference)
-  return NextResponse.redirect(`${base}/success?tier=${tierParam}&ref=${reference}`)
+  const tierParam  = encodeURIComponent(tier)
+  const emailParam = encodeURIComponent(email)
+  console.log('[verify] redirecting to /success — tier:', tier, '| ref:', reference, '| email:', email)
+  return NextResponse.redirect(`${base}/success?email=${emailParam}&tier=${tierParam}&ref=${reference}`)
 }
