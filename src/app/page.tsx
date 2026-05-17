@@ -3,12 +3,12 @@ import Link from 'next/link'
 export const dynamic = 'force-static'
 
 // ─── Design tokens (matches Ohio Demo 9) ─────────────────────────────────────
-const P   = '#302161'                    // primary
-const Pbody = 'rgba(48,33,97,0.88)'     // body text
-const Pmuted = 'rgba(48,33,97,0.48)'    // muted text
-const Pborder = 'rgba(48,33,97,0.1)'    // border
-const BgAlt = '#f8f7ff'                 // near-white bg
-const BgCard = '#f4f2ff'                // light purple card
+const P      = '#302161'
+const Pbody  = 'rgba(48,33,97,0.88)'
+const Pmuted = 'rgba(48,33,97,0.48)'
+const Pborder = 'rgba(48,33,97,0.1)'
+const BgAlt  = '#f8f7ff'
+const BgCard = '#f4f2ff'
 
 // ─── Nav ─────────────────────────────────────────────────────────────────────
 
@@ -18,38 +18,29 @@ const NAV_LINKS = [
   { label: 'Pricing', href: '#pricing' },
 ]
 
-// ─── Pain point cards ─────────────────────────────────────────────────────────
+// ─── Feature blocks ───────────────────────────────────────────────────────────
 
-const PAIN_POINTS = [
+const FEATURE_BLOCKS = [
   {
-    icon: '🎯',
-    title: 'Wrong audience, every time',
-    desc: "You're targeting the right industry but the wrong decision-maker — or chasing a customer who can't actually afford you.",
+    badge: 'THE REAL PROBLEM',
+    title: "Your ads are working. They're just talking to the wrong person.",
+    desc: "You've tested creatives. You've changed budgets. You've hired agencies. But nothing sticks — because the problem was never the ad. It was the audience. We compare who you think your ideal customer is against who your actual best customers are. The gap between those two things is where your budget disappears every single month.",
+    cta: 'Find My ICP Gap →',
+    href: '/questionnaire',
   },
   {
-    icon: '📡',
-    title: "Ad targeting that looks right but isn't",
-    desc: "Your audience settings look correct but the algorithm is serving your ads to people who will never, ever buy.",
+    badge: 'THE HIDDEN LEAK',
+    title: "People are clicking your ads. They're just not becoming leads.",
+    desc: "A high click-through rate with zero conversions is not a targeting problem. It's a friction problem. Too many form fields. Too many steps before someone sees the value. A landing page that makes people work for something they haven't been convinced they need yet. We score every step of your funnel and show you exactly where people give up — and why.",
+    cta: 'Score My Funnel →',
+    href: '/questionnaire',
   },
   {
-    icon: '🚧',
-    title: 'Landing pages that kill intent',
-    desc: 'Clicks arrive but the page loses them in seconds. Wrong headline, missing proof, wrong call to action.',
-  },
-  {
-    icon: '💸',
-    title: 'Budget going to the wrong stage',
-    desc: "Too much on awareness, not enough on conversion — or the reverse. Either way, you're bleeding spend.",
-  },
-  {
-    icon: '📣',
-    title: "Message your market doesn't feel",
-    desc: "Your offer is solid but the copy speaks to pain your audience doesn't recognise — or doesn't believe yet.",
-  },
-  {
-    icon: '📊',
-    title: 'Positioning that sounds like everyone else',
-    desc: 'Competitors say the same thing. Nothing in your funnel makes switching feel like the obvious next step.',
+    badge: 'THE BUDGET DRAIN',
+    title: "You're not spending too little. You're spending in the wrong places.",
+    desc: "Doubling your budget won't fix a channel mismatch. If your ideal customer makes buying decisions on LinkedIn but you're running all your spend on Meta, you're paying for attention from people who will never buy. We map your spend against your ICP behavior — by region, by platform, by audience — and show you exactly where to shift the money.",
+    cta: 'Audit My Spend →',
+    href: '/questionnaire',
   },
 ]
 
@@ -76,10 +67,10 @@ const STEPS = [
 // ─── Stats ───────────────────────────────────────────────────────────────────
 
 const STATS = [
-  { value: '2,400+', label: 'Diagnostics completed' },
-  { value: '4.9/5', label: 'Average report rating' },
-  { value: '5 min', label: 'Average completion time' },
-  { value: '38%', label: 'Avg. CPA improvement' },
+  { value: '40–60%', label: 'Of ad budgets wasted on wrong audience targeting' },
+  { value: '5 min',  label: 'To complete your full ICP diagnostic' },
+  { value: 'KES 50K+', label: 'Average monthly waste found per diagnosis' },
+  { value: 'Zero',   label: 'Ad account access needed — ever' },
 ]
 
 // ─── Pricing ─────────────────────────────────────────────────────────────────
@@ -91,12 +82,13 @@ const TIERS = [
     period: '/ month',
     desc: 'For solo founders and small teams running their first serious paid campaigns.',
     features: [
-      'Monthly ICP diagnostic report',
-      'Full 6-dimension score breakdown',
-      'Specific quick-win recommendations',
-      'Subscriber dashboard access',
+      'Monthly ICP health check',
+      'Top 3 critical findings',
+      'Funnel friction score',
+      'Quick wins report',
+      'Email support',
     ],
-    cta: 'Start with Starter',
+    cta: 'Start Free Diagnosis',
     highlight: false,
   },
   {
@@ -106,11 +98,13 @@ const TIERS = [
     desc: 'For growing teams that need speed, depth, and campaign-level analysis.',
     features: [
       'Everything in Starter',
-      'Priority re-diagnosis turnaround',
-      'Campaign CSV analysis',
-      'Score trend tracking over time',
+      'Weekly performance snapshots',
+      'CSV campaign analysis',
+      'Benchmark comparisons by industry and region',
+      'Full findings ranked by revenue impact',
+      'Complete report history',
     ],
-    cta: 'Start with Pro',
+    cta: 'Start Pro',
     highlight: true,
   },
   {
@@ -120,12 +114,56 @@ const TIERS = [
     desc: 'For agencies managing multiple clients who need reporting at scale.',
     features: [
       'Everything in Pro',
-      'Multi-client reporting',
-      'Dedicated strategy review session',
-      'White-label report exports',
+      'Quarterly deep dive audits',
+      'Multi-client management',
+      'White label reports',
+      'Custom diagnostic frameworks',
+      'Priority support',
     ],
-    cta: 'Start with Agency',
+    cta: 'Talk To Us',
     highlight: false,
+  },
+]
+
+// ─── Testimonials ─────────────────────────────────────────────────────────────
+
+const TESTIMONIALS = [
+  {
+    quote: "I was three months into a campaign with nothing to show for it. My CEO was asking questions I couldn't answer. The diagnosis told me in 5 minutes what three agencies in six months couldn't — we were targeting procurement managers when our actual buyers were CFOs. Everything changed after that.",
+    author: 'Head of Marketing, B2B SaaS, Nairobi',
+  },
+  {
+    quote: "The funnel audit was the wake-up call we needed. We had 14 form fields on our landing page. Fourteen. We cut it to four and our lead volume tripled in two weeks. I didn't need a new campaign. I needed a diagnosis.",
+    author: 'Growth Lead, Fintech Startup, Lagos',
+  },
+  {
+    quote: "I uploaded our Meta CSV on a Monday morning. By lunch I had a report that found KES 38,000 in wasted spend on job-seeker keywords we didn't even know we were bidding on. That one upload paid for a year of the subscription.",
+    author: 'Marketing Director, E-commerce Brand, Nairobi',
+  },
+]
+
+// ─── FAQ ─────────────────────────────────────────────────────────────────────
+
+const FAQ = [
+  {
+    q: "I already have an agency. Why do I need this?",
+    a: "Your agency optimizes what's in front of them. We diagnose what's underneath. Most agencies won't tell you your ICP is wrong — because fixing it means admitting the last six months of work was built on a broken foundation. We will.",
+  },
+  {
+    q: "Do you need access to my ad accounts?",
+    a: "Never. No Google OAuth. No Meta permissions. No compliance headaches. You answer our diagnostic questions and optionally upload a CSV export of your campaign data. That's it.",
+  },
+  {
+    q: "How is this different from hiring a consultant?",
+    a: "A consultant charges KES 50,000+ for a strategy session that gives you a PDF you'll read once. We give you a living diagnostic that updates every month, tracks your improvement, and tells you what to fix next — automatically.",
+  },
+  {
+    q: "What if my score is really low?",
+    a: "Good. That means we found the problem before it got worse. A low score with a clear fix is worth more than a high score with no direction. Most businesses score 34/100 on their first report. Within three months the average moves to 67.",
+  },
+  {
+    q: "Do you cover my region?",
+    a: "Yes. We give region-specific recommendations for East Africa, West Africa, South Africa, UK, Europe, US, Southeast Asia and more. Your recommendations reflect local ad costs, platform behavior, and audience psychology.",
   },
 ]
 
@@ -151,7 +189,6 @@ export default function Home() {
           padding: '10px 16px 10px 20px',
           boxShadow: '0 2px 24px rgba(48,33,97,0.08)',
         }}>
-          {/* Logo */}
           <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
             <div style={{ width: 30, height: 30, borderRadius: 9, background: 'linear-gradient(135deg, #302161 0%, #6c4ddd 100%)', flexShrink: 0 }} />
             <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: P, letterSpacing: '-0.4px' }}>
@@ -159,47 +196,25 @@ export default function Home() {
             </span>
           </Link>
 
-          {/* Center links — hidden on mobile */}
           <div style={{ display: 'flex', gap: 4 }} className="hidden sm:flex">
             {NAV_LINKS.map(l => (
               <a key={l.label} href={l.href}
                 className="nav-link"
-                style={{
-                  color: Pbody,
-                  textDecoration: 'none',
-                  fontSize: 14,
-                  fontWeight: 500,
-                  padding: '8px 16px',
-                  borderRadius: 24,
-                }}>
+                style={{ color: Pbody, textDecoration: 'none', fontSize: 14, fontWeight: 500, padding: '8px 16px', borderRadius: 24 }}>
                 {l.label}
               </a>
             ))}
           </div>
 
-          {/* Right actions */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Link href="/dashboard" style={{
-              color: Pbody,
-              textDecoration: 'none',
-              fontSize: 14,
-              fontWeight: 500,
-              padding: '8px 14px',
-              borderRadius: 24,
-            }}
-            className="hidden sm:block">
+            <Link href="/dashboard" style={{ color: Pbody, textDecoration: 'none', fontSize: 14, fontWeight: 500, padding: '8px 14px', borderRadius: 24 }}
+              className="hidden sm:block">
               Login
             </Link>
             <Link href="/questionnaire" style={{
-              background: P,
-              color: '#fff',
-              textDecoration: 'none',
-              fontSize: 14,
-              fontWeight: 600,
-              padding: '9px 18px',
-              borderRadius: 12,
-              letterSpacing: '-0.2px',
-              whiteSpace: 'nowrap',
+              background: P, color: '#fff', textDecoration: 'none',
+              fontSize: 14, fontWeight: 600, padding: '9px 18px',
+              borderRadius: 12, letterSpacing: '-0.2px', whiteSpace: 'nowrap',
             }}>
               Get Started
             </Link>
@@ -211,99 +226,71 @@ export default function Home() {
       <section style={{ padding: '72px 24px 80px', textAlign: 'center', maxWidth: 760, margin: '0 auto' }}>
 
         <div style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 8,
-          background: BgCard,
-          border: `1px solid ${Pborder}`,
-          borderRadius: 32,
-          padding: '6px 16px',
-          marginBottom: 28,
+          display: 'inline-flex', alignItems: 'center', gap: 8,
+          background: BgCard, border: `1px solid ${Pborder}`,
+          borderRadius: 32, padding: '6px 16px', marginBottom: 28,
         }}>
           <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: P }}>
-            Free · AI-Powered · Instant Results
+            ICP Diagnostic Platform
           </span>
         </div>
 
         <h1 style={{
           fontFamily: 'var(--font-display)',
           fontSize: 'clamp(40px, 7vw, 68px)',
-          fontWeight: 800,
-          lineHeight: 1.08,
-          letterSpacing: '-0.4px',
-          color: P,
-          margin: '0 0 24px',
+          fontWeight: 800, lineHeight: 1.08,
+          letterSpacing: '-0.4px', color: P, margin: '0 0 24px',
         }}>
-          Understand every move<br />
+          You&rsquo;re not bad at marketing.{' '}
           <span style={{ background: 'linear-gradient(135deg, #6c4ddd 0%, #302161 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-            your money makes.
+            You&rsquo;re targeting the wrong people.
           </span>
         </h1>
 
-        <p style={{
-          fontSize: 18,
-          lineHeight: 1.7,
-          color: Pbody,
-          maxWidth: 560,
-          margin: '0 auto 40px',
-        }}>
-          Get a free ICP diagnostic report in 5 minutes. We pinpoint exactly where your
-          targeting, messaging, or funnel is leaking revenue — with a clear plan to fix it.
+        <p style={{ fontSize: 18, lineHeight: 1.7, color: Pbody, maxWidth: 600, margin: '0 auto 40px' }}>
+          Every month you run ads to the wrong audience is another month your CEO asks why the
+          pipeline is empty. We diagnose exactly who you should be targeting, where your funnel
+          is breaking, and what to fix first — in 5 minutes, for free.
         </p>
 
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 20 }}>
           <Link href="/questionnaire" style={{
-            display: 'inline-block',
-            background: P,
-            color: '#fff',
-            textDecoration: 'none',
-            fontWeight: 700,
-            fontSize: 16,
-            padding: '15px 32px',
-            borderRadius: 12,
-            letterSpacing: '-0.3px',
+            display: 'inline-block', background: P, color: '#fff',
+            textDecoration: 'none', fontWeight: 700, fontSize: 16,
+            padding: '15px 32px', borderRadius: 12, letterSpacing: '-0.3px',
             boxShadow: '0 8px 32px rgba(48,33,97,0.28)',
           }}>
-            Get My Free Diagnosis →
+            Diagnose My Marketing Now →
           </Link>
-          <a href="#how-it-works" style={{
-            display: 'inline-block',
-            background: BgCard,
-            color: P,
-            textDecoration: 'none',
-            fontWeight: 600,
-            fontSize: 16,
-            padding: '15px 32px',
-            borderRadius: 12,
-            letterSpacing: '-0.3px',
+          <a href="/report/demo" style={{
+            display: 'inline-block', background: BgCard, color: P,
+            textDecoration: 'none', fontWeight: 600, fontSize: 16,
+            padding: '15px 32px', borderRadius: 12, letterSpacing: '-0.3px',
             border: `1px solid ${Pborder}`,
           }}>
-            See how it works
+            See A Sample Report
           </a>
         </div>
 
         <p style={{ fontSize: 13, color: Pmuted }}>
-          No credit card required · Takes 5 minutes · Results delivered instantly
+          Free diagnosis · No ad account access needed · Used by marketing teams in Kenya, Nigeria, UK &amp; US
         </p>
       </section>
 
       {/* ── Social proof bar ──────────────────────────────────────────────────── */}
       <div style={{ background: BgAlt, borderTop: `1px solid ${Pborder}`, borderBottom: `1px solid ${Pborder}`, padding: '20px 24px' }}>
         <div style={{
-          maxWidth: 900,
-          margin: '0 auto',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 'clamp(20px, 4vw, 56px)',
-          flexWrap: 'wrap',
+          maxWidth: 1000, margin: '0 auto',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          gap: 'clamp(16px, 3vw, 48px)', flexWrap: 'wrap',
         }}>
           {[
-            '✦ 100% Free diagnostic',
-            '✦ AI-powered analysis',
-            '✦ Report in seconds',
-            '✦ No agency jargon',
-            '✦ Actionable fixes only',
+            '✦ Free ICP Diagnosis',
+            '✦ No Agency Fluff',
+            '✦ Real Numbers, Real Fixes',
+            '✦ Results in 5 Minutes',
+            '✦ Built by a Media Buyer',
+            '✦ Region-Specific Insights',
           ].map(s => (
             <span key={s} style={{ fontSize: 13, fontWeight: 600, color: Pbody, letterSpacing: '-0.2px', whiteSpace: 'nowrap' }}>
               {s}
@@ -312,7 +299,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ── Pain points ───────────────────────────────────────────────────────── */}
+      {/* ── Feature blocks ───────────────────────────────────────────────────── */}
       <section id="features" style={{ maxWidth: 1080, margin: '0 auto', padding: '100px 24px' }}>
         <div style={{ textAlign: 'center', marginBottom: 56 }}>
           <p style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', color: P, opacity: 0.5, marginBottom: 12 }}>
@@ -321,48 +308,52 @@ export default function Home() {
           <h2 style={{
             fontFamily: 'var(--font-display)',
             fontSize: 'clamp(28px, 4vw, 44px)',
-            fontWeight: 800,
-            letterSpacing: '-0.4px',
-            color: P,
-            margin: '0 0 16px',
-            lineHeight: 1.15,
+            fontWeight: 800, letterSpacing: '-0.4px', color: P,
+            margin: '0 0 16px', lineHeight: 1.15,
           }}>
-            Burning ad spend with nothing to show for it?
+            Three reasons your campaigns aren&rsquo;t working.
           </h2>
           <p style={{ fontSize: 17, color: Pbody, maxWidth: 480, margin: '0 auto', lineHeight: 1.6 }}>
-            Most campaigns fail for one of six reasons. We diagnose all of them — in minutes.
+            Every broken campaign has a root cause. Here&rsquo;s how we find yours.
           </p>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
-          {PAIN_POINTS.map(card => (
-            <div key={card.title} style={{
-              background: BgCard,
-              border: `1px solid ${Pborder}`,
-              borderRadius: 20,
-              padding: '28px 28px 24px',
-              transition: 'transform 0.15s, box-shadow 0.15s',
+          {FEATURE_BLOCKS.map(block => (
+            <div key={block.badge} style={{
+              background: BgCard, border: `1px solid ${Pborder}`,
+              borderRadius: 20, padding: '28px 28px 24px',
+              display: 'flex', flexDirection: 'column',
             }}>
-              <div style={{ fontSize: 28, marginBottom: 14 }}>{card.icon}</div>
+              <p style={{
+                fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
+                letterSpacing: '1px', color: P, opacity: 0.5,
+                margin: '0 0 14px',
+              }}>
+                {block.badge}
+              </p>
               <h3 style={{
                 fontFamily: 'var(--font-display)',
-                fontSize: 16,
-                fontWeight: 700,
-                color: P,
-                letterSpacing: '-0.3px',
-                margin: '0 0 10px',
+                fontSize: 16, fontWeight: 700, color: P,
+                letterSpacing: '-0.3px', margin: '0 0 12px', lineHeight: 1.35,
               }}>
-                {card.title}
+                {block.title}
               </h3>
-              <p style={{ fontSize: 14, lineHeight: 1.65, color: Pbody, margin: 0 }}>
-                {card.desc}
+              <p style={{ fontSize: 14, lineHeight: 1.65, color: Pbody, margin: '0 0 20px', flexGrow: 1 }}>
+                {block.desc}
               </p>
+              <Link href={block.href} style={{
+                display: 'inline-block', color: P, textDecoration: 'none',
+                fontSize: 13, fontWeight: 700, letterSpacing: '-0.2px',
+              }}>
+                {block.cta}
+              </Link>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ── Why it matters now — stats ────────────────────────────────────────── */}
+      {/* ── Stats bar ────────────────────────────────────────────────────────── */}
       <div style={{ background: BgAlt, borderTop: `1px solid ${Pborder}`, borderBottom: `1px solid ${Pborder}`, padding: '64px 24px' }}>
         <div style={{ maxWidth: 900, margin: '0 auto' }}>
           <p style={{ textAlign: 'center', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', color: Pmuted, marginBottom: 40 }}>
@@ -373,12 +364,8 @@ export default function Home() {
               <div key={s.label} style={{ textAlign: 'center' }}>
                 <p style={{
                   fontFamily: 'var(--font-display)',
-                  fontSize: 44,
-                  fontWeight: 800,
-                  color: P,
-                  letterSpacing: '-1px',
-                  margin: '0 0 6px',
-                  lineHeight: 1,
+                  fontSize: 44, fontWeight: 800, color: P,
+                  letterSpacing: '-1px', margin: '0 0 6px', lineHeight: 1,
                 }}>
                   {s.value}
                 </p>
@@ -398,10 +385,7 @@ export default function Home() {
           <h2 style={{
             fontFamily: 'var(--font-display)',
             fontSize: 'clamp(28px, 4vw, 44px)',
-            fontWeight: 800,
-            letterSpacing: '-0.4px',
-            color: P,
-            margin: '0 0 16px',
+            fontWeight: 800, letterSpacing: '-0.4px', color: P, margin: '0 0 16px',
           }}>
             Three steps. Five minutes.
           </h2>
@@ -415,58 +399,36 @@ export default function Home() {
             <div key={step.n} style={{
               background: i === 1 ? P : BgCard,
               border: `1px solid ${i === 1 ? 'transparent' : Pborder}`,
-              borderRadius: 20,
-              padding: '36px 28px',
-              position: 'relative',
-              overflow: 'hidden',
+              borderRadius: 20, padding: '36px 28px',
+              position: 'relative', overflow: 'hidden',
             }}>
               <div style={{
-                position: 'absolute',
-                top: -12,
-                right: 16,
+                position: 'absolute', top: -12, right: 16,
                 fontFamily: 'var(--font-display)',
-                fontSize: 88,
-                fontWeight: 900,
+                fontSize: 88, fontWeight: 900,
                 color: i === 1 ? 'rgba(255,255,255,0.07)' : 'rgba(48,33,97,0.06)',
-                lineHeight: 1,
-                pointerEvents: 'none',
-                userSelect: 'none',
+                lineHeight: 1, pointerEvents: 'none', userSelect: 'none',
               }}>
                 {step.n}
               </div>
               <div style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: 36,
-                height: 36,
-                borderRadius: 10,
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                width: 36, height: 36, borderRadius: 10,
                 background: i === 1 ? 'rgba(255,255,255,0.15)' : P,
-                color: '#fff',
-                fontFamily: 'var(--font-display)',
-                fontWeight: 700,
-                fontSize: 13,
-                marginBottom: 20,
+                color: '#fff', fontFamily: 'var(--font-display)',
+                fontWeight: 700, fontSize: 13, marginBottom: 20,
               }}>
                 {step.n}
               </div>
               <h3 style={{
                 fontFamily: 'var(--font-display)',
-                fontSize: 17,
-                fontWeight: 700,
+                fontSize: 17, fontWeight: 700,
                 color: i === 1 ? '#fff' : P,
-                letterSpacing: '-0.3px',
-                margin: '0 0 12px',
-                lineHeight: 1.3,
+                letterSpacing: '-0.3px', margin: '0 0 12px', lineHeight: 1.3,
               }}>
                 {step.title}
               </h3>
-              <p style={{
-                fontSize: 14,
-                lineHeight: 1.65,
-                color: i === 1 ? 'rgba(255,255,255,0.75)' : Pbody,
-                margin: 0,
-              }}>
+              <p style={{ fontSize: 14, lineHeight: 1.65, color: i === 1 ? 'rgba(255,255,255,0.75)' : Pbody, margin: 0 }}>
                 {step.desc}
               </p>
             </div>
@@ -484,15 +446,13 @@ export default function Home() {
             <h2 style={{
               fontFamily: 'var(--font-display)',
               fontSize: 'clamp(28px, 4vw, 44px)',
-              fontWeight: 800,
-              letterSpacing: '-0.4px',
-              color: P,
-              margin: '0 0 16px',
+              fontWeight: 800, letterSpacing: '-0.4px', color: P, margin: '0 0 16px',
             }}>
-              Built to grow with you.
+              Stop guessing. Start knowing.
             </h2>
-            <p style={{ fontSize: 17, color: Pbody, maxWidth: 440, margin: '0 auto', lineHeight: 1.6 }}>
-              Start free. Subscribe when you see the value. Cancel anytime.
+            <p style={{ fontSize: 17, color: Pbody, maxWidth: 480, margin: '0 auto', lineHeight: 1.6 }}>
+              One subscription. Complete visibility into why your marketing isn&rsquo;t
+              working — and exactly how to fix it.
             </p>
           </div>
 
@@ -501,50 +461,34 @@ export default function Home() {
               <div key={tier.name} style={{
                 background: tier.highlight ? P : '#fff',
                 border: `1px solid ${tier.highlight ? 'transparent' : Pborder}`,
-                borderRadius: 20,
-                padding: '32px 28px',
+                borderRadius: 20, padding: '32px 28px',
                 boxShadow: tier.highlight ? '0 16px 48px rgba(48,33,97,0.28)' : 'none',
                 position: 'relative',
               }}>
                 {tier.highlight && (
                   <div style={{
-                    position: 'absolute',
-                    top: -12,
-                    left: '50%',
-                    transform: 'translateX(-50%)',
+                    position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)',
                     background: 'linear-gradient(135deg, #a78bfa, #6c4ddd)',
-                    color: '#fff',
-                    fontSize: 11,
-                    fontWeight: 700,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.6px',
-                    padding: '4px 14px',
-                    borderRadius: 32,
+                    color: '#fff', fontSize: 11, fontWeight: 700,
+                    textTransform: 'uppercase', letterSpacing: '0.6px',
+                    padding: '4px 14px', borderRadius: 32,
                   }}>
-                    Most popular
+                    Most Popular
                   </div>
                 )}
 
                 <p style={{
-                  fontFamily: 'var(--font-display)',
-                  fontSize: 12,
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.8px',
-                  color: tier.highlight ? 'rgba(255,255,255,0.6)' : Pmuted,
-                  margin: '0 0 12px',
+                  fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700,
+                  textTransform: 'uppercase', letterSpacing: '0.8px',
+                  color: tier.highlight ? 'rgba(255,255,255,0.6)' : Pmuted, margin: '0 0 12px',
                 }}>
                   {tier.name}
                 </p>
 
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 8 }}>
                   <span style={{
-                    fontFamily: 'var(--font-display)',
-                    fontSize: 38,
-                    fontWeight: 800,
-                    letterSpacing: '-1px',
-                    color: tier.highlight ? '#fff' : P,
-                    lineHeight: 1,
+                    fontFamily: 'var(--font-display)', fontSize: 38, fontWeight: 800,
+                    letterSpacing: '-1px', color: tier.highlight ? '#fff' : P, lineHeight: 1,
                   }}>
                     {tier.price}
                   </span>
@@ -561,18 +505,11 @@ export default function Home() {
                   {tier.features.map(f => (
                     <li key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 14 }}>
                       <span style={{
-                        flexShrink: 0,
-                        width: 18,
-                        height: 18,
-                        borderRadius: '50%',
+                        flexShrink: 0, width: 18, height: 18, borderRadius: '50%',
                         background: tier.highlight ? 'rgba(255,255,255,0.2)' : BgCard,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: 10,
-                        color: tier.highlight ? '#fff' : P,
-                        fontWeight: 700,
-                        marginTop: 1,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 10, color: tier.highlight ? '#fff' : P,
+                        fontWeight: 700, marginTop: 1,
                       }}>
                         ✓
                       </span>
@@ -584,16 +521,11 @@ export default function Home() {
                 </ul>
 
                 <Link href="/questionnaire" style={{
-                  display: 'block',
-                  textAlign: 'center',
-                  textDecoration: 'none',
+                  display: 'block', textAlign: 'center', textDecoration: 'none',
                   background: tier.highlight ? '#fff' : P,
                   color: tier.highlight ? P : '#fff',
-                  fontWeight: 700,
-                  fontSize: 14,
-                  padding: '13px 20px',
-                  borderRadius: 12,
-                  letterSpacing: '-0.2px',
+                  fontWeight: 700, fontSize: 14, padding: '13px 20px',
+                  borderRadius: 12, letterSpacing: '-0.2px',
                 }}>
                   {tier.cta}
                 </Link>
@@ -607,51 +539,61 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── You ask, we answer — FAQ ──────────────────────────────────────────── */}
-      <section style={{ maxWidth: 640, margin: '0 auto', padding: '100px 24px' }}>
+      {/* ── Testimonials ─────────────────────────────────────────────────────── */}
+      <section style={{ maxWidth: 1080, margin: '0 auto', padding: '100px 24px' }}>
+        <div style={{ textAlign: 'center', marginBottom: 56 }}>
+          <p style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', color: P, opacity: 0.5, marginBottom: 12 }}>
+            Real results
+          </p>
+          <h2 style={{
+            fontFamily: 'var(--font-display)',
+            fontSize: 'clamp(28px, 4vw, 44px)',
+            fontWeight: 800, letterSpacing: '-0.4px', color: P,
+            margin: '0 0 16px', lineHeight: 1.15,
+          }}>
+            Finally. An answer that isn&rsquo;t<br />&ldquo;increase your budget.&rdquo;
+          </h2>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
+          {TESTIMONIALS.map((t, i) => (
+            <div key={i} style={{
+              background: BgCard, border: `1px solid ${Pborder}`,
+              borderRadius: 20, padding: '28px 28px 24px',
+            }}>
+              <p style={{
+                fontSize: 15, lineHeight: 1.7, color: Pbody,
+                margin: '0 0 20px', fontStyle: 'italic',
+              }}>
+                &ldquo;{t.quote}&rdquo;
+              </p>
+              <p style={{ fontSize: 13, fontWeight: 600, color: Pmuted, margin: 0 }}>
+                — {t.author}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── FAQ ───────────────────────────────────────────────────────────────── */}
+      <section style={{ maxWidth: 640, margin: '0 auto', padding: '0 24px 100px' }}>
         <div style={{ textAlign: 'center', marginBottom: 48 }}>
           <h2 style={{
             fontFamily: 'var(--font-display)',
             fontSize: 'clamp(28px, 4vw, 40px)',
-            fontWeight: 800,
-            letterSpacing: '-0.4px',
-            color: P,
-            margin: '0 0 12px',
+            fontWeight: 800, letterSpacing: '-0.4px', color: P, margin: '0 0 12px',
           }}>
             You ask, we answer.
           </h2>
           <p style={{ fontSize: 16, color: Pbody }}>Everything you need to know.</p>
         </div>
 
-        {[
-          {
-            q: 'Is the diagnostic really free?',
-            a: 'Yes. Your first ICP diagnostic report is 100% free, no credit card required. You get a full 6-dimension breakdown and specific recommendations.',
-          },
-          {
-            q: 'How is this different from a generic marketing audit?',
-            a: 'We focus exclusively on your Ideal Customer Profile — the root cause behind most ad performance issues. Our model is calibrated by region, industry, and funnel type.',
-          },
-          {
-            q: 'How long does it take?',
-            a: 'The questionnaire takes 4–6 minutes. Your report is generated in under 30 seconds.',
-          },
-          {
-            q: 'What do I need before I start?',
-            a: "Just knowledge of your current ad campaigns — your offer, who you're targeting, your approximate spend, and what results you're getting. No spreadsheets needed.",
-          },
-        ].map((item, i) => (
-          <div key={i} style={{
-            borderBottom: `1px solid ${Pborder}`,
-            padding: '24px 0',
-          }}>
+        {FAQ.map((item, i) => (
+          <div key={i} style={{ borderBottom: `1px solid ${Pborder}`, padding: '24px 0' }}>
             <h3 style={{
               fontFamily: 'var(--font-display)',
-              fontSize: 16,
-              fontWeight: 700,
-              color: P,
-              letterSpacing: '-0.3px',
-              margin: '0 0 10px',
+              fontSize: 16, fontWeight: 700, color: P,
+              letterSpacing: '-0.3px', margin: '0 0 10px',
             }}>
               {item.q}
             </h3>
@@ -666,51 +608,38 @@ export default function Home() {
       <section style={{
         background: 'linear-gradient(160deg, #f0edff 0%, #e8e2ff 50%, #ede8ff 100%)',
         borderTop: `1px solid ${Pborder}`,
-        padding: '96px 24px',
-        textAlign: 'center',
+        padding: '96px 24px', textAlign: 'center',
       }}>
-        <div style={{ maxWidth: 600, margin: '0 auto' }}>
+        <div style={{ maxWidth: 640, margin: '0 auto' }}>
           <h2 style={{
             fontFamily: 'var(--font-display)',
             fontSize: 'clamp(32px, 5vw, 52px)',
-            fontWeight: 800,
-            letterSpacing: '-0.4px',
-            color: P,
-            margin: '0 0 20px',
-            lineHeight: 1.1,
+            fontWeight: 800, letterSpacing: '-0.4px', color: P,
+            margin: '0 0 20px', lineHeight: 1.1,
           }}>
-            Ready to take control of your spend?
+            Every month without a diagnosis is a month of budget you won&rsquo;t get back.
           </h2>
-          <p style={{ fontSize: 18, color: Pbody, maxWidth: 440, margin: '0 auto 40px', lineHeight: 1.65 }}>
-            Every day you run ads without a clear ICP is money handed to your competitors.
-            Five minutes now saves thousands later.
+          <p style={{ fontSize: 18, color: Pbody, maxWidth: 520, margin: '0 auto 40px', lineHeight: 1.65 }}>
+            You don&rsquo;t have a spending problem. You have a targeting problem. And it has a name,
+            a score, and a fix. Take 5 minutes right now and find out exactly what&rsquo;s breaking
+            your marketing — before your next campaign goes live.
           </p>
           <Link href="/questionnaire" style={{
-            display: 'inline-block',
-            background: P,
-            color: '#fff',
-            textDecoration: 'none',
-            fontWeight: 700,
-            fontSize: 17,
-            padding: '17px 40px',
-            borderRadius: 12,
-            letterSpacing: '-0.3px',
+            display: 'inline-block', background: P, color: '#fff',
+            textDecoration: 'none', fontWeight: 700, fontSize: 17,
+            padding: '17px 40px', borderRadius: 12, letterSpacing: '-0.3px',
             boxShadow: '0 12px 40px rgba(48,33,97,0.28)',
           }}>
-            Start My Free Diagnosis →
+            Get My Free Diagnosis →
           </Link>
           <p style={{ fontSize: 13, color: Pmuted, marginTop: 14 }}>
-            Takes 5 minutes · Instant results · Zero cost
+            Free · No credit card · No ad account access needed
           </p>
         </div>
       </section>
 
       {/* ── Footer ────────────────────────────────────────────────────────────── */}
-      <footer style={{
-        borderTop: `1px solid ${Pborder}`,
-        padding: '40px 24px',
-        background: '#fff',
-      }}>
+      <footer style={{ borderTop: `1px solid ${Pborder}`, padding: '40px 24px', background: '#fff' }}>
         <div style={{ maxWidth: 1040, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 26, height: 26, borderRadius: 7, background: 'linear-gradient(135deg, #302161 0%, #6c4ddd 100%)' }} />
@@ -730,7 +659,7 @@ export default function Home() {
             ))}
           </div>
           <p style={{ fontSize: 13, color: Pmuted, margin: 0 }}>
-            © {new Date().getFullYear()} ICP Brand. Built to stop wasted ad spend.
+            &copy; {new Date().getFullYear()} ICP Brand. Built to stop wasted ad spend.
           </p>
         </div>
       </footer>
