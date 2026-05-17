@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
-// ─── Types ──────────────────────────────────────────────────────────────────
+// ─── Types ───────────────────────────────────────────────────────────────────
 
 type User = {
   id: string
@@ -31,39 +31,7 @@ type DiagnosisData = {
   quick_wins?: Array<{ action: string; impact: string }>
 }
 
-type CsvAnalysis = {
-  summary?: string
-  top_performers?: Array<{ name: string; metric: string; insight: string }>
-  underperformers?: Array<{ name: string; metric: string; insight: string }>
-  budget_waste?: { estimated_waste_pct: number; explanation: string }
-  audience_insights?: string[]
-  recommendations?: Array<{ action: string; impact: string; effort: string }>
-  raw?: string
-}
-
-type Tab = 'overview' | 'reports' | 'csv' | 'benchmarks' | 'account'
-
-// ─── Constants ───────────────────────────────────────────────────────────────
-
-const TIER_COLORS: Record<string, string> = {
-  starter: 'text-indigo-400 bg-indigo-400/10 border border-indigo-400/30',
-  pro:     'text-purple-400 bg-purple-400/10 border border-purple-400/30',
-  agency:  'text-emerald-400 bg-emerald-400/10 border border-emerald-400/30',
-}
-
-const TIER_PRICES: Record<string, string> = {
-  starter: 'KES 6,500 / month',
-  pro:     'KES 13,000 / month',
-  agency:  'KES 26,000 / month',
-}
-
-const NAV: Array<{ id: Tab; label: string }> = [
-  { id: 'overview',   label: 'Overview' },
-  { id: 'reports',    label: 'Reports' },
-  { id: 'csv',        label: 'CSV Upload' },
-  { id: 'benchmarks', label: 'Benchmarks' },
-  { id: 'account',    label: 'Account' },
-]
+type Tab = 'overview' | 'progress' | 'account'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -78,115 +46,158 @@ function formatDate(iso: string): string {
 }
 
 function scoreColor(score: number): string {
-  if (score >= 70) return '#22c55e'
-  if (score >= 45) return '#f59e0b'
+  if (score >= 71) return '#22c55e'
+  if (score >= 41) return '#f59e0b'
   return '#ef4444'
 }
 
-function simpleParseCSV(text: string): { headers: string[]; rows: string[][] } {
-  const lines = text.trim().split('\n').filter(Boolean)
-  if (lines.length === 0) return { headers: [], rows: [] }
-  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''))
-  const rows = lines.slice(1).map(line =>
-    line.split(',').map(cell => cell.trim().replace(/^"|"$/g, ''))
-  )
-  return { headers, rows }
+function scoreBg(score: number): string {
+  if (score >= 71) return 'bg-emerald-500/10 border-emerald-500/20'
+  if (score >= 41) return 'bg-amber-500/10 border-amber-500/20'
+  return 'bg-red-500/10 border-red-500/20'
 }
 
-// ─── Small shared components ──────────────────────────────────────────────────
+function humanizeFinding(title: string): string {
+  const t = title.toLowerCase()
+  if (t.includes('icp') || t.includes('alignment') || t.includes('audience') || t.includes('targeting wrong'))
+    return "Your ads are reaching the wrong people — and it's costing you money"
+  if (t.includes('funnel') || t.includes('friction') || t.includes('drop'))
+    return "Too many steps before someone becomes a lead — most people give up"
+  if (t.includes('channel') || t.includes('platform') || t.includes('media mix'))
+    return "You're spending on the wrong channels for your audience"
+  if (t.includes('message') || t.includes('copy') || t.includes('creative') || t.includes('offer'))
+    return "Your message isn't resonating with the buyers you want"
+  if (t.includes('budget') || t.includes('waste') || t.includes('spend'))
+    return "A significant portion of your budget is being wasted"
+  if (t.includes('landing') || t.includes('page') || t.includes('website'))
+    return "Your landing page is losing leads before they convert"
+  return title
+}
 
-function CircleScore({ score }: { score: number }) {
-  const r = 54
-  const circ = 2 * Math.PI * r
-  const dash = (score / 100) * circ
+function kesImpact(severity: string): string {
+  if (severity === 'Critical') return 'Estimated waste: KES 50,000–200,000/month'
+  if (severity === 'Warning')  return 'Estimated missed revenue: KES 15,000–60,000/month'
+  return 'Potential gain: KES 10,000–40,000/month'
+}
+
+function getPositiveSignal(diag: DiagnosisData): string {
+  const opp = diag.findings?.find(f => f.severity === 'Opportunity')
+  if (opp) return opp.explanation
+
+  const best = diag.breakdown?.reduce((a, b) => a.score > b.score ? a : b)
+  if (best && best.score >= 60) {
+    const labels: Record<string, string> = {
+      'ICP Alignment':                   `Your target customer is clearly defined — that's your competitive edge.`,
+      'Targeting Accuracy':              `Your audience targeting is above average. You're reaching the right people.`,
+      'Channel Efficiency':              `Your channel selection is working. You're showing up where your audience is.`,
+      'Funnel Friction Index':           `Your funnel is relatively smooth. Leads are moving through cleanly.`,
+      'Message to Market Fit':           `Your messaging resonates with buyers. They understand what you're offering.`,
+      'Budget Reallocation Opportunity': `Your budget allocation is solid. Spend is going to the right places.`,
+    }
+    return labels[best.label] ?? `Your ${best.label.toLowerCase()} is performing above average.`
+  }
+
+  return "You completed your ICP diagnostic. Most businesses never take this step — you're already ahead."
+}
+
+const TIER_COLORS: Record<string, string> = {
+  starter: 'text-indigo-400 bg-indigo-400/10 border border-indigo-400/30',
+  pro:     'text-purple-400 bg-purple-400/10 border border-purple-400/30',
+  agency:  'text-emerald-400 bg-emerald-400/10 border border-emerald-400/30',
+}
+
+const TIER_PRICES: Record<string, string> = {
+  starter: 'KES 6,500 / month',
+  pro:     'KES 13,000 / month',
+  agency:  'KES 26,000 / month',
+}
+
+const TIER_FEATURES: Record<string, string> = {
+  starter: 'Monthly ICP diagnostic + full report with findings and quick wins.',
+  pro:     'Everything in Starter plus priority re-diagnosis and campaign CSV analysis.',
+  agency:  'Everything in Pro plus multi-client reporting and dedicated strategy review.',
+}
+
+// ─── Score count-up ───────────────────────────────────────────────────────────
+
+function ScoreDisplay({ score }: { score: number }) {
+  const [displayed, setDisplayed] = useState(0)
+  useEffect(() => {
+    let frame = 0
+    const total = 70
+    const id = setInterval(() => {
+      frame++
+      const eased = 1 - Math.pow(1 - frame / total, 3)
+      setDisplayed(Math.min(Math.round(eased * score), score))
+      if (frame >= total) clearInterval(id)
+    }, 16)
+    return () => clearInterval(id)
+  }, [score])
+  return <>{displayed}</>
+}
+
+// ─── Progress chart ───────────────────────────────────────────────────────────
+
+function ProgressChart({ data }: { data: Array<{ date: string; score: number }> }) {
+  const W = 600, H = 180, PX = 20, PY = 30
+  const innerW = W - PX * 2
+  const innerH = H - PY * 2
+
+  if (data.length < 2) return null
+
+  const pts = data.map((d, i) => ({
+    x: PX + (i / (data.length - 1)) * innerW,
+    y: PY + (1 - d.score / 100) * innerH,
+    ...d,
+  }))
+
+  const polyline = pts.map(p => `${p.x},${p.y}`).join(' ')
+  const area = [
+    `M${pts[0].x},${H - PY}`,
+    ...pts.map(p => `L${p.x},${p.y}`),
+    `L${pts[pts.length - 1].x},${H - PY}`,
+    'Z',
+  ].join(' ')
+
   return (
-    <div className="relative w-36 h-36">
-      <svg viewBox="0 0 120 120" className="w-full h-full -rotate-90">
-        <circle cx="60" cy="60" r={r} fill="none" stroke="#1e1e2e" strokeWidth="10" />
-        <circle
-          cx="60" cy="60" r={r} fill="none"
-          stroke={scoreColor(score)} strokeWidth="10"
-          strokeDasharray={`${dash} ${circ}`}
-          strokeLinecap="round"
-          style={{ transition: 'stroke-dasharray 1s ease' }}
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" aria-hidden>
+      <defs>
+        <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#6366f1" stopOpacity="0.25" />
+          <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      {[25, 50, 75].map(v => (
+        <line
+          key={v}
+          x1={PX} x2={W - PX}
+          y1={PY + (1 - v / 100) * innerH}
+          y2={PY + (1 - v / 100) * innerH}
+          stroke="white" strokeOpacity="0.05" strokeWidth="1"
         />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-3xl font-bold text-white">{score}</span>
-        <span className="text-xs text-gray-400">/ 100</span>
-      </div>
-    </div>
+      ))}
+      <path d={area} fill="url(#cg)" />
+      <polyline points={polyline} fill="none" stroke="#6366f1" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      {pts.map((p, i) => (
+        <g key={i}>
+          <circle cx={p.x} cy={p.y} r="6" fill="#6366f1" />
+          <circle cx={p.x} cy={p.y} r="3" fill="#0a0a0f" />
+          <text x={p.x} y={p.y - 12} textAnchor="middle" fill="white" fontSize="13" fontWeight="700">
+            {p.score}
+          </text>
+          <text x={p.x} y={H - 4} textAnchor="middle" fill="#6b7280" fontSize="11">
+            {new Date(p.date).toLocaleDateString('en-GB', { month: 'short', year: '2-digit' })}
+          </text>
+        </g>
+      ))}
+    </svg>
   )
 }
 
-function StatCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
-  return (
-    <div className="bg-white/5 border border-white/10 rounded-xl p-5">
-      <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">{label}</p>
-      <p className="text-2xl font-bold text-white">{value}</p>
-      {sub && <p className="text-xs text-gray-400 mt-0.5">{sub}</p>}
-    </div>
-  )
-}
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
 
-function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <div className="flex items-center justify-between py-2.5 border-b border-white/5 last:border-0">
-      <span className="text-sm text-gray-400">{label}</span>
-      <span className="text-sm text-white">{value}</span>
-    </div>
-  )
-}
-
-function BenchmarkRow({
-  label, unit, userValue, industryAvg, goodTarget, higherIsBetter,
-}: {
-  label: string; unit: string; userValue: number
-  industryAvg: number; goodTarget: number; higherIsBetter: boolean
-}) {
-  const max = Math.max(goodTarget, industryAvg, userValue) * 1.3
-  const userPct = Math.min((userValue / max) * 100, 100)
-  const indPct  = Math.min((industryAvg / max) * 100, 100)
-  const goodPct = Math.min((goodTarget / max) * 100, 100)
-  const isGood  = higherIsBetter ? userValue >= goodTarget : userValue <= goodTarget
-  const isMid   = higherIsBetter
-    ? userValue >= industryAvg && !isGood
-    : userValue <= industryAvg && !isGood
-  const barColor = isGood ? '#22c55e' : isMid ? '#f59e0b' : '#ef4444'
-  const fmt = (v: number) => unit === '$' ? `$${v}` : `${v}${unit}`
-
-  return (
-    <div className="space-y-2">
-      <div className="flex justify-between text-sm">
-        <span className="text-gray-300">{label}</span>
-        <span className="text-white font-medium" style={{ color: barColor }}>{fmt(userValue)}</span>
-      </div>
-      <div className="relative h-2.5 bg-white/5 rounded-full">
-        <div
-          className="absolute top-0 bottom-0 w-px bg-amber-400/60 z-10"
-          style={{ left: `${indPct}%` }}
-        />
-        <div
-          className="absolute top-0 bottom-0 w-px bg-emerald-400/60 z-10"
-          style={{ left: `${goodPct}%` }}
-        />
-        <div
-          className="h-full rounded-full transition-all duration-700"
-          style={{ width: `${userPct}%`, backgroundColor: barColor }}
-        />
-      </div>
-      <div className="flex gap-4 text-xs text-gray-500">
-        <span className="flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full bg-amber-400/60 inline-block" />
-          Industry avg: {fmt(industryAvg)}
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full bg-emerald-400/60 inline-block" />
-          Target: {fmt(goodTarget)}
-        </span>
-      </div>
-    </div>
-  )
+function Skeleton({ className }: { className?: string }) {
+  return <div className={`animate-pulse bg-white/5 rounded-2xl ${className ?? ''}`} />
 }
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
@@ -194,34 +205,20 @@ function BenchmarkRow({
 export default function DashboardPage() {
   const router = useRouter()
 
-  // Auth state
   const [authStep, setAuthStep]       = useState<'checking' | 'gate' | 'dashboard'>('checking')
   const [emailInput, setEmailInput]   = useState('')
   const [authError, setAuthError]     = useState('')
   const [authLoading, setAuthLoading] = useState(false)
+  const [user, setUser]               = useState<User | null>(null)
+  const [reports, setReports]         = useState<ReportRow[]>([])
+  const [dataLoading, setDataLoading] = useState(true)
+  const [activeTab, setActiveTab]     = useState<Tab>('overview')
+  const [fixExpanded, setFixExpanded] = useState(false)
+  const [cancelConfirm, setCancelConfirm] = useState(false)
 
-  // Dashboard state
-  const [user, setUser]                   = useState<User | null>(null)
-  const [reports, setReports]             = useState<ReportRow[]>([])
-  const [reportsLoading, setReportsLoading] = useState(false)
-  const [activeTab, setActiveTab]         = useState<Tab>('overview')
-  const [sidebarOpen, setSidebarOpen]     = useState(false)
-
-  // CSV state
-  const [csvFile, setCsvFile]           = useState<File | null>(null)
-  const [csvText, setCsvText]           = useState('')
-  const [csvParsed, setCsvParsed]       = useState<{ headers: string[]; rows: string[][] } | null>(null)
-  const [csvLoading, setCsvLoading]     = useState(false)
-  const [csvAnalysis, setCsvAnalysis]   = useState<CsvAnalysis | null>(null)
-  const [csvError, setCsvError]         = useState('')
-  const [dragOver, setDragOver]         = useState(false)
-
-  const fileInputRef = useRef<HTMLInputElement>(null)
-
-  // ── Auth ────────────────────────────────────────────────────────────────
+  // ── Auth ──────────────────────────────────────────────────────────────────
 
   const loadReports = useCallback(async (email: string) => {
-    setReportsLoading(true)
     try {
       const res = await fetch(`/api/user/reports?email=${encodeURIComponent(email)}`)
       if (res.ok) {
@@ -229,7 +226,7 @@ export default function DashboardPage() {
         setReports(json.reports ?? [])
       }
     } finally {
-      setReportsLoading(false)
+      setDataLoading(false)
     }
   }, [])
 
@@ -243,7 +240,6 @@ export default function DashboardPage() {
         body: JSON.stringify({ email }),
       })
       const json = await res.json()
-
       if (json.status === 'active') {
         localStorage.setItem('dashboard_email', email)
         setUser(json.user)
@@ -251,14 +247,11 @@ export default function DashboardPage() {
         loadReports(email)
       } else if (json.status === 'inactive') {
         localStorage.removeItem('dashboard_email')
-        if (!silent) {
-          router.push('/report/demo?message=Subscribe+to+unlock+your+dashboard')
-        } else {
-          setAuthStep('gate')
-        }
+        if (!silent) router.push('/report/demo?message=Subscribe+to+unlock+your+dashboard')
+        else setAuthStep('gate')
       } else {
         localStorage.removeItem('dashboard_email')
-        if (!silent) setAuthError('No active account found with that email. Please subscribe first.')
+        if (!silent) setAuthError('No active subscription found for that email.')
         setAuthStep('gate')
       }
     } catch {
@@ -271,145 +264,84 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const stored = localStorage.getItem('dashboard_email')
-    if (stored) {
-      verifyEmail(stored, true)
-    } else {
-      setAuthStep('gate')
-    }
+    if (stored) verifyEmail(stored, true)
+    else setAuthStep('gate')
   }, [verifyEmail])
-
-  const handleEmailSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (emailInput.trim()) verifyEmail(emailInput.trim())
-  }
 
   const handleSignOut = () => {
     localStorage.removeItem('dashboard_email')
     setUser(null)
     setReports([])
+    setDataLoading(true)
     setAuthStep('gate')
     setEmailInput('')
   }
 
-  // ── CSV handlers ─────────────────────────────────────────────────────────
+  // ── Derived data ───────────────────────────────────────────────────────────
 
-  const readFile = (file: File): Promise<string> =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onload = e => resolve((e.target?.result as string) ?? '')
-      reader.onerror = reject
-      reader.readAsText(file)
-    })
-
-  const handleFileSelect = async (file: File) => {
-    if (!file.name.toLowerCase().endsWith('.csv')) {
-      setCsvError('Please upload a .csv file.')
-      return
-    }
-    setCsvError('')
-    setCsvAnalysis(null)
-    setCsvFile(file)
-    const text = await readFile(file)
-    setCsvText(text)
-    setCsvParsed(simpleParseCSV(text))
-  }
-
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault()
-    setDragOver(false)
-    const file = e.dataTransfer.files?.[0]
-    if (file) handleFileSelect(file)
-  }
-
-  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) handleFileSelect(file)
-  }
-
-  const handleAnalyse = async () => {
-    if (!csvText) return
-    setCsvLoading(true)
-    setCsvError('')
-    try {
-      const res = await fetch('/api/csv-analysis', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ csvText: csvText.slice(0, 10000), fileName: csvFile?.name }),
-      })
-      const json = await res.json()
-      if (json.analysis) setCsvAnalysis(json.analysis)
-      else setCsvError('Analysis failed. Please try again.')
-    } catch {
-      setCsvError('Connection error. Please try again.')
-    } finally {
-      setCsvLoading(false)
-    }
-  }
-
-  // ── Derived data ─────────────────────────────────────────────────────────
-
-  const latestReport   = reports[0]
-  const prevReport     = reports[1]
+  const latestReport = reports[0]
+  const prevReport   = reports[1]
   const latestDiag: DiagnosisData = latestReport ? parseDiagnosis(latestReport.report_summary) : {}
   const prevDiag: DiagnosisData   = prevReport   ? parseDiagnosis(prevReport.report_summary)   : {}
 
-  const latestScore = latestDiag.health_score ?? null
-  const prevScore   = prevDiag.health_score ?? null
-  const scoreDiff   = latestScore !== null && prevScore !== null ? latestScore - prevScore : null
+  const latestScore  = latestDiag.health_score ?? null
+  const prevScore    = prevDiag.health_score ?? null
+  const scoreDiff    = latestScore !== null && prevScore !== null ? latestScore - prevScore : null
 
-  const daysActive = user
-    ? Math.floor((Date.now() - new Date(user.created_at).getTime()) / (1000 * 60 * 60 * 24))
-    : 0
+  const topFinding = latestDiag.findings?.find(f => f.severity === 'Critical')
+    ?? latestDiag.findings?.[0]
+  const positiveSignal = latestDiag.health_score !== undefined ? getPositiveSignal(latestDiag) : null
 
-  const getBreakdown = (label: string) =>
-    latestDiag.breakdown?.find(b => b.label === label)?.score ?? 50
+  const nextDiagDate = latestReport
+    ? new Date(new Date(latestReport.generated_at).getTime() + 30 * 24 * 60 * 60 * 1000)
+    : null
 
-  const channelScore = getBreakdown('Channel Efficiency')
-  const funnelScore  = getBreakdown('Funnel Friction Index')
-  const icpScore     = getBreakdown('ICP Alignment')
+  const chartData = reports
+    .slice()
+    .reverse()
+    .map(r => ({ date: r.generated_at, score: parseDiagnosis(r.report_summary).health_score ?? 0 }))
+    .filter(d => d.score > 0)
 
-  const estCTR = Number(((channelScore / 100) * 3.5 + 0.5).toFixed(2))
-  const estCPC = Number((3.5 - (channelScore / 100) * 2).toFixed(2))
-  const estCVR = Number(((funnelScore / 100) * 5.5 + 0.5).toFixed(2))
-  const estCPL = Number((80 - (icpScore / 100) * 50).toFixed(0))
+  // Milestones: score changes between consecutive reports
+  const milestones = reports.slice(0, -1).map((r, i) => {
+    const cur  = parseDiagnosis(r.report_summary).health_score ?? 0
+    const prev = parseDiagnosis(reports[i + 1].report_summary).health_score ?? 0
+    return { date: r.generated_at, score: cur, diff: cur - prev }
+  })
 
-  const tierLabel = (t: string) => t.charAt(0).toUpperCase() + t.slice(1)
+  const tierLabel = (t: string) => t ? t.charAt(0).toUpperCase() + t.slice(1) : ''
 
-  // ── Email Gate ───────────────────────────────────────────────────────────
+  // ── Email Gate ─────────────────────────────────────────────────────────────
 
   if (authStep === 'checking') {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
 
   if (authStep === 'gate') {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/20 rounded-full px-4 py-1.5 mb-6">
-              <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
-              <span className="text-indigo-300 text-xs font-medium tracking-widest uppercase">Subscriber Portal</span>
-            </div>
-            <h1 className="text-3xl font-bold text-white mb-2">Welcome back</h1>
-            <p className="text-gray-400">Enter your email to access your dashboard</p>
+      <div className="min-h-screen bg-[#0a0a0f] flex flex-col items-center justify-center p-6">
+        <div className="w-full max-w-sm">
+          <div className="flex items-center gap-2.5 justify-center mb-10">
+            <div className="w-7 h-7 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg" />
+            <span className="text-white font-bold text-xl">ICP Brand</span>
           </div>
 
-          <form onSubmit={handleEmailSubmit} className="bg-white/5 border border-white/10 rounded-2xl p-8 space-y-4">
-            <div>
-              <label className="block text-sm text-gray-400 mb-2">Email address</label>
-              <input
-                type="email"
-                value={emailInput}
-                onChange={e => setEmailInput(e.target.value)}
-                placeholder="you@company.com"
-                required
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 transition-colors"
-              />
-            </div>
+          <h1 className="text-2xl font-bold text-white text-center mb-1">Welcome back</h1>
+          <p className="text-gray-400 text-center text-sm mb-8">Enter your email to access your dashboard</p>
+
+          <form onSubmit={e => { e.preventDefault(); if (emailInput.trim()) verifyEmail(emailInput.trim()) }} className="space-y-3">
+            <input
+              type="email"
+              value={emailInput}
+              onChange={e => setEmailInput(e.target.value)}
+              placeholder="you@company.com"
+              required
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 transition-colors text-sm"
+            />
             {authError && (
               <p className="text-red-400 text-sm bg-red-400/10 border border-red-400/20 rounded-xl px-4 py-3">
                 {authError}
@@ -418,659 +350,475 @@ export default function DashboardPage() {
             <button
               type="submit"
               disabled={authLoading}
-              className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-semibold py-3 rounded-xl transition-colors"
+              className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-semibold py-3.5 rounded-xl transition-colors text-sm"
             >
-              {authLoading ? 'Checking...' : 'Access Dashboard →'}
+              {authLoading ? 'Checking…' : 'Access Dashboard →'}
             </button>
-            <p className="text-center text-sm text-gray-500">
-              No account?{' '}
-              <Link href="/questionnaire" className="text-indigo-400 hover:text-indigo-300">
-                Run your free diagnostic →
-              </Link>
-            </p>
           </form>
+
+          <p className="text-center text-sm text-gray-600 mt-6">
+            No account?{' '}
+            <Link href="/questionnaire" className="text-indigo-400 hover:text-indigo-300">
+              Run a free diagnostic →
+            </Link>
+          </p>
         </div>
       </div>
     )
   }
 
-  // ── Dashboard ─────────────────────────────────────────────────────────────
+  // ── Dashboard ───────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] flex">
-      {/* Mobile overlay */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/60 z-20 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+    <div className="min-h-screen bg-[#0a0a0f]">
 
-      {/* Sidebar */}
-      <aside className={`
-        fixed top-0 left-0 h-full w-64 bg-[#0d0d17] border-r border-white/5 z-30 flex flex-col
-        transition-transform duration-200
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-      `}>
-        <div className="p-6 border-b border-white/5">
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-7 h-7 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg shrink-0" />
-            <span className="text-white font-bold text-lg">ICP Brand</span>
-          </Link>
-        </div>
+      {/* ── Top Nav ── */}
+      <nav className="sticky top-0 z-20 bg-[#0a0a0f]/90 backdrop-blur-md border-b border-white/5">
+        <div className="max-w-2xl mx-auto px-4">
+          {/* Row 1: logo + user */}
+          <div className="flex items-center justify-between h-14">
+            <Link href="/" className="flex items-center gap-2">
+              <div className="w-6 h-6 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-md shrink-0" />
+              <span className="text-white font-bold text-base hidden sm:block">ICP Brand</span>
+            </Link>
 
-        <nav className="flex-1 p-4 space-y-0.5">
-          {NAV.map(item => (
-            <button
-              key={item.id}
-              onClick={() => { setActiveTab(item.id); setSidebarOpen(false) }}
-              className={`
-                w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-colors
-                ${activeTab === item.id
-                  ? 'bg-indigo-500/15 text-indigo-300'
-                  : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
-                }
-              `}
-            >
-              {item.label}
-            </button>
-          ))}
-        </nav>
-
-        <div className="p-4 border-t border-white/5">
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0">
-              <p className="text-sm font-medium text-white truncate">
-                {user?.full_name ?? user?.email}
-              </p>
-              <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+            <div className="flex items-center gap-3">
               {user?.subscription_tier && (
-                <span className={`mt-1.5 inline-block text-xs px-2 py-0.5 rounded-full font-medium ${TIER_COLORS[user.subscription_tier] ?? ''}`}>
+                <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full hidden sm:inline-flex ${TIER_COLORS[user.subscription_tier] ?? ''}`}>
                   {tierLabel(user.subscription_tier)}
                 </span>
               )}
+              <span className="text-sm text-gray-400 hidden sm:block truncate max-w-[140px]">
+                {user?.full_name ?? user?.email}
+              </span>
+              <button
+                onClick={handleSignOut}
+                className="text-xs text-gray-600 hover:text-gray-300 transition-colors border border-white/10 rounded-lg px-2.5 py-1.5"
+              >
+                Sign out
+              </button>
             </div>
-            <button
-              onClick={handleSignOut}
-              className="text-xs text-gray-600 hover:text-gray-300 shrink-0 mt-0.5 transition-colors"
-            >
-              Sign out
-            </button>
+          </div>
+
+          {/* Row 2: tabs */}
+          <div className="flex">
+            {(['overview', 'progress', 'account'] as Tab[]).map(tab => (
+              <button
+                key={tab}
+                onClick={() => { setActiveTab(tab); setFixExpanded(false); setCancelConfirm(false) }}
+                className={`
+                  flex-1 sm:flex-none sm:px-5 py-3 text-sm font-medium border-b-2 transition-colors capitalize
+                  ${activeTab === tab
+                    ? 'border-indigo-500 text-white'
+                    : 'border-transparent text-gray-500 hover:text-gray-300'
+                  }
+                `}
+              >
+                {tab}
+              </button>
+            ))}
           </div>
         </div>
-      </aside>
+      </nav>
 
-      {/* Main */}
-      <div className="lg:ml-64 flex-1 flex flex-col min-h-screen">
-        {/* Top bar */}
-        <div className="sticky top-0 z-10 bg-[#0a0a0f]/80 backdrop-blur-md border-b border-white/5 px-6 py-4 flex items-center gap-4">
-          <button
-            className="lg:hidden text-gray-400 hover:text-white transition-colors"
-            onClick={() => setSidebarOpen(true)}
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-          <h1 className="text-lg font-semibold text-white">
-            {NAV.find(n => n.id === activeTab)?.label}
-          </h1>
-        </div>
+      {/* ── Content ── */}
+      <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
 
-        {/* Content */}
-        <div className="flex-1 p-6">
-
-          {/* ── OVERVIEW ── */}
-          {activeTab === 'overview' && (
-            <div className="space-y-6 max-w-4xl">
-              <div>
-                <h2 className="text-2xl font-bold text-white">
-                  Welcome back, {user?.full_name?.split(' ')[0] ?? 'there'}
-                </h2>
-                <p className="text-gray-400 mt-1 text-sm">Here&apos;s a snapshot of your ICP performance</p>
-              </div>
-
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                {/* Score gauge */}
-                <div className="col-span-2 lg:col-span-1 bg-white/5 border border-white/10 rounded-xl p-6 flex flex-col items-center justify-center gap-2">
-                  {latestScore !== null ? (
-                    <>
-                      <CircleScore score={latestScore} />
-                      <p className="text-xs text-gray-400 text-center">ICP Health Score</p>
-                      {scoreDiff !== null && (
-                        <p className={`text-sm font-medium ${scoreDiff >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                          {scoreDiff >= 0 ? '↑' : '↓'} {Math.abs(scoreDiff)} vs last report
-                        </p>
-                      )}
-                    </>
-                  ) : (
-                    <div className="text-center">
-                      <p className="text-gray-500 text-sm mb-2">No diagnostic yet</p>
-                      <Link href="/questionnaire" className="text-indigo-400 text-sm hover:underline">
-                        Run one now →
-                      </Link>
-                    </div>
-                  )}
+        {/* ════════════════════════════════ OVERVIEW ════════════════════════════════ */}
+        {activeTab === 'overview' && (
+          <>
+            {/* Section 1 — The Number That Matters */}
+            <section className={`border rounded-3xl p-8 text-center ${latestScore !== null ? scoreBg(latestScore) : 'bg-white/5 border-white/10'}`}>
+              {dataLoading ? (
+                <div className="space-y-3">
+                  <Skeleton className="h-24 w-32 mx-auto" />
+                  <Skeleton className="h-5 w-64 mx-auto" />
                 </div>
-
-                <StatCard
-                  label="Total Reports"
-                  value={String(reports.length)}
-                  sub={reports.length === 1 ? '1 diagnostic run' : `${reports.length} diagnostics run`}
-                />
-                <StatCard
-                  label="Days Active"
-                  value={String(daysActive)}
-                  sub={user?.created_at ? `since ${formatDate(user.created_at)}` : ''}
-                />
-                <StatCard
-                  label="Next Renewal"
-                  value={user?.renewal_date ? formatDate(user.renewal_date) : '—'}
-                  sub={user?.subscription_tier ? TIER_PRICES[user.subscription_tier] : ''}
-                />
-              </div>
-
-              {latestDiag.findings && latestDiag.findings.length > 0 && (
-                <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold text-white">Latest Findings</h3>
-                    {latestReport && (
-                      <Link href={`/report/${latestReport.id}`} className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors">
-                        Full report →
-                      </Link>
-                    )}
+              ) : latestScore !== null ? (
+                <>
+                  <p className="text-xs text-gray-500 uppercase tracking-widest mb-4">ICP Health Score</p>
+                  <div
+                    className="text-8xl font-black leading-none"
+                    style={{ color: scoreColor(latestScore) }}
+                  >
+                    <ScoreDisplay key={latestScore} score={latestScore} />
                   </div>
-                  <div className="space-y-3">
-                    {latestDiag.findings.map((f, i) => (
-                      <div key={i} className="flex gap-3">
-                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 self-start mt-0.5 ${
-                          f.severity === 'Critical' ? 'bg-red-500/15 text-red-400' :
-                          f.severity === 'Warning'  ? 'bg-amber-500/15 text-amber-400' :
-                                                      'bg-emerald-500/15 text-emerald-400'
-                        }`}>
-                          {f.severity}
-                        </span>
-                        <div>
-                          <p className="text-sm font-medium text-white">{f.title}</p>
-                          <p className="text-xs text-gray-400 mt-0.5">{f.explanation}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {latestDiag.quick_wins && latestDiag.quick_wins.length > 0 && (
-                <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-                  <h3 className="font-semibold text-white mb-4">Quick Wins</h3>
-                  <div className="space-y-3">
-                    {latestDiag.quick_wins.map((qw, i) => (
-                      <div key={i} className="flex items-start gap-3">
-                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${
-                          qw.impact === 'High'   ? 'bg-indigo-500/15 text-indigo-400' :
-                          qw.impact === 'Medium' ? 'bg-purple-500/15 text-purple-400' :
-                                                   'bg-gray-500/15 text-gray-400'
-                        }`}>
-                          {qw.impact}
-                        </span>
-                        <p className="text-sm text-gray-300">{qw.action}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ── REPORTS ── */}
-          {activeTab === 'reports' && (
-            <div className="space-y-6 max-w-4xl">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-white">Your Reports</h2>
-                <Link
-                  href="/questionnaire"
-                  className="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors"
-                >
-                  + Run New Diagnosis
-                </Link>
-              </div>
-
-              {reportsLoading && (
-                <div className="flex justify-center py-12">
-                  <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-                </div>
-              )}
-
-              {!reportsLoading && reports.length === 0 && (
-                <div className="bg-white/5 border border-white/10 rounded-xl p-12 text-center">
-                  <p className="text-gray-400 mb-4">No diagnostic reports yet.</p>
+                  <p className="text-lg text-gray-300 mt-5 leading-snug">
+                    {scoreDiff === null
+                      ? 'This is your baseline. Here\'s where to focus first.'
+                      : scoreDiff > 0
+                        ? `Your score increased ${scoreDiff} points since last month`
+                        : scoreDiff < 0
+                          ? `Your score dropped ${Math.abs(scoreDiff)} points — here's why`
+                          : "Your score hasn't changed — here's what to focus on"
+                    }
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-4xl font-black text-gray-600">—</p>
+                  <p className="text-gray-500 mt-3 text-sm">No diagnostic yet</p>
                   <Link
                     href="/questionnaire"
-                    className="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-5 py-2.5 rounded-xl transition-colors inline-block"
+                    className="mt-4 inline-block bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-5 py-2.5 rounded-xl text-sm transition-colors"
                   >
                     Run your first diagnostic →
                   </Link>
-                </div>
+                </>
               )}
+            </section>
 
-              {!reportsLoading && reports.length > 0 && (
-                <div className="space-y-3">
-                  {reports.map((report, i) => {
-                    const d = parseDiagnosis(report.report_summary)
-                    const topFinding = d.findings?.[0]
-                    const circ = 2 * Math.PI * 20
-                    const score = d.health_score
-                    return (
-                      <Link
-                        key={report.id}
-                        href={`/report/${report.id}`}
-                        className="block bg-white/5 border border-white/10 hover:border-indigo-500/30 hover:bg-white/[0.07] rounded-xl p-5 transition-all"
-                      >
-                        <div className="flex items-center justify-between gap-4">
-                          <div className="flex items-center gap-4 min-w-0">
-                            <div className="w-12 h-12 shrink-0 relative">
-                              <svg viewBox="0 0 48 48" className="w-full h-full -rotate-90">
-                                <circle cx="24" cy="24" r="20" fill="none" stroke="#1e1e2e" strokeWidth="4" />
-                                {score !== undefined && (
-                                  <circle
-                                    cx="24" cy="24" r="20" fill="none"
-                                    stroke={scoreColor(score)} strokeWidth="4"
-                                    strokeDasharray={`${(score / 100) * circ} ${circ}`}
-                                    strokeLinecap="round"
-                                  />
-                                )}
-                              </svg>
-                              <div className="absolute inset-0 flex items-center justify-center">
-                                <span className="text-xs font-bold text-white">{score ?? '?'}</span>
-                              </div>
-                            </div>
-                            <div className="min-w-0">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <p className="text-sm font-medium text-white">
-                                  {i === 0 ? 'Latest Report' : `Report #${reports.length - i}`}
-                                </p>
-                                {i === 0 && (
-                                  <span className="text-xs bg-indigo-500/15 text-indigo-400 px-2 py-0.5 rounded-full">
-                                    Latest
-                                  </span>
-                                )}
-                              </div>
-                              <p className="text-xs text-gray-500">{formatDate(report.generated_at)}</p>
-                              {topFinding && (
-                                <p className="text-xs text-gray-400 mt-1 truncate">
-                                  Top finding: {topFinding.title}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                          <span className="text-gray-600 shrink-0">→</span>
-                        </div>
-                      </Link>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ── CSV UPLOAD ── */}
-          {activeTab === 'csv' && (
-            <div className="space-y-6 max-w-3xl">
-              <div>
-                <h2 className="text-xl font-bold text-white">CSV Analysis</h2>
-                <p className="text-gray-400 text-sm mt-1">
-                  Upload your ad campaign export and get AI-powered insights instantly.
+            {/* Section 2 — #1 Priority */}
+            {(dataLoading || topFinding) && (
+              <section className="bg-white/5 border border-white/10 rounded-3xl p-7">
+                <p className="text-xs text-red-400 uppercase tracking-widest mb-4 font-semibold">
+                  Your #1 Priority Right Now
                 </p>
-              </div>
 
-              <div
-                onDragOver={e => { e.preventDefault(); setDragOver(true) }}
-                onDragLeave={() => setDragOver(false)}
-                onDrop={handleDrop}
-                onClick={() => fileInputRef.current?.click()}
-                className={`
-                  border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-colors
-                  ${dragOver
-                    ? 'border-indigo-400 bg-indigo-500/5'
-                    : 'border-white/10 hover:border-white/25 bg-white/[0.02]'}
-                `}
-              >
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".csv"
-                  className="hidden"
-                  onChange={handleFileInput}
-                />
-                <svg className="w-10 h-10 text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                </svg>
-                {csvFile ? (
-                  <div>
-                    <p className="text-white font-medium">{csvFile.name}</p>
-                    <p className="text-gray-400 text-sm mt-1">
-                      {csvParsed ? `${csvParsed.rows.length} rows · ${csvParsed.headers.length} columns` : 'Parsing…'}
+                {dataLoading ? (
+                  <div className="space-y-3">
+                    <Skeleton className="h-8 w-full" />
+                    <Skeleton className="h-5 w-4/5" />
+                    <Skeleton className="h-5 w-3/5" />
+                    <Skeleton className="h-11 w-44 mt-2" />
+                  </div>
+                ) : topFinding ? (
+                  <>
+                    <h2 className="text-2xl font-bold text-white leading-snug">
+                      {humanizeFinding(topFinding.title)}
+                    </h2>
+                    <p className="text-gray-400 mt-3 leading-relaxed">{topFinding.explanation}</p>
+                    <p className="text-xs mt-2 font-medium" style={{ color: scoreColor(topFinding.severity === 'Critical' ? 20 : 50) }}>
+                      {kesImpact(topFinding.severity)}
                     </p>
+
+                    <button
+                      onClick={() => setFixExpanded(v => !v)}
+                      className="mt-5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors"
+                    >
+                      {fixExpanded ? 'Hide fix ↑' : 'See How To Fix This →'}
+                    </button>
+
+                    {fixExpanded && (
+                      <div className="mt-5 pt-5 border-t border-white/10 space-y-4">
+                        {latestDiag.quick_wins && latestDiag.quick_wins.length > 0 && (
+                          <div className="space-y-3">
+                            {latestDiag.quick_wins.map((qw, i) => (
+                              <div key={i} className="flex gap-3">
+                                <span className="w-6 h-6 rounded-full bg-indigo-500/20 text-indigo-400 text-xs font-bold flex items-center justify-center shrink-0">
+                                  {i + 1}
+                                </span>
+                                <div>
+                                  <p className="text-sm text-white">{qw.action}</p>
+                                  <p className="text-xs text-gray-500 mt-0.5">Impact: {qw.impact}</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {latestReport && (
+                          <Link
+                            href={`/report/${latestReport.id}`}
+                            className="inline-block text-sm text-indigo-400 hover:text-indigo-300 transition-colors"
+                          >
+                            View full analysis with all findings →
+                          </Link>
+                        )}
+                      </div>
+                    )}
+                  </>
+                ) : null}
+              </section>
+            )}
+
+            {/* Section 3 — What's Working */}
+            {(dataLoading || positiveSignal) && (
+              <section className="bg-emerald-500/10 border border-emerald-500/20 rounded-3xl p-7">
+                <p className="text-xs text-emerald-400 uppercase tracking-widest mb-3 font-semibold">
+                  What&apos;s Working
+                </p>
+                {dataLoading ? (
+                  <div className="space-y-2">
+                    <Skeleton className="h-5 w-full" />
+                    <Skeleton className="h-5 w-3/4" />
                   </div>
                 ) : (
-                  <div>
-                    <p className="text-gray-300 font-medium">Drop your CSV here, or click to browse</p>
-                    <p className="text-gray-500 text-sm mt-2">
-                      Supported: Google Ads export, Meta Ads export, custom CSV
-                    </p>
-                  </div>
+                  <p className="text-white text-lg leading-relaxed">{positiveSignal}</p>
                 )}
-              </div>
+              </section>
+            )}
 
-              {csvError && (
-                <p className="text-red-400 text-sm bg-red-400/10 border border-red-400/20 rounded-xl px-4 py-3">
-                  {csvError}
-                </p>
-              )}
-
-              {csvParsed && csvParsed.headers.length > 0 && !csvAnalysis && (
-                <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-                  <p className="text-xs text-gray-500 mb-3 uppercase tracking-wider">Preview (first 5 rows)</p>
-                  <div className="overflow-x-auto">
-                    <table className="text-xs text-gray-300 w-full">
-                      <thead>
-                        <tr>
-                          {csvParsed.headers.slice(0, 8).map((h, i) => (
-                            <th key={i} className="text-left pb-2 pr-6 text-gray-500 font-medium whitespace-nowrap">{h}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {csvParsed.rows.slice(0, 5).map((row, i) => (
-                          <tr key={i} className="border-t border-white/5">
-                            {row.slice(0, 8).map((cell, j) => (
-                              <td key={j} className="py-1.5 pr-6 whitespace-nowrap">{cell || '—'}</td>
-                            ))}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                    {csvParsed.headers.length > 8 && (
-                      <p className="text-xs text-gray-600 mt-2">+ {csvParsed.headers.length - 8} more columns</p>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {csvFile && !csvAnalysis && (
-                <button
-                  onClick={handleAnalyse}
-                  disabled={csvLoading}
-                  className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-semibold px-6 py-3 rounded-xl transition-colors flex items-center gap-2"
-                >
-                  {csvLoading && (
-                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  )}
-                  {csvLoading ? 'Analysing…' : 'Analyse with AI'}
-                </button>
-              )}
-
-              {csvAnalysis && (
-                <div className="space-y-4">
-                  {csvAnalysis.summary && (
-                    <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-5">
-                      <p className="text-xs font-semibold text-indigo-400 uppercase tracking-wider mb-2">Summary</p>
-                      <p className="text-gray-200 text-sm leading-relaxed">{csvAnalysis.summary}</p>
-                    </div>
-                  )}
-
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    {csvAnalysis.top_performers && csvAnalysis.top_performers.length > 0 && (
-                      <div className="bg-white/5 border border-white/10 rounded-xl p-5">
-                        <p className="text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-3">Top Performers</p>
-                        <div className="space-y-3">
-                          {csvAnalysis.top_performers.map((p, i) => (
-                            <div key={i}>
-                              <p className="text-sm text-white font-medium">{p.name}</p>
-                              <p className="text-xs text-emerald-400">{p.metric}</p>
-                              <p className="text-xs text-gray-400 mt-0.5">{p.insight}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {csvAnalysis.underperformers && csvAnalysis.underperformers.length > 0 && (
-                      <div className="bg-white/5 border border-white/10 rounded-xl p-5">
-                        <p className="text-xs font-semibold text-red-400 uppercase tracking-wider mb-3">Underperformers</p>
-                        <div className="space-y-3">
-                          {csvAnalysis.underperformers.map((p, i) => (
-                            <div key={i}>
-                              <p className="text-sm text-white font-medium">{p.name}</p>
-                              <p className="text-xs text-red-400">{p.metric}</p>
-                              <p className="text-xs text-gray-400 mt-0.5">{p.insight}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {csvAnalysis.budget_waste && (
-                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-5">
-                      <div className="flex items-center gap-3 mb-2">
-                        <p className="text-xs font-semibold text-amber-400 uppercase tracking-wider">Budget Waste</p>
-                        <span className="text-2xl font-bold text-amber-400">
-                          {csvAnalysis.budget_waste.estimated_waste_pct}%
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-300">{csvAnalysis.budget_waste.explanation}</p>
-                    </div>
-                  )}
-
-                  {csvAnalysis.audience_insights && csvAnalysis.audience_insights.length > 0 && (
-                    <div className="bg-white/5 border border-white/10 rounded-xl p-5">
-                      <p className="text-xs font-semibold text-purple-400 uppercase tracking-wider mb-3">Audience Insights</p>
-                      <ul className="space-y-2">
-                        {csvAnalysis.audience_insights.map((insight, i) => (
-                          <li key={i} className="text-sm text-gray-300 flex gap-2">
-                            <span className="text-purple-400 shrink-0">•</span>
-                            {insight}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  {csvAnalysis.recommendations && csvAnalysis.recommendations.length > 0 && (
-                    <div className="bg-white/5 border border-white/10 rounded-xl p-5">
-                      <p className="text-xs font-semibold text-white uppercase tracking-wider mb-3">Recommendations</p>
-                      <div className="space-y-3">
-                        {csvAnalysis.recommendations.map((rec, i) => (
-                          <div key={i} className="flex gap-3">
-                            <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${
-                              rec.impact === 'High'   ? 'bg-indigo-500/15 text-indigo-400' :
-                              rec.impact === 'Medium' ? 'bg-purple-500/15 text-purple-400' :
-                                                        'bg-gray-500/15 text-gray-400'
-                            }`}>
-                              {rec.impact}
-                            </span>
-                            <p className="text-sm text-gray-300">{rec.action}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <button
-                    onClick={() => {
-                      setCsvFile(null); setCsvText(''); setCsvParsed(null); setCsvAnalysis(null)
-                      if (fileInputRef.current) fileInputRef.current.value = ''
-                    }}
-                    className="text-sm text-gray-500 hover:text-gray-300 underline transition-colors"
-                  >
-                    Upload a different file
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ── BENCHMARKS ── */}
-          {activeTab === 'benchmarks' && (
-            <div className="space-y-6 max-w-3xl">
-              <div>
-                <h2 className="text-xl font-bold text-white">Industry Benchmarks</h2>
-                <p className="text-gray-400 text-sm mt-1">
-                  Estimated performance metrics derived from your ICP diagnostic scores.
-                </p>
-              </div>
-
-              {latestScore === null ? (
-                <div className="bg-white/5 border border-white/10 rounded-xl p-12 text-center">
-                  <p className="text-gray-400 mb-4">Run a diagnostic to unlock your benchmark comparison.</p>
-                  <Link
-                    href="/questionnaire"
-                    className="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-5 py-2.5 rounded-xl transition-colors inline-block"
-                  >
-                    Run diagnostic →
-                  </Link>
+            {/* Section 4 — Next Diagnosis */}
+            <section className="bg-white/5 border border-white/10 rounded-3xl p-7">
+              <p className="text-xs text-gray-500 uppercase tracking-widest mb-3 font-semibold">
+                Next Diagnosis
+              </p>
+              {dataLoading ? (
+                <div className="space-y-3">
+                  <Skeleton className="h-6 w-48" />
+                  <Skeleton className="h-11 w-52 mt-1" />
                 </div>
               ) : (
                 <>
-                  <div className="bg-white/5 border border-white/10 rounded-xl p-6 space-y-8">
-                    <BenchmarkRow
-                      label="Click-Through Rate"
-                      unit="%"
-                      userValue={estCTR}
-                      industryAvg={2.5}
-                      goodTarget={3.5}
-                      higherIsBetter
-                    />
-                    <BenchmarkRow
-                      label="Cost Per Click"
-                      unit="$"
-                      userValue={estCPC}
-                      industryAvg={2.2}
-                      goodTarget={1.5}
-                      higherIsBetter={false}
-                    />
-                    <BenchmarkRow
-                      label="Conversion Rate"
-                      unit="%"
-                      userValue={estCVR}
-                      industryAvg={3.2}
-                      goodTarget={5.0}
-                      higherIsBetter
-                    />
-                    <BenchmarkRow
-                      label="Cost Per Lead"
-                      unit="$"
-                      userValue={estCPL}
-                      industryAvg={45}
-                      goodTarget={30}
-                      higherIsBetter={false}
-                    />
-                  </div>
-
-                  <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-4">
-                    <p className="text-xs text-indigo-300 leading-relaxed">
-                      These estimates are derived from your ICP breakdown scores (Channel Efficiency: {channelScore},
-                      Funnel Friction: {funnelScore}, ICP Alignment: {icpScore}).
-                      Upload a CSV in the CSV tab for personalised comparisons against your actual campaign data.
-                    </p>
-                  </div>
-
-                  {latestDiag.breakdown && latestDiag.breakdown.length > 0 && (
-                    <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-                      <h3 className="text-sm font-semibold text-white mb-5">ICP Score Breakdown</h3>
-                      <div className="space-y-5">
-                        {latestDiag.breakdown.map((b, i) => (
-                          <div key={i}>
-                            <div className="flex justify-between text-sm mb-1.5">
-                              <span className="text-gray-300">{b.label}</span>
-                              <span className="font-medium" style={{ color: scoreColor(b.score) }}>{b.score}/100</span>
-                            </div>
-                            <div className="h-2 bg-white/5 rounded-full">
-                              <div
-                                className="h-full rounded-full transition-all duration-700"
-                                style={{ width: `${b.score}%`, backgroundColor: scoreColor(b.score) }}
-                              />
-                            </div>
-                            <p className="text-xs text-gray-500 mt-1">{b.found}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                  <p className="text-white font-medium text-lg">
+                    {nextDiagDate
+                      ? `Due ${formatDate(nextDiagDate.toISOString())}`
+                      : 'Ready whenever you are'
+                    }
+                  </p>
+                  <p className="text-gray-500 text-sm mt-1 mb-5">
+                    {nextDiagDate && nextDiagDate > new Date()
+                      ? 'Monthly re-diagnosis tracks your improvement over time.'
+                      : 'Run a new diagnostic to see how much you\'ve improved.'
+                    }
+                  </p>
+                  <Link
+                    href="/questionnaire"
+                    className="inline-block bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors"
+                  >
+                    Run New Diagnosis Now →
+                  </Link>
+                  <p className="mt-3 text-xs text-gray-600">
+                    Have campaign data?{' '}
+                    <Link href="/csv-analysis" className="text-indigo-500 hover:text-indigo-400">
+                      Upload a CSV for detailed analysis →
+                    </Link>
+                  </p>
                 </>
               )}
-            </div>
-          )}
+            </section>
+          </>
+        )}
 
-          {/* ── ACCOUNT ── */}
-          {activeTab === 'account' && (
-            <div className="space-y-6 max-w-2xl">
-              <h2 className="text-xl font-bold text-white">Account</h2>
+        {/* ════════════════════════════════ PROGRESS ════════════════════════════════ */}
+        {activeTab === 'progress' && (
+          <>
+            <h2 className="text-2xl font-bold text-white">Your Progress</h2>
 
-              <div className="bg-white/5 border border-white/10 rounded-xl p-6 space-y-1">
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Profile</p>
-                <InfoRow label="Full name"    value={user?.full_name   ?? '—'} />
-                <InfoRow label="Email"        value={user?.email       ?? '—'} />
-                <InfoRow label="Company"      value={user?.company_name ?? '—'} />
+            {dataLoading ? (
+              <div className="space-y-4">
+                <Skeleton className="h-48 w-full" />
+                <Skeleton className="h-24 w-full" />
+                <Skeleton className="h-24 w-full" />
               </div>
+            ) : chartData.length < 2 ? (
+              <section className="bg-white/5 border border-white/10 rounded-3xl p-10 text-center">
+                <p className="text-gray-400 mb-2">You need at least two diagnostics to see a trend.</p>
+                <p className="text-gray-600 text-sm mb-5">
+                  Run your next diagnosis after making changes to track improvement.
+                </p>
+                <Link
+                  href="/questionnaire"
+                  className="inline-block bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors"
+                >
+                  Run Diagnosis →
+                </Link>
+              </section>
+            ) : (
+              <>
+                {/* Chart */}
+                <section className="bg-white/5 border border-white/10 rounded-3xl p-6">
+                  <p className="text-xs text-gray-500 uppercase tracking-widest mb-4 font-semibold">Score Over Time</p>
+                  <ProgressChart data={chartData} />
+                </section>
 
-              <div className="bg-white/5 border border-white/10 rounded-xl p-6 space-y-1">
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Subscription</p>
-                <InfoRow
-                  label="Current plan"
-                  value={
-                    user?.subscription_tier ? (
+                {/* Milestones */}
+                {milestones.length > 0 && (
+                  <section className="bg-white/5 border border-white/10 rounded-3xl p-6">
+                    <p className="text-xs text-gray-500 uppercase tracking-widest mb-4 font-semibold">Milestones</p>
+                    <div className="space-y-3">
+                      {milestones.map((m, i) => (
+                        <div key={i} className="flex items-start gap-3">
+                          <span className={`text-sm font-bold ${m.diff > 0 ? 'text-emerald-400' : m.diff < 0 ? 'text-red-400' : 'text-gray-500'}`}>
+                            {m.diff > 0 ? `+${m.diff}` : m.diff < 0 ? String(m.diff) : '—'}
+                          </span>
+                          <p className="text-sm text-gray-300">
+                            <span className="text-gray-500">{formatDate(m.date)}</span>
+                            {' — '}
+                            {m.diff > 0
+                              ? `Score improved to ${m.score}. Keep applying the recommendations.`
+                              : m.diff < 0
+                                ? `Score dropped to ${m.score}. Review the latest findings.`
+                                : `Score held at ${m.score}.`
+                            }
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                {/* All reports */}
+                <section className="bg-white/5 border border-white/10 rounded-3xl p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <p className="text-xs text-gray-500 uppercase tracking-widest font-semibold">All Reports</p>
+                    <Link
+                      href="/questionnaire"
+                      className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
+                    >
+                      + New Diagnosis
+                    </Link>
+                  </div>
+                  <div className="space-y-2">
+                    {reports.map((r, i) => {
+                      const d = parseDiagnosis(r.report_summary)
+                      const score = d.health_score
+                      return (
+                        <Link
+                          key={r.id}
+                          href={`/report/${r.id}`}
+                          className="flex items-center justify-between py-3 border-b border-white/5 last:border-0 hover:opacity-80 transition-opacity"
+                        >
+                          <div>
+                            <p className="text-sm text-white font-medium">
+                              {i === 0 ? 'Latest report' : `Report — ${formatDate(r.generated_at)}`}
+                            </p>
+                            {i === 0 && (
+                              <p className="text-xs text-gray-500">{formatDate(r.generated_at)}</p>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {score !== undefined && (
+                              <span
+                                className="text-lg font-bold"
+                                style={{ color: scoreColor(score) }}
+                              >
+                                {score}
+                              </span>
+                            )}
+                            <span className="text-gray-600 text-sm">→</span>
+                          </div>
+                        </Link>
+                      )
+                    })}
+                  </div>
+                </section>
+              </>
+            )}
+          </>
+        )}
+
+        {/* ════════════════════════════════ ACCOUNT ════════════════════════════════ */}
+        {activeTab === 'account' && (
+          <>
+            <h2 className="text-2xl font-bold text-white">Account</h2>
+
+            {/* Profile */}
+            <section className="bg-white/5 border border-white/10 rounded-3xl p-6">
+              <p className="text-xs text-gray-500 uppercase tracking-widest mb-4 font-semibold">Profile</p>
+              <div className="space-y-4">
+                {[
+                  { label: 'Full name',    value: user?.full_name    ?? '—' },
+                  { label: 'Email',        value: user?.email        ?? '—' },
+                  { label: 'Company',      value: user?.company_name ?? '—' },
+                ].map(row => (
+                  <div key={row.label} className="flex justify-between items-center border-b border-white/5 pb-4 last:border-0 last:pb-0">
+                    <span className="text-sm text-gray-500">{row.label}</span>
+                    <span className="text-sm text-white font-medium">{row.value}</span>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Subscription */}
+            <section className="bg-white/5 border border-white/10 rounded-3xl p-6">
+              <p className="text-xs text-gray-500 uppercase tracking-widest mb-4 font-semibold">Subscription</p>
+              <div className="space-y-4">
+                <div className="flex justify-between items-start border-b border-white/5 pb-4">
+                  <span className="text-sm text-gray-500">Current plan</span>
+                  <div className="text-right">
+                    {user?.subscription_tier && (
                       <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${TIER_COLORS[user.subscription_tier] ?? ''}`}>
                         {tierLabel(user.subscription_tier)}
                       </span>
-                    ) : '—'
-                  }
-                />
-                <InfoRow label="Price"         value={user?.subscription_tier ? TIER_PRICES[user.subscription_tier] : '—'} />
-                <InfoRow
-                  label="Billing status"
-                  value={
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                      user?.billing_status === 'active'
-                        ? 'bg-emerald-500/15 text-emerald-400'
-                        : 'bg-red-500/15 text-red-400'
-                    }`}>
-                      {user?.billing_status ?? '—'}
-                    </span>
-                  }
-                />
-                <InfoRow label="Renewal date" value={user?.renewal_date ? formatDate(user.renewal_date) : '—'} />
+                    )}
+                    <p className="text-xs text-gray-600 mt-1.5 max-w-48 text-right leading-snug">
+                      {user?.subscription_tier ? TIER_FEATURES[user.subscription_tier] : ''}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center border-b border-white/5 pb-4">
+                  <span className="text-sm text-gray-500">Monthly price</span>
+                  <span className="text-sm text-white font-medium">
+                    {user?.subscription_tier ? TIER_PRICES[user.subscription_tier] : '—'}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center border-b border-white/5 pb-4">
+                  <span className="text-sm text-gray-500">Billing status</span>
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                    user?.billing_status === 'active'
+                      ? 'bg-emerald-500/15 text-emerald-400'
+                      : 'bg-red-500/15 text-red-400'
+                  }`}>
+                    {user?.billing_status ?? '—'}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-500">Next renewal</span>
+                  <span className="text-sm text-white font-medium">
+                    {user?.renewal_date ? formatDate(user.renewal_date) : '—'}
+                  </span>
+                </div>
               </div>
+            </section>
 
-              <div className="flex flex-col sm:flex-row gap-3">
+            {/* Actions */}
+            <div className="flex flex-col gap-3">
+              {user?.subscription_tier && user.subscription_tier !== 'agency' && (
                 <Link
                   href="/questionnaire"
-                  className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-5 py-2.5 rounded-xl transition-colors text-sm text-center"
+                  className="w-full text-center bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-5 py-3.5 rounded-2xl transition-colors text-sm"
                 >
-                  Upgrade Plan
+                  Upgrade to {user.subscription_tier === 'starter' ? 'Pro' : 'Agency'} →
                 </Link>
-                <button
-                  onClick={handleSignOut}
-                  className="bg-white/5 hover:bg-white/10 border border-white/10 text-gray-400 hover:text-white font-medium px-5 py-2.5 rounded-xl transition-colors text-sm"
-                >
-                  Sign out
-                </button>
-              </div>
+              )}
 
-              <div className="bg-red-500/5 border border-red-500/15 rounded-xl p-5">
-                <p className="text-sm font-medium text-red-400 mb-1">Cancel Subscription</p>
-                <p className="text-xs text-gray-500 leading-relaxed">
-                  To cancel, contact{' '}
-                  <a href="mailto:support@icpbrand.co" className="text-indigo-400 hover:underline">
-                    support@icpbrand.co
-                  </a>
-                  . Your access continues until your renewal date.
-                </p>
-              </div>
+              <button
+                onClick={handleSignOut}
+                className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-gray-400 hover:text-white font-medium px-5 py-3 rounded-2xl transition-colors text-sm"
+              >
+                Sign out
+              </button>
             </div>
-          )}
 
-        </div>
+            {/* Cancel */}
+            <section className="border border-red-500/15 rounded-3xl p-6">
+              <p className="text-sm font-semibold text-red-400 mb-1">Cancel Subscription</p>
+              {!cancelConfirm ? (
+                <>
+                  <p className="text-xs text-gray-500 mb-4 leading-relaxed">
+                    Your access continues until your renewal date. This cannot be undone.
+                  </p>
+                  <button
+                    onClick={() => setCancelConfirm(true)}
+                    className="text-sm text-red-400 hover:text-red-300 underline underline-offset-2 transition-colors"
+                  >
+                    Cancel my subscription
+                  </button>
+                </>
+              ) : (
+                <div className="space-y-3">
+                  <p className="text-sm text-white">Are you sure? You&apos;ll lose access at your next renewal date.</p>
+                  <div className="flex gap-3">
+                    <a
+                      href={`mailto:support@icpbrand.co?subject=Cancel subscription — ${user?.email}`}
+                      className="text-sm bg-red-500/15 hover:bg-red-500/25 text-red-400 font-medium px-4 py-2 rounded-xl transition-colors"
+                    >
+                      Yes, cancel →
+                    </a>
+                    <button
+                      onClick={() => setCancelConfirm(false)}
+                      className="text-sm text-gray-400 hover:text-white px-4 py-2 transition-colors"
+                    >
+                      Keep my subscription
+                    </button>
+                  </div>
+                </div>
+              )}
+            </section>
+          </>
+        )}
+
       </div>
     </div>
   )
