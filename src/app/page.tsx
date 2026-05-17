@@ -601,7 +601,7 @@ export default function Home() {
           </div>
 
           <p style={{ textAlign: 'center', fontSize: 14, color: Pmuted, marginTop: 28 }}>
-            Start with a free diagnostic. Upgrade only when you're ready.
+            Start with a free diagnostic. Upgrade only when you&rsquo;re ready.
           </p>
         </div>
       </section>
