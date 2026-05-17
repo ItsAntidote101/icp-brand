@@ -13,25 +13,40 @@ export async function POST(req: NextRequest) {
     profile?: { name?: string; email?: string; company?: string }
   }
 
-  // Silently capture the user before they see the report
+  // Upsert user record — every questionnaire completion lands in users table
+  let userId: string | null = null
   if (profile?.email) {
-    const { error: userError } = await supabase.from('users').upsert(
-      {
-        email:      profile.email,
-        name:       profile.name    ?? null,
-        company:    profile.company ?? null,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: 'email' }
-    )
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .upsert(
+        {
+          email:             profile.email,
+          full_name:         profile.name    ?? null,
+          company_name:      profile.company ?? null,
+          subscription_tier: 'free',
+          billing_status:    'inactive',
+          updated_at:        new Date().toISOString(),
+        },
+        { onConflict: 'email' }
+      )
+      .select('id')
+      .single()
+
     if (userError) {
       console.error('[questionnaire] users upsert error:', userError)
+    } else {
+      userId = userData?.id ?? null
     }
   }
 
+  // Save questionnaire answers, linked to user if we have their id
   const { data, error } = await supabase
     .from('questionnaires')
-    .insert([{ responses: answers ?? body, created_at: new Date().toISOString() }])
+    .insert([{
+      user_id:    userId,
+      responses:  answers ?? body,
+      created_at: new Date().toISOString(),
+    }])
     .select()
     .single()
 
