@@ -1,5 +1,7 @@
 import Link from 'next/link'
 
+export const dynamic = 'force-dynamic'
+
 // ─── Design tokens (matches Ohio Demo 9) ─────────────────────────────────────
 const P   = '#302161'                    // primary
 const Pbody = 'rgba(48,33,97,0.88)'     // body text
