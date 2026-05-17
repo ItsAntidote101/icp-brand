@@ -54,9 +54,23 @@ export async function GET(req: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
   )
 
+  // Fetch existing name so it is preserved (may have been set during questionnaire)
+  const { data: existingUser, error: lookupError } = await supabase
+    .from('users')
+    .select('name')
+    .eq('email', email)
+    .single()
+
+  if (lookupError && lookupError.code !== 'PGRST116') {
+    console.warn('[verify] users name lookup error:', lookupError)
+  } else {
+    console.log('[verify] existing user name:', existingUser?.name ?? '(none)')
+  }
+
   const renewalDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
   const upsertPayload = {
     email,
+    ...(existingUser?.name ? { name: existingUser.name } : {}),
     subscription_tier:  tier.toLowerCase(),
     billing_status:     'active',
     renewal_date:       renewalDate,

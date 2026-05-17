@@ -462,10 +462,36 @@ function YesNoInput({ value, onChange }: {
   )
 }
 
+// ── Welcome step email input ──────────────────────────────────────────────────
+
+function EmailFieldInput({ value, onChange, placeholder }: {
+  value: string
+  onChange: (v: string) => void
+  placeholder?: string
+}) {
+  return (
+    <input
+      type="email"
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      placeholder={placeholder}
+      className="w-full bg-white/5 border border-white/10 focus:border-indigo-500 rounded-xl px-4 py-3.5 text-white placeholder-slate-500 text-base outline-none transition-colors"
+    />
+  )
+}
+
 // ── Main Page ─────────────────────────────────────────────────────────────────
+
+interface Profile {
+  name: string
+  email: string
+  company: string
+}
 
 export default function QuestionnairePage() {
   const router = useRouter()
+  const [step, setStep] = useState<'welcome' | 'questions'>('welcome')
+  const [profile, setProfile] = useState<Profile>({ name: '', email: '', company: '' })
   const [current, setCurrent] = useState(0)
   const [answers, setAnswers] = useState<Answers>({})
   const [visible, setVisible] = useState(false)
@@ -525,7 +551,7 @@ export default function QuestionnairePage() {
       const qRes = await fetch('/api/questionnaire', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(answers),
+        body: JSON.stringify({ answers, profile }),
       })
       const qData = await qRes.json()
       if (!qRes.ok) throw new Error(qData.error || 'Failed to save questionnaire')
@@ -561,6 +587,97 @@ export default function QuestionnairePage() {
     1: 'border-indigo-500/40',
     2: 'border-violet-500/40',
     3: 'border-purple-500/40',
+  }
+
+  const welcomeValid =
+    profile.name.trim().length > 0 &&
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profile.email) &&
+    profile.company.trim().length > 0
+
+  if (step === 'welcome') {
+    return (
+      <div className="min-h-screen bg-[#0a0a0f] text-white flex flex-col">
+        <header className="border-b border-white/10 px-6 py-4 flex items-center justify-between max-w-3xl mx-auto w-full">
+          <a href="/" className="text-sm font-bold tracking-tight text-white">
+            ICP<span className="text-indigo-400">Diagnostic</span>
+          </a>
+          <span className="text-xs text-slate-500 font-medium">Step 1 of 4</span>
+        </header>
+
+        <div className="flex-1 flex flex-col justify-start max-w-3xl mx-auto w-full px-6 pt-10 pb-16">
+          <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest mb-4 px-2.5 py-1 rounded-full border border-indigo-500/40 text-indigo-400 bg-white/[0.03] w-fit">
+            Welcome
+          </span>
+
+          <h2 className="text-xl sm:text-2xl font-bold text-white mb-2 leading-snug">
+            Let&apos;s get started — tell us about yourself
+          </h2>
+          <p className="text-slate-400 text-sm mb-8">
+            This takes 5 minutes. Your answers are used only to personalise your diagnostic report.
+          </p>
+
+          <div className="space-y-5 mb-8">
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-widest text-slate-500 mb-2">
+                Full Name
+              </label>
+              <input
+                type="text"
+                value={profile.name}
+                onChange={e => setProfile(p => ({ ...p, name: e.target.value }))}
+                placeholder="Jane Smith"
+                autoFocus
+                className="w-full bg-white/5 border border-white/10 focus:border-indigo-500 rounded-xl px-4 py-3.5 text-white placeholder-slate-500 text-base outline-none transition-colors"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-widest text-slate-500 mb-2">
+                Email Address
+              </label>
+              <EmailFieldInput
+                value={profile.email}
+                onChange={v => setProfile(p => ({ ...p, email: v }))}
+                placeholder="jane@company.com"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-widest text-slate-500 mb-2">
+                Company Name
+              </label>
+              <input
+                type="text"
+                value={profile.company}
+                onChange={e => setProfile(p => ({ ...p, company: e.target.value }))}
+                placeholder="Acme Inc."
+                onKeyDown={e => { if (e.key === 'Enter' && welcomeValid) setStep('questions') }}
+                className="w-full bg-white/5 border border-white/10 focus:border-indigo-500 rounded-xl px-4 py-3.5 text-white placeholder-slate-500 text-base outline-none transition-colors"
+              />
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setStep('questions')}
+            disabled={!welcomeValid}
+            className={`sm:w-fit px-8 py-3 rounded-xl text-sm font-semibold transition-all ${
+              welcomeValid
+                ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/25 active:scale-95'
+                : 'bg-white/5 text-slate-600 cursor-not-allowed border border-white/5'
+            }`}
+          >
+            Get Started →
+          </button>
+
+          {!welcomeValid && (profile.name || profile.email || profile.company) && (
+            <p className="mt-3 text-xs text-slate-600">
+              Fill in all three fields to continue.
+            </p>
+          )}
+        </div>
+      </div>
+    )
   }
 
   return (
