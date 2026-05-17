@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 
-type QuestionType = 'text' | 'textarea' | 'select' | 'radio' | 'checkbox' | 'number' | 'slider' | 'yesno'
+type QuestionType = 'text' | 'url' | 'textarea' | 'select' | 'radio' | 'checkbox' | 'number' | 'slider' | 'yesno'
 
 interface Question {
   id: number
@@ -111,96 +111,122 @@ const QUESTIONS: Question[] = [
   },
   {
     id: 16, layer: 2, layerName: 'Targeting Mismatch',
+    question: 'What is the URL of your main landing page or primary traffic destination?',
+    type: 'url',
+    placeholder: 'https://yoursite.com/landing-page',
+  },
+  {
+    id: 17, layer: 2, layerName: 'Targeting Mismatch',
+    question: 'What is the primary geographic region you are targeting with ads?',
+    type: 'select',
+    options: [
+      'North America (US/Canada)',
+      'East Africa (Kenya, Tanzania, Uganda)',
+      'West Africa (Nigeria, Ghana)',
+      'South Africa',
+      'UK & Ireland',
+      'Europe (non-UK)',
+      'Middle East',
+      'Southeast Asia',
+      'South Asia (India/Pakistan)',
+      'Latin America',
+      'Australia & New Zealand',
+      'Global/Multiple Regions',
+    ],
+  },
+  {
+    id: 18, layer: 2, layerName: 'Targeting Mismatch',
     question: 'Describe your current ad targeting parameters — audiences, keywords, job titles, etc.',
     type: 'textarea',
     placeholder: 'e.g. Lookalike of buyers, keyword "CRM software", job title "Marketing Manager", retargeting visitors…',
   },
   {
-    id: 17, layer: 2, layerName: 'Targeting Mismatch',
+    id: 19, layer: 2, layerName: 'Targeting Mismatch',
     question: 'What is your total monthly ad spend across all channels?',
     type: 'radio',
     options: ['Under $1,000', '$1,000 – $5,000', '$5,000 – $20,000', '$20,000 – $100,000', '$100,000+'],
   },
   {
-    id: 18, layer: 2, layerName: 'Targeting Mismatch',
+    id: 20, layer: 2, layerName: 'Targeting Mismatch',
     question: 'How is your budget currently allocated across channels?',
     type: 'textarea',
     placeholder: 'e.g. 60% Meta, 30% Google Search, 10% LinkedIn…',
   },
   {
-    id: 19, layer: 2, layerName: 'Targeting Mismatch',
+    id: 21, layer: 2, layerName: 'Targeting Mismatch',
     question: 'How many leads did you generate in the last 3 months?',
     type: 'number',
     placeholder: 'Total leads across all channels',
   },
   {
-    id: 20, layer: 2, layerName: 'Targeting Mismatch',
+    id: 22, layer: 2, layerName: 'Targeting Mismatch',
     question: 'Of those leads, how many converted to paying customers?',
     type: 'number',
     placeholder: 'Total new customers in the same period',
   },
   {
-    id: 21, layer: 2, layerName: 'Targeting Mismatch',
+    id: 23, layer: 2, layerName: 'Targeting Mismatch',
     question: 'What is your current cost per acquisition (CPA)?',
     type: 'text',
     placeholder: 'e.g. $340 per customer, or "not tracked"',
   },
   {
-    id: 22, layer: 2, layerName: 'Targeting Mismatch',
+    id: 24, layer: 2, layerName: 'Targeting Mismatch',
     question: 'Do the leads you\'re currently generating match the profile of your best customers?',
     type: 'yesno',
   },
 
   // ── Layer 3 · Funnel Friction ─────────────────────────────────────────
   {
-    id: 23, layer: 3, layerName: 'Funnel Friction',
+    id: 25, layer: 3, layerName: 'Funnel Friction',
     question: 'What is the primary CTA (call-to-action) on your main landing page?',
     type: 'text',
     placeholder: 'e.g. "Book a Free Call", "Start Free Trial", "Get a Quote"…',
   },
   {
-    id: 24, layer: 3, layerName: 'Funnel Friction',
+    id: 26, layer: 3, layerName: 'Funnel Friction',
     question: 'How many steps does a visitor go through before becoming a lead or customer?',
     type: 'number',
     placeholder: 'e.g. 3',
   },
   {
-    id: 25, layer: 3, layerName: 'Funnel Friction',
+    id: 27, layer: 3, layerName: 'Funnel Friction',
     question: 'What form fields do you currently require from leads?',
     type: 'textarea',
     placeholder: 'e.g. First name, Email, Phone, Company name, Monthly budget, Message…',
   },
   {
-    id: 26, layer: 3, layerName: 'Funnel Friction',
+    id: 28, layer: 3, layerName: 'Funnel Friction',
     question: 'How easy is your landing page to use on a mobile device?',
     type: 'slider',
   },
   {
-    id: 27, layer: 3, layerName: 'Funnel Friction',
+    id: 29, layer: 3, layerName: 'Funnel Friction',
     question: 'What percentage of visitors who reach your form actually complete and submit it?',
     type: 'number',
     placeholder: 'Enter as a whole number, e.g. 12 for 12%',
   },
   {
-    id: 28, layer: 3, layerName: 'Funnel Friction',
+    id: 30, layer: 3, layerName: 'Funnel Friction',
     question: 'Have you ever tested reducing the number of form fields to improve completion rates?',
     type: 'yesno',
   },
   {
-    id: 29, layer: 3, layerName: 'Funnel Friction',
+    id: 31, layer: 3, layerName: 'Funnel Friction',
     question: 'What trust signals do you currently show on your landing page?',
     type: 'textarea',
     placeholder: 'e.g. Client logos, testimonials, case study results, money-back guarantee, certifications…',
   },
   {
-    id: 30, layer: 3, layerName: 'Funnel Friction',
+    id: 32, layer: 3, layerName: 'Funnel Friction',
     question: 'How clearly does your landing page communicate why you\'re different from every alternative?',
     type: 'slider',
   },
 ]
 
-const LAYER_STARTS = [0, 13, 22]
-const LAYER_LENGTHS = [13, 9, 8]
+// Layer 1: Q1–13 (13q), Layer 2: Q14–24 (11q), Layer 3: Q25–32 (8q)
+const LAYER_STARTS = [0, 13, 24]
+const LAYER_LENGTHS = [13, 11, 8]
 
 type Answers = Record<number, string | string[] | number>
 
@@ -220,6 +246,28 @@ function TextInput({ value, onChange, placeholder }: {
       autoFocus
       className="w-full bg-white/5 border border-white/10 focus:border-indigo-500 rounded-xl px-4 py-3.5 text-white placeholder-slate-500 text-base outline-none transition-colors"
     />
+  )
+}
+
+function UrlInput({ value, onChange, placeholder }: {
+  value: string
+  onChange: (v: string) => void
+  placeholder?: string
+}) {
+  return (
+    <div className="relative">
+      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm select-none pointer-events-none">
+        🔗
+      </span>
+      <input
+        type="url"
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        placeholder={placeholder}
+        autoFocus
+        className="w-full bg-white/5 border border-white/10 focus:border-indigo-500 rounded-xl pl-10 pr-4 py-3.5 text-white placeholder-slate-500 text-base outline-none transition-colors"
+      />
+    </div>
   )
 }
 
@@ -611,6 +659,9 @@ export default function QuestionnairePage() {
           <div className="mb-8">
             {q.type === 'text' && (
               <TextInput value={textVal} onChange={setAnswer} placeholder={q.placeholder} />
+            )}
+            {q.type === 'url' && (
+              <UrlInput value={textVal} onChange={setAnswer} placeholder={q.placeholder} />
             )}
             {q.type === 'textarea' && (
               <TextareaInput value={textVal} onChange={setAnswer} placeholder={q.placeholder} />
