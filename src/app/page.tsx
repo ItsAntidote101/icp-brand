@@ -227,15 +227,13 @@ export default function Home() {
           </div>
 
           {/* illustration — right column */}
-          <div className="lg:flex-1" style={{ position: 'relative', display: 'flex', alignItems: 'flex-end', minHeight: 320 }}>
-            {/* tilted gradient background */}
-            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, #ff6eb4 0%, #a855f7 50%, #7c3aed 100%)', borderRadius: 32, transform: 'rotate(-2deg)', transformOrigin: 'bottom center' }} />
+          <div className="lg:flex-1" style={{ background: 'linear-gradient(135deg,#f5f3ff 0%,#ede9fe 60%,#ddd6fe 100%)', borderRadius: '24px 24px 0 0', display: 'flex', alignItems: 'flex-end', overflow: 'hidden', minHeight: 320 }}>
             <Image
               src="/images/Holder.png"
               alt="ICP Diagnostic Dashboard"
               width={700}
               height={600}
-              style={{ width: '100%', height: 'auto', display: 'block', position: 'relative', zIndex: 1, transform: 'rotate(2deg)', transformOrigin: 'bottom center' }}
+              style={{ width: '100%', height: 'auto', display: 'block' }}
               priority
             />
           </div>
@@ -243,7 +241,7 @@ export default function Home() {
       </section>
 
       {/* ── Logo trust bar ────────────────────────────────────────────────── */}
-      <div style={{ background: BgAlt, borderTop: `1px solid ${Pborder}`, borderBottom: `1px solid ${Pborder}`, padding: '60px 0', overflow: 'hidden' }}>
+      <div style={{ background: '#fff', borderTop: `1px solid ${Pborder}`, borderBottom: `1px solid ${Pborder}`, padding: '32px 0', overflow: 'hidden' }}>
         <div className="container">
           <p style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', color: Pmuted, marginBottom: 20 }}>
             Trusted by teams at:
@@ -312,7 +310,7 @@ export default function Home() {
       </section>
 
       {/* Block 2 — Text LEFT, Visual RIGHT */}
-      <section className="section-pad" style={{ background: '#ffffff', position: 'relative', overflow: 'hidden' }}>
+      <section className="section-pad" style={{ background: BgAlt, position: 'relative', overflow: 'hidden' }}>
         <div className="container grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-20 items-center">
           {/* text */}
           <div>
@@ -494,7 +492,7 @@ export default function Home() {
       </section>
 
       {/* ── Stats bar ─────────────────────────────────────────────────────── */}
-      <section className="section-pad" style={{ background: '#ffffff', borderTop: `1px solid ${Pborder}` }}>
+      <section className="section-pad" style={{ background: BgAlt, borderTop: `1px solid ${Pborder}` }}>
         <div className="container">
           <h2 style={{ fontFamily: font, fontSize: 'clamp(32px,4vw,48px)', fontWeight: 700, color: P, letterSpacing: '-0.03em', lineHeight: 1.1, textAlign: 'center', margin: '0 0 48px' }}>
             Why it matters now.
@@ -524,7 +522,7 @@ export default function Home() {
       </section>
 
       {/* ── Lead magnet ───────────────────────────────────────────────────── */}
-      <section className="section-pad" style={{ background: '#ffffff', borderTop: `1px solid ${Pborder}` }}>
+      <section className="section-pad" style={{ background: '#ede9fe', borderTop: `1px solid ${Pborder}` }}>
         <div className="container">
           <div className="flex flex-col md:flex-row items-center gap-10 p-6 md:p-12" style={{ background: '#fff', borderRadius: 24, boxShadow: '0 8px 40px rgba(48,33,97,0.1)', maxWidth: 860, margin: '0 auto' }}>
             <div style={{ flex: 1 }}>
@@ -548,7 +546,7 @@ export default function Home() {
       </section>
 
       {/* ── Pricing ───────────────────────────────────────────────────────── */}
-      <section id="pricing" className="section-pad" style={{ background: '#ffffff', borderTop: `1px solid ${Pborder}` }}>
+      <section id="pricing" className="section-pad" style={{ background: BgAlt, borderTop: `1px solid ${Pborder}` }}>
         <div className="container">
           <div style={{ textAlign: 'center', marginBottom: 64 }}>
             <Badge text="Simple Pricing" />
@@ -562,7 +560,7 @@ export default function Home() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" style={{ alignItems: 'start' }}>
             {TIERS.map(tier => (
-              <div key={tier.name} style={{ background: tier.highlight ? 'linear-gradient(160deg, #302161 0%, #4c1d95 100%)' : '#fff', border: `1px solid ${tier.highlight ? 'transparent' : Pborder}`, borderRadius: 20, padding: '36px 28px', boxShadow: tier.highlight ? '0 20px 56px rgba(48,33,97,0.28)' : 'none', position: 'relative' }}>
+              <div key={tier.name} style={{ background: tier.highlight ? P : '#fff', border: `1px solid ${tier.highlight ? 'transparent' : Pborder}`, borderRadius: 20, padding: '36px 28px', boxShadow: tier.highlight ? '0 20px 56px rgba(48,33,97,0.28)' : 'none', position: 'relative' }}>
                 {tier.highlight && (
                   <div style={{ position: 'absolute', top: -13, left: '50%', transform: 'translateX(-50%)', background: 'linear-gradient(135deg,#a78bfa,#6c4ddd)', color: '#fff', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.6px', padding: '4px 16px', borderRadius: 100, whiteSpace: 'nowrap' }}>
                     Most Popular
@@ -634,7 +632,7 @@ export default function Home() {
       </section>
 
       {/* ── Social Proof ──────────────────────────────────────────────────── */}
-      <section id="results" className="section-pad" style={{ background: '#ffffff', borderTop: `1px solid ${Pborder}` }}>
+      <section id="results" className="section-pad" style={{ background: BgAlt, borderTop: `1px solid ${Pborder}` }}>
         <div className="container">
 
           {/* header */}
@@ -720,70 +718,62 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Team — full-bleed photo ───────────────────────────────────────── */}
-      <section style={{ position: 'relative', height: 600, overflow: 'hidden' }}>
-        <Image
-          src="/images/section.jpg"
-          alt="Marketing team at work"
-          fill
-          style={{ objectFit: 'cover', objectPosition: 'center' }}
-        />
-        {/* dark overlay */}
-        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)' }} />
-        {/* centered text */}
-        <div style={{ position: 'relative', zIndex: 1, height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ textAlign: 'center', color: '#fff', maxWidth: 680, padding: '0 40px' }}>
-            <div style={{ display: 'inline-block', background: 'rgba(255,255,255,0.15)', color: '#fff', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', padding: '5px 14px', borderRadius: 100, marginBottom: 24, backdropFilter: 'blur(8px)' }}>
-              Who Built This
+      {/* ── Team ──────────────────────────────────────────────────────────── */}
+      <section className="section-pad" style={{ background: '#fff', borderTop: `1px solid ${Pborder}` }}>
+        <div className="container">
+          <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-20">
+            <div style={{ flex: 1 }}>
+              <Badge text="Who Built This" />
+              <H2>Built by someone who has managed over $2M in ad spend.</H2>
+              <Body style={{ maxWidth: 520 }}>
+                This platform was built by a performance media buyer who got tired of watching
+                clients waste money on the wrong audience. Every diagnostic rule, every
+                recommendation, every insight comes from real campaign experience — not theory.
+              </Body>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 12, background: BgPurple, border: `1px solid ${Pborder}`, borderRadius: 16, padding: '14px 20px' }}>
+                <div style={{ width: 44, height: 44, borderRadius: '50%', background: `linear-gradient(135deg,${P},#6c4ddd)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <span style={{ color: '#fff', fontSize: 14, fontWeight: 700, fontFamily: font }}>EK</span>
+                </div>
+                <div>
+                  <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: P }}>Eugene Kwata</p>
+                  <p style={{ margin: 0, fontSize: 12, color: Pbody }}>Founder &amp; Lead Media Buyer</p>
+                </div>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#ede9fe', padding: '4px 10px', borderRadius: 100, marginLeft: 8 }}>
+                  <MapPin size={11} color={P} />
+                  <span style={{ fontSize: 11, fontWeight: 600, color: P }}>Nairobi, Kenya</span>
+                </div>
+              </div>
             </div>
-            <h2 style={{ fontFamily: font, fontSize: 'clamp(28px,4vw,44px)', fontWeight: 700, letterSpacing: '-0.03em', color: '#fff', lineHeight: 1.1, margin: '0 0 20px' }}>
-              Built by someone who has managed over $2M in ad spend.
-            </h2>
-            <p style={{ fontFamily: fontBody, fontSize: 17, lineHeight: 1.7, color: 'rgba(255,255,255,0.82)', margin: '0 0 32px' }}>
-              Every diagnostic rule, every recommendation, every insight comes from real campaign experience — not theory.
-            </p>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 12, background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)', borderRadius: 100, padding: '12px 20px', backdropFilter: 'blur(12px)' }}>
-              <div style={{ width: 36, height: 36, borderRadius: '50%', background: `linear-gradient(135deg,${P},#6c4ddd)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <span style={{ color: '#fff', fontSize: 12, fontWeight: 700, fontFamily: font }}>EK</span>
-              </div>
-              <div style={{ textAlign: 'left' }}>
-                <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#fff' }}>Eugene Kwata</p>
-                <p style={{ margin: 0, fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>Founder &amp; Lead Media Buyer</p>
-              </div>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(255,255,255,0.15)', padding: '4px 10px', borderRadius: 100, marginLeft: 4 }}>
-                <MapPin size={11} color="#fff" />
-                <span style={{ fontSize: 11, fontWeight: 600, color: '#fff' }}>Nairobi, Kenya</span>
-              </div>
+            <div style={{ flexShrink: 0, borderRadius: 24, overflow: 'hidden', boxShadow: '0 16px 56px rgba(48,33,97,0.13)' }}>
+              <Image
+                src="/images/section.jpg"
+                alt="Marketing team at work"
+                width={480}
+                height={340}
+                style={{ width: 480, maxWidth: '100%', height: 'auto', display: 'block' }}
+              />
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── Bottom CTA — full-bleed photo background ─────────────────────── */}
-      <section className="section-pad" style={{ position: 'relative', overflow: 'hidden', textAlign: 'center' }}>
-        <Image
-          src="/images/section.jpg"
-          alt=""
-          fill
-          style={{ objectFit: 'cover', objectPosition: 'center' }}
-        />
-        {/* dark overlay */}
-        <div style={{ position: 'absolute', inset: 0, background: 'rgba(48,33,97,0.85)' }} />
-        <div className="container" style={{ position: 'relative', zIndex: 1 }}>
-          <div style={{ maxWidth: 640, margin: '0 auto' }}>
-            <h2 style={{ fontFamily: font, fontSize: 'clamp(32px,5vw,52px)', fontWeight: 700, letterSpacing: '-0.03em', color: '#fff', margin: '0 0 20px', lineHeight: 1.1 }}>
-              Every month without a diagnosis is a month of budget you won&rsquo;t get back.
-            </h2>
-            <p style={{ fontFamily: fontBody, fontSize: 17, color: 'rgba(255,255,255,0.8)', maxWidth: 520, margin: '0 auto 44px', lineHeight: 1.7 }}>
-              You don&rsquo;t have a spending problem. You have a targeting problem. And it has a name, a score, and a fix.
-            </p>
-            <Link href="/questionnaire" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#fff', color: P, textDecoration: 'none', fontWeight: 700, fontSize: 17, padding: '17px 40px', borderRadius: 12, letterSpacing: '-0.3px', boxShadow: '0 12px 40px rgba(0,0,0,0.2)' }}>
-              Get My Free Diagnosis <ArrowRight size={18} />
-            </Link>
-            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', marginTop: 16 }}>
-              Free &middot; No credit card &middot; No ad account access needed
-            </p>
-          </div>
+      {/* ── Bottom CTA ────────────────────────────────────────────────────── */}
+      <section className="section-pad" style={{ background: 'linear-gradient(160deg,#f0edff 0%,#e8e2ff 50%,#ede8ff 100%)', borderTop: `1px solid ${Pborder}`, textAlign: 'center' }}>
+        <div className="container">
+        <div style={{ maxWidth: 640, margin: '0 auto' }}>
+          <h2 style={{ fontFamily: font, fontSize: 'clamp(32px,5vw,52px)', fontWeight: 700, letterSpacing: '-0.03em', color: P, margin: '0 0 20px', lineHeight: 1.1 }}>
+            Every month without a diagnosis is a month of budget you won&rsquo;t get back.
+          </h2>
+          <p style={{ fontFamily: fontBody, fontSize: 17, color: 'rgba(48,33,97,0.75)', maxWidth: 520, margin: '0 auto 44px', lineHeight: 1.7 }}>
+            You don&rsquo;t have a spending problem. You have a targeting problem. And it has a name, a score, and a fix.
+          </p>
+          <Link href="/questionnaire" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: P, color: '#fff', textDecoration: 'none', fontWeight: 700, fontSize: 17, padding: '17px 40px', borderRadius: 12, letterSpacing: '-0.3px', boxShadow: '0 12px 40px rgba(48,33,97,0.25)' }}>
+            Get My Free Diagnosis <ArrowRight size={18} />
+          </Link>
+          <p style={{ fontSize: 13, color: Pmuted, marginTop: 16 }}>
+            Free &middot; No credit card &middot; No ad account access needed
+          </p>
+        </div>
         </div>
       </section>
 
