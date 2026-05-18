@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
-  FileSearch, Lock, ArrowRight, TrendingUp, TrendingDown,
+  FileSearch, ArrowRight, TrendingUp, TrendingDown,
   BarChart2, User, FileText, LayoutDashboard, Zap, AlertCircle,
   Check, ChevronDown, ChevronUp,
 } from 'lucide-react'
@@ -17,6 +17,16 @@ const Pborder = 'rgba(48,33,97,0.08)'
 const BgAlt   = '#f8f7ff'
 const font    = "'PolySans Median', -apple-system, system-ui, sans-serif"
 const fontB   = "'PolySans Neutral', -apple-system, system-ui, sans-serif"
+
+// ─── Currency ─────────────────────────────────────────────────────────────────
+const USD_RATES: Record<string, number> = { KES: 129, NGN: 1580, ZAR: 18.5, USD: 1, GBP: 0.79, EUR: 0.92 }
+const CURRENCIES = ['KES', 'NGN', 'ZAR', 'USD', 'GBP', 'EUR']
+
+function convertAmount(amount: number, fromCurrency: string, toCurrency: string): string {
+  const inUSD     = amount / (USD_RATES[fromCurrency] ?? 1)
+  const converted = inUSD * (USD_RATES[toCurrency] ?? 1)
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: toCurrency, maximumFractionDigits: 0 }).format(converted)
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Tab = 'overview' | 'reports' | 'account'
@@ -57,13 +67,13 @@ const formatDate = (iso: string) =>
 const daysBetween = (iso: string) =>
   Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000)
 
-const scoreColor    = (s: number) => s >= 71 ? '#22c55e' : s >= 41 ? '#f59e0b' : '#ef4444'
-const scoreLabel    = (s: number) => s >= 71 ? 'Healthy' : s >= 41 ? 'At Risk' : 'Critical'
-const scoreLabelBg  = (s: number) => s >= 71 ? '#dcfce7' : s >= 41 ? '#fef3c7' : '#fee2e2'
-const severityColor = (s: string) => s === 'Critical' ? '#ef4444' : s === 'Warning' ? '#f59e0b' : '#22c55e'
-const severityBg    = (s: string) => s === 'Critical' ? '#fee2e2' : s === 'Warning' ? '#fef3c7' : '#dcfce7'
-const impactColor   = (i: string) => i === 'High' ? '#ef4444' : i === 'Medium' ? '#d97706' : '#16a34a'
-const impactBg      = (i: string) => i === 'High' ? '#fee2e2' : i === 'Medium' ? '#fef3c7' : '#dcfce7'
+const scoreColor   = (s: number) => s >= 71 ? '#22c55e' : s >= 41 ? '#f59e0b' : '#ef4444'
+const scoreLabel   = (s: number) => s >= 71 ? 'Healthy' : s >= 41 ? 'At Risk' : 'Critical'
+const scoreLabelBg = (s: number) => s >= 71 ? '#dcfce7' : s >= 41 ? '#fef3c7' : '#fee2e2'
+const sevColor     = (s: string) => s === 'Critical' ? '#ef4444' : s === 'Warning' ? '#f59e0b' : '#22c55e'
+const sevBg        = (s: string) => s === 'Critical' ? '#fee2e2' : s === 'Warning' ? '#fef3c7' : '#dcfce7'
+const impactColor  = (i: string) => i === 'High' ? '#ef4444' : i === 'Medium' ? '#d97706' : '#16a34a'
+const impactBg     = (i: string) => i === 'High' ? '#fee2e2' : i === 'Medium' ? '#fef3c7' : '#dcfce7'
 
 function greeting(name: string | null) {
   const h = new Date().getHours()
@@ -71,16 +81,20 @@ function greeting(name: string | null) {
   return `Good ${t}, ${name?.split(' ')[0] ?? 'there'}.`
 }
 
-function parseWaste(text: string | undefined): { prefix: string; amount: number; raw: string } {
-  if (!text || text.startsWith('Upgrade')) return { prefix: '', amount: 0, raw: '—' }
-  const m = text.match(/(KES|USD|\$|€|£)\s*([\d,]+)/i)
-  if (m) return { prefix: m[1].toUpperCase(), amount: parseInt(m[2].replace(/,/g, ''), 10), raw: text }
-  return { prefix: '', amount: 0, raw: text.length > 28 ? text.slice(0, 28) + '…' : text }
+function parseWaste(text: string | undefined): { fromCurrency: string; amount: number; raw: string } {
+  if (!text || text.startsWith('Upgrade')) return { fromCurrency: 'KES', amount: 0, raw: '—' }
+  const symMap: Record<string, string> = { '$': 'USD', '€': 'EUR', '£': 'GBP' }
+  const m = text.match(/(KES|NGN|ZAR|USD|GBP|EUR|\$|€|£)\s*([\d,]+)/i)
+  if (m) {
+    const fromCurrency = symMap[m[1]] ?? m[1].toUpperCase()
+    return { fromCurrency, amount: parseInt(m[2].replace(/,/g, ''), 10), raw: text }
+  }
+  return { fromCurrency: 'KES', amount: 0, raw: text.length > 28 ? text.slice(0, 28) + '…' : text }
 }
 
-const DIMS    = ['Audience Targeting', 'Landing Page', 'Message-Market Fit', 'Budget Allocation', 'Funnel Conversion', 'Creative Relevance']
-const DVAR    = [10, -15, 5, -8, 12, -5]
-const DPEN    = [0.8, 1.2, 0.6, 1.0, 0.9, 0.7]
+const DIMS = ['Audience Targeting', 'Landing Page', 'Message-Market Fit', 'Budget Allocation', 'Funnel Conversion', 'Creative Relevance']
+const DVAR = [10, -15, 5, -8, 12, -5]
+const DPEN = [0.8, 1.2, 0.6, 1.0, 0.9, 0.7]
 
 function deriveDimensions(diag: DiagnosisData, base: number) {
   const fs = getFindings(diag)
@@ -94,8 +108,9 @@ function deriveDimensions(diag: DiagnosisData, base: number) {
 }
 
 const TIER_LABEL: Record<string, string> = { starter: 'Starter', pro: 'Pro', agency: 'Agency', free: 'Free' }
-const TIER_PRICE: Record<string, string> = { starter: 'KES 6,500', pro: 'KES 13,000', agency: 'KES 26,000', free: 'Free' }
-const TIER_DESC:  Record<string, string> = {
+// Base prices in KES
+const TIER_PRICE_KES: Record<string, number> = { starter: 6500, pro: 13000, agency: 26000, free: 0 }
+const TIER_DESC: Record<string, string> = {
   starter: 'Monthly ICP diagnostic with full report, findings, and quick wins.',
   pro:     'Everything in Starter plus priority re-diagnosis and campaign CSV analysis.',
   agency:  'Everything in Pro plus multi-client reporting and dedicated strategy review.',
@@ -125,19 +140,13 @@ function Card({ children, style, delay = 0 }: { children: React.ReactNode; style
 
 function AnimatedGauge({ score, size = 140 }: { score: number; size?: number }) {
   const [cur, setCur] = useState(0)
-  useEffect(() => {
-    const t = setTimeout(() => setCur(score), 80)
-    return () => clearTimeout(t)
-  }, [score])
-  const r    = (size / 2) * 0.72
-  const circ = 2 * Math.PI * r
-  const fill = (cur / 100) * circ
-  const col  = scoreColor(score)
+  useEffect(() => { const t = setTimeout(() => setCur(score), 80); return () => clearTimeout(t) }, [score])
+  const r = (size / 2) * 0.72; const circ = 2 * Math.PI * r; const fill = (cur / 100) * circ
   return (
     <div style={{ position: 'relative', width: size, height: size, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ position: 'absolute', transform: 'rotate(-90deg)' }}>
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={Pborder} strokeWidth={9} />
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={col} strokeWidth={9}
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={scoreColor(score)} strokeWidth={9}
           strokeDasharray={`${fill} ${circ}`} strokeLinecap="round"
           style={{ transition: 'stroke-dasharray 1.2s cubic-bezier(0.16,1,0.3,1)' }} />
       </svg>
@@ -149,37 +158,19 @@ function AnimatedGauge({ score, size = 140 }: { score: number; size?: number }) 
   )
 }
 
-function CountUp({ target, prefix = '' }: { target: number; prefix?: string }) {
-  const [cur, setCur] = useState(0)
+function CountUp({ target, display }: { target: number; display: string }) {
+  const [pct, setPct] = useState(0)
   useEffect(() => {
     if (target === 0) return
-    const steps = 40; const step = target / steps; let i = 0
-    const id = setInterval(() => {
-      i++; setCur(i >= steps ? target : Math.round(step * i))
-      if (i >= steps) clearInterval(id)
-    }, 28)
+    const steps = 40; let i = 0
+    const id = setInterval(() => { i++; setPct(i >= steps ? 1 : i / steps); if (i >= steps) clearInterval(id) }, 28)
     return () => clearInterval(id)
   }, [target])
-  return <>{prefix}{cur === target ? target.toLocaleString() : cur.toLocaleString()}</>
-}
-
-function LockedCard({ label, cta, href, children }: { label: string; cta: string; href: string; children?: React.ReactNode }) {
-  return (
-    <div style={{ position: 'relative', borderRadius: 20, overflow: 'hidden', border: `1px solid ${Pborder}`, boxShadow: '0 2px 16px rgba(48,33,97,0.06)' }}>
-      <div style={{ filter: 'blur(5px)', pointerEvents: 'none', userSelect: 'none', background: '#fff', padding: 28 }}>
-        {children ?? <div style={{ height: 160 }} />}
-      </div>
-      <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.88)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, padding: 24 }}>
-        <div style={{ width: 40, height: 40, borderRadius: 12, background: BgAlt, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Lock size={18} color={P} />
-        </div>
-        <p style={{ fontFamily: fontB, fontSize: 13, color: P, fontWeight: 600, textAlign: 'center', margin: 0 }}>{label}</p>
-        <Link href={href} style={{ fontFamily: font, fontWeight: 600, fontSize: 12, color: '#fff', background: P, padding: '8px 18px', borderRadius: 10, textDecoration: 'none' }}>
-          {cta}
-        </Link>
-      </div>
-    </div>
-  )
+  if (pct < 1) {
+    const approx = Math.round(target * pct)
+    return <>{approx.toLocaleString()}</>
+  }
+  return <>{display}</>
 }
 
 // ─── Widgets ──────────────────────────────────────────────────────────────────
@@ -199,16 +190,22 @@ function HealthScoreWidget({ diag, report, delay }: { diag: DiagnosisData; repor
   )
 }
 
-function MonthlyWasteWidget({ diag, delay }: { diag: DiagnosisData; delay: number }) {
+function MonthlyWasteWidget({ diag, currency, delay }: { diag: DiagnosisData; currency: string; delay: number }) {
   const waste = parseWaste(diag.monthly_waste_estimate)
   const fs    = getFindings(diag)
   const topF  = fs.find(f => f.severity === 'Critical') ?? fs[0]
-  const col   = waste.amount > 50000 ? '#ef4444' : waste.amount > 10000 ? '#f59e0b' : P
+
+  const displayStr = waste.amount > 0 ? convertAmount(waste.amount, waste.fromCurrency, currency) : waste.raw
+  const displayNum = waste.amount > 0
+    ? Math.round(waste.amount / (USD_RATES[waste.fromCurrency] ?? 1) * (USD_RATES[currency] ?? 1))
+    : 0
+  const col = displayNum > 50000 ? '#ef4444' : displayNum > 10000 ? '#f59e0b' : P
+
   return (
     <Card delay={delay}>
       <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: Pmuted, margin: '0 0 10px' }}>Estimated Waste</p>
       <div style={{ fontFamily: font, fontSize: 44, fontWeight: 800, color: col, lineHeight: 1, margin: '0 0 4px' }}>
-        {waste.amount > 0 ? <CountUp target={waste.amount} prefix={waste.prefix === '$' ? '$' : waste.prefix + ' '} /> : waste.raw}
+        {waste.amount > 0 ? <CountUp target={displayNum} display={displayStr} /> : waste.raw}
       </div>
       <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 18px' }}>per month</p>
       {topF && (
@@ -231,7 +228,7 @@ function MonthlyWasteWidget({ diag, delay }: { diag: DiagnosisData; delay: numbe
 function QuickWinsWidget({ diag, delay }: { diag: DiagnosisData; delay: number }) {
   const wins = (diag.quick_wins ?? []).slice(0, 3)
   const [checked, setChecked] = useState<boolean[]>(() => wins.map(() => false))
-  const done = checked.filter(Boolean).length
+  const done   = checked.filter(Boolean).length
   const toggle = (i: number) => setChecked(p => { const n = [...p]; n[i] = !n[i]; return n })
   return (
     <Card delay={delay}>
@@ -280,18 +277,18 @@ function PerformanceBreakdownWidget({ diag, score, delay }: { diag: DiagnosisDat
     <Card delay={delay}>
       <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: '0 0 4px' }}>Performance Breakdown</p>
       <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 22px' }}>6 dimensions of your ICP health</p>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
         {dims.map((d, i) => (
-          <div key={d.name} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontFamily: fontB, fontSize: 12, color: P, width: 142, flexShrink: 0 }}>{d.name}</span>
-            <div style={{ flex: 1, height: 8, background: '#f3f4f6', borderRadius: 100, overflow: 'hidden' }}>
+          <div key={d.name} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+            <span style={{ fontFamily: fontB, fontSize: 15, color: P, width: 150, flexShrink: 0 }}>{d.name}</span>
+            <div style={{ flex: 1, height: 10, background: '#f3f4f6', borderRadius: 100, overflow: 'hidden' }}>
               <div style={{
                 height: '100%', borderRadius: 100, background: scoreColor(d.score),
                 width: mounted ? `${d.score}%` : '0%',
                 transition: `width 900ms cubic-bezier(0.16,1,0.3,1) ${i * 80}ms`,
               }} />
             </div>
-            <span style={{ fontFamily: font, fontSize: 13, fontWeight: 700, color: scoreColor(d.score), width: 30, textAlign: 'right', flexShrink: 0 }}>{d.score}</span>
+            <span style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: scoreColor(d.score), width: 32, textAlign: 'right', flexShrink: 0 }}>{d.score}</span>
           </div>
         ))}
       </div>
@@ -299,18 +296,45 @@ function PerformanceBreakdownWidget({ diag, score, delay }: { diag: DiagnosisDat
   )
 }
 
-function ScoreHistoryWidget({ reports, locked, delay }: { reports: ReportRow[]; locked: boolean; delay: number }) {
+function ScoreHistoryWidget({ reports, latestReport, renewalDate, delay }: {
+  reports: ReportRow[]; latestReport: ReportRow; renewalDate: string | null; delay: number
+}) {
+  const hasHistory = reports.length >= 2
+  const nextDate   = renewalDate
+    ? new Date(renewalDate)
+    : new Date(new Date(latestReport.generated_at).getTime() + 30 * 86_400_000)
+  const latestScore = getScore(parseDiagnosis(latestReport.report_summary))
+
+  if (!hasHistory) {
+    return (
+      <Card delay={delay} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: '0 0 20px' }}>Score History</p>
+        {latestScore !== null && (
+          <div style={{ background: BgAlt, borderRadius: 12, padding: '14px 18px', marginBottom: 18, display: 'inline-flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontFamily: fontB, fontSize: 12, color: Pmuted }}>Baseline</span>
+            <span style={{ fontFamily: font, fontSize: 22, fontWeight: 800, color: P }}>{latestScore}<span style={{ fontSize: 13, fontWeight: 500, color: Pmuted }}>/100</span></span>
+            <span style={{ fontFamily: fontB, fontSize: 11, color: Pmuted }}>— {formatDate(latestReport.generated_at)}</span>
+          </div>
+        )}
+        <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, lineHeight: 1.6, margin: '0 0 6px' }}>
+          Your score trend will appear here after your next diagnosis.
+        </p>
+        <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '0 0 20px' }}>
+          Next diagnosis due {formatDate(nextDate.toISOString())}
+        </p>
+        <Link href="/questionnaire"
+          style={{ fontFamily: font, fontWeight: 600, fontSize: 13, color: P, border: `1.5px solid ${Pborder}`, borderRadius: 10, padding: '9px 18px', textDecoration: 'none', display: 'inline-block', width: 'fit-content' }}>
+          Run New Diagnosis →
+        </Link>
+      </Card>
+    )
+  }
+
   const chartData = [...reports].reverse().map(r => {
     const d = parseDiagnosis(r.report_summary)
     return { date: formatDate(r.generated_at), score: getScore(d) ?? 0 }
   })
-  if (locked) {
-    return (
-      <LockedCard label="Run another diagnosis to unlock score tracking" cta="Run Now →" href="/questionnaire">
-        <div style={{ height: 180, background: BgAlt, borderRadius: 12 }} />
-      </LockedCard>
-    )
-  }
+
   return (
     <Card delay={delay}>
       <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: '0 0 18px' }}>Score History</p>
@@ -336,15 +360,22 @@ function ScoreHistoryWidget({ reports, locked, delay }: { reports: ReportRow[]; 
 
 function LandingPageWidget({ diag, delay }: { diag: DiagnosisData; delay: number }) {
   const [expanded, setExpanded] = useState(false)
+
   if (!diag.is_deep_research) {
     return (
-      <LockedCard label="Subscribe to Pro for live AI assessment of your landing page" cta="Upgrade →" href="/#pricing">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {[95, 80, 60].map((w, i) => <Skel key={i} style={{ height: 14, width: `${w}%` }} />)}
-        </div>
-      </LockedCard>
+      <Card delay={delay}>
+        <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: '0 0 12px' }}>Landing Page Assessment</p>
+        <p style={{ fontFamily: fontB, fontSize: 14, color: 'rgba(48,33,97,0.75)', lineHeight: 1.75, margin: '0 0 20px' }}>
+          Your landing page assessment will appear in your next report. Pro subscribers get a live AI review of their actual page — competitors, friction points, and conversion fixes.
+        </p>
+        <Link href="/#pricing"
+          style={{ fontFamily: font, fontWeight: 600, fontSize: 13, color: P, textDecoration: 'none', opacity: 0.75 }}>
+          See what Pro includes →
+        </Link>
+      </Card>
     )
   }
+
   const text = diag.landing_page_assessment ?? ''
   return (
     <Card delay={delay}>
@@ -363,17 +394,7 @@ function LandingPageWidget({ diag, delay }: { diag: DiagnosisData; delay: number
   )
 }
 
-function NextDiagnosisWidget({ lastReport, renewalDate, locked, delay }: { lastReport: ReportRow; renewalDate: string | null; locked: boolean; delay: number }) {
-  if (locked) {
-    return (
-      <LockedCard label="Available 30 days after your first diagnosis" cta="Run Now →" href="/questionnaire">
-        <div style={{ textAlign: 'center', padding: 20 }}>
-          <div style={{ fontFamily: font, fontSize: 52, fontWeight: 800, color: Pmuted, lineHeight: 1 }}>—</div>
-          <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '8px 0 0' }}>days remaining</p>
-        </div>
-      </LockedCard>
-    )
-  }
+function NextDiagnosisWidget({ lastReport, renewalDate, delay }: { lastReport: ReportRow; renewalDate: string | null; delay: number }) {
   const nextDate = renewalDate
     ? new Date(renewalDate)
     : new Date(new Date(lastReport.generated_at).getTime() + 30 * 86_400_000)
@@ -419,21 +440,18 @@ function NextDiagnosisWidget({ lastReport, renewalDate, locked, delay }: { lastR
 
 function CampaignInsightsWidget({ delay }: { delay: number }) {
   return (
-    <div style={{
-      borderRadius: 20, padding: 28, border: '2px dashed rgba(48,33,97,0.18)',
-      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      gap: 12, textAlign: 'center', minHeight: 180,
-      animation: 'fadeUp 0.4s ease both', animationDelay: `${delay}ms`,
-    }}>
-      <BarChart2 size={30} color={P} opacity={0.35} />
-      <p style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: 0 }}>Upload Campaign CSV</p>
-      <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: 0, maxWidth: 180, lineHeight: 1.5 }}>
-        Get a media buyer analysis of your actual spend data
+    <Card delay={delay} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', minHeight: 180 }}>
+      <div style={{ width: 48, height: 48, borderRadius: '50%', background: '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
+        <BarChart2 size={22} color={P} />
+      </div>
+      <p style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: P, margin: '0 0 8px' }}>Campaign data analysis</p>
+      <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 20px', maxWidth: 200, lineHeight: 1.6 }}>
+        Upload your Google Ads or Meta export to get a media buyer breakdown of your actual spend.
       </p>
-      <Link href="/dashboard/csv" style={{ fontFamily: font, fontWeight: 600, fontSize: 12, background: P, color: '#fff', padding: '9px 18px', borderRadius: 12, textDecoration: 'none' }}>
+      <Link href="/dashboard/csv" style={{ fontFamily: font, fontWeight: 600, fontSize: 13, color: P, border: `1.5px solid ${Pborder}`, borderRadius: 10, padding: '9px 18px', textDecoration: 'none' }}>
         Upload CSV →
       </Link>
-    </div>
+    </Card>
   )
 }
 
@@ -446,7 +464,7 @@ function FindingsSection({ diag }: { diag: DiagnosisData }) {
       <p style={{ fontFamily: font, fontSize: 20, fontWeight: 700, color: P, margin: '0 0 14px', letterSpacing: '-0.02em' }}>All Findings</p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {findings.map((f, i) => (
-          <div key={i} style={{ background: '#fff', border: `1px solid ${Pborder}`, borderLeft: `4px solid ${severityColor(f.severity)}`, borderRadius: '0 14px 14px 0', padding: '18px 22px' }}>
+          <div key={i} style={{ background: '#fff', border: `1px solid ${Pborder}`, borderLeft: `4px solid ${sevColor(f.severity)}`, borderRadius: '0 14px 14px 0', padding: '18px 22px' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
               <span style={{ fontFamily: font, fontSize: 26, fontWeight: 700, color: P, opacity: 0.1, lineHeight: 1, flexShrink: 0, minWidth: 34 }}>
                 {String(i + 1).padStart(2, '0')}
@@ -454,7 +472,7 @@ function FindingsSection({ diag }: { diag: DiagnosisData }) {
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 5 }}>
                   <h3 style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: 0 }}>{f.title}</h3>
-                  <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: severityColor(f.severity), background: severityBg(f.severity), padding: '2px 8px', borderRadius: 100, flexShrink: 0 }}>
+                  <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: sevColor(f.severity), background: sevBg(f.severity), padding: '2px 8px', borderRadius: 100, flexShrink: 0 }}>
                     {f.severity}
                   </span>
                 </div>
@@ -503,7 +521,7 @@ function EmptyState() {
         </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {previews.map((p, i) => (
-            <div key={i} style={{ position: 'relative', borderRadius: 16, overflow: 'hidden', border: `1px solid ${Pborder}` }}>
+            <div key={i} style={{ borderRadius: 16, overflow: 'hidden', border: `1px solid ${Pborder}` }}>
               <div style={{ filter: 'blur(4px)', pointerEvents: 'none', background: '#fff', padding: 20, height: 108 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 12 }}>
                   {p.icon}
@@ -511,10 +529,6 @@ function EmptyState() {
                 </div>
                 <div style={{ height: 28, background: BgAlt, borderRadius: 8, marginBottom: 8 }} />
                 <div style={{ height: 14, background: BgAlt, borderRadius: 6, width: '70%' }} />
-              </div>
-              <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.82)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
-                <Lock size={14} color={P} opacity={0.5} />
-                <span style={{ fontFamily: fontB, fontSize: 10, color: Pmuted, textAlign: 'center', maxWidth: 80, lineHeight: 1.3 }}>Unlocks after first diagnosis</span>
               </div>
             </div>
           ))}
@@ -632,9 +646,11 @@ function ReportsTab({ reports, dataLoading }: { reports: ReportRow[]; dataLoadin
 
 // ─── Account tab ──────────────────────────────────────────────────────────────
 
-function AccountTab({ user, onSignOut }: { user: UserData; onSignOut: () => void }) {
+function AccountTab({ user, currency, onSignOut }: { user: UserData; currency: string; onSignOut: () => void }) {
   const [cancelConfirm, setCancelConfirm] = useState(false)
-  const tierLabel = TIER_LABEL[user.subscription_tier] ?? user.subscription_tier
+  const tierLabel  = TIER_LABEL[user.subscription_tier] ?? user.subscription_tier
+  const priceKES   = TIER_PRICE_KES[user.subscription_tier] ?? 0
+  const priceStr   = priceKES > 0 ? `${convertAmount(priceKES, 'KES', currency)} / month` : 'Free'
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 18, maxWidth: 640 }}>
       <h2 style={{ fontFamily: font, fontSize: 'clamp(20px,4vw,28px)', fontWeight: 700, color: P, margin: 0, letterSpacing: '-0.02em' }}>Account</h2>
@@ -658,7 +674,7 @@ function AccountTab({ user, onSignOut }: { user: UserData; onSignOut: () => void
         {([
           { label: 'Plan',           value: <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, background: P, color: '#fff', padding: '3px 12px', borderRadius: 100 }}>{tierLabel}</span> },
           { label: 'Description',    value: TIER_DESC[user.subscription_tier] ?? '' },
-          { label: 'Monthly price',  value: `${TIER_PRICE[user.subscription_tier] ?? '—'} / month` },
+          { label: 'Monthly price',  value: priceStr },
           { label: 'Billing status', value: (
             <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, background: user.billing_status === 'active' ? '#dcfce7' : '#fee2e2', color: user.billing_status === 'active' ? '#16a34a' : '#ef4444', padding: '3px 12px', borderRadius: 100 }}>
               {user.billing_status}
@@ -735,6 +751,18 @@ export default function DashboardPage() {
   const [reports,     setReports]     = useState<ReportRow[]>([])
   const [dataLoading, setDataLoading] = useState(true)
   const [activeTab,   setActiveTab]   = useState<Tab>('overview')
+  const [currency,    setCurrency]    = useState('KES')
+
+  // Load currency preference on mount
+  useEffect(() => {
+    const stored = localStorage.getItem('preferred_currency')
+    if (stored && CURRENCIES.includes(stored)) setCurrency(stored)
+  }, [])
+
+  const handleCurrencyChange = (c: string) => {
+    setCurrency(c)
+    localStorage.setItem('preferred_currency', c)
+  }
 
   const loadReports = useCallback(async (email: string) => {
     try {
@@ -825,17 +853,12 @@ export default function DashboardPage() {
   }
 
   // ── Dashboard ────────────────────────────────────────────────────────────────
-  const latestReport  = reports[0]
+  const latestReport        = reports[0]
   const diag: DiagnosisData = latestReport ? parseDiagnosis(latestReport.report_summary) : {}
-  const score         = getScore(diag)
-  const reportCount   = reports.length
-  const daysSince     = latestReport ? daysBetween(latestReport.generated_at) : 0
-  const tierLabel     = user ? (TIER_LABEL[user.subscription_tier] ?? user.subscription_tier) : ''
+  const score               = getScore(diag)
+  const hasReports          = reports.length >= 1
+  const tierLabel           = user ? (TIER_LABEL[user.subscription_tier] ?? user.subscription_tier) : ''
 
-  // Unlock rules
-  const hasReports    = reportCount >= 1
-  const scoreHistLocked = reportCount < 2
-  const nextDiagLocked  = daysSince < 30
   const TAB_ICONS: Record<Tab, React.ReactNode> = {
     overview: <LayoutDashboard size={20} />,
     reports:  <FileText size={20} />,
@@ -845,8 +868,8 @@ export default function DashboardPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#fff', fontFamily: fontB }}>
       <style>{`
-        @keyframes spin    { to { transform: rotate(360deg) } }
-        @keyframes fadeUp  { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:translateY(0) } }
+        @keyframes spin   { to { transform: rotate(360deg) } }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:translateY(0) } }
       `}</style>
 
       {/* ── Top nav ───────────────────────────────────────────────────────── */}
@@ -857,6 +880,24 @@ export default function DashboardPage() {
             <span style={{ fontFamily: font, fontWeight: 700, fontSize: 14, color: P }}>ICP Diagnostic</span>
           </Link>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {/* Currency selector */}
+            <div style={{ position: 'relative' }}>
+              <select
+                value={currency}
+                onChange={e => handleCurrencyChange(e.target.value)}
+                style={{
+                  appearance: 'none', WebkitAppearance: 'none',
+                  fontFamily: fontB, fontSize: 12, fontWeight: 600, color: P,
+                  background: BgAlt, border: `1px solid ${Pborder}`,
+                  borderRadius: 100, padding: '5px 28px 5px 12px',
+                  cursor: 'pointer', outline: 'none',
+                }}
+              >
+                {CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+              <span style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', fontSize: 9, color: P }}>▾</span>
+            </div>
+
             {tierLabel && (
               <span className="hidden sm:inline-block" style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, background: P, color: '#fff', padding: '3px 10px', borderRadius: 100 }}>{tierLabel}</span>
             )}
@@ -870,7 +911,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Desktop tab row — hidden on mobile */}
+        {/* Desktop tab row */}
         <div className="hidden md:block" style={{ borderTop: `1px solid ${Pborder}`, padding: '0 16px' }}>
           <div style={{ maxWidth: 1320, margin: '0 auto', display: 'flex' }}>
             {(['overview', 'reports', 'account'] as Tab[]).map(tab => (
@@ -894,7 +935,6 @@ export default function DashboardPage() {
         {/* OVERVIEW */}
         {activeTab === 'overview' && (
           <>
-            {/* Loading skeleton */}
             {dataLoading && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                 <Skel style={{ height: 120, borderRadius: 20 }} />
@@ -908,36 +948,34 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {/* Empty state */}
             {!dataLoading && !hasReports && <EmptyState />}
 
-            {/* Widgets */}
             {!dataLoading && hasReports && user && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                 <WelcomeBanner user={user} />
 
-                {/* Row 1: Health Score | Monthly Waste | Quick Wins */}
+                {/* Row 1 */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <HealthScoreWidget diag={diag} report={latestReport} delay={80} />
-                  <MonthlyWasteWidget diag={diag} delay={140} />
+                  <MonthlyWasteWidget diag={diag} currency={currency} delay={140} />
                   <QuickWinsWidget diag={diag} delay={200} />
                 </div>
 
-                {/* Row 2: Performance Breakdown (2/3) | Score History (1/3) */}
+                {/* Row 2 */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="md:col-span-2">
                     {score !== null && <PerformanceBreakdownWidget diag={diag} score={score} delay={260} />}
                   </div>
-                  <ScoreHistoryWidget reports={reports} locked={scoreHistLocked} delay={300} />
+                  <ScoreHistoryWidget reports={reports} latestReport={latestReport} renewalDate={user.renewal_date} delay={300} />
                 </div>
 
                 {/* All Findings */}
                 <FindingsSection diag={diag} />
 
-                {/* Row 3: Landing Page | Next Diagnosis | Campaign Insights */}
+                {/* Row 3 */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <LandingPageWidget diag={diag} delay={400} />
-                  <NextDiagnosisWidget lastReport={latestReport} renewalDate={user.renewal_date} locked={nextDiagLocked} delay={450} />
+                  <NextDiagnosisWidget lastReport={latestReport} renewalDate={user.renewal_date} delay={450} />
                   <CampaignInsightsWidget delay={500} />
                 </div>
               </div>
@@ -945,11 +983,8 @@ export default function DashboardPage() {
           </>
         )}
 
-        {/* REPORTS */}
         {activeTab === 'reports' && <ReportsTab reports={reports} dataLoading={dataLoading} />}
-
-        {/* ACCOUNT */}
-        {activeTab === 'account' && user && <AccountTab user={user} onSignOut={handleSignOut} />}
+        {activeTab === 'account' && user && <AccountTab user={user} currency={currency} onSignOut={handleSignOut} />}
       </div>
 
       {/* ── Mobile bottom tab bar ─────────────────────────────────────────── */}
@@ -958,8 +993,7 @@ export default function DashboardPage() {
           <button key={tab} onClick={() => setActiveTab(tab)} style={{
             flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
             gap: 4, padding: '10px 0', border: 'none', background: 'transparent', cursor: 'pointer',
-            color: activeTab === tab ? P : Pmuted,
-            transition: 'color 0.15s',
+            color: activeTab === tab ? P : Pmuted, transition: 'color 0.15s',
           }}>
             {TAB_ICONS[tab]}
             <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: activeTab === tab ? 700 : 500 }}>
