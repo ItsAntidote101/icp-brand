@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import {
   Target, Filter, TrendingDown, BarChart2, Activity,
-  Star, Check, Menu, X, MapPin, ArrowRight, Globe,
+  Check, Menu, X, MapPin, ArrowRight, Globe,
 } from 'lucide-react'
 
 export const dynamic = 'force-static'
@@ -81,20 +81,6 @@ const FAQ_ITEMS = [
   },
 ]
 
-const TESTIMONIALS = [
-  {
-    quote: "I was three months into a campaign with nothing to show for it. The diagnosis told me in 5 minutes what three agencies couldn't in six months — we were targeting procurement managers when our actual buyers were CFOs.",
-    author: 'Head of Marketing, B2B SaaS, Nairobi',
-  },
-  {
-    quote: "We had 14 form fields on our landing page. Fourteen. We cut it to four and leads tripled in two weeks. I didn't need a new campaign. I needed a diagnosis.",
-    author: 'Growth Lead, Fintech Startup, Lagos',
-  },
-  {
-    quote: "I uploaded our Meta CSV on a Monday morning. By lunch I had a report that found KES 38,000 in wasted spend. That one upload paid for a year of the subscription.",
-    author: 'Marketing Director, E-commerce Brand, Nairobi',
-  },
-]
 
 
 // ─── Shared components ────────────────────────────────────────────────────────
@@ -109,7 +95,7 @@ function Badge({ text }: { text: string }) {
 
 function H2({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   return (
-    <h2 style={{ fontFamily: font, fontSize: 'clamp(32px,4vw,52px)', fontWeight: 700, letterSpacing: '-0.03em', color: P, margin: '0 0 20px', lineHeight: 1.1, ...style }}>
+    <h2 style={{ fontFamily: font, fontSize: 'clamp(32px,4vw,52px)', fontWeight: 700, letterSpacing: '-0.03em', color: P, margin: '0 0 24px', lineHeight: 1.1, ...style }}>
       {children}
     </h2>
   )
@@ -117,7 +103,7 @@ function H2({ children, style }: { children: React.ReactNode; style?: React.CSSP
 
 function Body({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   return (
-    <p style={{ fontFamily: fontBody, fontSize: 17, lineHeight: 1.7, color: 'rgba(48,33,97,0.75)', margin: '0 0 28px', ...style }}>
+    <p style={{ fontFamily: fontBody, fontSize: 17, lineHeight: 1.7, color: 'rgba(48,33,97,0.75)', margin: '0 0 24px', ...style }}>
       {children}
     </p>
   )
@@ -126,14 +112,9 @@ function Body({ children, style }: { children: React.ReactNode; style?: React.CS
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function Home() {
-  const [mobileOpen,        setMobileOpen]        = useState(false)
-  const [openFaq,           setOpenFaq]           = useState<number | null>(null)
-  const [activeTestimonial, setActiveTestimonial] = useState(0)
-
-  useEffect(() => {
-    const t = setInterval(() => setActiveTestimonial(p => (p + 1) % 3), 5000)
-    return () => clearInterval(t)
-  }, [])
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [openFaq,    setOpenFaq]    = useState<number | null>(null)
+  const [activeTab,  setActiveTab]  = useState('Google Reviews')
 
   return (
     <main style={{ fontFamily: '-apple-system,system-ui,sans-serif', color: Pbody, background: '#fff', overflowX: 'hidden' }}>
@@ -154,7 +135,7 @@ export default function Home() {
             <span style={{ fontFamily: font, fontWeight: 700, fontSize: 15, color: P, letterSpacing: '-0.3px' }}>ICP Diagnostic</span>
           </Link>
 
-          <div className="hidden md:flex" style={{ gap: 2 }}>
+          <div className="hidden md:flex" style={{ gap: 32 }}>
             {NAV_LINKS.map(l => (
               <a key={l.label} href={l.href} className="nav-link"
                 style={{ fontFamily: fontBody, color: Pbody, textDecoration: 'none', fontSize: 15, fontWeight: 500, letterSpacing: '-0.01em', padding: '8px 16px', borderRadius: 100 }}>
@@ -196,11 +177,11 @@ export default function Home() {
       )}
 
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <section style={{ background: '#ffffff', paddingTop: 72, overflow: 'hidden' }}>
-        <div className="flex flex-col lg:flex-row lg:items-stretch" style={{ maxWidth: 1120, margin: '0 auto' }}>
+      <section style={{ background: '#ffffff', paddingTop: 120, overflow: 'hidden' }}>
+        <div className="flex flex-col gap-10 lg:flex-row lg:items-stretch lg:gap-20" style={{ maxWidth: 1200, margin: '0 auto', paddingLeft: 24 }}>
 
           {/* copy — left column */}
-          <div className="flex flex-col justify-center px-5 pb-14 lg:px-6 lg:pb-24 lg:w-[44%] lg:flex-none">
+          <div className="flex flex-col justify-center px-5 pb-16 lg:px-0 lg:pb-32 lg:w-[44%] lg:flex-none">
 
             {/* dual badges */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 28 }}>
@@ -246,7 +227,7 @@ export default function Home() {
           </div>
 
           {/* illustration — right column */}
-          <div className="mx-5 lg:mx-0 lg:flex-1" style={{ background: 'linear-gradient(135deg,#f5f3ff 0%,#ede9fe 60%,#ddd6fe 100%)', borderRadius: '24px 24px 0 0', display: 'flex', alignItems: 'flex-end', overflow: 'hidden', minHeight: 320 }}>
+          <div className="lg:flex-1" style={{ background: 'linear-gradient(135deg,#f5f3ff 0%,#ede9fe 60%,#ddd6fe 100%)', borderRadius: '24px 24px 0 0', display: 'flex', alignItems: 'flex-end', overflow: 'hidden', minHeight: 320 }}>
             <Image
               src="/images/Holder.png"
               alt="ICP Diagnostic Dashboard"
@@ -260,7 +241,7 @@ export default function Home() {
       </section>
 
       {/* ── Logo trust bar ────────────────────────────────────────────────── */}
-      <div style={{ background: '#fff', borderTop: `1px solid ${Pborder}`, borderBottom: `1px solid ${Pborder}`, padding: '28px 0', overflow: 'hidden' }}>
+      <div style={{ background: '#fff', borderTop: `1px solid ${Pborder}`, borderBottom: `1px solid ${Pborder}`, padding: '32px 0', overflow: 'hidden' }}>
         <div style={{ maxWidth: 1120, margin: '0 auto', paddingLeft: 24 }}>
           <p style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', color: Pmuted, marginBottom: 20 }}>
             Trusted by teams at:
@@ -269,7 +250,7 @@ export default function Home() {
         <div className="animate-marquee" style={{ display: 'flex', alignItems: 'center', width: 'max-content', gap: 0 }}>
           {[...Array(2)].map((_, pass) =>
             [1, 2, 3, 4, 5, 6].map(n => (
-              <div key={`${pass}-${n}`} style={{ padding: '0 60px', flexShrink: 0 }}>
+              <div key={`${pass}-${n}`} style={{ padding: '0 32px', flexShrink: 0 }}>
                 <Image
                   src={`/images/Logos-${n}.png`}
                   alt={`Partner logo ${n}`}
@@ -627,33 +608,89 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Testimonials ──────────────────────────────────────────────────── */}
+      {/* ── Social Proof ──────────────────────────────────────────────────── */}
       <section id="results" className="section-pad" style={{ background: BgAlt, borderTop: `1px solid ${Pborder}` }}>
-        <div style={{ maxWidth: 1080, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 64 }}>
-            <Badge text="Real Results" />
-            <H2 style={{ fontSize: 'clamp(28px,4vw,40px)', margin: '0 0 0' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+
+          {/* header */}
+          <div style={{ textAlign: 'center', marginBottom: 56 }}>
+            <p style={{ fontFamily: fontBody, color: '#d946ef', fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 16px' }}>Social Proof</p>
+            <h2 style={{ fontFamily: font, fontSize: 'clamp(32px,4vw,48px)', fontWeight: 700, letterSpacing: '-0.03em', color: P, margin: '0 0 32px', lineHeight: 1.1 }}>
               Finally. An answer that isn&rsquo;t &ldquo;increase your budget.&rdquo;
-            </H2>
+            </h2>
+            {/* filter tabs */}
+            <div style={{ display: 'inline-flex', gap: 4, background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 100, padding: 6 }}>
+              {['Google Reviews', 'Trustpilot', 'Direct'].map(tab => (
+                <button key={tab} onClick={() => setActiveTab(tab)}
+                  style={{ fontFamily: fontBody, fontSize: 14, fontWeight: 600, padding: '8px 20px', borderRadius: 100, border: 'none', cursor: 'pointer', transition: 'all 0.2s', background: activeTab === tab ? P : 'transparent', color: activeTab === tab ? '#fff' : Pbody, whiteSpace: 'nowrap' }}>
+                  {tab}
+                </button>
+              ))}
+            </div>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(290px,1fr))', gap: 16 }}>
-            {TESTIMONIALS.map((t, i) => (
-              <div key={i} style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 20, padding: 32, boxShadow: activeTestimonial === i ? '0 16px 48px rgba(48,33,97,0.12)' : 'none', transform: activeTestimonial === i ? 'translateY(-4px)' : 'translateY(0)', transition: 'all 0.4s ease' }}>
-                <div style={{ display: 'flex', gap: 3, marginBottom: 18 }}>
-                  {[...Array(5)].map((_, s) => <Star key={s} size={14} fill={P} color={P} />)}
+
+          {/* 3-column card grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            {/* Left — dark featured card */}
+            <div style={{ background: P, borderRadius: 24, padding: 40, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 440 }}>
+              <div>
+                <div style={{ display: 'inline-block', background: 'linear-gradient(135deg,#e879f9,#d946ef)', color: '#fff', fontSize: 12, fontWeight: 700, padding: '5px 16px', borderRadius: 100, marginBottom: 28 }}>
+                  Ease of Use
                 </div>
-                <p style={{ fontSize: 15, lineHeight: 1.75, color: Pbody, margin: '0 0 20px', fontStyle: 'italic' }}>
-                  &ldquo;{t.quote}&rdquo;
+                <p style={{ fontFamily: font, fontSize: 20, fontWeight: 600, color: '#fff', lineHeight: 1.55, margin: 0 }}>
+                  &ldquo;I was three months into a campaign with nothing to show for it. The diagnosis told me in 5 minutes what three agencies couldn&rsquo;t in six months.&rdquo;
                 </p>
-                <p style={{ fontSize: 13, fontWeight: 600, color: Pmuted, margin: 0 }}>— {t.author}</p>
               </div>
-            ))}
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 36 }}>
-            {TESTIMONIALS.map((_, i) => (
-              <button key={i} onClick={() => setActiveTestimonial(i)} aria-label={`Testimonial ${i + 1}`}
-                style={{ width: activeTestimonial === i ? 28 : 8, height: 8, borderRadius: 99, background: activeTestimonial === i ? P : Pborder, border: 'none', cursor: 'pointer', transition: 'all 0.3s ease', padding: 0 }} />
-            ))}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 32 }}>
+                <div style={{ width: 48, height: 48, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: '2px solid rgba(255,255,255,0.3)' }}>
+                  <Image src="/images/Frame 245.png" alt="James Mwangi" width={48} height={48} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+                <div>
+                  <p style={{ margin: 0, fontFamily: font, fontSize: 14, fontWeight: 700, color: '#fff' }}>James Mwangi</p>
+                  <p style={{ margin: 0, fontFamily: fontBody, fontSize: 13, color: 'rgba(255,255,255,0.65)' }}>Head of Marketing, Nairobi</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Middle — photo card */}
+            <div style={{ borderRadius: 24, overflow: 'hidden', position: 'relative', height: 440 }}>
+              <Image src="/images/section.jpg" alt="Amara Osei testimonial" fill style={{ objectFit: 'cover', objectPosition: 'center top' }} />
+              {/* play button */}
+              <div style={{ position: 'absolute', top: '36%', left: '50%', transform: 'translate(-50%,-50%)', width: 52, height: 52, borderRadius: '50%', background: 'linear-gradient(135deg,#e879f9,#d946ef)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(217,70,239,0.45)', zIndex: 2 }}>
+                <svg width="16" height="18" viewBox="0 0 16 18" fill="none"><path d="M2 1.5l12 7-12 7V1.5z" fill="#fff" /></svg>
+              </div>
+              {/* dark gradient overlay */}
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(48,33,97,0.93) 0%, rgba(48,33,97,0.35) 55%, transparent 100%)' }} />
+              {/* text overlay */}
+              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 28px 32px' }}>
+                <p style={{ fontFamily: font, fontSize: 16, fontWeight: 600, color: '#fff', lineHeight: 1.5, margin: '0 0 16px' }}>
+                  &ldquo;We had 14 form fields on our landing page. Cut it to four and leads tripled in two weeks.&rdquo;
+                </p>
+                <p style={{ margin: '0 0 4px', fontFamily: font, fontSize: 14, fontWeight: 700, color: '#fff' }}>Amara Osei</p>
+                <p style={{ margin: 0, fontFamily: fontBody, fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>Growth Lead, Lagos</p>
+              </div>
+            </div>
+
+            {/* Right — photo card */}
+            <div style={{ borderRadius: 24, overflow: 'hidden', position: 'relative', height: 440 }}>
+              <Image src="/images/section.jpg" alt="Sarah Kimani testimonial" fill style={{ objectFit: 'cover', objectPosition: 'right center' }} />
+              {/* play button */}
+              <div style={{ position: 'absolute', top: '36%', left: '50%', transform: 'translate(-50%,-50%)', width: 52, height: 52, borderRadius: '50%', background: 'linear-gradient(135deg,#e879f9,#d946ef)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(217,70,239,0.45)', zIndex: 2 }}>
+                <svg width="16" height="18" viewBox="0 0 16 18" fill="none"><path d="M2 1.5l12 7-12 7V1.5z" fill="#fff" /></svg>
+              </div>
+              {/* dark gradient overlay */}
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(48,33,97,0.93) 0%, rgba(48,33,97,0.35) 55%, transparent 100%)' }} />
+              {/* text overlay */}
+              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 28px 32px' }}>
+                <p style={{ fontFamily: font, fontSize: 16, fontWeight: 600, color: '#fff', lineHeight: 1.5, margin: '0 0 16px' }}>
+                  &ldquo;Found KES 38,000 in wasted spend in one CSV upload. Paid for a year of subscription.&rdquo;
+                </p>
+                <p style={{ margin: '0 0 4px', fontFamily: font, fontSize: 14, fontWeight: 700, color: '#fff' }}>Sarah Kimani</p>
+                <p style={{ margin: 0, fontFamily: fontBody, fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>Marketing Director, Nairobi</p>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
