@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import {
@@ -83,6 +83,20 @@ const FAQ_ITEMS = [
 
 
 
+const HERO_HEADLINES = [
+  { line1: "You're not bad at marketing.", line2: "You're targeting the wrong people." },
+  { line1: "Your ads are getting clicks.", line2: "They're just not becoming leads." },
+  { line1: "You're not spending too little.", line2: "You're spending in the wrong places." },
+  { line1: "Your ICP is wrong.", line2: "That's why nothing is working." },
+]
+
+const HERO_CARDS = [
+  { image: '/images/Holder-2.png', stat: '40-60%',   description: 'Of ad budgets wasted on wrong audience targeting' },
+  { image: '/images/Holder-3.png', stat: 'KES 50K+', description: 'Average monthly waste found per client diagnosis' },
+  { image: '/images/Holder-1.png', stat: '5 min',    description: 'To complete your full ICP diagnostic' },
+  { image: '/images/Holder-4.png', stat: '3x',       description: 'Average improvement in lead quality after ICP fix' },
+]
+
 // ─── Shared components ────────────────────────────────────────────────────────
 
 function Badge({ text }: { text: string }) {
@@ -115,6 +129,27 @@ export default function Home() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [openFaq,    setOpenFaq]    = useState<number | null>(null)
   const [activeTab,  setActiveTab]  = useState('Google Reviews')
+  const [heroIndex,   setHeroIndex]   = useState(0)
+  const [heroVisible, setHeroVisible] = useState(true)
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setHeroVisible(false)
+      setTimeout(() => {
+        setHeroIndex(i => (i + 1) % HERO_HEADLINES.length)
+        setHeroVisible(true)
+      }, 600)
+    }, 4000)
+    return () => clearInterval(id)
+  }, [])
+
+  const advanceHero = () => {
+    setHeroVisible(false)
+    setTimeout(() => {
+      setHeroIndex(i => (i + 1) % HERO_CARDS.length)
+      setHeroVisible(true)
+    }, 600)
+  }
 
   return (
     <main style={{ fontFamily: '-apple-system,system-ui,sans-serif', color: Pbody, background: '#fff', overflowX: 'hidden' }}>
@@ -177,47 +212,50 @@ export default function Home() {
       )}
 
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <section style={{ background: '#ffffff', paddingTop: 120, overflow: 'hidden' }}>
-        <div className="container flex flex-col gap-10 lg:flex-row lg:items-stretch lg:gap-20">
+      <section style={{ background: '#ffffff', paddingTop: 120, paddingBottom: 80, overflow: 'hidden' }}>
+        <div className="container flex flex-col gap-12 lg:flex-row lg:items-center lg:gap-16">
 
-          {/* copy — left column */}
-          <div className="flex flex-col justify-center px-0 pb-16 lg:pb-32 lg:w-1/2 lg:flex-none">
+          {/* LEFT — animated copy */}
+          <div className="flex flex-col justify-center lg:w-1/2 lg:flex-none">
 
-            {/* dual badges */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 28 }}>
-              <span style={{ background: 'linear-gradient(135deg,#e879f9,#a855f7)', color: '#fff', fontSize: 11, fontWeight: 700, padding: '5px 14px', borderRadius: 100, letterSpacing: '0.3px' }}>Free</span>
-              <span style={{ background: '#ede9fe', color: P, fontSize: 11, fontWeight: 700, padding: '5px 14px', borderRadius: 100, letterSpacing: '0.3px' }}>ICP Diagnostic Platform</span>
+            {/* animated headline — fixed height prevents layout shift */}
+            <div style={{ minHeight: 'clamp(170px,22vw,230px)', marginBottom: 24, display: 'flex', alignItems: 'flex-start' }}>
+              <h1 style={{
+                fontFamily: font,
+                fontSize: 'clamp(40px,5vw,66px)',
+                fontWeight: 800,
+                lineHeight: 1.05,
+                letterSpacing: '-0.04em',
+                margin: 0,
+                opacity: heroVisible ? 1 : 0,
+                transition: 'opacity 600ms ease-in-out',
+              }}>
+                <span style={{ color: P, display: 'block' }}>{HERO_HEADLINES[heroIndex].line1}</span>
+                <span style={{ color: '#c026d3', display: 'block' }}>{HERO_HEADLINES[heroIndex].line2}</span>
+              </h1>
             </div>
 
-            <h1 style={{ fontFamily: font, fontSize: 'clamp(40px,5vw,68px)', fontWeight: 700, lineHeight: 1.05, letterSpacing: '-0.04em', color: P, margin: '0 0 24px' }}>
-              You&rsquo;re not bad at marketing. You&rsquo;re targeting the wrong people.
-            </h1>
-
-            <p style={{ fontFamily: fontBody, fontSize: 17, lineHeight: 1.7, color: 'rgba(48,33,97,0.75)', margin: '0 0 36px' }}>
-              Every month you run ads to the wrong audience is another month your CEO asks why
-              the pipeline is empty. We diagnose exactly who you should be targeting — in 5 minutes, for free.
+            <p style={{ fontFamily: fontBody, fontSize: 18, lineHeight: 1.7, color: 'rgba(48,33,97,0.7)', margin: '0 0 36px', maxWidth: 480 }}>
+              In 5 minutes, we diagnose exactly where your marketing is breaking — for free.
             </p>
 
-            {/* CTA with circular arrow icon */}
-            <div style={{ marginBottom: 32 }}>
-              <Link href="/questionnaire" style={{ display: 'inline-flex', alignItems: 'center', gap: 12, background: P, color: '#fff', textDecoration: 'none', fontWeight: 700, fontSize: 15, padding: '10px 24px 10px 10px', borderRadius: 100, boxShadow: '0 8px 28px rgba(48,33,97,0.28)' }}>
-                <span style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <ArrowRight size={17} color="#fff" />
-                </span>
+            {/* CTAs */}
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 36 }}>
+              <Link href="/questionnaire"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: P, color: '#fff', textDecoration: 'none', fontWeight: 600, fontSize: 15, padding: '16px 32px', borderRadius: 14, boxShadow: '0 8px 28px rgba(48,33,97,0.28)', whiteSpace: 'nowrap' }}>
                 Get Free Diagnosis
+              </Link>
+              <Link href="/questionnaire?sample=1"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'transparent', color: P, textDecoration: 'none', fontWeight: 600, fontSize: 15, padding: '16px 32px', borderRadius: 14, border: `2px solid ${P}`, whiteSpace: 'nowrap' }}>
+                See A Sample Report
               </Link>
             </div>
 
-            {/* avatar social proof */}
+            {/* trust line */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
               <div style={{ width: 80, height: 34, borderRadius: 999, overflow: 'hidden', border: '2.5px solid #fff', boxShadow: '0 2px 8px rgba(0,0,0,0.14)', flexShrink: 0 }}>
-                <Image
-                  src="/images/Frame 245.png"
-                  alt="Marketing team members"
-                  width={80}
-                  height={34}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                />
+                <Image src="/images/Frame 245.png" alt="Marketing team members" width={80} height={34}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
               </div>
               <div>
                 <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: P }}>50+ marketing teams</p>
@@ -226,16 +264,71 @@ export default function Home() {
             </div>
           </div>
 
-          {/* illustration — right column */}
-          <div className="lg:flex-1" style={{ background: 'linear-gradient(135deg,#f5f3ff 0%,#ede9fe 60%,#ddd6fe 100%)', borderRadius: '24px 24px 0 0', display: 'flex', alignItems: 'flex-end', overflow: 'hidden', minHeight: 320 }}>
-            <Image
-              src="/images/Holder.png"
-              alt="ICP Diagnostic Dashboard"
-              width={700}
-              height={600}
-              style={{ width: '100%', height: 'auto', display: 'block' }}
-              priority
-            />
+          {/* RIGHT — rotating image cards */}
+          <div className="lg:flex-1" style={{ display: 'flex', alignItems: 'flex-end', gap: 12, overflow: 'hidden', minHeight: 420 }}>
+
+            {/* Small card — next item, partially visible */}
+            <div style={{
+              width: '38%',
+              height: 340,
+              borderRadius: 24,
+              overflow: 'hidden',
+              position: 'relative',
+              flexShrink: 0,
+              opacity: heroVisible ? 0.72 : 0,
+              transition: 'opacity 600ms ease-in-out',
+            }}>
+              <Image
+                src={HERO_CARDS[(heroIndex + 1) % HERO_CARDS.length].image}
+                alt=""
+                fill
+                style={{ objectFit: 'cover' }}
+              />
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 52%)' }} />
+              <div style={{ position: 'absolute', bottom: 20, left: 20, right: 20 }}>
+                <p style={{ fontFamily: font, fontSize: 32, fontWeight: 800, color: '#fff', margin: '0 0 6px', lineHeight: 1 }}>
+                  {HERO_CARDS[(heroIndex + 1) % HERO_CARDS.length].stat}
+                </p>
+                <p style={{ fontFamily: fontBody, fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.85)', margin: 0, lineHeight: 1.4, maxWidth: 140 }}>
+                  {HERO_CARDS[(heroIndex + 1) % HERO_CARDS.length].description}
+                </p>
+              </div>
+            </div>
+
+            {/* Large card — current item */}
+            <div style={{
+              flex: 1,
+              height: 420,
+              borderRadius: 24,
+              overflow: 'hidden',
+              position: 'relative',
+              opacity: heroVisible ? 1 : 0,
+              transition: 'opacity 600ms ease-in-out',
+            }}>
+              <Image
+                src={HERO_CARDS[heroIndex].image}
+                alt={HERO_CARDS[heroIndex].description}
+                fill
+                style={{ objectFit: 'cover' }}
+                priority
+              />
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 52%)' }} />
+              <div style={{ position: 'absolute', bottom: 28, left: 28, right: 28, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
+                <div>
+                  <p style={{ fontFamily: font, fontSize: 64, fontWeight: 800, color: '#fff', margin: '0 0 8px', lineHeight: 1 }}>
+                    {HERO_CARDS[heroIndex].stat}
+                  </p>
+                  <p style={{ fontFamily: fontBody, fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.9)', margin: 0, lineHeight: 1.45, maxWidth: 200 }}>
+                    {HERO_CARDS[heroIndex].description}
+                  </p>
+                </div>
+                <button onClick={advanceHero} aria-label="Next card"
+                  style={{ width: 44, height: 44, borderRadius: '50%', background: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 4px 16px rgba(0,0,0,0.18)' }}>
+                  <ArrowRight size={18} color={P} />
+                </button>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
