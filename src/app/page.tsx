@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import {
-  Target, Filter, TrendingDown, BarChart2, Activity,
+  RefreshCw, Filter, TrendingDown, BarChart2, Activity,
   Check, Menu, X, MapPin, ArrowRight, Globe,
 } from 'lucide-react'
 
@@ -395,97 +395,93 @@ export default function Home() {
 
       {/* ── Feature grid ──────────────────────────────────────────────────── */}
       <section id="features" className="section-pad" style={{ background: BgAlt }}>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-12 items-start" style={{ maxWidth: 1200, margin: '0 auto' }}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start" style={{ maxWidth: 1200, margin: '0 auto' }}>
 
           {/* LEFT COLUMN */}
           <div>
-            {/* dual badges */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24 }}>
-              <span style={{ background: P, color: '#fff', fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 6 }}>Pre</span>
-              <span style={{ background: '#ede9fe', color: P, fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 6 }}>Insights</span>
+              <span style={{ background: 'linear-gradient(135deg,#e879f9,#d946ef)', color: '#fff', fontSize: 12, fontWeight: 700, padding: '5px 14px', borderRadius: 100 }}>Pre</span>
+              <span style={{ background: '#ede9fe', color: P, fontSize: 12, fontWeight: 700, padding: '5px 14px', borderRadius: 100 }}>Insights</span>
             </div>
 
-            <h2 style={{ fontFamily: font, fontSize: 'clamp(32px,4vw,52px)', fontWeight: 700, color: P, lineHeight: 1.1, letterSpacing: '-0.03em', margin: '0 0 20px' }}>
+            <h2 style={{ fontFamily: font, fontSize: 'clamp(32px,4vw,48px)', fontWeight: 700, color: P, lineHeight: 1.1, letterSpacing: '-0.03em', margin: '0 0 20px' }}>
               Everything your diagnosis covers.
             </h2>
 
-            <p style={{ fontSize: 16, lineHeight: 1.7, color: 'rgba(48,33,97,0.7)', margin: '0 0 28px', maxWidth: 420 }}>
-              Replace scattered guesswork and agency reports with one platform that tells you exactly what is broken and what to fix first.
+            <p style={{ fontFamily: fontBody, fontSize: 16, lineHeight: 1.7, color: 'rgba(48,33,97,0.7)', margin: '0 0 28px', maxWidth: 440 }}>
+              Replace scattered guesswork and agency reports with one platform that tells you exactly what is broken.
             </p>
 
-            <a href="#how-it-works" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, color: P, fontWeight: 600, fontSize: 15, textDecoration: 'none' }}
+            <a href="#how-it-works" className="learn-more-link" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, color: P, fontWeight: 600, fontSize: 15, textDecoration: 'none', marginBottom: 36 }}
               onMouseEnter={e => (e.currentTarget.style.textDecoration = 'underline')}
               onMouseLeave={e => (e.currentTarget.style.textDecoration = 'none')}>
               Learn More <ArrowRight size={16} />
             </a>
 
-            {/* dashboard image */}
-            <div style={{ marginTop: 36, borderRadius: 20, overflow: 'hidden', boxShadow: '0 8px 40px rgba(48,33,97,0.12)' }}>
-              <Image
-                src="/images/Holder-4.png"
-                alt="ICP diagnostic dashboard"
-                width={560}
-                height={420}
-                style={{ width: '100%', height: 'auto', display: 'block' }}
-              />
-            </div>
+            <Image
+              src="/images/Holder-4.png"
+              alt="ICP diagnostic dashboard"
+              width={600}
+              height={450}
+              style={{ borderRadius: 20, width: '100%', height: 'auto', display: 'block' }}
+            />
           </div>
 
           {/* RIGHT COLUMN — 3×2 grid of feature cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-            {/* Card 1 — featured (dark) */}
+            {/* Card 1 — featured dark */}
             <div style={{ background: P, borderRadius: 20, padding: '28px 24px' }}>
               <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
-                <Target size={20} color="#fff" strokeWidth={1.75} />
+                <RefreshCw size={20} color="#fff" strokeWidth={1.75} />
               </div>
-              <h3 style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: '#fff', margin: '0 0 8px' }}>ICP Alignment</h3>
-              <p style={{ fontSize: 13, lineHeight: 1.65, color: 'rgba(255,255,255,0.75)', margin: 0 }}>Compare who you think your customer is against who actually buys from you.</p>
+              <h3 style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: '#fff', margin: '0 0 8px' }}>ICP Alignment</h3>
+              <p style={{ fontFamily: fontBody, fontSize: 14, lineHeight: 1.65, color: 'rgba(255,255,255,0.75)', margin: 0 }}>Compare who you think your customer is against who actually buys from you.</p>
             </div>
 
             {/* Card 2 */}
-            <div style={{ background: '#fff', border: `1px solid rgba(48,33,97,0.08)`, borderRadius: 20, padding: '28px 24px' }}>
-              <div style={{ width: 40, height: 40, borderRadius: 10, background: '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
-                <Globe size={20} color={P} strokeWidth={1.75} />
+            <div style={{ background: '#fff', border: '1px solid rgba(48,33,97,0.08)', borderRadius: 20, padding: '28px 24px' }}>
+              <div style={{ width: 40, height: 40, borderRadius: 10, background: '#f3e8ff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+                <Globe size={20} color="#a855f7" strokeWidth={1.75} />
               </div>
-              <h3 style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: '0 0 8px' }}>Smart Targeting</h3>
-              <p style={{ fontSize: 13, lineHeight: 1.65, color: Pbody, margin: 0 }}>Get region-specific recommendations based on where your audience actually decides.</p>
+              <h3 style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: '0 0 8px' }}>Smart Targeting</h3>
+              <p style={{ fontFamily: fontBody, fontSize: 14, lineHeight: 1.65, color: 'rgba(48,33,97,0.65)', margin: 0 }}>Region-specific recommendations based on where your audience decides.</p>
             </div>
 
             {/* Card 3 */}
-            <div style={{ background: '#fff', border: `1px solid rgba(48,33,97,0.08)`, borderRadius: 20, padding: '28px 24px' }}>
-              <div style={{ width: 40, height: 40, borderRadius: 10, background: '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
-                <Filter size={20} color={P} strokeWidth={1.75} />
+            <div style={{ background: '#fff', border: '1px solid rgba(48,33,97,0.08)', borderRadius: 20, padding: '28px 24px' }}>
+              <div style={{ width: 40, height: 40, borderRadius: 10, background: '#f3e8ff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+                <Filter size={20} color="#a855f7" strokeWidth={1.75} />
               </div>
-              <h3 style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: '0 0 8px' }}>Funnel Scoring</h3>
-              <p style={{ fontSize: 13, lineHeight: 1.65, color: Pbody, margin: 0 }}>Every step from ad click to lead scored and ranked by drop-off impact.</p>
+              <h3 style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: '0 0 8px' }}>Funnel Scoring</h3>
+              <p style={{ fontFamily: fontBody, fontSize: 14, lineHeight: 1.65, color: 'rgba(48,33,97,0.65)', margin: 0 }}>Score every step from ad click to lead by drop-off impact.</p>
             </div>
 
             {/* Card 4 */}
-            <div style={{ background: '#fff', border: `1px solid rgba(48,33,97,0.08)`, borderRadius: 20, padding: '28px 24px' }}>
-              <div style={{ width: 40, height: 40, borderRadius: 10, background: '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
-                <TrendingDown size={20} color={P} strokeWidth={1.75} />
+            <div style={{ background: '#fff', border: '1px solid rgba(48,33,97,0.08)', borderRadius: 20, padding: '28px 24px' }}>
+              <div style={{ width: 40, height: 40, borderRadius: 10, background: '#f3e8ff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+                <TrendingDown size={20} color="#a855f7" strokeWidth={1.75} />
               </div>
-              <h3 style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: '0 0 8px' }}>Budget Reallocation</h3>
-              <p style={{ fontSize: 13, lineHeight: 1.65, color: Pbody, margin: 0 }}>See which channels waste spend and where to shift money for maximum return.</p>
+              <h3 style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: '0 0 8px' }}>Budget Reallocation</h3>
+              <p style={{ fontFamily: fontBody, fontSize: 14, lineHeight: 1.65, color: 'rgba(48,33,97,0.65)', margin: 0 }}>Find which channels waste spend and where to shift money for return.</p>
             </div>
 
             {/* Card 5 */}
-            <div style={{ background: '#fff', border: `1px solid rgba(48,33,97,0.08)`, borderRadius: 20, padding: '28px 24px' }}>
-              <div style={{ width: 40, height: 40, borderRadius: 10, background: '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
-                <BarChart2 size={20} color={P} strokeWidth={1.75} />
+            <div style={{ background: '#fff', border: '1px solid rgba(48,33,97,0.08)', borderRadius: 20, padding: '28px 24px' }}>
+              <div style={{ width: 40, height: 40, borderRadius: 10, background: '#f3e8ff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+                <BarChart2 size={20} color="#a855f7" strokeWidth={1.75} />
               </div>
-              <h3 style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: '0 0 8px' }}>CSV Analysis</h3>
-              <p style={{ fontSize: 13, lineHeight: 1.65, color: Pbody, margin: 0 }}>Upload your Google or Meta export and get a media buyer analysis in seconds.</p>
+              <h3 style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: '0 0 8px' }}>CSV Analysis</h3>
+              <p style={{ fontFamily: fontBody, fontSize: 14, lineHeight: 1.65, color: 'rgba(48,33,97,0.65)', margin: 0 }}>Upload your Google or Meta export for instant media buyer analysis.</p>
             </div>
 
             {/* Card 6 */}
-            <div style={{ background: '#fff', border: `1px solid rgba(48,33,97,0.08)`, borderRadius: 20, padding: '28px 24px' }}>
-              <div style={{ width: 40, height: 40, borderRadius: 10, background: '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
-                <Activity size={20} color={P} strokeWidth={1.75} />
+            <div style={{ background: '#fff', border: '1px solid rgba(48,33,97,0.08)', borderRadius: 20, padding: '28px 24px' }}>
+              <div style={{ width: 40, height: 40, borderRadius: 10, background: '#f3e8ff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+                <Activity size={20} color="#a855f7" strokeWidth={1.75} />
               </div>
-              <h3 style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: '0 0 8px' }}>Monthly Health Check</h3>
-              <p style={{ fontSize: 13, lineHeight: 1.65, color: Pbody, margin: 0 }}>Track your ICP score improvement month over month with automated re-diagnosis.</p>
+              <h3 style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: '0 0 8px' }}>Monthly Health Check</h3>
+              <p style={{ fontFamily: fontBody, fontSize: 14, lineHeight: 1.65, color: 'rgba(48,33,97,0.65)', margin: 0 }}>Track ICP score improvement month over month automatically.</p>
             </div>
 
           </div>
@@ -493,21 +489,34 @@ export default function Home() {
       </section>
 
       {/* ── Stats bar ─────────────────────────────────────────────────────── */}
-      <div className="section-pad" style={{ borderTop: `1px solid ${Pborder}`, borderBottom: `1px solid ${Pborder}`, background: '#fff' }}>
-        <div style={{ maxWidth: 960, margin: '0 auto' }}>
-          <p style={{ textAlign: 'center', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', color: Pmuted, marginBottom: 56 }}>
+      <section className="section-pad" style={{ background: BgAlt, borderTop: `1px solid ${Pborder}` }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+          <h2 style={{ fontFamily: font, fontSize: 'clamp(32px,4vw,48px)', fontWeight: 700, color: P, letterSpacing: '-0.03em', lineHeight: 1.1, textAlign: 'center', margin: '0 0 48px' }}>
             Why it matters now.
-          </p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(180px,1fr))', gap: 40, textAlign: 'center' }}>
-            {STATS.map(s => (
-              <div key={s.label}>
-                <p style={{ fontFamily: font, fontSize: 'clamp(40px,4vw,56px)', fontWeight: 700, color: P, letterSpacing: '-0.04em', margin: '0 0 10px', lineHeight: 1 }}>{s.value}</p>
-                <p style={{ fontFamily: fontBody, fontSize: 14, color: Pbody, margin: 0, lineHeight: 1.5 }}>{s.label}</p>
-              </div>
-            ))}
+          </h2>
+
+          {/* white card container */}
+          <div style={{ background: '#fff', borderRadius: 24, padding: '60px 80px', maxWidth: 1100, margin: '0 auto', boxShadow: '0 2px 40px rgba(48,33,97,0.06)' }}>
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-8 sm:gap-0">
+              {STATS.map((s, i) => (
+                <div key={s.label} style={{ display: 'contents' }}>
+                  <div style={{ textAlign: 'center', flex: 1 }}>
+                    <p style={{ fontFamily: font, fontSize: 'clamp(36px,4vw,52px)', fontWeight: 700, color: P, letterSpacing: '-0.04em', margin: '0 0 12px', lineHeight: 1 }}>{s.value}</p>
+                    <p style={{ fontFamily: fontBody, fontSize: 13, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(48,33,97,0.6)', margin: 0, lineHeight: 1.5, maxWidth: 160, marginLeft: 'auto', marginRight: 'auto' }}>{s.label}</p>
+                  </div>
+                  {i < STATS.length - 1 && (
+                    <div className="hidden sm:block" style={{ width: 1, height: 60, background: Pborder, flexShrink: 0 }} />
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
+
+          <p style={{ fontFamily: fontBody, fontSize: 14, color: 'rgba(48,33,97,0.5)', textAlign: 'center', marginTop: 24, maxWidth: 500, marginLeft: 'auto', marginRight: 'auto', lineHeight: 1.7 }}>
+            Every number above comes from real diagnostic data — not estimates. Your results may vary based on campaign size and targeting complexity.
+          </p>
         </div>
-      </div>
+      </section>
 
       {/* ── Lead magnet ───────────────────────────────────────────────────── */}
       <section className="section-pad" style={{ background: '#ede9fe', borderTop: `1px solid ${Pborder}` }}>
