@@ -2,6 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import {
+  Target, Filter, TrendingDown, Radio, BarChart2, Activity,
+  Star, Check, Menu, X, MapPin, ArrowRight,
+} from 'lucide-react'
 
 export const dynamic = 'force-static'
 
@@ -10,9 +14,9 @@ const P       = '#302161'
 const Pbody   = 'rgba(48,33,97,0.88)'
 const Pmuted  = 'rgba(48,33,97,0.5)'
 const Pborder = 'rgba(48,33,97,0.1)'
-const BgAlt   = '#f5f3ff'
-
-const font = "'DM Sans', -apple-system, sans-serif"
+const BgAlt   = '#f8f7ff'
+const BgPurple = '#f5f3ff'
+const font    = "'DM Sans', -apple-system, sans-serif"
 
 // ─── Static data ─────────────────────────────────────────────────────────────
 
@@ -33,12 +37,12 @@ const MARQUEE_ITEMS = [
 ]
 
 const FEATURE_GRID = [
-  { icon: '🎯', title: 'ICP Alignment',      desc: 'Know exactly who your best customer really is' },
-  { icon: '🔍', title: 'Funnel Audit',        desc: 'Score every step from ad click to conversion' },
-  { icon: '💸', title: 'Budget Analysis',     desc: 'Find where your money is being wasted' },
-  { icon: '📡', title: 'Channel Efficiency',  desc: 'Identify which platforms your ICP actually uses' },
-  { icon: '📊', title: 'CSV Analysis',        desc: 'Upload your campaign data for instant media buyer insights' },
-  { icon: '📈', title: 'Monthly Monitoring',  desc: 'Track your ICP health score improvement over time' },
+  { Icon: Target,       title: 'ICP Alignment',      desc: 'Know exactly who your best customer really is' },
+  { Icon: Filter,       title: 'Funnel Audit',        desc: 'Score every step from ad click to conversion' },
+  { Icon: TrendingDown, title: 'Budget Analysis',     desc: 'Find where your money is being wasted' },
+  { Icon: Radio,        title: 'Channel Efficiency',  desc: 'Identify which platforms your ICP actually uses' },
+  { Icon: BarChart2,    title: 'CSV Analysis',        desc: 'Upload your campaign data for instant media buyer insights' },
+  { Icon: Activity,     title: 'Monthly Monitoring',  desc: 'Track your ICP health score improvement over time' },
 ]
 
 const STATS = [
@@ -53,19 +57,19 @@ const TIERS = [
     name: 'Starter', price: 'KES 6,500', period: '/ month',
     desc: 'For solo founders and small teams running their first serious paid campaigns.',
     features: ['Monthly ICP health check', 'Top 3 critical findings', 'Funnel friction score', 'Quick wins report', 'Email support'],
-    cta: 'Start Free Diagnosis', highlight: false,
+    cta: 'Start Free Diagnosis', href: '/questionnaire', highlight: false,
   },
   {
     name: 'Pro', price: 'KES 13,000', period: '/ month',
     desc: 'For growing teams that need speed, depth, and campaign-level analysis.',
     features: ['Everything in Starter', 'Weekly performance snapshots', 'CSV campaign analysis', 'Benchmark comparisons', 'Revenue-ranked findings', 'Complete report history'],
-    cta: 'Start Pro', highlight: true,
+    cta: 'Start Pro', href: '/questionnaire', highlight: true,
   },
   {
     name: 'Agency', price: 'KES 26,000', period: '/ month',
     desc: 'For agencies managing multiple clients who need reporting at scale.',
     features: ['Everything in Pro', 'Quarterly deep dive audits', 'Multi-client management', 'White label reports', 'Priority support'],
-    cta: 'Talk To Us', highlight: false,
+    cta: 'Talk To Us', href: '/questionnaire', highlight: false,
   },
 ]
 
@@ -107,73 +111,90 @@ const TESTIMONIALS = [
   },
 ]
 
-// ─── Mock UI illustrations ────────────────────────────────────────────────────
+// ─── Score arc SVG ────────────────────────────────────────────────────────────
 
-function ScoreCircle({ score, size = 96 }: { score: number; size?: number }) {
-  const r    = 38
+function ScoreArc({ score, size = 120 }: { score: number; size?: number }) {
+  const r    = Math.round(size * 0.38)
+  const cx   = size / 2
+  const cy   = size / 2
   const circ = 2 * Math.PI * r
   const off  = circ * (1 - score / 100)
   const col  = score >= 70 ? '#22c55e' : score >= 40 ? '#f59e0b' : '#ef4444'
   return (
-    <svg width={size} height={size} viewBox="0 0 100 100">
-      <circle cx="50" cy="50" r={r} fill="none" stroke="#ede9fe" strokeWidth={8} />
-      <circle cx="50" cy="50" r={r} fill="none" stroke={col} strokeWidth={8}
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ display: 'block' }}>
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke="#ede9fe" strokeWidth={size * 0.07} />
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke={col} strokeWidth={size * 0.07}
         strokeDasharray={circ} strokeDashoffset={off}
-        strokeLinecap="round" transform="rotate(-90 50 50)" />
+        strokeLinecap="round" transform={`rotate(-90 ${cx} ${cy})`} />
     </svg>
   )
 }
 
-function DiagnosticCard() {
+// ─── Hero illustration ────────────────────────────────────────────────────────
+
+function HeroIllustration() {
+  const bars = [
+    { label: 'ICP Alignment',  v: 28 },
+    { label: 'Targeting',      v: 42 },
+    { label: 'Channel Mix',    v: 65 },
+  ]
+  const findings = [
+    { text: 'Wrong audience targeting', col: '#dc2626', bg: '#fef2f2' },
+    { text: 'High funnel friction',      col: '#d97706', bg: '#fffbeb' },
+    { text: 'Meta budget misaligned',    col: '#dc2626', bg: '#fef2f2' },
+  ]
   return (
-    <div style={{ background: '#fff', borderRadius: 20, border: `1px solid ${Pborder}`, boxShadow: '0 24px 80px rgba(48,33,97,0.13)', padding: 24, width: '100%', maxWidth: 380 }}>
-      {/* header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
-        <div style={{ width: 28, height: 28, borderRadius: 8, background: `linear-gradient(135deg,${P},#6c4ddd)`, flexShrink: 0 }} />
-        <div>
-          <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: P }}>ICP Diagnostic</p>
-          <p style={{ margin: 0, fontSize: 11, color: Pmuted }}>Full Report · April 2025</p>
+    <div style={{ width: '100%', maxWidth: 400, background: 'linear-gradient(150deg, #f5f3ff 0%, #ede9fe 100%)', borderRadius: 24, padding: 28, border: `1px solid ${Pborder}`, boxShadow: '0 32px 80px rgba(48,33,97,0.15)' }}>
+
+      {/* main card */}
+      <div style={{ background: '#fff', borderRadius: 16, padding: 24, marginBottom: 14, border: `1px solid rgba(48,33,97,0.07)` }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+          <div>
+            <p style={{ margin: 0, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.7px', color: Pmuted }}>ICP Health Score</p>
+          </div>
+          <span style={{ background: '#fef2f2', color: '#dc2626', fontSize: 10, fontWeight: 700, padding: '3px 9px', borderRadius: 8 }}>Critical</span>
         </div>
-        <span style={{ marginLeft: 'auto', background: '#fef2f2', color: '#dc2626', fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 6, textTransform: 'uppercase', letterSpacing: '0.4px', whiteSpace: 'nowrap' }}>
-          Needs Work
-        </span>
-      </div>
-      {/* score row */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
-        <div style={{ position: 'relative', flexShrink: 0 }}>
-          <ScoreCircle score={34} size={90} />
+
+        <div style={{ display: 'flex', justifyContent: 'center', position: 'relative', marginBottom: 20 }}>
+          <ScoreArc score={34} size={120} />
           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-            <p style={{ margin: 0, fontSize: 22, fontWeight: 800, color: '#ef4444', lineHeight: 1 }}>34</p>
-            <p style={{ margin: 0, fontSize: 10, color: Pmuted }}>/100</p>
+            <p style={{ margin: 0, fontSize: 28, fontWeight: 800, color: '#ef4444', lineHeight: 1 }}>34</p>
+            <p style={{ margin: 0, fontSize: 11, color: Pmuted }}>/100</p>
           </div>
         </div>
-        <div>
-          <p style={{ margin: '0 0 4px', fontSize: 13, fontWeight: 700, color: P }}>ICP Health Score</p>
-          <p style={{ margin: '0 0 8px', fontSize: 12, color: Pmuted }}>3 critical findings</p>
-          <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '5px 10px' }}>
-            <p style={{ margin: 0, fontSize: 11, color: '#dc2626', fontWeight: 600 }}>⚠ Immediate action needed</p>
-          </div>
-        </div>
+
+        {bars.map(b => {
+          const col = b.v >= 70 ? '#22c55e' : b.v >= 40 ? '#f59e0b' : '#ef4444'
+          return (
+            <div key={b.label} style={{ marginBottom: 9 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                <span style={{ fontSize: 11, color: Pbody }}>{b.label}</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: col }}>{b.v}</span>
+              </div>
+              <div style={{ height: 5, background: '#f0edff', borderRadius: 99 }}>
+                <div style={{ height: '100%', width: `${b.v}%`, background: col, borderRadius: 99 }} />
+              </div>
+            </div>
+          )
+        })}
       </div>
+
       {/* findings */}
-      {[
-        { label: 'Wrong audience targeting',  sev: 'Critical',    col: '#ef4444', bg: '#fef2f2' },
-        { label: 'High funnel drop-off rate', sev: 'Warning',     col: '#f59e0b', bg: '#fffbeb' },
-        { label: 'Channel mix opportunity',   sev: 'Opportunity', col: '#6366f1', bg: '#eef2ff' },
-      ].map(f => (
-        <div key={f.label} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderTop: `1px solid ${Pborder}` }}>
-          <div style={{ width: 7, height: 7, borderRadius: '50%', background: f.col, flexShrink: 0 }} />
-          <span style={{ fontSize: 12, color: Pbody, flex: 1 }}>{f.label}</span>
-          <span style={{ fontSize: 10, fontWeight: 700, color: f.col, background: f.bg, padding: '2px 8px', borderRadius: 6 }}>{f.sev}</span>
+      {findings.map(f => (
+        <div key={f.text} style={{ background: f.bg, borderRadius: 10, padding: '9px 13px', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ width: 6, height: 6, borderRadius: '50%', background: f.col, flexShrink: 0 }} />
+          <span style={{ fontSize: 12, color: f.col, fontWeight: 600 }}>{f.text}</span>
         </div>
       ))}
     </div>
   )
 }
 
-function ICPCard() {
+// ─── Feature illustrations ────────────────────────────────────────────────────
+
+function ICPIllustration() {
   const dims = [
-    { label: 'ICP Alignment',      score: 42 },
+    { label: 'ICP Alignment',     score: 42 },
     { label: 'Targeting Accuracy', score: 28 },
     { label: 'Channel Efficiency', score: 65 },
     { label: 'Funnel Friction',    score: 35 },
@@ -181,135 +202,167 @@ function ICPCard() {
     { label: 'Budget Allocation',  score: 20 },
   ]
   return (
-    <div style={{ background: '#fff', borderRadius: 20, border: `1px solid ${Pborder}`, boxShadow: '0 20px 60px rgba(48,33,97,0.1)', padding: 24, width: '100%', maxWidth: 380 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
-        <div>
-          <p style={{ margin: '0 0 2px', fontSize: 11, fontWeight: 700, color: Pmuted, textTransform: 'uppercase', letterSpacing: '0.6px' }}>Score Breakdown</p>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-            <span style={{ fontSize: 32, fontWeight: 800, color: '#ef4444', lineHeight: 1 }}>34</span>
-            <span style={{ fontSize: 14, color: Pmuted }}>/100</span>
+    <div style={{ width: '100%', maxWidth: 400, background: BgPurple, borderRadius: 20, padding: 28 }}>
+      <div style={{ background: '#fff', borderRadius: 16, padding: 24, border: `1px solid rgba(48,33,97,0.07)` }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+          <div>
+            <p style={{ margin: '0 0 2px', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.7px', color: Pmuted }}>Score Breakdown</p>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+              <span style={{ fontSize: 30, fontWeight: 800, color: '#ef4444', lineHeight: 1 }}>34</span>
+              <span style={{ fontSize: 13, color: Pmuted }}>/100</span>
+            </div>
           </div>
+          <span style={{ fontSize: 10, fontWeight: 700, background: '#fef2f2', color: '#dc2626', padding: '4px 10px', borderRadius: 8 }}>Critical</span>
         </div>
-        <span style={{ fontSize: 10, fontWeight: 700, background: '#fef2f2', color: '#dc2626', padding: '4px 10px', borderRadius: 8 }}>Critical</span>
+        {dims.map(d => {
+          const col = d.score >= 70 ? '#22c55e' : d.score >= 40 ? '#f59e0b' : '#ef4444'
+          return (
+            <div key={d.label} style={{ marginBottom: 10 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                <span style={{ fontSize: 12, color: Pbody }}>{d.label}</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: col }}>{d.score}</span>
+              </div>
+              <div style={{ height: 6, background: '#f0edff', borderRadius: 99 }}>
+                <div style={{ height: '100%', width: `${d.score}%`, background: col, borderRadius: 99 }} />
+              </div>
+            </div>
+          )
+        })}
       </div>
-      {dims.map(d => {
-        const col = d.score >= 70 ? '#22c55e' : d.score >= 40 ? '#f59e0b' : '#ef4444'
-        return (
-          <div key={d.label} style={{ marginBottom: 10 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-              <span style={{ fontSize: 12, color: Pbody }}>{d.label}</span>
-              <span style={{ fontSize: 12, fontWeight: 700, color: col }}>{d.score}</span>
-            </div>
-            <div style={{ height: 6, background: BgAlt, borderRadius: 99 }}>
-              <div style={{ height: '100%', width: `${d.score}%`, background: col, borderRadius: 99 }} />
-            </div>
-          </div>
-        )
-      })}
     </div>
   )
 }
 
-function FunnelCard() {
+function FunnelIllustration() {
   const steps = [
-    { label: 'Ad Impression',      pct: '100%',  warn: false },
-    { label: 'Click  (3.2% CTR)', pct: '3.2%',  warn: false },
-    { label: 'Landing Page',       pct: '1.8%',  warn: false },
-    { label: '14-field Form',      pct: '0.6%',  warn: true  },
-    { label: 'Lead Conversion',    pct: '0.2%',  warn: false },
+    { label: 'Ad Impression',    pct: '100%',  warn: false, drop: null },
+    { label: 'Click  (3.2%)',   pct: '3.2%',  warn: false, drop: '96.8% lost' },
+    { label: 'Landing Page',     pct: '1.8%',  warn: false, drop: '44% exit' },
+    { label: '14-field Form',    pct: '0.6%',  warn: true,  drop: '67% abandon' },
+    { label: 'Lead Conversion',  pct: '0.2%',  warn: false, drop: '67% drop' },
   ]
   return (
-    <div style={{ background: '#fff', borderRadius: 20, border: `1px solid ${Pborder}`, boxShadow: '0 20px 60px rgba(48,33,97,0.1)', padding: 24, width: '100%', maxWidth: 380 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
-        <div>
-          <p style={{ margin: '0 0 2px', fontSize: 11, fontWeight: 700, color: Pmuted, textTransform: 'uppercase', letterSpacing: '0.6px' }}>Funnel Score</p>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-            <span style={{ fontSize: 32, fontWeight: 800, color: '#f59e0b', lineHeight: 1 }}>28</span>
-            <span style={{ fontSize: 14, color: Pmuted }}>/100</span>
-          </div>
-        </div>
-        <span style={{ fontSize: 10, fontWeight: 700, background: '#fffbeb', color: '#d97706', padding: '4px 10px', borderRadius: 8 }}>High Friction</span>
-      </div>
-      {steps.map((s, i) => (
-        <div key={s.label}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: s.warn ? '#fef2f2' : 'transparent', border: s.warn ? '1px solid #fecaca' : '1px solid transparent', borderRadius: 10, padding: '8px 10px' }}>
-            <div style={{ width: 26, height: 26, borderRadius: 8, flexShrink: 0, background: s.warn ? '#dc2626' : P, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff' }}>
-              {i + 1}
+    <div style={{ width: '100%', maxWidth: 400, background: BgPurple, borderRadius: 20, padding: 28 }}>
+      <div style={{ background: '#fff', borderRadius: 16, padding: 24, border: `1px solid rgba(48,33,97,0.07)` }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+          <div>
+            <p style={{ margin: '0 0 2px', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.7px', color: Pmuted }}>Funnel Score</p>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+              <span style={{ fontSize: 30, fontWeight: 800, color: '#f59e0b', lineHeight: 1 }}>28</span>
+              <span style={{ fontSize: 13, color: Pmuted }}>/100</span>
             </div>
-            <span style={{ fontSize: 12, color: s.warn ? '#dc2626' : Pbody, flex: 1, fontWeight: s.warn ? 600 : 400 }}>{s.label}</span>
-            <span style={{ fontSize: 12, fontWeight: 700, color: s.warn ? '#dc2626' : P }}>{s.pct}</span>
           </div>
-          {i < steps.length - 1 && (
-            <div style={{ display: 'flex', justifyContent: 'center', height: 10 }}>
-              <div style={{ width: 1, height: '100%', background: Pborder }} />
-            </div>
-          )}
+          <span style={{ fontSize: 10, fontWeight: 700, background: '#fffbeb', color: '#d97706', padding: '4px 10px', borderRadius: 8 }}>High Friction</span>
         </div>
-      ))}
-      <div style={{ marginTop: 12, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10, padding: '8px 12px' }}>
-        <p style={{ margin: 0, fontSize: 11, fontWeight: 600, color: '#dc2626' }}>⚠ 14 form fields detected — industry average is 4</p>
+        {steps.map((s, i) => (
+          <div key={s.label}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: s.warn ? '#fef2f2' : 'transparent', border: s.warn ? '1px solid #fecaca' : '1px solid transparent', borderRadius: 10, padding: '8px 10px' }}>
+              <div style={{ width: 24, height: 24, borderRadius: 7, flexShrink: 0, background: s.warn ? '#dc2626' : P, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff' }}>{i + 1}</div>
+              <span style={{ fontSize: 12, color: s.warn ? '#dc2626' : Pbody, flex: 1, fontWeight: s.warn ? 700 : 400 }}>{s.label}</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: s.warn ? '#dc2626' : P }}>{s.pct}</span>
+            </div>
+            {i < steps.length - 1 && (
+              <div style={{ marginLeft: 22, paddingLeft: 12, height: 10, borderLeft: `1px dashed ${Pborder}` }} />
+            )}
+          </div>
+        ))}
+        <div style={{ marginTop: 12, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10, padding: '8px 12px' }}>
+          <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: '#dc2626' }}>14 form fields detected — average is 4</p>
+        </div>
       </div>
     </div>
   )
 }
 
-function ChannelCard() {
+function ChannelIllustration() {
+  // Donut: circumference of r=56 ≈ 352
+  const C = 2 * Math.PI * 56
+  const channels = [
+    { label: 'Meta / Facebook', pct: 65, color: '#ef4444', spend: 'KES 32,500', dash: C * 0.65, offset: 0 },
+    { label: 'Google Search',   pct: 25, color: P,         spend: 'KES 12,500', dash: C * 0.25, offset: -(C * 0.65) },
+    { label: 'LinkedIn',        pct: 10, color: '#6c4ddd', spend: 'KES 5,000',  dash: C * 0.10, offset: -(C * 0.90) },
+  ]
   return (
-    <div style={{ background: '#fff', borderRadius: 20, border: `1px solid ${Pborder}`, boxShadow: '0 20px 60px rgba(48,33,97,0.1)', padding: 24, width: '100%', maxWidth: 380 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-        <div>
-          <p style={{ margin: '0 0 2px', fontSize: 11, fontWeight: 700, color: Pmuted, textTransform: 'uppercase', letterSpacing: '0.6px' }}>Channel Spend</p>
-          <p style={{ margin: 0, fontSize: 13, color: Pbody }}>Budget: KES 50,000/mo</p>
+    <div style={{ width: '100%', maxWidth: 400, background: BgPurple, borderRadius: 20, padding: 28 }}>
+      <div style={{ background: '#fff', borderRadius: 16, padding: 24, border: `1px solid rgba(48,33,97,0.07)` }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+          <div>
+            <p style={{ margin: '0 0 2px', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.7px', color: Pmuted }}>Channel Spend</p>
+            <p style={{ margin: 0, fontSize: 13, color: Pbody }}>Budget: KES 50,000/mo</p>
+          </div>
+          <span style={{ fontSize: 10, fontWeight: 700, background: '#fef2f2', color: '#dc2626', padding: '4px 10px', borderRadius: 8 }}>Misaligned</span>
         </div>
-        <span style={{ fontSize: 10, fontWeight: 700, background: '#fef2f2', color: '#dc2626', padding: '4px 10px', borderRadius: 8 }}>Misaligned</span>
-      </div>
-      <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10, padding: '10px 12px', marginBottom: 16 }}>
-        <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#dc2626' }}>⚠ Estimated waste: KES 21,000/mo</p>
-        <p style={{ margin: '2px 0 0', fontSize: 11, color: '#ef4444' }}>Meta over-indexed vs your ICP behaviour</p>
-      </div>
-      {[
-        { label: 'Meta / Facebook', pct: 65, spend: 'KES 32,500', waste: true  },
-        { label: 'Google Search',   pct: 25, spend: 'KES 12,500', waste: false },
-        { label: 'LinkedIn',        pct: 10, spend: 'KES 5,000',  waste: false },
-      ].map(ch => (
-        <div key={ch.label} style={{ marginBottom: 12 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ fontSize: 12, color: Pbody }}>{ch.label}</span>
-              {ch.waste && <span style={{ fontSize: 9, fontWeight: 700, background: '#fef2f2', color: '#dc2626', padding: '1px 5px', borderRadius: 4 }}>Waste</span>}
+
+        {/* donut chart */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 16 }}>
+          <div style={{ position: 'relative', flexShrink: 0 }}>
+            <svg width="120" height="120" viewBox="0 0 120 120">
+              <circle cx="60" cy="60" r="56" fill="none" stroke="#f0edff" strokeWidth="16" />
+              {channels.map(ch => (
+                <circle key={ch.label} cx="60" cy="60" r="56" fill="none"
+                  stroke={ch.color} strokeWidth="16"
+                  strokeDasharray={`${ch.dash} ${C - ch.dash}`}
+                  strokeDashoffset={ch.offset}
+                  transform="rotate(-90 60 60)"
+                  strokeLinecap="butt"
+                />
+              ))}
+            </svg>
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+              <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: '#dc2626', lineHeight: 1.2, textAlign: 'center' }}>42%<br /><span style={{ fontSize: 9, fontWeight: 400, color: Pmuted }}>waste</span></p>
             </div>
-            <span style={{ fontSize: 12, fontWeight: 700, color: P }}>{ch.spend}</span>
           </div>
-          <div style={{ height: 8, background: BgAlt, borderRadius: 99 }}>
-            <div style={{ height: '100%', width: `${ch.pct}%`, background: ch.waste ? '#ef4444' : P, borderRadius: 99 }} />
+          <div style={{ flex: 1 }}>
+            {channels.map(ch => (
+              <div key={ch.label} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <div style={{ width: 8, height: 8, borderRadius: 2, background: ch.color, flexShrink: 0 }} />
+                <span style={{ fontSize: 11, color: Pbody, flex: 1 }}>{ch.label}</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: P }}>{ch.pct}%</span>
+              </div>
+            ))}
           </div>
         </div>
-      ))}
+
+        {/* spend bars */}
+        {channels.map(ch => (
+          <div key={`bar-${ch.label}`} style={{ marginBottom: 8 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+              <span style={{ fontSize: 11, color: Pbody }}>{ch.spend}</span>
+            </div>
+            <div style={{ height: 6, background: '#f0edff', borderRadius: 99 }}>
+              <div style={{ height: '100%', width: `${ch.pct}%`, background: ch.color, borderRadius: 99 }} />
+            </div>
+          </div>
+        ))}
+        <div style={{ marginTop: 10, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10, padding: '7px 11px' }}>
+          <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: '#dc2626' }}>Waste: KES 21,000/mo — Meta over-indexed</p>
+        </div>
+      </div>
     </div>
   )
 }
 
-// ─── Shared sub-components ────────────────────────────────────────────────────
+// ─── Shared components ────────────────────────────────────────────────────────
 
-function SectionBadge({ text }: { text: string }) {
+function Badge({ text }: { text: string }) {
   return (
-    <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: P, opacity: 0.55, margin: '0 0 14px' }}>
+    <div style={{ display: 'inline-block', background: '#ede9fe', color: P, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', padding: '5px 14px', borderRadius: 100, marginBottom: 16 }}>
       {text}
-    </p>
+    </div>
   )
 }
 
-function FeatureHeading({ children }: { children: React.ReactNode }) {
+function H2({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   return (
-    <h2 style={{ fontFamily: font, fontSize: 'clamp(26px,3.5vw,42px)', fontWeight: 700, letterSpacing: '-0.3px', color: P, margin: '0 0 20px', lineHeight: 1.2 }}>
+    <h2 style={{ fontFamily: font, fontSize: 'clamp(28px,3.5vw,40px)', fontWeight: 700, letterSpacing: '-0.3px', color: P, margin: '0 0 20px', lineHeight: 1.2, ...style }}>
       {children}
     </h2>
   )
 }
 
-function FeatureBody({ children }: { children: React.ReactNode }) {
+function Body({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   return (
-    <p style={{ fontSize: 16, lineHeight: 1.75, color: Pbody, margin: '0 0 28px', maxWidth: 500 }}>
+    <p style={{ fontSize: 16, lineHeight: 1.75, color: Pbody, margin: '0 0 28px', ...style }}>
       {children}
     </p>
   )
@@ -335,45 +388,37 @@ export default function Home() {
         <nav style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           width: '100%', maxWidth: 1060,
-          background: 'rgba(255,255,255,0.92)',
+          background: 'rgba(255,255,255,0.8)',
           backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-          border: `1px solid ${Pborder}`,
-          borderRadius: 32, padding: '10px 16px 10px 20px',
+          border: `1px solid ${Pborder}`, borderRadius: 100,
+          padding: '12px 24px',
           boxShadow: '0 2px 24px rgba(48,33,97,0.07)',
         }}>
-          {/* logo */}
           <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-            <div style={{ width: 30, height: 30, borderRadius: 9, background: `linear-gradient(135deg,${P},#6c4ddd)`, flexShrink: 0 }} />
+            <div style={{ width: 28, height: 28, borderRadius: 8, background: `linear-gradient(135deg,${P},#6c4ddd)`, flexShrink: 0 }} />
             <span style={{ fontFamily: font, fontWeight: 700, fontSize: 15, color: P, letterSpacing: '-0.3px' }}>ICP Diagnostic</span>
           </Link>
 
-          {/* desktop links */}
           <div className="hidden md:flex" style={{ gap: 2 }}>
             {NAV_LINKS.map(l => (
               <a key={l.label} href={l.href} className="nav-link"
-                style={{ color: Pbody, textDecoration: 'none', fontSize: 14, fontWeight: 500, padding: '8px 14px', borderRadius: 24 }}>
+                style={{ color: Pbody, textDecoration: 'none', fontSize: 14, fontWeight: 500, padding: '8px 16px', borderRadius: 100 }}>
                 {l.label}
               </a>
             ))}
           </div>
 
-          {/* right actions */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <Link href="/dashboard" className="hidden md:inline-block"
-              style={{ color: Pbody, textDecoration: 'none', fontSize: 14, fontWeight: 500, padding: '8px 14px', borderRadius: 24 }}>
+              style={{ color: Pbody, textDecoration: 'none', fontSize: 14, fontWeight: 500, padding: '8px 16px', borderRadius: 100 }}>
               Login
             </Link>
-            <Link href="/questionnaire" style={{ background: P, color: '#fff', textDecoration: 'none', fontSize: 14, fontWeight: 600, padding: '9px 18px', borderRadius: 12, whiteSpace: 'nowrap' }}>
+            <Link href="/questionnaire" style={{ background: P, color: '#fff', textDecoration: 'none', fontSize: 14, fontWeight: 600, padding: '10px 20px', borderRadius: 100, whiteSpace: 'nowrap' }}>
               Get Free Diagnosis
             </Link>
-            {/* hamburger */}
-            <button onClick={() => setMobileOpen(o => !o)} className="md:hidden"
-              aria-label="Toggle menu"
-              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 8, display: 'flex', flexDirection: 'column', gap: 5 }}>
-              {mobileOpen
-                ? <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 4l12 12M16 4L4 16" stroke={P} strokeWidth={2} strokeLinecap="round" /></svg>
-                : <><div style={{ width: 20, height: 2, background: P, borderRadius: 2 }} /><div style={{ width: 20, height: 2, background: P, borderRadius: 2 }} /><div style={{ width: 20, height: 2, background: P, borderRadius: 2 }} /></>
-              }
+            <button onClick={() => setMobileOpen(o => !o)} className="md:hidden" aria-label="Menu"
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 6, color: P, display: 'flex', alignItems: 'center' }}>
+              {mobileOpen ? <X size={20} color={P} /> : <Menu size={20} color={P} />}
             </button>
           </div>
         </nav>
@@ -381,7 +426,7 @@ export default function Home() {
 
       {/* mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden" style={{ position: 'fixed', top: 72, left: 0, right: 0, zIndex: 40, background: '#fff', borderBottom: `1px solid ${Pborder}`, padding: '16px 24px 24px', display: 'flex', flexDirection: 'column', gap: 0, boxShadow: '0 8px 32px rgba(48,33,97,0.08)' }}>
+        <div className="md:hidden" style={{ position: 'fixed', top: 72, left: 0, right: 0, zIndex: 40, background: '#fff', borderBottom: `1px solid ${Pborder}`, padding: '16px 24px 24px', display: 'flex', flexDirection: 'column', boxShadow: '0 8px 32px rgba(48,33,97,0.08)' }}>
           {NAV_LINKS.map(l => (
             <a key={l.label} href={l.href} onClick={() => setMobileOpen(false)}
               style={{ color: Pbody, textDecoration: 'none', fontSize: 15, fontWeight: 500, padding: '14px 0', borderBottom: `1px solid ${Pborder}` }}>
@@ -396,31 +441,28 @@ export default function Home() {
       )}
 
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <section style={{ background: 'linear-gradient(160deg,#f5f3ff 0%,#ffffff 65%)', padding: '56px 24px 88px' }}>
-        <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16" style={{ maxWidth: 1120, margin: '0 auto' }}>
-
-          {/* left: copy */}
+      <section style={{ background: 'linear-gradient(160deg,#f5f3ff 0%,#ffffff 60%)', padding: '72px 24px 100px' }}>
+        <div className="flex flex-col lg:flex-row items-center gap-14 lg:gap-20" style={{ maxWidth: 1120, margin: '0 auto' }}>
+          {/* copy */}
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', background: '#ede9fe', border: '1px solid rgba(109,40,217,0.2)', borderRadius: 32, padding: '5px 14px', marginBottom: 24 }}>
-              <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: '#5b21b6' }}>ICP Diagnostic Platform</span>
-            </div>
+            <Badge text="ICP Diagnostic Platform" />
 
-            <h1 style={{ fontFamily: font, fontSize: 'clamp(36px,5.5vw,64px)', fontWeight: 700, lineHeight: 1.1, letterSpacing: '-0.4px', color: P, margin: '0 0 24px' }}>
+            <h1 style={{ fontFamily: font, fontSize: 'clamp(40px,5.5vw,64px)', fontWeight: 700, lineHeight: 1.08, letterSpacing: '-0.4px', color: P, margin: '0 0 24px' }}>
               You&rsquo;re not bad at marketing.{' '}
               <span style={{ background: 'linear-gradient(135deg,#6c4ddd 0%,#302161 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                 You&rsquo;re targeting the wrong people.
               </span>
             </h1>
 
-            <p style={{ fontSize: 17, lineHeight: 1.75, color: Pbody, maxWidth: 520, margin: '0 0 36px' }}>
+            <p style={{ fontSize: 18, lineHeight: 1.75, color: Pbody, maxWidth: 520, margin: '0 0 40px' }}>
               Every month you run ads to the wrong audience is another month your CEO asks why
               the pipeline is empty. We diagnose exactly who you should be targeting, where your
               funnel is breaking, and what to fix first — in 5 minutes, for free.
             </p>
 
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 20 }}>
-              <Link href="/questionnaire" style={{ display: 'inline-block', background: P, color: '#fff', textDecoration: 'none', fontWeight: 600, fontSize: 15, padding: '14px 28px', borderRadius: 12, boxShadow: '0 8px 28px rgba(48,33,97,0.25)', letterSpacing: '-0.2px' }}>
-                Diagnose My Marketing Now →
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 24 }}>
+              <Link href="/questionnaire" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: P, color: '#fff', textDecoration: 'none', fontWeight: 600, fontSize: 15, padding: '14px 28px', borderRadius: 12, boxShadow: '0 8px 28px rgba(48,33,97,0.25)' }}>
+                Diagnose My Marketing Now <ArrowRight size={16} />
               </Link>
               <Link href="/report/demo" style={{ display: 'inline-block', background: 'transparent', color: P, textDecoration: 'none', fontWeight: 600, fontSize: 15, padding: '14px 28px', borderRadius: 12, border: `1.5px solid ${Pborder}` }}>
                 See A Sample Report
@@ -432,15 +474,15 @@ export default function Home() {
             </p>
           </div>
 
-          {/* right: mock card */}
-          <div className="w-full lg:w-auto flex justify-center">
-            <DiagnosticCard />
+          {/* illustration */}
+          <div className="w-full lg:w-auto flex justify-center flex-shrink-0">
+            <HeroIllustration />
           </div>
         </div>
       </section>
 
       {/* ── Marquee ───────────────────────────────────────────────────────── */}
-      <div style={{ background: BgAlt, borderTop: `1px solid ${Pborder}`, borderBottom: `1px solid ${Pborder}`, padding: '18px 0', overflow: 'hidden' }}>
+      <div style={{ background: BgAlt, borderTop: `1px solid ${Pborder}`, borderBottom: `1px solid ${Pborder}`, padding: '20px 0', overflow: 'hidden' }}>
         <div className="animate-marquee" style={{ display: 'flex', width: 'max-content' }}>
           {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map((item, i) => (
             <span key={i} style={{ fontSize: 13, fontWeight: 600, color: Pbody, padding: '0 40px', whiteSpace: 'nowrap' }}>
@@ -450,93 +492,99 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ── Feature block 1 — image left, text right ──────────────────────── */}
-      <section id="how-it-works" style={{ padding: '100px 24px', maxWidth: 1120, margin: '0 auto' }}>
-        <div className="flex flex-col lg:flex-row items-center gap-16">
-          <div className="w-full lg:w-auto flex justify-center flex-shrink-0">
-            <ICPCard />
-          </div>
-          <div style={{ flex: 1 }}>
-            <SectionBadge text="The Real Problem" />
-            <FeatureHeading>Your ads are working. They&rsquo;re just talking to the wrong person.</FeatureHeading>
-            <FeatureBody>
-              You&rsquo;ve tested creatives. You&rsquo;ve changed budgets. You&rsquo;ve hired agencies. But nothing
-              sticks — because the problem was never the ad. It was the audience. We compare who
-              you think your ideal customer is against who your actual best customers are. The gap
-              between those two things is where your budget disappears every single month.
-            </FeatureBody>
-            <Link href="/questionnaire" style={{ color: P, textDecoration: 'none', fontWeight: 700, fontSize: 15 }}>
-              Find My ICP Gap →
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Feature block 2 — text left, image right ──────────────────────── */}
-      <section style={{ background: BgAlt, borderTop: `1px solid ${Pborder}`, borderBottom: `1px solid ${Pborder}`, padding: '100px 24px' }}>
+      {/* ── Feature 1 — card left, text right ────────────────────────────── */}
+      <section id="how-it-works" style={{ padding: '120px 24px', background: '#ffffff' }}>
         <div style={{ maxWidth: 1120, margin: '0 auto' }}>
-          <div className="flex flex-col lg:flex-row-reverse items-center gap-16">
+          <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-20">
             <div className="w-full lg:w-auto flex justify-center flex-shrink-0">
-              <FunnelCard />
+              <ICPIllustration />
             </div>
             <div style={{ flex: 1 }}>
-              <SectionBadge text="The Hidden Leak" />
-              <FeatureHeading>People are clicking your ads. They&rsquo;re just not becoming leads.</FeatureHeading>
-              <FeatureBody>
-                A high click-through rate with zero conversions is not a targeting problem. It&rsquo;s
-                a friction problem. Too many form fields. Too many steps before someone sees the
-                value. A landing page that makes people work for something they haven&rsquo;t been
-                convinced they need yet. We score every step of your funnel and show you exactly
-                where people give up — and why.
-              </FeatureBody>
-              <Link href="/questionnaire" style={{ color: P, textDecoration: 'none', fontWeight: 700, fontSize: 15 }}>
-                Score My Funnel →
+              <Badge text="The Real Problem" />
+              <H2>Your ads are working. They&rsquo;re just talking to the wrong person.</H2>
+              <Body>
+                You&rsquo;ve tested creatives. You&rsquo;ve changed budgets. You&rsquo;ve hired agencies. But nothing
+                sticks — because the problem was never the ad. It was the audience. We compare who
+                you think your ideal customer is against who your actual best customers are. The gap
+                between those two things is where your budget disappears every single month.
+              </Body>
+              <Link href="/questionnaire" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: P, textDecoration: 'none', fontWeight: 700, fontSize: 15 }}>
+                Find My ICP Gap <ArrowRight size={15} />
               </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── Feature block 3 — image left, text right ──────────────────────── */}
-      <section style={{ padding: '100px 24px', maxWidth: 1120, margin: '0 auto' }}>
-        <div className="flex flex-col lg:flex-row items-center gap-16">
-          <div className="w-full lg:w-auto flex justify-center flex-shrink-0">
-            <ChannelCard />
+      {/* ── Feature 2 — text left, card right ────────────────────────────── */}
+      <section style={{ padding: '120px 24px', background: BgAlt, borderTop: `1px solid ${Pborder}`, borderBottom: `1px solid ${Pborder}` }}>
+        <div style={{ maxWidth: 1120, margin: '0 auto' }}>
+          <div className="flex flex-col lg:flex-row-reverse items-center gap-16 lg:gap-20">
+            <div className="w-full lg:w-auto flex justify-center flex-shrink-0">
+              <FunnelIllustration />
+            </div>
+            <div style={{ flex: 1 }}>
+              <Badge text="The Hidden Leak" />
+              <H2>People are clicking your ads. They&rsquo;re just not becoming leads.</H2>
+              <Body>
+                A high click-through rate with zero conversions is not a targeting problem. It&rsquo;s
+                a friction problem. Too many form fields. Too many steps before someone sees the
+                value. A landing page that makes people work for something they haven&rsquo;t been
+                convinced they need yet. We score every step of your funnel and show you exactly
+                where people give up — and why.
+              </Body>
+              <Link href="/questionnaire" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: P, textDecoration: 'none', fontWeight: 700, fontSize: 15 }}>
+                Score My Funnel <ArrowRight size={15} />
+              </Link>
+            </div>
           </div>
-          <div style={{ flex: 1 }}>
-            <SectionBadge text="The Budget Drain" />
-            <FeatureHeading>You&rsquo;re not spending too little. You&rsquo;re spending in the wrong places.</FeatureHeading>
-            <FeatureBody>
-              Doubling your budget won&rsquo;t fix a channel mismatch. If your ideal customer makes
-              buying decisions on LinkedIn but you&rsquo;re running all your spend on Meta, you&rsquo;re
-              paying for attention from people who will never buy. We map your spend against your
-              ICP behavior — by region, by platform, by audience — and show you exactly where to
-              shift the money.
-            </FeatureBody>
-            <Link href="/questionnaire" style={{ color: P, textDecoration: 'none', fontWeight: 700, fontSize: 15 }}>
-              Audit My Spend →
-            </Link>
+        </div>
+      </section>
+
+      {/* ── Feature 3 — card left, text right ────────────────────────────── */}
+      <section style={{ padding: '120px 24px', background: '#ffffff' }}>
+        <div style={{ maxWidth: 1120, margin: '0 auto' }}>
+          <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-20">
+            <div className="w-full lg:w-auto flex justify-center flex-shrink-0">
+              <ChannelIllustration />
+            </div>
+            <div style={{ flex: 1 }}>
+              <Badge text="The Budget Drain" />
+              <H2>You&rsquo;re not spending too little. You&rsquo;re spending in the wrong places.</H2>
+              <Body>
+                Doubling your budget won&rsquo;t fix a channel mismatch. If your ideal customer makes
+                buying decisions on LinkedIn but you&rsquo;re running all your spend on Meta, you&rsquo;re
+                paying for attention from people who will never buy. We map your spend against your
+                ICP behavior — by region, by platform, by audience — and show you exactly where to
+                shift the money.
+              </Body>
+              <Link href="/questionnaire" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: P, textDecoration: 'none', fontWeight: 700, fontSize: 15 }}>
+                Audit My Spend <ArrowRight size={15} />
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
       {/* ── Feature grid ──────────────────────────────────────────────────── */}
-      <section style={{ background: BgAlt, borderTop: `1px solid ${Pborder}`, padding: '100px 24px' }}>
+      <section style={{ background: BgAlt, borderTop: `1px solid ${Pborder}`, padding: '120px 24px' }}>
         <div style={{ maxWidth: 1080, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 56 }}>
-            <h2 style={{ fontFamily: font, fontSize: 'clamp(28px,4vw,44px)', fontWeight: 700, letterSpacing: '-0.3px', color: P, margin: '0 0 16px' }}>
+          <div style={{ textAlign: 'center', marginBottom: 64 }}>
+            <H2 style={{ fontSize: 'clamp(28px,4vw,40px)', margin: '0 0 16px' }}>
               Everything your marketing team needs.
-            </h2>
+            </H2>
             <p style={{ fontSize: 17, color: Pbody, maxWidth: 480, margin: '0 auto', lineHeight: 1.65 }}>
               Replace guesswork and scattered tools with a single diagnostic platform where you get clear answers.
             </p>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 16 }}>
-            {FEATURE_GRID.map(f => (
-              <div key={f.title} style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 20, padding: '24px 24px 20px' }}>
-                <div style={{ fontSize: 28, marginBottom: 12 }}>{f.icon}</div>
-                <h3 style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: P, margin: '0 0 8px', letterSpacing: '-0.2px' }}>{f.title}</h3>
-                <p style={{ fontSize: 14, lineHeight: 1.6, color: Pbody, margin: 0 }}>{f.desc}</p>
+            {FEATURE_GRID.map(({ Icon, title, desc }) => (
+              <div key={title} style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 20, padding: '28px 24px' }}>
+                <div style={{ width: 48, height: 48, borderRadius: 14, background: '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                  <Icon size={22} color={P} strokeWidth={1.75} />
+                </div>
+                <h3 style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: P, margin: '0 0 8px', letterSpacing: '-0.2px' }}>{title}</h3>
+                <p style={{ fontSize: 14, lineHeight: 1.65, color: Pbody, margin: 0 }}>{desc}</p>
               </div>
             ))}
           </div>
@@ -544,38 +592,64 @@ export default function Home() {
       </section>
 
       {/* ── Stats bar ─────────────────────────────────────────────────────── */}
-      <div style={{ borderTop: `1px solid ${Pborder}`, borderBottom: `1px solid ${Pborder}`, padding: '64px 24px', background: '#fff' }}>
+      <div style={{ borderTop: `1px solid ${Pborder}`, borderBottom: `1px solid ${Pborder}`, padding: '80px 24px', background: '#fff' }}>
         <div style={{ maxWidth: 960, margin: '0 auto' }}>
-          <p style={{ textAlign: 'center', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', color: Pmuted, marginBottom: 48 }}>
+          <p style={{ textAlign: 'center', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', color: Pmuted, marginBottom: 56 }}>
             Why it matters now.
           </p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(180px,1fr))', gap: 32, textAlign: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(180px,1fr))', gap: 40, textAlign: 'center' }}>
             {STATS.map(s => (
               <div key={s.label}>
-                <p style={{ fontFamily: font, fontSize: 'clamp(32px,4vw,48px)', fontWeight: 800, color: P, letterSpacing: '-1px', margin: '0 0 8px', lineHeight: 1 }}>{s.value}</p>
-                <p style={{ fontSize: 14, color: Pbody, margin: 0, lineHeight: 1.4 }}>{s.label}</p>
+                <p style={{ fontFamily: font, fontSize: 'clamp(32px,4vw,52px)', fontWeight: 800, color: P, letterSpacing: '-1.5px', margin: '0 0 10px', lineHeight: 1 }}>{s.value}</p>
+                <p style={{ fontSize: 14, color: Pbody, margin: 0, lineHeight: 1.5 }}>{s.label}</p>
               </div>
             ))}
           </div>
         </div>
       </div>
 
+      {/* ── Lead magnet ───────────────────────────────────────────────────── */}
+      <section style={{ background: '#ede9fe', borderTop: `1px solid ${Pborder}`, padding: '80px 24px' }}>
+        <div style={{ maxWidth: 840, margin: '0 auto' }}>
+          <div className="flex flex-col md:flex-row items-center gap-10" style={{ background: '#fff', borderRadius: 24, padding: '48px 40px', boxShadow: '0 8px 40px rgba(48,33,97,0.1)' }}>
+            <div style={{ flex: 1 }}>
+              <Badge text="Free Resource" />
+              <h2 style={{ fontFamily: font, fontSize: 'clamp(24px,3vw,36px)', fontWeight: 700, letterSpacing: '-0.3px', color: P, margin: '0 0 14px', lineHeight: 1.2 }}>
+                Not ready to subscribe yet?
+              </h2>
+              <p style={{ fontSize: 16, lineHeight: 1.7, color: Pbody, margin: '0 0 8px' }}>
+                Download our free ICP Targeting Checklist — 27 questions that will tell you if
+                your targeting is broken before you spend another shilling.
+              </p>
+            </div>
+            <div style={{ textAlign: 'center', flexShrink: 0 }}>
+              <Link href="/questionnaire" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: P, color: '#fff', textDecoration: 'none', fontWeight: 600, fontSize: 15, padding: '14px 28px', borderRadius: 12, whiteSpace: 'nowrap', boxShadow: '0 6px 24px rgba(48,33,97,0.2)' }}>
+                Download Free Checklist
+              </Link>
+              <p style={{ fontSize: 12, color: Pmuted, marginTop: 10 }}>Free &middot; No email required</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── Pricing ───────────────────────────────────────────────────────── */}
-      <section id="pricing" style={{ background: BgAlt, borderTop: `1px solid ${Pborder}`, padding: '100px 24px' }}>
+      <section id="pricing" style={{ background: BgAlt, borderTop: `1px solid ${Pborder}`, padding: '120px 24px' }}>
         <div style={{ maxWidth: 1080, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 56 }}>
-            <h2 style={{ fontFamily: font, fontSize: 'clamp(28px,4vw,44px)', fontWeight: 700, letterSpacing: '-0.3px', color: P, margin: '0 0 16px' }}>
+          <div style={{ textAlign: 'center', marginBottom: 64 }}>
+            <Badge text="Simple Pricing" />
+            <H2 style={{ fontSize: 'clamp(28px,4vw,40px)', margin: '0 0 16px' }}>
               Stop guessing. Start knowing.
-            </h2>
+            </H2>
             <p style={{ fontSize: 17, color: Pbody, maxWidth: 460, margin: '0 auto', lineHeight: 1.65 }}>
               One subscription. Complete visibility into why your marketing isn&rsquo;t working.
             </p>
           </div>
+
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(290px,1fr))', gap: 16, alignItems: 'start' }}>
             {TIERS.map(tier => (
-              <div key={tier.name} style={{ background: tier.highlight ? P : '#fff', border: `1px solid ${tier.highlight ? 'transparent' : Pborder}`, borderRadius: 20, padding: '32px 28px', boxShadow: tier.highlight ? '0 16px 48px rgba(48,33,97,0.25)' : 'none', position: 'relative' }}>
+              <div key={tier.name} style={{ background: tier.highlight ? P : '#fff', border: `1px solid ${tier.highlight ? 'transparent' : Pborder}`, borderRadius: 20, padding: '36px 28px', boxShadow: tier.highlight ? '0 20px 56px rgba(48,33,97,0.28)' : 'none', position: 'relative' }}>
                 {tier.highlight && (
-                  <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', background: 'linear-gradient(135deg,#a78bfa,#6c4ddd)', color: '#fff', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.6px', padding: '4px 14px', borderRadius: 32, whiteSpace: 'nowrap' }}>
+                  <div style={{ position: 'absolute', top: -13, left: '50%', transform: 'translateX(-50%)', background: 'linear-gradient(135deg,#a78bfa,#6c4ddd)', color: '#fff', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.6px', padding: '4px 16px', borderRadius: 100, whiteSpace: 'nowrap' }}>
                     Most Popular
                   </div>
                 )}
@@ -588,61 +662,65 @@ export default function Home() {
                 <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {tier.features.map(f => (
                     <li key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 14 }}>
-                      <span style={{ flexShrink: 0, width: 18, height: 18, borderRadius: '50%', background: tier.highlight ? 'rgba(255,255,255,0.2)' : BgAlt, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: tier.highlight ? '#fff' : P, fontWeight: 700, marginTop: 1 }}>✓</span>
+                      <span style={{ flexShrink: 0, width: 18, height: 18, borderRadius: '50%', background: tier.highlight ? 'rgba(255,255,255,0.18)' : '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 1 }}>
+                        <Check size={10} color={tier.highlight ? '#fff' : P} strokeWidth={3} />
+                      </span>
                       <span style={{ color: tier.highlight ? 'rgba(255,255,255,0.85)' : Pbody }}>{f}</span>
                     </li>
                   ))}
                 </ul>
-                <Link href="/questionnaire" style={{ display: 'block', textAlign: 'center', textDecoration: 'none', background: tier.highlight ? '#fff' : P, color: tier.highlight ? P : '#fff', fontWeight: 700, fontSize: 14, padding: '13px 20px', borderRadius: 12, letterSpacing: '-0.2px' }}>
+                <Link href={tier.href} style={{ display: 'block', textAlign: 'center', textDecoration: 'none', background: tier.highlight ? '#fff' : P, color: tier.highlight ? P : '#fff', fontWeight: 700, fontSize: 14, padding: '14px 20px', borderRadius: 12, letterSpacing: '-0.2px' }}>
                   {tier.cta}
                 </Link>
               </div>
             ))}
           </div>
-          <p style={{ textAlign: 'center', fontSize: 14, color: Pmuted, marginTop: 28 }}>
+          <p style={{ textAlign: 'center', fontSize: 14, color: Pmuted, marginTop: 32 }}>
             Start with a free diagnostic. Upgrade only when you&rsquo;re ready.
           </p>
         </div>
       </section>
 
       {/* ── FAQ ───────────────────────────────────────────────────────────── */}
-      <section id="faq" style={{ maxWidth: 700, margin: '0 auto', padding: '100px 24px' }}>
-        <div style={{ textAlign: 'center', marginBottom: 56 }}>
-          <h2 style={{ fontFamily: font, fontSize: 'clamp(28px,4vw,40px)', fontWeight: 700, letterSpacing: '-0.3px', color: P, margin: '0 0 12px' }}>
-            You ask, we answer.
-          </h2>
-          <p style={{ fontSize: 16, color: Pbody }}>Everything you need to know before getting started.</p>
-        </div>
-        {FAQ_ITEMS.map((item, i) => (
-          <div key={i} style={{ borderTop: `1px solid ${Pborder}` }}>
-            <button onClick={() => setOpenFaq(openFaq === i ? null : i)}
-              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '20px 0', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
-              <span style={{ fontFamily: font, fontSize: 16, fontWeight: 600, color: P, letterSpacing: '-0.2px', lineHeight: 1.4 }}>{item.q}</span>
-              <span style={{ flexShrink: 0, width: 28, height: 28, borderRadius: '50%', background: openFaq === i ? P : BgAlt, display: 'flex', alignItems: 'center', justifyContent: 'center', color: openFaq === i ? '#fff' : P, fontSize: 18, fontWeight: 300, transition: 'background 0.2s' }}>
-                {openFaq === i ? '−' : '+'}
-              </span>
-            </button>
-            <div style={{ maxHeight: openFaq === i ? 400 : 0, overflow: 'hidden', transition: 'max-height 0.3s ease' }}>
-              <p style={{ fontSize: 15, lineHeight: 1.7, color: Pbody, margin: '0 0 20px', paddingRight: 44 }}>{item.a}</p>
-            </div>
+      <section id="faq" style={{ background: '#fff', borderTop: `1px solid ${Pborder}`, padding: '120px 24px' }}>
+        <div style={{ maxWidth: 700, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 64 }}>
+            <Badge text="FAQ" />
+            <H2 style={{ fontSize: 'clamp(28px,4vw,40px)' }}>You ask, we answer.</H2>
+            <p style={{ fontSize: 16, color: Pbody, margin: 0 }}>Everything you need to know before getting started.</p>
           </div>
-        ))}
-        <div style={{ borderTop: `1px solid ${Pborder}` }} />
+          {FAQ_ITEMS.map((item, i) => (
+            <div key={i} style={{ borderTop: `1px solid ${Pborder}` }}>
+              <button onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '22px 0', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
+                <span style={{ fontFamily: font, fontSize: 16, fontWeight: 600, color: P, letterSpacing: '-0.2px', lineHeight: 1.4 }}>{item.q}</span>
+                <span style={{ flexShrink: 0, width: 28, height: 28, borderRadius: '50%', background: openFaq === i ? P : '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center', color: openFaq === i ? '#fff' : P, fontSize: 18, fontWeight: 300, transition: 'background 0.2s', lineHeight: 1 }}>
+                  {openFaq === i ? '−' : '+'}
+                </span>
+              </button>
+              <div style={{ maxHeight: openFaq === i ? 400 : 0, overflow: 'hidden', transition: 'max-height 0.3s ease' }}>
+                <p style={{ fontSize: 15, lineHeight: 1.7, color: Pbody, margin: '0 0 22px', paddingRight: 44 }}>{item.a}</p>
+              </div>
+            </div>
+          ))}
+          <div style={{ borderTop: `1px solid ${Pborder}` }} />
+        </div>
       </section>
 
       {/* ── Testimonials ──────────────────────────────────────────────────── */}
-      <section id="results" style={{ background: BgAlt, borderTop: `1px solid ${Pborder}`, padding: '100px 24px' }}>
+      <section id="results" style={{ background: BgAlt, borderTop: `1px solid ${Pborder}`, padding: '120px 24px' }}>
         <div style={{ maxWidth: 1080, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 56 }}>
-            <h2 style={{ fontFamily: font, fontSize: 'clamp(28px,4vw,44px)', fontWeight: 700, letterSpacing: '-0.3px', color: P, margin: '0 0 12px', lineHeight: 1.2 }}>
-              Finally. An answer that isn&rsquo;t<br />&ldquo;increase your budget.&rdquo;
-            </h2>
+          <div style={{ textAlign: 'center', marginBottom: 64 }}>
+            <Badge text="Real Results" />
+            <H2 style={{ fontSize: 'clamp(28px,4vw,40px)', margin: '0 0 0' }}>
+              Finally. An answer that isn&rsquo;t &ldquo;increase your budget.&rdquo;
+            </H2>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(290px,1fr))', gap: 16 }}>
             {TESTIMONIALS.map((t, i) => (
-              <div key={i} style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 20, padding: 28, boxShadow: activeTestimonial === i ? '0 16px 48px rgba(48,33,97,0.12)' : 'none', transform: activeTestimonial === i ? 'translateY(-4px)' : 'translateY(0)', transition: 'all 0.4s ease' }}>
-                <div style={{ display: 'flex', gap: 2, marginBottom: 16 }}>
-                  {[...Array(5)].map((_, s) => <span key={s} style={{ color: '#f59e0b', fontSize: 14 }}>★</span>)}
+              <div key={i} style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 20, padding: 32, boxShadow: activeTestimonial === i ? '0 16px 48px rgba(48,33,97,0.12)' : 'none', transform: activeTestimonial === i ? 'translateY(-4px)' : 'translateY(0)', transition: 'all 0.4s ease' }}>
+                <div style={{ display: 'flex', gap: 3, marginBottom: 18 }}>
+                  {[...Array(5)].map((_, s) => <Star key={s} size={14} fill={P} color={P} />)}
                 </div>
                 <p style={{ fontSize: 15, lineHeight: 1.75, color: Pbody, margin: '0 0 20px', fontStyle: 'italic' }}>
                   &ldquo;{t.quote}&rdquo;
@@ -651,38 +729,68 @@ export default function Home() {
               </div>
             ))}
           </div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 32 }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 36 }}>
             {TESTIMONIALS.map((_, i) => (
               <button key={i} onClick={() => setActiveTestimonial(i)} aria-label={`Testimonial ${i + 1}`}
-                style={{ width: activeTestimonial === i ? 24 : 8, height: 8, borderRadius: 99, background: activeTestimonial === i ? P : Pborder, border: 'none', cursor: 'pointer', transition: 'all 0.3s ease', padding: 0 }} />
+                style={{ width: activeTestimonial === i ? 28 : 8, height: 8, borderRadius: 99, background: activeTestimonial === i ? P : Pborder, border: 'none', cursor: 'pointer', transition: 'all 0.3s ease', padding: 0 }} />
             ))}
           </div>
         </div>
       </section>
 
+      {/* ── Team ──────────────────────────────────────────────────────────── */}
+      <section style={{ background: '#fff', borderTop: `1px solid ${Pborder}`, padding: '120px 24px' }}>
+        <div style={{ maxWidth: 1080, margin: '0 auto' }}>
+          <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-20">
+            <div style={{ flex: 1 }}>
+              <Badge text="Who Built This" />
+              <H2>Built by someone who has managed over $2M in ad spend.</H2>
+              <Body style={{ maxWidth: 520 }}>
+                This platform was built by a performance media buyer who got tired of watching
+                clients waste money on the wrong audience. Every diagnostic rule, every
+                recommendation, every insight comes from real campaign experience — not theory.
+              </Body>
+            </div>
+            <div style={{ flexShrink: 0 }}>
+              <div style={{ background: BgPurple, borderRadius: 20, padding: '36px 40px', textAlign: 'center', border: `1px solid ${Pborder}`, minWidth: 260 }}>
+                <div style={{ width: 80, height: 80, borderRadius: '50%', background: `linear-gradient(135deg,${P},#6c4ddd)`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+                  <span style={{ color: '#fff', fontSize: 26, fontWeight: 700, fontFamily: font }}>EK</span>
+                </div>
+                <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: '0 0 4px' }}>Eugene Kwata</p>
+                <p style={{ fontSize: 14, color: Pbody, margin: '0 0 12px' }}>Founder &amp; Lead Media Buyer</p>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: '#ede9fe', padding: '5px 12px', borderRadius: 100 }}>
+                  <MapPin size={12} color={P} />
+                  <span style={{ fontSize: 12, fontWeight: 600, color: P }}>Nairobi, Kenya</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── Bottom CTA ────────────────────────────────────────────────────── */}
-      <section style={{ background: 'linear-gradient(160deg,#f0edff 0%,#e8e2ff 50%,#ede8ff 100%)', borderTop: `1px solid ${Pborder}`, padding: '96px 24px', textAlign: 'center' }}>
+      <section style={{ background: 'linear-gradient(160deg,#f0edff 0%,#e8e2ff 50%,#ede8ff 100%)', borderTop: `1px solid ${Pborder}`, padding: '120px 24px', textAlign: 'center' }}>
         <div style={{ maxWidth: 640, margin: '0 auto' }}>
           <h2 style={{ fontFamily: font, fontSize: 'clamp(30px,5vw,52px)', fontWeight: 700, letterSpacing: '-0.4px', color: P, margin: '0 0 20px', lineHeight: 1.15 }}>
             Every month without a diagnosis is a month of budget you won&rsquo;t get back.
           </h2>
-          <p style={{ fontSize: 18, color: Pbody, maxWidth: 520, margin: '0 auto 40px', lineHeight: 1.65 }}>
+          <p style={{ fontSize: 18, color: Pbody, maxWidth: 520, margin: '0 auto 44px', lineHeight: 1.65 }}>
             You don&rsquo;t have a spending problem. You have a targeting problem. And it has a name, a score, and a fix.
           </p>
-          <Link href="/questionnaire" style={{ display: 'inline-block', background: P, color: '#fff', textDecoration: 'none', fontWeight: 700, fontSize: 17, padding: '17px 40px', borderRadius: 12, letterSpacing: '-0.3px', boxShadow: '0 12px 40px rgba(48,33,97,0.25)' }}>
-            Get My Free Diagnosis →
+          <Link href="/questionnaire" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: P, color: '#fff', textDecoration: 'none', fontWeight: 700, fontSize: 17, padding: '17px 40px', borderRadius: 12, letterSpacing: '-0.3px', boxShadow: '0 12px 40px rgba(48,33,97,0.25)' }}>
+            Get My Free Diagnosis <ArrowRight size={18} />
           </Link>
-          <p style={{ fontSize: 13, color: Pmuted, marginTop: 14 }}>
+          <p style={{ fontSize: 13, color: Pmuted, marginTop: 16 }}>
             Free &middot; No credit card &middot; No ad account access needed
           </p>
         </div>
       </section>
 
       {/* ── Footer ────────────────────────────────────────────────────────── */}
-      <footer style={{ background: '#fff', borderTop: `1px solid ${Pborder}`, padding: '64px 24px 40px' }}>
+      <footer style={{ background: '#fff', borderTop: `1px solid ${Pborder}`, padding: '72px 24px 40px' }}>
         <div style={{ maxWidth: 1080, margin: '0 auto' }}>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
-            {/* brand + newsletter */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-14">
+            {/* brand */}
             <div className="md:col-span-2">
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
                 <div style={{ width: 28, height: 28, borderRadius: 8, background: `linear-gradient(135deg,${P},#6c4ddd)` }} />
@@ -705,9 +813,9 @@ export default function Home() {
             <div>
               <p style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: Pmuted, margin: '0 0 16px' }}>Quick Links</p>
               {[
-                { label: 'How It Works',      href: '#how-it-works' },
-                { label: 'Pricing',           href: '#pricing' },
-                { label: 'FAQ',               href: '#faq' },
+                { label: 'How It Works',       href: '#how-it-works' },
+                { label: 'Pricing',            href: '#pricing' },
+                { label: 'FAQ',                href: '#faq' },
                 { label: 'Get Free Diagnosis', href: '/questionnaire' },
                 { label: 'Dashboard Login',    href: '/dashboard' },
               ].map(l => (
