@@ -142,70 +142,123 @@ export async function POST(req: NextRequest) {
   })
 
   const body = await req.json()
-  const { questionnaireId, responses } = body
+  const { questionnaireId, responses, profile } = body
 
-  // Extract the two new signals for prompt injection
   const landingPageUrl: string = (responses[16] as string) ?? ''
   const geographicRegion: string = (responses[17] as string) ?? 'Global/Multiple Regions'
   const regionContext = buildRegionContext(geographicRegion)
 
-  const message = await anthropic.messages.create({
-    model: 'claude-opus-4-7',
-    max_tokens: 2048,
-    messages: [
-      {
-        role: 'user',
-        content: `You are an expert ICP (Ideal Customer Profile) diagnostic analyst specialising in paid acquisition, funnel optimisation, and regional market strategy.
+  const systemPrompt = `You are an expert ICP (Ideal Customer Profile) diagnostic analyst specialising in paid acquisition, funnel optimisation, and regional market strategy.
 
-Analyse the following questionnaire responses and produce a structured ICP diagnostic report. Every finding and recommendation MUST be specific to the target region and account for the landing page URL provided.
+Your role is to analyse questionnaire responses and produce a precise, actionable ICP diagnostic report.
+
+Use web search to:
+1. Assess the provided landing page URL — look up the domain to understand the offer, positioning, and funnel type
+2. Research current ad cost benchmarks (CPCs, CPAs) for the specified geographic region and industry
+3. Identify relevant competitor activity or market positioning for the business category
+4. Validate regional platform performance data (e.g., Meta vs Google vs WhatsApp CTAs in the target market)
 ${regionContext}
-${landingPageUrl ? `\nLANDING PAGE URL: ${landingPageUrl}\nAnalyse the URL structure (path, subdomain, query params) for clues about the funnel type, offer, and positioning. Reference it in relevant findings.` : ''}
+Return ONLY a valid JSON object. No markdown, no prose outside JSON.`
 
-QUESTIONNAIRE RESPONSES:
-${JSON.stringify(responses, null, 2)}
+  const prompt = `Analyse this ICP diagnostic questionnaire submission and return a structured report.
 
-Return ONLY a valid JSON object with this exact structure (no markdown, no prose outside JSON):
+PROFILE:
+- Name: ${profile?.name ?? 'Not provided'}
+- Company: ${profile?.company ?? 'Not provided'}
+
+LAYER 1 — ICP Foundation:
+- Business offering: ${responses[1] ?? ''}
+- Industry/vertical: ${responses[2] ?? ''}
+- Annual revenue: ${responses[3] ?? ''}
+- Team size: ${responses[4] ?? ''}
+- Regions served: ${responses[5] ?? ''}
+- Best customer company size: ${responses[6] ?? ''}
+- Best customer industry: ${responses[7] ?? ''}
+- Problem best customers had: ${responses[8] ?? ''}
+- How best customers found you: ${responses[9] ?? ''}
+- Why best customers stay loyal: ${responses[10] ?? ''}
+- Average deal size: ${responses[11] ?? ''}
+- Sales cycle length: ${responses[12] ?? ''}
+- Decision maker job titles: ${responses[13] ?? ''}
+
+LAYER 2 — Targeting Mismatch:
+- Perceived ideal customer: ${responses[14] ?? ''}
+- Active ad channels: ${Array.isArray(responses[15]) ? (responses[15] as string[]).join(', ') : (responses[15] ?? '')}
+- Landing page URL: ${landingPageUrl || 'Not provided'}
+- Target region: ${geographicRegion}
+- Current targeting parameters: ${responses[18] ?? ''}
+- Monthly ad spend: ${responses[19] ?? ''}
+- Budget allocation across channels: ${responses[20] ?? ''}
+- Leads generated (last 3 months): ${responses[21] ?? ''}
+- Conversions (last 3 months): ${responses[22] ?? ''}
+- Current CPA: ${responses[23] ?? ''}
+- Leads match best customer profile: ${responses[24] ?? ''}
+
+LAYER 3 — Funnel Friction:
+- Primary CTA on landing page: ${responses[25] ?? ''}
+- Funnel steps to conversion: ${responses[26] ?? ''}
+- Required form fields: ${responses[27] ?? ''}
+- Mobile usability score: ${responses[28] ?? ''}/10
+- Form completion rate: ${responses[29] ?? ''}%
+- Tested reducing form fields: ${responses[30] ?? ''}
+- Trust signals on page: ${responses[31] ?? ''}
+- Differentiation clarity score: ${responses[32] ?? ''}/10
+
+${landingPageUrl ? `Use web search to look up ${landingPageUrl} and assess the landing page structure, offer clarity, and conversion readiness. Reference it directly in your landing_page_assessment.` : ''}
+Use web search to find current CPC/CPA benchmarks for ${geographicRegion} in the ${(responses[2] as string) ?? 'relevant'} industry.
+
+Return this exact JSON structure:
 {
-  "health_score": <integer 0-100 representing overall ICP health>,
-  "findings": [
+  "overall_score": <integer 0-100>,
+  "executive_summary": "<2-3 sentence diagnosis of the biggest ICP problem and its revenue impact>",
+  "critical_findings": [
     {
       "title": "<short finding title>",
       "severity": "<Critical|Warning|Opportunity>",
-      "explanation": "<one sentence, region-specific where relevant>"
+      "explanation": "<specific, region-aware finding with revenue impact>"
     }
   ],
-  "breakdown": [
-    {
-      "label": "<one of: ICP Alignment | Targeting Accuracy | Channel Efficiency | Funnel Friction Index | Message to Market Fit | Budget Reallocation Opportunity>",
-      "score": <integer 0-100>,
-      "found": "<one sentence of what was diagnosed, region-aware>",
-      "why": "<one sentence on revenue impact, region-aware>"
-    }
-  ],
+  "icp_alignment_score": <integer 0-100>,
+  "targeting_accuracy_score": <integer 0-100>,
+  "channel_efficiency_score": <integer 0-100>,
+  "funnel_friction_score": <integer 0-100>,
+  "message_fit_score": <integer 0-100>,
+  "budget_allocation_score": <integer 0-100>,
   "quick_wins": [
     {
       "action": "<specific, actionable step — reference regional platforms/tools where relevant>",
-      "impact": "<High|Medium|Low>"
+      "impact": "<High|Medium|Low>",
+      "timeline": "<This week|This month|Next quarter>"
     }
-  ]
+  ],
+  "landing_page_assessment": "<assessment of the landing page URL if provided, otherwise note that no URL was given>",
+  "competitor_insights": "<brief note on competitive landscape in this region/industry based on web research>",
+  "regional_benchmarks": "<current CPC/CPA benchmarks for ${geographicRegion} in this category based on web research>",
+  "monthly_waste_estimate": "<estimated monthly budget being wasted based on the diagnosis, with reasoning>"
 }
 
 Rules:
-- findings: exactly 3 items, ranked by revenue impact
-- breakdown: exactly 6 items, one per label above
+- critical_findings: exactly 3 items, ranked by revenue impact
 - quick_wins: exactly 3 items
 - All scores must reflect the actual responses — do not return generic numbers
-- Reference the target region (${geographicRegion}) explicitly in at least 2 findings or quick_wins
-- If a landing page URL was provided, reference it in at least one finding`,
-      },
-    ],
+- Reference ${geographicRegion} explicitly in at least 2 findings or quick_wins
+- Use web search results to populate landing_page_assessment, competitor_insights, and regional_benchmarks with real data`
+
+  const response = await anthropic.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 8000,
+    system: systemPrompt,
+    tools: [{ type: 'web_search_20250305' as const, name: 'web_search' }],
+    messages: [{ role: 'user', content: prompt }],
   })
 
-  const diagnosisText = message.content[0].type === 'text' ? message.content[0].text : ''
+  const diagnosisText = response.content
+    .filter(block => block.type === 'text')
+    .map(block => (block as { type: 'text'; text: string }).text)
+    .join('')
 
   let diagnosis: unknown
   try {
-    // Strip any accidental markdown fences before parsing
     const cleaned = diagnosisText.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim()
     diagnosis = JSON.parse(cleaned)
   } catch {

@@ -559,7 +559,7 @@ export default function QuestionnairePage() {
       const dRes = await fetch('/api/diagnostic', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ questionnaireId: qData.id, responses: answers }),
+        body: JSON.stringify({ questionnaireId: qData.id, responses: answers, profile }),
       })
       const dData = await dRes.json()
       if (!dRes.ok) throw new Error(dData.error || 'Failed to generate diagnostic')
