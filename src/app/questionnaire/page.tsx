@@ -257,9 +257,10 @@ function TextInput({ value, onChange, placeholder }: {
   )
 }
 
-function UrlInput({ value, onChange, placeholder }: {
+function UrlInput({ value, onChange, onBlur, placeholder }: {
   value: string
   onChange: (v: string) => void
+  onBlur?: () => void
   placeholder?: string
 }) {
   return (
@@ -271,6 +272,7 @@ function UrlInput({ value, onChange, placeholder }: {
         type="url"
         value={value}
         onChange={e => onChange(e.target.value)}
+        onBlur={onBlur}
         placeholder={placeholder}
         autoFocus
         className="w-full bg-white/5 border border-white/10 focus:border-indigo-500 rounded-xl pl-10 pr-4 py-3.5 text-white placeholder-slate-500 text-base outline-none transition-colors"
@@ -506,6 +508,7 @@ export default function QuestionnairePage() {
   const [submitting, setSubmitting] = useState(false)
   const [apiError, setApiError] = useState('')
   const [loadingStep, setLoadingStep] = useState(0)
+  const [urlPreviewBanner, setUrlPreviewBanner] = useState(false)
   const timerRefs = useRef<ReturnType<typeof setTimeout>[]>([])
 
   // Fade in on mount and on each question change
@@ -539,6 +542,23 @@ export default function QuestionnairePage() {
   const setAnswer = useCallback((val: string | string[] | number) => {
     setAnswers(prev => ({ ...prev, [q.id]: val }))
   }, [q.id])
+
+  const handleUrlBlur = useCallback(async () => {
+    const url = (answers[16] as string) ?? ''
+    if (!url || !url.startsWith('http')) return
+    try {
+      const res = await fetch(`/api/fetch-url-preview?url=${encodeURIComponent(url)}`)
+      if (!res.ok) return
+      const data = await res.json() as { title?: string; description?: string; h1?: string }
+      const prefill = data.description || data.h1 || data.title || ''
+      if (prefill && !answers[1]) {
+        setAnswers(prev => ({ ...prev, [1]: prefill }))
+        setUrlPreviewBanner(true)
+      }
+    } catch {
+      // non-fatal — ignore preview failures
+    }
+  }, [answers])
 
   // Initialize slider default
   useEffect(() => {
@@ -911,7 +931,12 @@ export default function QuestionnairePage() {
               <TextInput value={textVal} onChange={setAnswer} placeholder={q.placeholder} />
             )}
             {q.type === 'url' && (
-              <UrlInput value={textVal} onChange={setAnswer} placeholder={q.placeholder} />
+              <UrlInput
+                value={textVal}
+                onChange={setAnswer}
+                onBlur={q.id === 16 ? handleUrlBlur : undefined}
+                placeholder={q.placeholder}
+              />
             )}
             {q.type === 'textarea' && (
               <TextareaInput value={textVal} onChange={setAnswer} placeholder={q.placeholder} />
@@ -935,6 +960,24 @@ export default function QuestionnairePage() {
               <YesNoInput value={textVal} onChange={setAnswer} />
             )}
           </div>
+
+          {/* URL pre-fill banner */}
+          {urlPreviewBanner && (
+            <div className="mb-6 flex items-start gap-3 px-4 py-3 rounded-xl border border-indigo-500/30 bg-indigo-600/10 text-sm text-indigo-300">
+              <span className="flex-shrink-0 mt-0.5">✦</span>
+              <p className="flex-1 leading-snug">
+                We found your site — some answers have been pre-filled. Review and edit if needed.
+              </p>
+              <button
+                type="button"
+                onClick={() => setUrlPreviewBanner(false)}
+                className="flex-shrink-0 text-indigo-500 hover:text-indigo-300 transition-colors text-base leading-none"
+                aria-label="Dismiss"
+              >
+                ✕
+              </button>
+            </div>
+          )}
 
           {/* Nav */}
           <div className="flex items-center gap-3">

@@ -3,6 +3,41 @@ import { createClient } from '@supabase/supabase-js'
 import Anthropic from '@anthropic-ai/sdk'
 import { sendWelcomeEmail } from '@/lib/email'
 
+export const maxDuration = 60
+export const dynamic = 'force-dynamic'
+
+function extractJSON(text: string): unknown {
+  try {
+    return JSON.parse(text)
+  } catch {
+    const start = text.indexOf('{')
+    const end = text.lastIndexOf('}')
+    if (start !== -1 && end !== -1) {
+      try {
+        return JSON.parse(text.slice(start, end + 1))
+      } catch {
+        let partial = text.slice(start)
+        let braces = 0
+        let brackets = 0
+        for (const char of partial) {
+          if (char === '{') braces++
+          if (char === '}') braces--
+          if (char === '[') brackets++
+          if (char === ']') brackets--
+        }
+        partial += ']'.repeat(Math.max(0, brackets))
+        partial += '}'.repeat(Math.max(0, braces))
+        try {
+          return JSON.parse(partial)
+        } catch {
+          return null
+        }
+      }
+    }
+    return null
+  }
+}
+
 function buildRegionContext(region: string): string {
   if (region.includes('East Africa')) {
     return `
@@ -246,7 +281,7 @@ Rules:
 
   const response = await anthropic.messages.create({
     model: 'claude-sonnet-4-20250514',
-    max_tokens: 8000,
+    max_tokens: 4000,
     system: systemPrompt,
     tools: [{ type: 'web_search_20250305' as const, name: 'web_search' }],
     messages: [{ role: 'user', content: prompt }],
@@ -257,13 +292,8 @@ Rules:
     .map(block => (block as { type: 'text'; text: string }).text)
     .join('')
 
-  let diagnosis: unknown
-  try {
-    const cleaned = diagnosisText.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim()
-    diagnosis = JSON.parse(cleaned)
-  } catch {
-    diagnosis = { raw: diagnosisText }
-  }
+  const cleaned = diagnosisText.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim()
+  const diagnosis: unknown = extractJSON(cleaned) ?? { raw: diagnosisText }
 
   const { data, error } = await supabase
     .from('diagnostics')
