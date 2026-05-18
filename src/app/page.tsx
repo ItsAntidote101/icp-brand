@@ -17,7 +17,8 @@ const Pmuted  = 'rgba(48,33,97,0.5)'
 const Pborder = 'rgba(48,33,97,0.1)'
 const BgAlt   = '#f8f7ff'
 const BgPurple = '#f5f3ff'
-const font    = "'DM Sans', -apple-system, sans-serif"
+const font    = "'PolySans Median', 'DM Sans', sans-serif"
+const fontBody = "'PolySans Neutral', -apple-system, system-ui, sans-serif"
 
 // ─── Static data ─────────────────────────────────────────────────────────────
 
@@ -100,7 +101,7 @@ const TESTIMONIALS = [
 
 function Badge({ text }: { text: string }) {
   return (
-    <div style={{ display: 'inline-block', background: '#ede9fe', color: P, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', padding: '5px 14px', borderRadius: 100, marginBottom: 16 }}>
+    <div style={{ display: 'inline-block', fontFamily: fontBody, background: '#ede9fe', color: P, fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', padding: '5px 14px', borderRadius: 100, marginBottom: 16 }}>
       {text}
     </div>
   )
@@ -108,7 +109,7 @@ function Badge({ text }: { text: string }) {
 
 function H2({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   return (
-    <h2 style={{ fontFamily: font, fontSize: 'clamp(28px,3.5vw,40px)', fontWeight: 700, letterSpacing: '-0.3px', color: P, margin: '0 0 20px', lineHeight: 1.2, ...style }}>
+    <h2 style={{ fontFamily: font, fontSize: 'clamp(32px,4vw,52px)', fontWeight: 700, letterSpacing: '-0.03em', color: P, margin: '0 0 20px', lineHeight: 1.1, ...style }}>
       {children}
     </h2>
   )
@@ -116,7 +117,7 @@ function H2({ children, style }: { children: React.ReactNode; style?: React.CSSP
 
 function Body({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   return (
-    <p style={{ fontSize: 16, lineHeight: 1.75, color: Pbody, margin: '0 0 28px', ...style }}>
+    <p style={{ fontFamily: fontBody, fontSize: 17, lineHeight: 1.7, color: 'rgba(48,33,97,0.75)', margin: '0 0 28px', ...style }}>
       {children}
     </p>
   )
@@ -156,7 +157,7 @@ export default function Home() {
           <div className="hidden md:flex" style={{ gap: 2 }}>
             {NAV_LINKS.map(l => (
               <a key={l.label} href={l.href} className="nav-link"
-                style={{ color: Pbody, textDecoration: 'none', fontSize: 14, fontWeight: 500, padding: '8px 16px', borderRadius: 100 }}>
+                style={{ fontFamily: fontBody, color: Pbody, textDecoration: 'none', fontSize: 15, fontWeight: 500, letterSpacing: '-0.01em', padding: '8px 16px', borderRadius: 100 }}>
                 {l.label}
               </a>
             ))}
@@ -207,11 +208,11 @@ export default function Home() {
               <span style={{ background: '#ede9fe', color: P, fontSize: 11, fontWeight: 700, padding: '5px 14px', borderRadius: 100, letterSpacing: '0.3px' }}>ICP Diagnostic Platform</span>
             </div>
 
-            <h1 style={{ fontFamily: font, fontSize: 'clamp(36px,4.5vw,58px)', fontWeight: 800, lineHeight: 1.08, letterSpacing: '-1px', color: P, margin: '0 0 24px' }}>
+            <h1 style={{ fontFamily: font, fontSize: 'clamp(40px,5vw,68px)', fontWeight: 700, lineHeight: 1.05, letterSpacing: '-0.04em', color: P, margin: '0 0 24px' }}>
               You&rsquo;re not bad at marketing. You&rsquo;re targeting the wrong people.
             </h1>
 
-            <p style={{ fontSize: 17, lineHeight: 1.7, color: Pbody, margin: '0 0 36px' }}>
+            <p style={{ fontFamily: fontBody, fontSize: 17, lineHeight: 1.7, color: 'rgba(48,33,97,0.75)', margin: '0 0 36px' }}>
               Every month you run ads to the wrong audience is another month your CEO asks why
               the pipeline is empty. We diagnose exactly who you should be targeting — in 5 minutes, for free.
             </p>
@@ -303,7 +304,7 @@ export default function Home() {
               <span style={{ background: 'linear-gradient(135deg,#e879f9,#a855f7)', color: '#fff', fontSize: 13, fontWeight: 500, padding: '6px 12px', borderRadius: 6 }}>Smart</span>
               <span style={{ background: '#ede9fe', color: P, fontSize: 13, fontWeight: 500, padding: '6px 12px', borderRadius: 6 }}>Sync</span>
             </div>
-            <h2 style={{ fontFamily: font, fontSize: 'clamp(36px,4vw,52px)', fontWeight: 800, color: P, lineHeight: 1.1, letterSpacing: '-0.5px', margin: '0 0 28px' }}>
+            <h2 style={{ fontFamily: font, fontSize: 'clamp(28px,3.5vw,40px)', fontWeight: 700, color: P, lineHeight: 1.1, letterSpacing: '-0.03em', margin: '0 0 28px' }}>
               Your targeting,<br />finally diagnosed.
             </h2>
             <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 36px' }}>
@@ -312,7 +313,7 @@ export default function Home() {
                 'See the gap between your ICP and your ad targeting',
                 'Get a score that tells you how misaligned you are',
               ].map(item => (
-                <li key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 16, color: 'rgba(48,33,97,0.75)', lineHeight: 1.8, marginBottom: 8 }}>
+                <li key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontFamily: fontBody, fontSize: 17, color: 'rgba(48,33,97,0.75)', lineHeight: 1.7, marginBottom: 8 }}>
                   <span style={{ marginTop: 6, width: 6, height: 6, borderRadius: '50%', background: 'rgba(48,33,97,0.4)', flexShrink: 0 }} />
                   {item}
                 </li>
@@ -336,7 +337,7 @@ export default function Home() {
               <span style={{ background: 'linear-gradient(135deg,#e879f9,#a855f7)', color: '#fff', fontSize: 13, fontWeight: 500, padding: '6px 12px', borderRadius: 6 }}>Pro</span>
               <span style={{ background: '#ede9fe', color: P, fontSize: 13, fontWeight: 500, padding: '6px 12px', borderRadius: 6 }}>Analysis</span>
             </div>
-            <h2 style={{ fontFamily: font, fontSize: 'clamp(36px,4vw,52px)', fontWeight: 800, color: P, lineHeight: 1.1, letterSpacing: '-0.5px', margin: '0 0 28px' }}>
+            <h2 style={{ fontFamily: font, fontSize: 'clamp(28px,3.5vw,40px)', fontWeight: 700, color: P, lineHeight: 1.1, letterSpacing: '-0.03em', margin: '0 0 28px' }}>
               Stop guessing.<br />Start knowing.
             </h2>
             <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 36px' }}>
@@ -345,7 +346,7 @@ export default function Home() {
                 'Smart alerts that show your highest drop-off point',
                 'Fix the right thing first, not the easiest thing',
               ].map(item => (
-                <li key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 16, color: 'rgba(48,33,97,0.75)', lineHeight: 1.8, marginBottom: 8 }}>
+                <li key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontFamily: fontBody, fontSize: 17, color: 'rgba(48,33,97,0.75)', lineHeight: 1.7, marginBottom: 8 }}>
                   <span style={{ marginTop: 6, width: 6, height: 6, borderRadius: '50%', background: 'rgba(48,33,97,0.4)', flexShrink: 0 }} />
                   {item}
                 </li>
@@ -388,7 +389,7 @@ export default function Home() {
               <span style={{ background: 'linear-gradient(135deg,#e879f9,#a855f7)', color: '#fff', fontSize: 13, fontWeight: 500, padding: '6px 12px', borderRadius: 6 }}>Secure</span>
               <span style={{ background: '#ede9fe', color: P, fontSize: 13, fontWeight: 500, padding: '6px 12px', borderRadius: 6 }}>Insights</span>
             </div>
-            <h2 style={{ fontFamily: font, fontSize: 'clamp(36px,4vw,52px)', fontWeight: 800, color: P, lineHeight: 1.1, letterSpacing: '-0.5px', margin: '0 0 28px' }}>
+            <h2 style={{ fontFamily: font, fontSize: 'clamp(28px,3.5vw,40px)', fontWeight: 700, color: P, lineHeight: 1.1, letterSpacing: '-0.03em', margin: '0 0 28px' }}>
               Your budget,<br />working harder.
             </h2>
             <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 36px' }}>
@@ -397,7 +398,7 @@ export default function Home() {
                 'Find the exact campaigns wasting your spend',
                 'Reallocate budget with confidence not guesswork',
               ].map(item => (
-                <li key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 16, color: 'rgba(48,33,97,0.75)', lineHeight: 1.8, marginBottom: 8 }}>
+                <li key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontFamily: fontBody, fontSize: 17, color: 'rgba(48,33,97,0.75)', lineHeight: 1.7, marginBottom: 8 }}>
                   <span style={{ marginTop: 6, width: 6, height: 6, borderRadius: '50%', background: 'rgba(48,33,97,0.4)', flexShrink: 0 }} />
                   {item}
                 </li>
@@ -423,7 +424,7 @@ export default function Home() {
               <span style={{ background: '#ede9fe', color: P, fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 6 }}>Insights</span>
             </div>
 
-            <h2 style={{ fontFamily: font, fontSize: 48, fontWeight: 700, color: P, lineHeight: 1.1, letterSpacing: '-0.5px', margin: '0 0 20px' }}>
+            <h2 style={{ fontFamily: font, fontSize: 'clamp(32px,4vw,52px)', fontWeight: 700, color: P, lineHeight: 1.1, letterSpacing: '-0.03em', margin: '0 0 20px' }}>
               Everything your diagnosis covers.
             </h2>
 
@@ -519,8 +520,8 @@ export default function Home() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(180px,1fr))', gap: 40, textAlign: 'center' }}>
             {STATS.map(s => (
               <div key={s.label}>
-                <p style={{ fontFamily: font, fontSize: 'clamp(32px,4vw,52px)', fontWeight: 800, color: P, letterSpacing: '-1.5px', margin: '0 0 10px', lineHeight: 1 }}>{s.value}</p>
-                <p style={{ fontSize: 14, color: Pbody, margin: 0, lineHeight: 1.5 }}>{s.label}</p>
+                <p style={{ fontFamily: font, fontSize: 'clamp(40px,4vw,56px)', fontWeight: 700, color: P, letterSpacing: '-0.04em', margin: '0 0 10px', lineHeight: 1 }}>{s.value}</p>
+                <p style={{ fontFamily: fontBody, fontSize: 14, color: Pbody, margin: 0, lineHeight: 1.5 }}>{s.label}</p>
               </div>
             ))}
           </div>
@@ -699,10 +700,10 @@ export default function Home() {
       {/* ── Bottom CTA ────────────────────────────────────────────────────── */}
       <section style={{ background: 'linear-gradient(160deg,#f0edff 0%,#e8e2ff 50%,#ede8ff 100%)', borderTop: `1px solid ${Pborder}`, padding: '120px 24px', textAlign: 'center' }}>
         <div style={{ maxWidth: 640, margin: '0 auto' }}>
-          <h2 style={{ fontFamily: font, fontSize: 'clamp(30px,5vw,52px)', fontWeight: 700, letterSpacing: '-0.4px', color: P, margin: '0 0 20px', lineHeight: 1.15 }}>
+          <h2 style={{ fontFamily: font, fontSize: 'clamp(32px,5vw,52px)', fontWeight: 700, letterSpacing: '-0.03em', color: P, margin: '0 0 20px', lineHeight: 1.1 }}>
             Every month without a diagnosis is a month of budget you won&rsquo;t get back.
           </h2>
-          <p style={{ fontSize: 18, color: Pbody, maxWidth: 520, margin: '0 auto 44px', lineHeight: 1.65 }}>
+          <p style={{ fontFamily: fontBody, fontSize: 17, color: 'rgba(48,33,97,0.75)', maxWidth: 520, margin: '0 auto 44px', lineHeight: 1.7 }}>
             You don&rsquo;t have a spending problem. You have a targeting problem. And it has a name, a score, and a fix.
           </p>
           <Link href="/questionnaire" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: P, color: '#fff', textDecoration: 'none', fontWeight: 700, fontSize: 17, padding: '17px 40px', borderRadius: 12, letterSpacing: '-0.3px', boxShadow: '0 12px 40px rgba(48,33,97,0.25)' }}>

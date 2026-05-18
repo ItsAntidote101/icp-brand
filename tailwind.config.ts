@@ -16,12 +16,13 @@ const config: Config = {
         },
       },
       fontFamily: {
-        display: ['PolySans', 'var(--font-dm-sans)', '-apple-system', 'sans-serif'],
-        body: ['-apple-system', 'system-ui', 'Segoe UI', 'sans-serif'],
+        heading: ['PolySans Median', 'DM Sans', 'sans-serif'],
+        body:    ['PolySans Neutral', '-apple-system', 'system-ui', 'sans-serif'],
+        display: ['PolySans Median', 'DM Sans', 'sans-serif'],
       },
       borderRadius: {
         card: '20px',
-        btn: '12px',
+        btn:  '12px',
         pill: '32px',
       },
     },
