@@ -60,6 +60,10 @@ const TIERS = [
 
 const FAQ_ITEMS = [
   {
+    q: 'What is the difference between the free report and the subscriber report?',
+    a: "The free report diagnoses your ICP based on your questionnaire answers — fast, instant, and genuinely useful. The subscriber report goes further. Our AI visits your actual landing page, researches your competitors, pulls real ad cost benchmarks for your region and industry, and gives you a report backed by live data — not just your answers. Most subscribers say the first deep report alone is worth the subscription.",
+  },
+  {
     q: 'I already have an agency. Why do I need this?',
     a: "Your agency optimizes what's in front of them. We diagnose what's underneath. Most agencies won't tell you your ICP is wrong — because fixing it means admitting the last six months of work was built on a broken foundation. We will.",
   },
@@ -236,7 +240,7 @@ export default function Home() {
             </div>
 
             <p style={{ fontFamily: fontBody, fontSize: 18, lineHeight: 1.7, color: 'rgba(48,33,97,0.7)', margin: '0 0 36px', maxWidth: 480 }}>
-              In 5 minutes, we diagnose exactly where your marketing is breaking — for free.
+              Get a free ICP diagnostic in 5 minutes. Subscribers unlock a deeper AI-researched report — we visit your landing page, research your competitors, and benchmark your spend against your industry. Live.
             </p>
 
             {/* CTAs */}
@@ -638,6 +642,103 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── Free vs Pro comparison ────────────────────────────────────────── */}
+      <section className="section-pad" style={{ background: '#fff', borderTop: `1px solid ${Pborder}` }}>
+        <div className="container">
+
+          {/* heading */}
+          <div style={{ textAlign: 'center', marginBottom: 56 }}>
+            <Badge text="Free vs Pro" />
+            <H2 style={{ fontSize: 'clamp(28px,4vw,44px)', margin: '0 0 16px' }}>
+              Good diagnosis. Or a great one.
+            </H2>
+            <p style={{ fontFamily: fontBody, fontSize: 17, color: Pbody, maxWidth: 500, margin: '0 auto', lineHeight: 1.65 }}>
+              The free report tells you what is broken. The subscriber report tells you exactly why — with real data to back it up.
+            </p>
+          </div>
+
+          {/* two cards + vs label */}
+          <div className="flex flex-col lg:flex-row items-stretch gap-0" style={{ maxWidth: 900, margin: '0 auto', alignItems: 'center' }}>
+
+            {/* LEFT — Free card */}
+            <div style={{ flex: 1, background: '#fff', border: `1px solid rgba(48,33,97,0.1)`, borderRadius: 20, padding: 40, display: 'flex', flexDirection: 'column' }}>
+              {/* label */}
+              <div style={{ display: 'inline-block', background: '#ede9fe', color: P, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '5px 14px', borderRadius: 100, marginBottom: 20, width: 'fit-content' }}>
+                Free
+              </div>
+              <h3 style={{ fontFamily: font, fontSize: 22, fontWeight: 700, color: P, margin: '0 0 28px', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+                ICP Diagnostic Report
+              </h3>
+              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 32px', display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
+                {[
+                  '30-question ICP assessment',
+                  'Overall health score 0–100',
+                  'Top 3 critical findings',
+                  'Funnel friction score',
+                  'Quick wins to implement now',
+                  'Instant results',
+                ].map(f => (
+                  <li key={f} style={{ display: 'flex', alignItems: 'center', gap: 10, fontFamily: fontBody, fontSize: 15, color: Pbody }}>
+                    <span style={{ flexShrink: 0, width: 20, height: 20, borderRadius: '50%', background: '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Check size={11} color={P} strokeWidth={3} />
+                    </span>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <div style={{ borderTop: `1px solid rgba(48,33,97,0.08)`, paddingTop: 24, marginBottom: 20 }}>
+                <p style={{ fontFamily: fontBody, fontSize: 13, color: Pmuted, margin: 0 }}>No credit card required</p>
+              </div>
+              <Link href="/questionnaire" style={{ display: 'block', textAlign: 'center', textDecoration: 'none', border: `2px solid ${P}`, color: P, fontWeight: 700, fontSize: 14, padding: '14px 20px', borderRadius: 12, letterSpacing: '-0.2px', background: 'transparent' }}>
+                Get Free Diagnosis
+              </Link>
+            </div>
+
+            {/* vs label */}
+            <div style={{ flexShrink: 0, width: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: 'rgba(48,33,97,0.4)', fontFamily: fontBody, fontWeight: 600, padding: '16px 0' }}>
+              vs
+            </div>
+
+            {/* RIGHT — Subscriber card */}
+            <div style={{ flex: 1, background: P, borderRadius: 20, padding: 40, display: 'flex', flexDirection: 'column' }}>
+              {/* label */}
+              <div style={{ display: 'inline-block', background: '#d946ef', color: '#fff', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '5px 14px', borderRadius: 100, marginBottom: 20, width: 'fit-content' }}>
+                Subscriber
+              </div>
+              <h3 style={{ fontFamily: font, fontSize: 22, fontWeight: 700, color: '#fff', margin: '0 0 28px', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+                Deep Research Report
+              </h3>
+              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 32px', display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
+                {[
+                  'Everything in the free report',
+                  'AI visits your actual landing page',
+                  'Live competitor research',
+                  'Regional ad cost benchmarks',
+                  'Named competitor insights',
+                  'Monthly monitoring and re-diagnosis',
+                  'Score improvement tracking',
+                  'CSV campaign analysis',
+                ].map(f => (
+                  <li key={f} style={{ display: 'flex', alignItems: 'center', gap: 10, fontFamily: fontBody, fontSize: 15, color: 'rgba(255,255,255,0.85)' }}>
+                    <span style={{ flexShrink: 0, width: 20, height: 20, borderRadius: '50%', background: 'rgba(255,255,255,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Check size={11} color="#fff" strokeWidth={3} />
+                    </span>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <div style={{ borderTop: '1px solid rgba(255,255,255,0.15)', paddingTop: 24, marginBottom: 20 }}>
+                <p style={{ fontFamily: fontBody, fontSize: 13, color: 'rgba(255,255,255,0.55)', margin: 0 }}>Paid for by one saved campaign optimisation</p>
+              </div>
+              <Link href="#pricing" style={{ display: 'block', textAlign: 'center', textDecoration: 'none', background: '#fff', color: P, fontWeight: 700, fontSize: 14, padding: '14px 20px', borderRadius: 12, letterSpacing: '-0.2px' }}>
+                See Pricing
+              </Link>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
       {/* ── Pricing ───────────────────────────────────────────────────────── */}
       <section id="pricing" className="section-pad" style={{ background: BgAlt, borderTop: `1px solid ${Pborder}` }}>
         <div className="container">
@@ -647,7 +748,7 @@ export default function Home() {
               Stop guessing. Start knowing.
             </H2>
             <p style={{ fontSize: 17, color: Pbody, maxWidth: 460, margin: '0 auto', lineHeight: 1.65 }}>
-              One subscription. Complete visibility into why your marketing isn&rsquo;t working.
+              Every paid plan includes our deep research diagnostic — we visit your landing page, research your competitors, and benchmark your performance with real data. Not estimates.
             </p>
           </div>
 
