@@ -951,6 +951,96 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── Get It Done (Agency) ──────────────────────────────────────────── */}
+      <section id="get-it-done" className="section-pad" style={{ background: BgAlt, borderTop: `1px solid ${Pborder}` }}>
+        <div className="container">
+          <div style={{ textAlign: 'center', marginBottom: 64 }}>
+            <div style={{ display: 'inline-block', fontFamily: fontBody, background: '#302161', color: '#fff', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', padding: '5px 16px', borderRadius: 100, marginBottom: 20 }}>
+              Agency Plan
+            </div>
+            <h2 style={{ fontFamily: font, fontSize: 'clamp(32px,4vw,52px)', fontWeight: 700, letterSpacing: '-0.03em', color: P, margin: '0 0 20px', lineHeight: 1.1 }}>
+              Not enough time to fix it yourself?
+            </h2>
+            <p style={{ fontFamily: fontBody, fontSize: 18, color: 'rgba(48,33,97,0.65)', maxWidth: 580, margin: '0 auto', lineHeight: 1.7 }}>
+              Hand your diagnostic to one of our media buyers. We show up already knowing your numbers. You just make the decisions.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
+            {/* Left — How it works */}
+            <div>
+              {[
+                {
+                  n: '01',
+                  heading: 'Run your diagnostic',
+                  body: 'Complete the ICP questionnaire. We generate your full diagnostic report with your health score, waste estimate, and critical findings.',
+                },
+                {
+                  n: '02',
+                  heading: 'We review before you arrive',
+                  body: 'Your assigned media buyer reads your diagnostic before the session. No briefing. No time wasted. We already know what\'s broken.',
+                },
+                {
+                  n: '03',
+                  heading: 'We fix it together',
+                  body: 'Live session where we implement your top 3 fixes. Targeting adjustments, landing page recommendations, budget reallocation — done on the call.',
+                },
+              ].map((step, i) => (
+                <div key={i} style={{ display: 'flex', gap: 28, marginBottom: 44 }}>
+                  <div style={{ flexShrink: 0 }}>
+                    <span style={{ fontFamily: font, fontSize: 52, fontWeight: 800, color: P, opacity: 0.1, lineHeight: 1, display: 'block' }}>{step.n}</span>
+                  </div>
+                  <div style={{ paddingTop: 8 }}>
+                    <h3 style={{ fontFamily: font, fontSize: 20, fontWeight: 700, color: P, margin: '0 0 10px', letterSpacing: '-0.01em' }}>{step.heading}</h3>
+                    <p style={{ fontFamily: fontBody, fontSize: 15, color: 'rgba(48,33,97,0.65)', lineHeight: 1.7, margin: 0 }}>{step.body}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Right — What's included card */}
+            <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 24, padding: 40, boxShadow: '0 4px 32px rgba(48,33,97,0.08)' }}>
+              <div style={{ display: 'inline-block', fontFamily: fontBody, background: P, color: '#fff', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', padding: '5px 14px', borderRadius: 100, marginBottom: 24 }}>
+                Agency Plan — KES 26,000/mo
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 28 }}>
+                {[
+                  'Everything in Pro',
+                  'Monthly strategy session with a media buyer',
+                  'Pre-session diagnostic review',
+                  'Live implementation of top 3 fixes',
+                  '30-day follow-up report',
+                  'Priority support response',
+                  'Multi-client reporting',
+                  'White label reports',
+                ].map((feat, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                    <Check size={16} color={P} style={{ flexShrink: 0, marginTop: 3 }} />
+                    <span style={{ fontFamily: fontBody, fontSize: 15, color: Pbody, lineHeight: 1.5 }}>{feat}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ height: 1, background: Pborder, margin: '0 0 28px' }} />
+
+              <blockquote style={{ margin: '0 0 28px', padding: '20px 24px', background: BgAlt, borderRadius: 14, borderLeft: `3px solid ${P}` }}>
+                <p style={{ fontFamily: fontBody, fontSize: 14, color: Pbody, lineHeight: 1.75, margin: '0 0 14px', fontStyle: 'italic' }}>
+                  &ldquo;I showed up to the session and they already knew my ICP score was 34, my landing page had 14 form fields, and exactly where my budget was going. We fixed three things in 45 minutes that my agency couldn&rsquo;t fix in 6 months.&rdquo;
+                </p>
+                <p style={{ fontFamily: fontBody, fontSize: 13, fontWeight: 600, color: P, margin: 0 }}>
+                  — Head of Marketing, B2B SaaS, Nairobi
+                </p>
+              </blockquote>
+
+              <Link href="/questionnaire"
+                style={{ display: 'block', textAlign: 'center', textDecoration: 'none', background: P, color: '#fff', fontFamily: font, fontWeight: 700, fontSize: 15, padding: 18, borderRadius: 14, letterSpacing: '-0.2px', boxShadow: '0 8px 28px rgba(48,33,97,0.2)' }}>
+                Get Started with Agency →
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── Bottom CTA ────────────────────────────────────────────────────── */}
       <section className="section-pad" style={{ background: 'linear-gradient(160deg,#f0edff 0%,#e8e2ff 50%,#ede8ff 100%)', borderTop: `1px solid ${Pborder}`, textAlign: 'center' }}>
         <div className="container">

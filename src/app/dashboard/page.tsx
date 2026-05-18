@@ -6,7 +6,7 @@ import Link from 'next/link'
 import {
   FileSearch, ArrowRight, TrendingUp, TrendingDown,
   BarChart2, User, FileText, LayoutDashboard, Zap, AlertCircle,
-  Check, ChevronDown, ChevronUp,
+  Check, ChevronDown, ChevronUp, CheckCircle, Target, X,
 } from 'lucide-react'
 import { AreaChart, Area, ResponsiveContainer, Tooltip } from 'recharts'
 
@@ -455,6 +455,204 @@ function CampaignInsightsWidget({ delay }: { delay: number }) {
   )
 }
 
+// ─── Get It Done card ─────────────────────────────────────────────────────────
+
+function GetItDoneCard({ tier, onBook }: { tier: string; onBook: () => void }) {
+  const isAgency = tier === 'agency'
+  const pills = [
+    { icon: <CheckCircle size={20} color="#fff" />, text: 'We review your diagnostic before the session — no briefing needed' },
+    { icon: <Target     size={20} color="#fff" />, text: 'We implement your top 3 fixes with you live on the call' },
+    { icon: <TrendingUp size={20} color="#fff" />, text: 'Follow-up report 30 days later to measure improvement' },
+  ]
+  return (
+    <div style={{
+      background: 'linear-gradient(135deg,#302161 0%,#4c1d95 100%)',
+      borderRadius: 20, animation: 'fadeUp 0.4s ease both', animationDelay: '230ms',
+    }}
+      className="grid grid-cols-1 lg:grid-cols-2 gap-0"
+    >
+      {/* Left */}
+      <div style={{ padding: 'clamp(28px,4vw,36px) clamp(24px,5vw,40px)' }}>
+        <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', background: 'rgba(255,255,255,0.15)', color: '#fff', padding: '4px 12px', borderRadius: 100, display: 'inline-block', marginBottom: 14 }}>
+          Agency Feature
+        </span>
+        <h3 style={{ fontFamily: font, fontSize: 'clamp(18px,2.5vw,22px)', fontWeight: 700, color: '#fff', margin: '0 0 14px', lineHeight: 1.25, letterSpacing: '-0.01em' }}>
+          Don&apos;t have time to fix this yourself?
+        </h3>
+        <p style={{ fontFamily: fontB, fontSize: 15, color: 'rgba(255,255,255,0.78)', lineHeight: 1.7, margin: '0 0 24px' }}>
+          Hand your diagnostic over to one of our media buyers. We show up already knowing your ICP score, your biggest leak, and your waste estimate. You just show up and make decisions.
+        </p>
+        {isAgency ? (
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            <button onClick={onBook} style={{ fontFamily: font, fontWeight: 600, fontSize: 14, background: '#fff', color: P, border: 'none', borderRadius: 12, padding: '14px 28px', cursor: 'pointer', letterSpacing: '-0.2px' }}>
+              Book a Strategy Session →
+            </button>
+            <a href="#get-it-done-features" style={{ fontFamily: font, fontWeight: 600, fontSize: 14, color: '#fff', background: 'transparent', border: '1.5px solid rgba(255,255,255,0.35)', borderRadius: 12, padding: '14px 28px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
+              See what&apos;s included
+            </a>
+          </div>
+        ) : (
+          <div>
+            <p style={{ fontFamily: fontB, fontSize: 14, color: 'rgba(255,255,255,0.55)', margin: '0 0 16px', lineHeight: 1.6 }}>
+              Upgrade to Agency to unlock strategy sessions with our media buyers.
+            </p>
+            <Link href="/#pricing" style={{ fontFamily: font, fontWeight: 600, fontSize: 14, background: '#fff', color: P, borderRadius: 12, padding: '14px 28px', textDecoration: 'none', display: 'inline-block' }}>
+              See Agency Plan →
+            </Link>
+          </div>
+        )}
+      </div>
+      {/* Right */}
+      <div id="get-it-done-features" style={{ padding: 'clamp(28px,4vw,36px) clamp(24px,5vw,40px)', display: 'flex', flexDirection: 'column', gap: 12, justifyContent: 'center' }}>
+        {pills.map((pill, i) => (
+          <div key={i} style={{ background: 'rgba(255,255,255,0.1)', borderRadius: 12, padding: '16px 20px', display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+            <div style={{ flexShrink: 0, marginTop: 2 }}>{pill.icon}</div>
+            <p style={{ fontFamily: fontB, fontSize: 14, color: '#fff', margin: 0, lineHeight: 1.55 }}>{pill.text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ─── Booking modal ─────────────────────────────────────────────────────────────
+
+type BookingState = 'form' | 'submitting' | 'success'
+
+function BookingModal({
+  user, diag, score, onClose,
+}: {
+  user: UserData; diag: DiagnosisData; score: number | null; onClose: () => void
+}) {
+  const [format,  setFormat]  = useState<'Video Call' | 'Voice Call' | 'Async Review'>('Video Call')
+  const [time,    setTime]    = useState('')
+  const [notes,   setNotes]   = useState('')
+  const [step,    setStep]    = useState<BookingState>('form')
+
+  const findings  = getFindings(diag)
+  const topFinding = findings[0]?.title ?? '—'
+  const waste      = diag.monthly_waste_estimate ?? '—'
+
+  const brief = [
+    { label: 'ICP Health Score',         value: score !== null ? `${score}/100` : '—' },
+    { label: 'Estimated Monthly Waste',  value: waste },
+    { label: 'Top Priority',             value: topFinding },
+  ]
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setStep('submitting')
+    try {
+      await fetch('/api/session-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userEmail:     user.email,
+          userName:      user.full_name ?? user.email,
+          companyName:   user.company_name ?? '',
+          sessionFormat: format,
+          preferredTime: time,
+          notes,
+          diagnostic:    { score, waste, topFinding },
+        }),
+      })
+      setStep('success')
+    } catch {
+      setStep('form')
+    }
+  }
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
+      onClick={e => { if (e.target === e.currentTarget) onClose() }}>
+      <div style={{ background: '#fff', borderRadius: 24, padding: 'clamp(28px,5vw,40px)', maxWidth: 560, width: '100%', maxHeight: '90vh', overflowY: 'auto', position: 'relative' }}>
+        {/* Close */}
+        <button onClick={onClose} style={{ position: 'absolute', top: 20, right: 20, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(48,33,97,0.4)', padding: 4 }}>
+          <X size={20} />
+        </button>
+
+        {step === 'success' ? (
+          <div style={{ textAlign: 'center', padding: '20px 0' }}>
+            <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', animation: 'fadeUp 0.4s ease both' }}>
+              <Check size={28} color="#16a34a" strokeWidth={3} />
+            </div>
+            <h2 style={{ fontFamily: font, fontSize: 22, fontWeight: 700, color: P, margin: '0 0 12px', letterSpacing: '-0.02em' }}>Session request received.</h2>
+            <p style={{ fontFamily: fontB, fontSize: 15, color: 'rgba(48,33,97,0.65)', lineHeight: 1.7, margin: '0 0 8px' }}>
+              We will confirm your booking within 2 business hours via email.
+            </p>
+            <p style={{ fontFamily: fontB, fontSize: 14, color: 'rgba(48,33,97,0.5)', lineHeight: 1.6, margin: '0 0 28px' }}>
+              Your media buyer will review your diagnostic before the session.
+            </p>
+            <button onClick={onClose} style={{ fontFamily: font, fontWeight: 600, fontSize: 14, background: P, color: '#fff', border: 'none', borderRadius: 12, padding: '13px 28px', cursor: 'pointer' }}>
+              Close
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit}>
+            <h2 style={{ fontFamily: font, fontSize: 'clamp(20px,3vw,24px)', fontWeight: 700, color: P, margin: '0 0 8px', letterSpacing: '-0.02em' }}>
+              Book Your Strategy Session
+            </h2>
+            <p style={{ fontFamily: fontB, fontSize: 15, color: 'rgba(48,33,97,0.6)', margin: '0 0 24px', lineHeight: 1.6 }}>
+              Your diagnostic report will be shared with your media buyer before the session. Come ready to make decisions.
+            </p>
+
+            {/* Brief */}
+            <div style={{ background: BgAlt, borderRadius: 12, padding: '18px 22px', marginBottom: 24 }}>
+              <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(48,33,97,0.5)', margin: '0 0 14px' }}>Your Session Brief</p>
+              {brief.map(b => (
+                <div key={b.label} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: P, flexShrink: 0 }} />
+                  <span style={{ fontFamily: fontB, fontSize: 14, color: P }}>
+                    <strong style={{ fontWeight: 600 }}>{b.label}:</strong> {b.value}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* Format */}
+            <div style={{ marginBottom: 20 }}>
+              <p style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, color: P, margin: '0 0 10px' }}>How would you like to meet?</p>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {(['Video Call', 'Voice Call', 'Async Review'] as const).map(f => (
+                  <button key={f} type="button" onClick={() => setFormat(f)}
+                    style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, padding: '9px 16px', borderRadius: 10, cursor: 'pointer', transition: 'all 0.15s',
+                      background: format === f ? P : '#fff',
+                      color:      format === f ? '#fff' : P,
+                      border:     `1.5px solid ${format === f ? P : 'rgba(48,33,97,0.2)'}`,
+                    }}>
+                    {f}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Time */}
+            <div style={{ marginBottom: 20 }}>
+              <p style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, color: P, margin: '0 0 8px' }}>When works for you?</p>
+              <input type="text" value={time} onChange={e => setTime(e.target.value)}
+                placeholder="e.g. Weekdays after 3pm EAT"
+                style={{ width: '100%', fontFamily: fontB, fontSize: 14, color: P, background: '#fff', border: '1px solid rgba(48,33,97,0.18)', borderRadius: 10, padding: '12px 16px', outline: 'none', boxSizing: 'border-box' }} />
+            </div>
+
+            {/* Notes */}
+            <div style={{ marginBottom: 28 }}>
+              <p style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, color: P, margin: '0 0 8px' }}>Anything specific you want us to focus on?</p>
+              <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3}
+                placeholder="Optional — any context that would help us prepare"
+                style={{ width: '100%', fontFamily: fontB, fontSize: 14, color: P, background: '#fff', border: '1px solid rgba(48,33,97,0.18)', borderRadius: 10, padding: '12px 16px', outline: 'none', resize: 'vertical', boxSizing: 'border-box' }} />
+            </div>
+
+            <button type="submit" disabled={step === 'submitting'}
+              style={{ width: '100%', fontFamily: font, fontWeight: 600, fontSize: 15, background: P, color: '#fff', border: 'none', borderRadius: 12, padding: 16, cursor: step === 'submitting' ? 'wait' : 'pointer', opacity: step === 'submitting' ? 0.75 : 1 }}>
+              {step === 'submitting' ? 'Sending request…' : 'Request Session →'}
+            </button>
+          </form>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function FindingsSection({ diag }: { diag: DiagnosisData }) {
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null)
   const findings = getFindings(diag)
@@ -752,6 +950,7 @@ export default function DashboardPage() {
   const [dataLoading, setDataLoading] = useState(true)
   const [activeTab,   setActiveTab]   = useState<Tab>('overview')
   const [currency,    setCurrency]    = useState('KES')
+  const [showModal,   setShowModal]   = useState(false)
 
   // Load currency preference on mount
   useEffect(() => {
@@ -961,6 +1160,9 @@ export default function DashboardPage() {
                   <QuickWinsWidget diag={diag} delay={200} />
                 </div>
 
+                {/* Get It Done */}
+                <GetItDoneCard tier={user.subscription_tier} onBook={() => setShowModal(true)} />
+
                 {/* Row 2 */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="md:col-span-2">
@@ -986,6 +1188,11 @@ export default function DashboardPage() {
         {activeTab === 'reports' && <ReportsTab reports={reports} dataLoading={dataLoading} />}
         {activeTab === 'account' && user && <AccountTab user={user} currency={currency} onSignOut={handleSignOut} />}
       </div>
+
+      {/* ── Booking modal ─────────────────────────────────────────────────── */}
+      {showModal && user && (
+        <BookingModal user={user} diag={diag} score={score} onClose={() => setShowModal(false)} />
+      )}
 
       {/* ── Mobile bottom tab bar ─────────────────────────────────────────── */}
       <div className="md:hidden" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'rgba(255,255,255,0.96)', backdropFilter: 'blur(20px)', borderTop: `1px solid ${Pborder}`, display: 'flex', zIndex: 50 }}>

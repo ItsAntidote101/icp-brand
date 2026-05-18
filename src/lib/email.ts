@@ -174,3 +174,95 @@ ${cta('Run New Diagnosis', url)}`
   else console.log('[email] reminder sent id:', data?.id, 'to:', to)
   return { data, error }
 }
+
+// ─── Email 4: Session request — founder notification ─────────────────────────
+
+export async function sendSessionRequestToFounder({
+  userName, userEmail, companyName, sessionFormat, preferredTime, notes, diagnostic,
+}: {
+  userName: string; userEmail: string; companyName: string
+  sessionFormat: string; preferredTime: string; notes: string
+  diagnostic: { score: number | null; waste: string; topFinding: string }
+}) {
+  const content = `
+<h1 style="margin:0 0 10px;color:#ffffff;font-size:24px;font-weight:800;line-height:1.2;letter-spacing:-0.5px;">New Strategy Session Request</h1>
+<p style="margin:0 0 24px;color:#9ca3af;font-size:15px;line-height:1.7;">A new Agency session request has come in. Details below.</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:14px;margin-bottom:20px;">
+  <tr><td style="padding:20px 24px;">
+    <p style="margin:0 0 6px;color:#a5b4fc;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;">Client</p>
+    ${[
+      ['Name', userName],
+      ['Email', userEmail],
+      ['Company', companyName],
+      ['Format', sessionFormat],
+      ['Preferred Time', preferredTime || 'Not specified'],
+    ].map(([k, v]) => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:8px;"><tr>
+      <td style="color:#6b7280;font-size:13px;width:140px;">${k}</td>
+      <td style="color:#e5e7eb;font-size:13px;font-weight:600;">${v}</td>
+    </tr></table>`).join('')}
+  </td></tr>
+</table>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:14px;margin-bottom:20px;">
+  <tr><td style="padding:20px 24px;">
+    <p style="margin:0 0 12px;color:#a5b4fc;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;">Diagnostic Summary</p>
+    ${[
+      ['ICP Health Score', diagnostic.score !== null ? `${diagnostic.score}/100` : '—'],
+      ['Estimated Waste', diagnostic.waste || '—'],
+      ['Top Finding', diagnostic.topFinding || '—'],
+    ].map(([k, v]) => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:8px;"><tr>
+      <td style="color:#6b7280;font-size:13px;width:160px;">${k}</td>
+      <td style="color:#e5e7eb;font-size:13px;font-weight:600;">${v}</td>
+    </tr></table>`).join('')}
+  </td></tr>
+</table>
+${notes ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;margin-bottom:16px;"><tr><td style="padding:16px 20px;"><p style="margin:0 0 8px;color:#6b7280;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Notes from client</p><p style="margin:0;color:#e5e7eb;font-size:14px;line-height:1.6;">${notes}</p></td></tr></table>` : ''}
+<p style="margin:16px 0 0;color:#6b7280;font-size:13px;">Reply to this email to reach the client directly.</p>`
+
+  const { data, error } = await getResend().emails.send({
+    from: FROM,
+    to: 'eugene@idealicp.com',
+    replyTo: userEmail,
+    subject: `New Strategy Session Request from ${companyName || userName}`,
+    html: base(content),
+  })
+  if (error) console.error('[email] session founder error:', JSON.stringify(error))
+  else console.log('[email] session founder sent id:', data?.id)
+  return { data, error }
+}
+
+// ─── Email 5: Session request — user confirmation ─────────────────────────────
+
+export async function sendSessionConfirmationToUser({
+  to, name,
+}: { to: string; name: string }) {
+  const first = name?.split(' ')[0] ?? 'there'
+  const content = `
+<h1 style="margin:0 0 10px;color:#ffffff;font-size:24px;font-weight:800;line-height:1.2;letter-spacing:-0.5px;">Session request received.</h1>
+<p style="margin:0 0 24px;color:#9ca3af;font-size:15px;line-height:1.7;">Hi ${first}, we have your request and we are on it. Here is what happens next.</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:14px;margin-bottom:20px;">
+  <tr><td style="padding:20px 24px;">
+    ${[
+      ['Within 2 business hours', 'We confirm your booking and send a calendar invite.'],
+      ['Before the session', 'Your media buyer reads your full diagnostic. No briefing needed from you.'],
+      ['On the call', 'We implement your top 3 fixes together. Come ready to make decisions.'],
+      ['30 days later', 'You run a new diagnosis. We measure the improvement together.'],
+    ].map(([step, desc]) => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:14px;"><tr>
+      <td style="vertical-align:top;padding-top:2px;width:18px;color:#6366f1;font-size:14px;">→</td>
+      <td style="vertical-align:top;padding-left:8px;">
+        <p style="margin:0;color:#ffffff;font-size:14px;font-weight:600;">${step}</p>
+        <p style="margin:2px 0 0;color:#9ca3af;font-size:13px;line-height:1.5;">${desc}</p>
+      </td>
+    </tr></table>`).join('')}
+  </td></tr>
+</table>
+<p style="margin:0 0 0;color:#6b7280;font-size:13px;">Questions? Reply to this email or reach us at <a href="mailto:support@icpbrand.co" style="color:#6366f1;text-decoration:none;">support@icpbrand.co</a></p>`
+
+  const { data, error } = await getResend().emails.send({
+    from: FROM, to,
+    subject: 'Your strategy session request is confirmed',
+    html: base(content),
+  })
+  if (error) console.error('[email] session user error:', JSON.stringify(error))
+  else console.log('[email] session user sent id:', data?.id, 'to:', to)
+  return { data, error }
+}
