@@ -196,11 +196,11 @@ export default function Home() {
       )}
 
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <section style={{ background: '#ffffff', paddingTop: 80, overflow: 'hidden' }}>
-        <div style={{ maxWidth: 1120, margin: '0 auto', display: 'flex', alignItems: 'stretch', gap: 48 }}>
+      <section style={{ background: '#ffffff', paddingTop: 72, overflow: 'hidden' }}>
+        <div className="flex flex-col lg:flex-row lg:items-stretch" style={{ maxWidth: 1120, margin: '0 auto' }}>
 
           {/* copy — left column */}
-          <div className="flex flex-col justify-center" style={{ flex: '0 0 44%', padding: '0 0 100px' }}>
+          <div className="flex flex-col justify-center px-5 pb-14 lg:px-6 lg:pb-24 lg:w-[44%] lg:flex-none">
 
             {/* dual badges */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 28 }}>
@@ -246,7 +246,7 @@ export default function Home() {
           </div>
 
           {/* illustration — right column */}
-          <div style={{ flex: 1, background: 'linear-gradient(135deg,#f5f3ff 0%,#ede9fe 60%,#ddd6fe 100%)', borderRadius: '28px 28px 0 0', display: 'flex', alignItems: 'flex-end', overflow: 'hidden', minHeight: 540 }}>
+          <div className="mx-5 lg:mx-0 lg:flex-1" style={{ background: 'linear-gradient(135deg,#f5f3ff 0%,#ede9fe 60%,#ddd6fe 100%)', borderRadius: '24px 24px 0 0', display: 'flex', alignItems: 'flex-end', overflow: 'hidden', minHeight: 320 }}>
             <Image
               src="/images/Holder.png"
               alt="ICP Diagnostic Dashboard"
@@ -286,8 +286,8 @@ export default function Home() {
       {/* ── Feature blocks 1–3 ───────────────────────────────────────────── */}
 
       {/* Block 1 — Visual LEFT, Text RIGHT */}
-      <section id="how-it-works" style={{ background: '#ffffff', padding: '120px 24px', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'center' }}>
+      <section id="how-it-works" className="section-pad" style={{ background: '#ffffff', position: 'relative', overflow: 'hidden' }}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-20 items-center" style={{ maxWidth: 1200, margin: '0 auto' }}>
           {/* visual */}
           <div style={{ background: BgPurple, borderRadius: 24, overflow: 'hidden' }}>
             <Image
@@ -329,8 +329,8 @@ export default function Home() {
       </section>
 
       {/* Block 2 — Text LEFT, Visual RIGHT */}
-      <section style={{ background: BgAlt, padding: '120px 24px', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'center' }}>
+      <section className="section-pad" style={{ background: BgAlt, position: 'relative', overflow: 'hidden' }}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-20 items-center" style={{ maxWidth: 1200, margin: '0 auto' }}>
           {/* text */}
           <div>
             <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
@@ -371,8 +371,8 @@ export default function Home() {
       </section>
 
       {/* Block 3 — Visual LEFT, Text RIGHT */}
-      <section style={{ background: '#ffffff', padding: '120px 24px', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'center' }}>
+      <section className="section-pad" style={{ background: '#ffffff', position: 'relative', overflow: 'hidden' }}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-20 items-center" style={{ maxWidth: 1200, margin: '0 auto' }}>
           {/* visual */}
           <div style={{ background: BgPurple, borderRadius: 24, overflow: 'hidden' }}>
             <Image
@@ -413,8 +413,8 @@ export default function Home() {
       </section>
 
       {/* ── Feature grid ──────────────────────────────────────────────────── */}
-      <section id="features" style={{ background: BgAlt, padding: '120px 24px' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48, alignItems: 'start' }}>
+      <section id="features" className="section-pad" style={{ background: BgAlt }}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-12 items-start" style={{ maxWidth: 1200, margin: '0 auto' }}>
 
           {/* LEFT COLUMN */}
           <div>
@@ -451,7 +451,7 @@ export default function Home() {
           </div>
 
           {/* RIGHT COLUMN — 3×2 grid of feature cards */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
             {/* Card 1 — featured (dark) */}
             <div style={{ background: P, borderRadius: 20, padding: '28px 24px' }}>
@@ -512,7 +512,7 @@ export default function Home() {
       </section>
 
       {/* ── Stats bar ─────────────────────────────────────────────────────── */}
-      <div style={{ borderTop: `1px solid ${Pborder}`, borderBottom: `1px solid ${Pborder}`, padding: '80px 24px', background: '#fff' }}>
+      <div className="section-pad" style={{ borderTop: `1px solid ${Pborder}`, borderBottom: `1px solid ${Pborder}`, background: '#fff' }}>
         <div style={{ maxWidth: 960, margin: '0 auto' }}>
           <p style={{ textAlign: 'center', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', color: Pmuted, marginBottom: 56 }}>
             Why it matters now.
@@ -529,9 +529,9 @@ export default function Home() {
       </div>
 
       {/* ── Lead magnet ───────────────────────────────────────────────────── */}
-      <section style={{ background: '#ede9fe', borderTop: `1px solid ${Pborder}`, padding: '80px 24px' }}>
+      <section className="section-pad" style={{ background: '#ede9fe', borderTop: `1px solid ${Pborder}` }}>
         <div style={{ maxWidth: 840, margin: '0 auto' }}>
-          <div className="flex flex-col md:flex-row items-center gap-10" style={{ background: '#fff', borderRadius: 24, padding: '48px 40px', boxShadow: '0 8px 40px rgba(48,33,97,0.1)' }}>
+          <div className="flex flex-col md:flex-row items-center gap-10 p-6 md:p-12" style={{ background: '#fff', borderRadius: 24, boxShadow: '0 8px 40px rgba(48,33,97,0.1)' }}>
             <div style={{ flex: 1 }}>
               <Badge text="Free Resource" />
               <h2 style={{ fontFamily: font, fontSize: 'clamp(24px,3vw,36px)', fontWeight: 700, letterSpacing: '-0.3px', color: P, margin: '0 0 14px', lineHeight: 1.2 }}>
@@ -553,7 +553,7 @@ export default function Home() {
       </section>
 
       {/* ── Pricing ───────────────────────────────────────────────────────── */}
-      <section id="pricing" style={{ background: BgAlt, borderTop: `1px solid ${Pborder}`, padding: '120px 24px' }}>
+      <section id="pricing" className="section-pad" style={{ background: BgAlt, borderTop: `1px solid ${Pborder}` }}>
         <div style={{ maxWidth: 1080, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 64 }}>
             <Badge text="Simple Pricing" />
@@ -602,7 +602,7 @@ export default function Home() {
       </section>
 
       {/* ── FAQ ───────────────────────────────────────────────────────────── */}
-      <section id="faq" style={{ background: '#fff', borderTop: `1px solid ${Pborder}`, padding: '120px 24px' }}>
+      <section id="faq" className="section-pad" style={{ background: '#fff', borderTop: `1px solid ${Pborder}` }}>
         <div style={{ maxWidth: 700, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 64 }}>
             <Badge text="FAQ" />
@@ -628,7 +628,7 @@ export default function Home() {
       </section>
 
       {/* ── Testimonials ──────────────────────────────────────────────────── */}
-      <section id="results" style={{ background: BgAlt, borderTop: `1px solid ${Pborder}`, padding: '120px 24px' }}>
+      <section id="results" className="section-pad" style={{ background: BgAlt, borderTop: `1px solid ${Pborder}` }}>
         <div style={{ maxWidth: 1080, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 64 }}>
             <Badge text="Real Results" />
@@ -659,7 +659,7 @@ export default function Home() {
       </section>
 
       {/* ── Team ──────────────────────────────────────────────────────────── */}
-      <section style={{ background: '#fff', borderTop: `1px solid ${Pborder}`, padding: '120px 24px' }}>
+      <section className="section-pad" style={{ background: '#fff', borderTop: `1px solid ${Pborder}` }}>
         <div style={{ maxWidth: 1080, margin: '0 auto' }}>
           <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-20">
             <div style={{ flex: 1 }}>
@@ -698,7 +698,7 @@ export default function Home() {
       </section>
 
       {/* ── Bottom CTA ────────────────────────────────────────────────────── */}
-      <section style={{ background: 'linear-gradient(160deg,#f0edff 0%,#e8e2ff 50%,#ede8ff 100%)', borderTop: `1px solid ${Pborder}`, padding: '120px 24px', textAlign: 'center' }}>
+      <section className="section-pad" style={{ background: 'linear-gradient(160deg,#f0edff 0%,#e8e2ff 50%,#ede8ff 100%)', borderTop: `1px solid ${Pborder}`, textAlign: 'center' }}>
         <div style={{ maxWidth: 640, margin: '0 auto' }}>
           <h2 style={{ fontFamily: font, fontSize: 'clamp(32px,5vw,52px)', fontWeight: 700, letterSpacing: '-0.03em', color: P, margin: '0 0 20px', lineHeight: 1.1 }}>
             Every month without a diagnosis is a month of budget you won&rsquo;t get back.
