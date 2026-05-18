@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
-  Target, Filter, TrendingDown, Radio, BarChart2, Activity,
-  Star, Check, Menu, X, MapPin, ArrowRight,
+  Target, Filter, TrendingDown, BarChart2, Activity,
+  Star, Check, Menu, X, MapPin, ArrowRight, Globe,
 } from 'lucide-react'
 
 export const dynamic = 'force-static'
@@ -36,14 +36,6 @@ const MARQUEE_ITEMS = [
   '✦ Region-Specific Insights',
 ]
 
-const FEATURE_GRID = [
-  { Icon: Target,       title: 'ICP Alignment',      desc: 'Know exactly who your best customer really is' },
-  { Icon: Filter,       title: 'Funnel Audit',        desc: 'Score every step from ad click to conversion' },
-  { Icon: TrendingDown, title: 'Budget Analysis',     desc: 'Find where your money is being wasted' },
-  { Icon: Radio,        title: 'Channel Efficiency',  desc: 'Identify which platforms your ICP actually uses' },
-  { Icon: BarChart2,    title: 'CSV Analysis',        desc: 'Upload your campaign data for instant media buyer insights' },
-  { Icon: Activity,     title: 'Monthly Monitoring',  desc: 'Track your ICP health score improvement over time' },
-]
 
 const STATS = [
   { value: '40–60%',   label: 'Of ad budgets wasted on wrong audience targeting' },
@@ -596,26 +588,113 @@ export default function Home() {
       </section>
 
       {/* ── Feature grid ──────────────────────────────────────────────────── */}
-      <section style={{ background: BgAlt, borderTop: `1px solid ${Pborder}`, padding: '120px 24px' }}>
-        <div style={{ maxWidth: 1080, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 64 }}>
-            <H2 style={{ fontSize: 'clamp(28px,4vw,40px)', margin: '0 0 16px' }}>
-              Everything your marketing team needs.
-            </H2>
-            <p style={{ fontSize: 17, color: Pbody, maxWidth: 480, margin: '0 auto', lineHeight: 1.65 }}>
-              Replace guesswork and scattered tools with a single diagnostic platform where you get clear answers.
+      <section id="features" style={{ background: BgAlt, padding: '120px 24px' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48, alignItems: 'start' }}>
+
+          {/* LEFT COLUMN */}
+          <div>
+            {/* dual badges */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24 }}>
+              <span style={{ background: P, color: '#fff', fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 6 }}>Pre</span>
+              <span style={{ background: '#ede9fe', color: P, fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 6 }}>Insights</span>
+            </div>
+
+            <h2 style={{ fontFamily: font, fontSize: 48, fontWeight: 700, color: P, lineHeight: 1.1, letterSpacing: '-0.5px', margin: '0 0 20px' }}>
+              Everything your diagnosis covers.
+            </h2>
+
+            <p style={{ fontSize: 16, lineHeight: 1.7, color: 'rgba(48,33,97,0.7)', margin: '0 0 28px', maxWidth: 420 }}>
+              Replace scattered guesswork and agency reports with one platform that tells you exactly what is broken and what to fix first.
             </p>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 16 }}>
-            {FEATURE_GRID.map(({ Icon, title, desc }) => (
-              <div key={title} style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 20, padding: '28px 24px' }}>
-                <div style={{ width: 48, height: 48, borderRadius: 14, background: '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
-                  <Icon size={22} color={P} strokeWidth={1.75} />
-                </div>
-                <h3 style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: P, margin: '0 0 8px', letterSpacing: '-0.2px' }}>{title}</h3>
-                <p style={{ fontSize: 14, lineHeight: 1.65, color: Pbody, margin: 0 }}>{desc}</p>
+
+            <a href="#how-it-works" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, color: P, fontWeight: 600, fontSize: 15, textDecoration: 'none' }}
+              onMouseEnter={e => (e.currentTarget.style.textDecoration = 'underline')}
+              onMouseLeave={e => (e.currentTarget.style.textDecoration = 'none')}>
+              Learn More <ArrowRight size={16} />
+            </a>
+
+            {/* mini dashboard mockup */}
+            <div style={{ marginTop: 36, background: '#fff', borderRadius: 20, padding: 24, boxShadow: '0 8px 40px rgba(48,33,97,0.1)', border: `1px solid ${Pborder}` }}>
+              <p style={{ margin: '0 0 4px', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: Pmuted }}>ICP Health Score</p>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 20 }}>
+                <span style={{ fontSize: 40, fontWeight: 800, color: P, lineHeight: 1, letterSpacing: '-1px' }}>34</span>
+                <span style={{ fontSize: 16, color: Pmuted, fontWeight: 500 }}>/100</span>
               </div>
-            ))}
+              {[
+                { label: 'ICP Alignment',  v: 28, col: '#ef4444' },
+                { label: 'Targeting',      v: 42, col: '#f59e0b' },
+                { label: 'Funnel',         v: 65, col: '#22c55e' },
+              ].map(b => (
+                <div key={b.label} style={{ marginBottom: 12 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+                    <span style={{ fontSize: 12, color: Pbody }}>{b.label}</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: b.col }}>{b.v}</span>
+                  </div>
+                  <div style={{ height: 6, background: '#f0edff', borderRadius: 99 }}>
+                    <div style={{ height: '100%', width: `${b.v}%`, background: b.col, borderRadius: 99 }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* RIGHT COLUMN — 3×2 grid of feature cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+
+            {/* Card 1 — featured (dark) */}
+            <div style={{ background: P, borderRadius: 20, padding: '28px 24px' }}>
+              <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+                <Target size={20} color="#fff" strokeWidth={1.75} />
+              </div>
+              <h3 style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: '#fff', margin: '0 0 8px' }}>ICP Alignment</h3>
+              <p style={{ fontSize: 13, lineHeight: 1.65, color: 'rgba(255,255,255,0.75)', margin: 0 }}>Compare who you think your customer is against who actually buys from you.</p>
+            </div>
+
+            {/* Card 2 */}
+            <div style={{ background: '#fff', border: `1px solid rgba(48,33,97,0.08)`, borderRadius: 20, padding: '28px 24px' }}>
+              <div style={{ width: 40, height: 40, borderRadius: 10, background: '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+                <Globe size={20} color={P} strokeWidth={1.75} />
+              </div>
+              <h3 style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: '0 0 8px' }}>Smart Targeting</h3>
+              <p style={{ fontSize: 13, lineHeight: 1.65, color: Pbody, margin: 0 }}>Get region-specific recommendations based on where your audience actually decides.</p>
+            </div>
+
+            {/* Card 3 */}
+            <div style={{ background: '#fff', border: `1px solid rgba(48,33,97,0.08)`, borderRadius: 20, padding: '28px 24px' }}>
+              <div style={{ width: 40, height: 40, borderRadius: 10, background: '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+                <Filter size={20} color={P} strokeWidth={1.75} />
+              </div>
+              <h3 style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: '0 0 8px' }}>Funnel Scoring</h3>
+              <p style={{ fontSize: 13, lineHeight: 1.65, color: Pbody, margin: 0 }}>Every step from ad click to lead scored and ranked by drop-off impact.</p>
+            </div>
+
+            {/* Card 4 */}
+            <div style={{ background: '#fff', border: `1px solid rgba(48,33,97,0.08)`, borderRadius: 20, padding: '28px 24px' }}>
+              <div style={{ width: 40, height: 40, borderRadius: 10, background: '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+                <TrendingDown size={20} color={P} strokeWidth={1.75} />
+              </div>
+              <h3 style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: '0 0 8px' }}>Budget Reallocation</h3>
+              <p style={{ fontSize: 13, lineHeight: 1.65, color: Pbody, margin: 0 }}>See which channels waste spend and where to shift money for maximum return.</p>
+            </div>
+
+            {/* Card 5 */}
+            <div style={{ background: '#fff', border: `1px solid rgba(48,33,97,0.08)`, borderRadius: 20, padding: '28px 24px' }}>
+              <div style={{ width: 40, height: 40, borderRadius: 10, background: '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+                <BarChart2 size={20} color={P} strokeWidth={1.75} />
+              </div>
+              <h3 style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: '0 0 8px' }}>CSV Analysis</h3>
+              <p style={{ fontSize: 13, lineHeight: 1.65, color: Pbody, margin: 0 }}>Upload your Google or Meta export and get a media buyer analysis in seconds.</p>
+            </div>
+
+            {/* Card 6 */}
+            <div style={{ background: '#fff', border: `1px solid rgba(48,33,97,0.08)`, borderRadius: 20, padding: '28px 24px' }}>
+              <div style={{ width: 40, height: 40, borderRadius: 10, background: '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+                <Activity size={20} color={P} strokeWidth={1.75} />
+              </div>
+              <h3 style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: '0 0 8px' }}>Monthly Health Check</h3>
+              <p style={{ fontSize: 13, lineHeight: 1.65, color: Pbody, margin: 0 }}>Track your ICP score improvement month over month with automated re-diagnosis.</p>
+            </div>
+
           </div>
         </div>
       </section>
