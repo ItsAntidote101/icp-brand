@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import {
   Target, Filter, TrendingDown, BarChart2, Activity,
   Star, Check, Menu, X, MapPin, ArrowRight, Globe,
@@ -25,15 +26,6 @@ const NAV_LINKS = [
   { label: 'Pricing',      href: '#pricing' },
   { label: 'FAQ',          href: '#faq' },
   { label: 'Results',      href: '#results' },
-]
-
-const MARQUEE_ITEMS = [
-  '✦ Free ICP Diagnosis',
-  '✦ No Agency Fluff',
-  '✦ Real Numbers, Real Fixes',
-  '✦ Results in 5 Minutes',
-  '✦ Built by a Media Buyer',
-  '✦ Region-Specific Insights',
 ]
 
 
@@ -102,27 +94,6 @@ const TESTIMONIALS = [
     author: 'Marketing Director, E-commerce Brand, Nairobi',
   },
 ]
-
-// ─── Score arc SVG ────────────────────────────────────────────────────────────
-
-function ScoreArc({ score, size = 120 }: { score: number; size?: number }) {
-  const r    = Math.round(size * 0.38)
-  const cx   = size / 2
-  const cy   = size / 2
-  const circ = 2 * Math.PI * r
-  const off  = circ * (1 - score / 100)
-  const col  = score >= 70 ? '#22c55e' : score >= 40 ? '#f59e0b' : '#ef4444'
-  return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ display: 'block' }}>
-      <circle cx={cx} cy={cy} r={r} fill="none" stroke="#ede9fe" strokeWidth={size * 0.07} />
-      <circle cx={cx} cy={cy} r={r} fill="none" stroke={col} strokeWidth={size * 0.07}
-        strokeDasharray={circ} strokeDashoffset={off}
-        strokeLinecap="round" transform={`rotate(-90 ${cx} ${cy})`} />
-    </svg>
-  )
-}
-
-
 
 
 // ─── Shared components ────────────────────────────────────────────────────────
@@ -257,16 +228,14 @@ export default function Home() {
 
             {/* avatar social proof */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-              <div style={{ display: 'flex' }}>
-                {[
-                  { bg: 'linear-gradient(135deg,#6c4ddd,#302161)', t: 'KM' },
-                  { bg: 'linear-gradient(135deg,#e879f9,#a855f7)', t: 'AO' },
-                  { bg: 'linear-gradient(135deg,#f59e0b,#d97706)',  t: 'JN' },
-                ].map((a, i) => (
-                  <div key={i} style={{ width: 34, height: 34, borderRadius: '50%', background: a.bg, border: '2.5px solid #fff', marginLeft: i === 0 ? 0 : -10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff', letterSpacing: '0.3px', boxShadow: '0 2px 8px rgba(0,0,0,0.14)', position: 'relative', zIndex: 3 - i }}>
-                    {a.t}
-                  </div>
-                ))}
+              <div style={{ width: 80, height: 34, borderRadius: 999, overflow: 'hidden', border: '2.5px solid #fff', boxShadow: '0 2px 8px rgba(0,0,0,0.14)', flexShrink: 0 }}>
+                <Image
+                  src="/images/Frame 245.png"
+                  alt="Marketing team members"
+                  width={80}
+                  height={34}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                />
               </div>
               <div>
                 <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: P }}>50+ marketing teams</p>
@@ -275,90 +244,41 @@ export default function Home() {
             </div>
           </div>
 
-          {/* illustration — right column: large gradient card anchored to bottom */}
-          <div style={{ flex: 1, background: 'linear-gradient(135deg,#f472b6 0%,#c084fc 40%,#7c3aed 70%,#302161 100%)', borderRadius: '28px 28px 0 0', padding: '40px 32px 0', display: 'flex', flexDirection: 'column', gap: 16, minHeight: 540 }}>
-
-            {/* main score card */}
-            <div style={{ background: '#fff', borderRadius: 20, padding: '20px 24px', boxShadow: '0 24px 64px rgba(0,0,0,0.18)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                <div>
-                  <p style={{ margin: '0 0 2px', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: Pmuted }}>ICP Health Score</p>
-                  <p style={{ margin: 0, fontSize: 11, color: Pmuted }}>Q2 Diagnostic — May 2025</p>
-                </div>
-                <span style={{ background: '#fef2f2', color: '#dc2626', fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 8 }}>Critical</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-                <div style={{ position: 'relative', flexShrink: 0 }}>
-                  <ScoreArc score={34} size={72} />
-                  <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                    <span style={{ fontSize: 18, fontWeight: 800, color: '#ef4444', lineHeight: 1 }}>34</span>
-                    <span style={{ fontSize: 9, color: Pmuted }}>/100</span>
-                  </div>
-                </div>
-                <div style={{ flex: 1 }}>
-                  {[{ label: 'ICP Alignment', v: 28 }, { label: 'Funnel Score', v: 42 }, { label: 'Channel Mix', v: 65 }].map(b => {
-                    const col = b.v >= 70 ? '#22c55e' : b.v >= 40 ? '#f59e0b' : '#ef4444'
-                    return (
-                      <div key={b.label} style={{ marginBottom: 7 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-                          <span style={{ fontSize: 10, color: Pbody }}>{b.label}</span>
-                          <span style={{ fontSize: 10, fontWeight: 700, color: col }}>{b.v}</span>
-                        </div>
-                        <div style={{ height: 4, background: '#f0edff', borderRadius: 99 }}>
-                          <div style={{ height: '100%', width: `${b.v}%`, background: col, borderRadius: 99 }} />
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            </div>
-
-            {/* two side-by-side cards */}
-            <div style={{ display: 'flex', gap: 14, flex: 1 }}>
-
-              {/* findings card (white) */}
-              <div style={{ flex: 1, background: '#fff', borderRadius: 18, padding: 18, boxShadow: '0 16px 48px rgba(0,0,0,0.15)' }}>
-                <p style={{ margin: '0 0 10px', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.7px', color: Pmuted }}>Top Findings</p>
-                <div style={{ background: '#fef2f2', borderRadius: 10, padding: '10px 12px', marginBottom: 8 }}>
-                  <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#dc2626' }}>Wrong audience segment</p>
-                  <p style={{ margin: '3px 0 0', fontSize: 11, color: '#ef4444', lineHeight: 1.4 }}>Targeting procurement — buyers are CFOs</p>
-                </div>
-                <div style={{ background: '#fffbeb', borderRadius: 10, padding: '10px 12px' }}>
-                  <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#d97706' }}>14 form fields</p>
-                  <p style={{ margin: '3px 0 0', fontSize: 11, color: '#d97706', lineHeight: 1.4 }}>Industry avg is 4 — 67% abandon</p>
-                </div>
-              </div>
-
-              {/* action card (dark purple) */}
-              <div style={{ flex: 1, background: 'rgba(30,18,72,0.92)', borderRadius: 18, padding: 18, boxShadow: '0 16px 48px rgba(0,0,0,0.28)', backdropFilter: 'blur(10px)' }}>
-                <p style={{ margin: '0 0 12px', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.7px', color: 'rgba(255,255,255,0.5)' }}>Action Plan</p>
-                {['Redefine ICP to CFO persona', 'Cut form to 4 fields now', 'Shift 40% budget to LinkedIn'].map((action, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 11 }}>
-                    <div style={{ width: 16, height: 16, borderRadius: '50%', background: '#7c3aed', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
-                      <Check size={9} color="#fff" strokeWidth={3} />
-                    </div>
-                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.85)', lineHeight: 1.4 }}>{action}</span>
-                  </div>
-                ))}
-                <div style={{ marginTop: 14, background: 'rgba(255,255,255,0.08)', borderRadius: 10, padding: '10px 13px' }}>
-                  <p style={{ margin: 0, fontSize: 10, color: 'rgba(255,255,255,0.45)' }}>Estimated waste recovered</p>
-                  <p style={{ margin: '3px 0 0', fontSize: 17, fontWeight: 800, color: '#fff' }}>KES 38,000/mo</p>
-                </div>
-              </div>
-            </div>
+          {/* illustration — right column */}
+          <div style={{ flex: 1, background: 'linear-gradient(135deg,#f5f3ff 0%,#ede9fe 60%,#ddd6fe 100%)', borderRadius: '28px 28px 0 0', display: 'flex', alignItems: 'flex-end', overflow: 'hidden', minHeight: 540 }}>
+            <Image
+              src="/images/Holder.png"
+              alt="ICP Diagnostic Dashboard"
+              width={700}
+              height={600}
+              style={{ width: '100%', height: 'auto', display: 'block' }}
+              priority
+            />
           </div>
         </div>
       </section>
 
-      {/* ── Marquee ───────────────────────────────────────────────────────── */}
-      <div style={{ background: BgAlt, borderTop: `1px solid ${Pborder}`, borderBottom: `1px solid ${Pborder}`, padding: '20px 0', overflow: 'hidden' }}>
-        <div className="animate-marquee" style={{ display: 'flex', width: 'max-content' }}>
-          {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map((item, i) => (
-            <span key={i} style={{ fontSize: 13, fontWeight: 600, color: Pbody, padding: '0 40px', whiteSpace: 'nowrap' }}>
-              {item}
-            </span>
-          ))}
+      {/* ── Logo trust bar ────────────────────────────────────────────────── */}
+      <div style={{ background: '#fff', borderTop: `1px solid ${Pborder}`, borderBottom: `1px solid ${Pborder}`, padding: '28px 0', overflow: 'hidden' }}>
+        <div style={{ maxWidth: 1120, margin: '0 auto', paddingLeft: 24 }}>
+          <p style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', color: Pmuted, marginBottom: 20 }}>
+            Trusted by teams at:
+          </p>
+        </div>
+        <div className="animate-marquee" style={{ display: 'flex', alignItems: 'center', width: 'max-content', gap: 0 }}>
+          {[...Array(2)].map((_, pass) =>
+            [1, 2, 3, 4, 5, 6].map(n => (
+              <div key={`${pass}-${n}`} style={{ padding: '0 60px', flexShrink: 0 }}>
+                <Image
+                  src={`/images/Logos-${n}.png`}
+                  alt={`Partner logo ${n}`}
+                  width={120}
+                  height={32}
+                  style={{ height: 32, width: 'auto', opacity: 0.5, filter: 'grayscale(100%)', display: 'block' }}
+                />
+              </div>
+            ))
+          )}
         </div>
       </div>
 
@@ -368,8 +288,14 @@ export default function Home() {
       <section id="how-it-works" style={{ background: '#ffffff', padding: '120px 24px', position: 'relative', overflow: 'hidden' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'center' }}>
           {/* visual */}
-          <div data-replace-with="/images/features/feature-1.jpg" style={{ width: '100%', aspectRatio: '4/3', background: '#ede9fe', borderRadius: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <span style={{ color: '#302161', opacity: 0.3, fontSize: 14 }}>Image placeholder</span>
+          <div style={{ background: BgPurple, borderRadius: 24, overflow: 'hidden' }}>
+            <Image
+              src="/images/Holder-1.png"
+              alt="ICP Alignment diagnostic"
+              width={600}
+              height={500}
+              style={{ width: '100%', height: 'auto', display: 'block' }}
+            />
           </div>
           {/* text */}
           <div>
@@ -430,8 +356,14 @@ export default function Home() {
             </Link>
           </div>
           {/* visual */}
-          <div data-replace-with="/images/features/feature-2.jpg" style={{ width: '100%', aspectRatio: '4/3', background: '#ede9fe', borderRadius: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <span style={{ color: '#302161', opacity: 0.3, fontSize: 14 }}>Image placeholder</span>
+          <div style={{ background: BgPurple, borderRadius: 24, overflow: 'hidden' }}>
+            <Image
+              src="/images/Holder-2.png"
+              alt="Funnel scoring diagnostic"
+              width={600}
+              height={500}
+              style={{ width: '100%', height: 'auto', display: 'block' }}
+            />
           </div>
         </div>
         <span style={{ position: 'absolute', right: 24, top: '50%', transform: 'translateY(-50%)', writingMode: 'vertical-rl', fontSize: 12, color: 'rgba(48,33,97,0.2)', letterSpacing: '0.1em', fontWeight: 500 }}>02</span>
@@ -441,8 +373,14 @@ export default function Home() {
       <section style={{ background: '#ffffff', padding: '120px 24px', position: 'relative', overflow: 'hidden' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'center' }}>
           {/* visual */}
-          <div data-replace-with="/images/features/feature-3.jpg" style={{ width: '100%', aspectRatio: '4/3', background: '#ede9fe', borderRadius: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <span style={{ color: '#302161', opacity: 0.3, fontSize: 14 }}>Image placeholder</span>
+          <div style={{ background: BgPurple, borderRadius: 24, overflow: 'hidden' }}>
+            <Image
+              src="/images/Holder-3.png"
+              alt="Budget analysis diagnostic"
+              width={600}
+              height={500}
+              style={{ width: '100%', height: 'auto', display: 'block' }}
+            />
           </div>
           {/* text */}
           <div>
@@ -499,28 +437,15 @@ export default function Home() {
               Learn More <ArrowRight size={16} />
             </a>
 
-            {/* mini dashboard mockup */}
-            <div style={{ marginTop: 36, background: '#fff', borderRadius: 20, padding: 24, boxShadow: '0 8px 40px rgba(48,33,97,0.1)', border: `1px solid ${Pborder}` }}>
-              <p style={{ margin: '0 0 4px', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: Pmuted }}>ICP Health Score</p>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 20 }}>
-                <span style={{ fontSize: 40, fontWeight: 800, color: P, lineHeight: 1, letterSpacing: '-1px' }}>34</span>
-                <span style={{ fontSize: 16, color: Pmuted, fontWeight: 500 }}>/100</span>
-              </div>
-              {[
-                { label: 'ICP Alignment',  v: 28, col: '#ef4444' },
-                { label: 'Targeting',      v: 42, col: '#f59e0b' },
-                { label: 'Funnel',         v: 65, col: '#22c55e' },
-              ].map(b => (
-                <div key={b.label} style={{ marginBottom: 12 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
-                    <span style={{ fontSize: 12, color: Pbody }}>{b.label}</span>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: b.col }}>{b.v}</span>
-                  </div>
-                  <div style={{ height: 6, background: '#f0edff', borderRadius: 99 }}>
-                    <div style={{ height: '100%', width: `${b.v}%`, background: b.col, borderRadius: 99 }} />
-                  </div>
-                </div>
-              ))}
+            {/* dashboard image */}
+            <div style={{ marginTop: 36, borderRadius: 20, overflow: 'hidden', boxShadow: '0 8px 40px rgba(48,33,97,0.12)' }}>
+              <Image
+                src="/images/Holder-4.png"
+                alt="ICP diagnostic dashboard"
+                width={560}
+                height={420}
+                style={{ width: '100%', height: 'auto', display: 'block' }}
+              />
             </div>
           </div>
 
@@ -744,19 +669,28 @@ export default function Home() {
                 clients waste money on the wrong audience. Every diagnostic rule, every
                 recommendation, every insight comes from real campaign experience — not theory.
               </Body>
-            </div>
-            <div style={{ flexShrink: 0 }}>
-              <div style={{ background: BgPurple, borderRadius: 20, padding: '36px 40px', textAlign: 'center', border: `1px solid ${Pborder}`, minWidth: 260 }}>
-                <div style={{ width: 80, height: 80, borderRadius: '50%', background: `linear-gradient(135deg,${P},#6c4ddd)`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
-                  <span style={{ color: '#fff', fontSize: 26, fontWeight: 700, fontFamily: font }}>EK</span>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 12, background: BgPurple, border: `1px solid ${Pborder}`, borderRadius: 16, padding: '14px 20px' }}>
+                <div style={{ width: 44, height: 44, borderRadius: '50%', background: `linear-gradient(135deg,${P},#6c4ddd)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <span style={{ color: '#fff', fontSize: 14, fontWeight: 700, fontFamily: font }}>EK</span>
                 </div>
-                <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: '0 0 4px' }}>Eugene Kwata</p>
-                <p style={{ fontSize: 14, color: Pbody, margin: '0 0 12px' }}>Founder &amp; Lead Media Buyer</p>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: '#ede9fe', padding: '5px 12px', borderRadius: 100 }}>
-                  <MapPin size={12} color={P} />
-                  <span style={{ fontSize: 12, fontWeight: 600, color: P }}>Nairobi, Kenya</span>
+                <div>
+                  <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: P }}>Eugene Kwata</p>
+                  <p style={{ margin: 0, fontSize: 12, color: Pbody }}>Founder &amp; Lead Media Buyer</p>
+                </div>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#ede9fe', padding: '4px 10px', borderRadius: 100, marginLeft: 8 }}>
+                  <MapPin size={11} color={P} />
+                  <span style={{ fontSize: 11, fontWeight: 600, color: P }}>Nairobi, Kenya</span>
                 </div>
               </div>
+            </div>
+            <div style={{ flexShrink: 0, borderRadius: 24, overflow: 'hidden', boxShadow: '0 16px 56px rgba(48,33,97,0.13)' }}>
+              <Image
+                src="/images/section.jpg"
+                alt="Marketing team at work"
+                width={480}
+                height={340}
+                style={{ width: 480, maxWidth: '100%', height: 'auto', display: 'block' }}
+              />
             </div>
           </div>
         </div>
