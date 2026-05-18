@@ -395,10 +395,10 @@ export default function Home() {
 
       {/* ── Feature grid ──────────────────────────────────────────────────── */}
       <section id="features" className="section-pad" style={{ background: BgAlt }}>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start" style={{ maxWidth: 1200, margin: '0 auto' }}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch" style={{ maxWidth: 1200, margin: '0 auto' }}>
 
-          {/* LEFT COLUMN */}
-          <div>
+          {/* LEFT COLUMN — white card, image fills remaining height */}
+          <div style={{ background: '#fff', borderRadius: 20, padding: '40px', display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24 }}>
               <span style={{ background: 'linear-gradient(135deg,#e879f9,#d946ef)', color: '#fff', fontSize: 12, fontWeight: 700, padding: '5px 14px', borderRadius: 100 }}>Pre</span>
               <span style={{ background: '#ede9fe', color: P, fontSize: 12, fontWeight: 700, padding: '5px 14px', borderRadius: 100 }}>Insights</span>
@@ -412,75 +412,78 @@ export default function Home() {
               Replace scattered guesswork and agency reports with one platform that tells you exactly what is broken.
             </p>
 
-            <a href="#how-it-works" className="learn-more-link" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, color: P, fontWeight: 600, fontSize: 15, textDecoration: 'none', marginBottom: 36 }}
+            <a href="#how-it-works" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, color: P, fontWeight: 600, fontSize: 15, textDecoration: 'none', marginBottom: 0 }}
               onMouseEnter={e => (e.currentTarget.style.textDecoration = 'underline')}
               onMouseLeave={e => (e.currentTarget.style.textDecoration = 'none')}>
               Learn More <ArrowRight size={16} />
             </a>
 
-            <Image
-              src="/images/Holder-4.png"
-              alt="ICP diagnostic dashboard"
-              width={600}
-              height={450}
-              style={{ borderRadius: 20, width: '100%', height: 'auto', display: 'block' }}
-            />
+            {/* image stretches to fill remaining vertical space */}
+            <div style={{ flex: 1, marginTop: 32, borderRadius: 16, overflow: 'hidden', minHeight: 240 }}>
+              <Image
+                src="/images/Holder-4.png"
+                alt="ICP diagnostic dashboard"
+                width={600}
+                height={450}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+              />
+            </div>
           </div>
 
-          {/* RIGHT COLUMN — 3×2 grid of feature cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* RIGHT COLUMN — 3×2 grid of feature cards, same total height */}
+          <div className="grid grid-cols-2 gap-4" style={{ gridTemplateRows: 'repeat(3, 1fr)' }}>
 
             {/* Card 1 — featured dark */}
-            <div style={{ background: P, borderRadius: 20, padding: '28px 24px' }}>
-              <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
-                <RefreshCw size={20} color="#fff" strokeWidth={1.75} />
+            <div style={{ background: P, borderRadius: 20, padding: '28px 24px', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+                <RefreshCw size={22} color="#fff" strokeWidth={1.75} />
               </div>
-              <h3 style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: '#fff', margin: '0 0 8px' }}>ICP Alignment</h3>
+              <h3 style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: '#fff', margin: '0 0 8px' }}>ICP Alignment</h3>
               <p style={{ fontFamily: fontBody, fontSize: 14, lineHeight: 1.65, color: 'rgba(255,255,255,0.75)', margin: 0 }}>Compare who you think your customer is against who actually buys from you.</p>
             </div>
 
             {/* Card 2 */}
-            <div style={{ background: '#fff', border: '1px solid rgba(48,33,97,0.08)', borderRadius: 20, padding: '28px 24px' }}>
-              <div style={{ width: 40, height: 40, borderRadius: 10, background: '#f3e8ff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
-                <Globe size={20} color="#a855f7" strokeWidth={1.75} />
+            <div style={{ background: '#fff', borderRadius: 20, padding: '28px 24px', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: '#f3e8ff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+                <Globe size={22} color="#a855f7" strokeWidth={1.75} />
               </div>
-              <h3 style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: '0 0 8px' }}>Smart Targeting</h3>
+              <h3 style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: P, margin: '0 0 8px' }}>Smart Targeting</h3>
               <p style={{ fontFamily: fontBody, fontSize: 14, lineHeight: 1.65, color: 'rgba(48,33,97,0.65)', margin: 0 }}>Region-specific recommendations based on where your audience decides.</p>
             </div>
 
             {/* Card 3 */}
-            <div style={{ background: '#fff', border: '1px solid rgba(48,33,97,0.08)', borderRadius: 20, padding: '28px 24px' }}>
-              <div style={{ width: 40, height: 40, borderRadius: 10, background: '#f3e8ff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
-                <Filter size={20} color="#a855f7" strokeWidth={1.75} />
+            <div style={{ background: '#fff', borderRadius: 20, padding: '28px 24px', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: '#f3e8ff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+                <Filter size={22} color="#a855f7" strokeWidth={1.75} />
               </div>
-              <h3 style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: '0 0 8px' }}>Funnel Scoring</h3>
+              <h3 style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: P, margin: '0 0 8px' }}>Funnel Scoring</h3>
               <p style={{ fontFamily: fontBody, fontSize: 14, lineHeight: 1.65, color: 'rgba(48,33,97,0.65)', margin: 0 }}>Score every step from ad click to lead by drop-off impact.</p>
             </div>
 
             {/* Card 4 */}
-            <div style={{ background: '#fff', border: '1px solid rgba(48,33,97,0.08)', borderRadius: 20, padding: '28px 24px' }}>
-              <div style={{ width: 40, height: 40, borderRadius: 10, background: '#f3e8ff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
-                <TrendingDown size={20} color="#a855f7" strokeWidth={1.75} />
+            <div style={{ background: '#fff', borderRadius: 20, padding: '28px 24px', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: '#f3e8ff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+                <TrendingDown size={22} color="#a855f7" strokeWidth={1.75} />
               </div>
-              <h3 style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: '0 0 8px' }}>Budget Reallocation</h3>
+              <h3 style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: P, margin: '0 0 8px' }}>Budget Reallocation</h3>
               <p style={{ fontFamily: fontBody, fontSize: 14, lineHeight: 1.65, color: 'rgba(48,33,97,0.65)', margin: 0 }}>Find which channels waste spend and where to shift money for return.</p>
             </div>
 
             {/* Card 5 */}
-            <div style={{ background: '#fff', border: '1px solid rgba(48,33,97,0.08)', borderRadius: 20, padding: '28px 24px' }}>
-              <div style={{ width: 40, height: 40, borderRadius: 10, background: '#f3e8ff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
-                <BarChart2 size={20} color="#a855f7" strokeWidth={1.75} />
+            <div style={{ background: '#fff', borderRadius: 20, padding: '28px 24px', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: '#f3e8ff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+                <BarChart2 size={22} color="#a855f7" strokeWidth={1.75} />
               </div>
-              <h3 style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: '0 0 8px' }}>CSV Analysis</h3>
+              <h3 style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: P, margin: '0 0 8px' }}>CSV Analysis</h3>
               <p style={{ fontFamily: fontBody, fontSize: 14, lineHeight: 1.65, color: 'rgba(48,33,97,0.65)', margin: 0 }}>Upload your Google or Meta export for instant media buyer analysis.</p>
             </div>
 
             {/* Card 6 */}
-            <div style={{ background: '#fff', border: '1px solid rgba(48,33,97,0.08)', borderRadius: 20, padding: '28px 24px' }}>
-              <div style={{ width: 40, height: 40, borderRadius: 10, background: '#f3e8ff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
-                <Activity size={20} color="#a855f7" strokeWidth={1.75} />
+            <div style={{ background: '#fff', borderRadius: 20, padding: '28px 24px', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: '#f3e8ff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+                <Activity size={22} color="#a855f7" strokeWidth={1.75} />
               </div>
-              <h3 style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: '0 0 8px' }}>Monthly Health Check</h3>
+              <h3 style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: P, margin: '0 0 8px' }}>Monthly Health Check</h3>
               <p style={{ fontFamily: fontBody, fontSize: 14, lineHeight: 1.65, color: 'rgba(48,33,97,0.65)', margin: 0 }}>Track ICP score improvement month over month automatically.</p>
             </div>
 
