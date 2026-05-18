@@ -86,12 +86,10 @@ h3 { font-size: clamp(20px, 2.5vw, 28px); }
   .font-body {
     font-family: var(--font-body);
   }
-  /* responsive section padding */
+  /* section vertical rhythm — no horizontal padding, container handles that */
   .section-pad {
     padding-top: 100px;
     padding-bottom: 100px;
-    padding-left: 24px;
-    padding-right: 24px;
   }
 }
 
@@ -99,8 +97,39 @@ h3 { font-size: clamp(20px, 2.5vw, 28px); }
   .section-pad {
     padding-top: 120px;
     padding-bottom: 120px;
-    padding-left: 80px;
-    padding-right: 80px;
+  }
+}
+
+/* ── Container ────────────────────────────────────────────────────────────── */
+.container {
+  width: 100%;
+  max-width: 1320px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 40px;
+  padding-right: 40px;
+}
+
+@media (max-width: 1400px) {
+  .container {
+    max-width: 1200px;
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .container {
+    max-width: 100%;
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding-left: 24px;
+    padding-right: 24px;
   }
 }
 

@@ -123,7 +123,7 @@ export default function Home() {
       <div style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', justifyContent: 'center', padding: '14px 20px' }}>
         <nav style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          width: '100%', maxWidth: 1060,
+          width: '100%', maxWidth: 1320,
           background: 'rgba(255,255,255,0.8)',
           backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
           border: `1px solid ${Pborder}`, borderRadius: 100,
@@ -178,10 +178,10 @@ export default function Home() {
 
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
       <section style={{ background: '#ffffff', paddingTop: 120, overflow: 'hidden' }}>
-        <div className="flex flex-col gap-10 lg:flex-row lg:items-stretch lg:gap-20" style={{ maxWidth: 1200, margin: '0 auto', paddingLeft: 24 }}>
+        <div className="container flex flex-col gap-10 lg:flex-row lg:items-stretch lg:gap-20">
 
           {/* copy — left column */}
-          <div className="flex flex-col justify-center px-5 pb-16 lg:px-0 lg:pb-32 lg:w-[44%] lg:flex-none">
+          <div className="flex flex-col justify-center px-0 pb-16 lg:pb-32 lg:w-1/2 lg:flex-none">
 
             {/* dual badges */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 28 }}>
@@ -242,7 +242,7 @@ export default function Home() {
 
       {/* ── Logo trust bar ────────────────────────────────────────────────── */}
       <div style={{ background: '#fff', borderTop: `1px solid ${Pborder}`, borderBottom: `1px solid ${Pborder}`, padding: '32px 0', overflow: 'hidden' }}>
-        <div style={{ maxWidth: 1120, margin: '0 auto', paddingLeft: 24 }}>
+        <div className="container">
           <p style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', color: Pmuted, marginBottom: 20 }}>
             Trusted by teams at:
           </p>
@@ -268,7 +268,7 @@ export default function Home() {
 
       {/* Block 1 — Visual LEFT, Text RIGHT */}
       <section id="how-it-works" className="section-pad" style={{ background: '#ffffff', position: 'relative', overflow: 'hidden' }}>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-20 items-center" style={{ maxWidth: 1200, margin: '0 auto' }}>
+        <div className="container grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-20 items-center">
           {/* visual */}
           <div style={{ background: BgPurple, borderRadius: 24, overflow: 'hidden' }}>
             <Image
@@ -311,7 +311,7 @@ export default function Home() {
 
       {/* Block 2 — Text LEFT, Visual RIGHT */}
       <section className="section-pad" style={{ background: BgAlt, position: 'relative', overflow: 'hidden' }}>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-20 items-center" style={{ maxWidth: 1200, margin: '0 auto' }}>
+        <div className="container grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-20 items-center">
           {/* text */}
           <div>
             <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
@@ -353,7 +353,7 @@ export default function Home() {
 
       {/* Block 3 — Visual LEFT, Text RIGHT */}
       <section className="section-pad" style={{ background: '#ffffff', position: 'relative', overflow: 'hidden' }}>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-20 items-center" style={{ maxWidth: 1200, margin: '0 auto' }}>
+        <div className="container grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-20 items-center">
           {/* visual */}
           <div style={{ background: BgPurple, borderRadius: 24, overflow: 'hidden' }}>
             <Image
@@ -395,7 +395,7 @@ export default function Home() {
 
       {/* ── Feature grid ──────────────────────────────────────────────────── */}
       <section id="features" className="section-pad" style={{ background: BgAlt }}>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch" style={{ maxWidth: 1200, margin: '0 auto' }}>
+        <div className="container grid grid-cols-1 lg:grid-cols-[2fr_3fr] gap-4 items-stretch">
 
           {/* LEFT COLUMN — white card, image fills remaining height */}
           <div style={{ background: '#fff', borderRadius: 20, padding: '40px', display: 'flex', flexDirection: 'column' }}>
@@ -493,13 +493,13 @@ export default function Home() {
 
       {/* ── Stats bar ─────────────────────────────────────────────────────── */}
       <section className="section-pad" style={{ background: BgAlt, borderTop: `1px solid ${Pborder}` }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+        <div className="container">
           <h2 style={{ fontFamily: font, fontSize: 'clamp(32px,4vw,48px)', fontWeight: 700, color: P, letterSpacing: '-0.03em', lineHeight: 1.1, textAlign: 'center', margin: '0 0 48px' }}>
             Why it matters now.
           </h2>
 
           {/* white card container */}
-          <div style={{ background: '#fff', borderRadius: 24, padding: '60px 80px', maxWidth: 1100, margin: '0 auto', boxShadow: '0 2px 40px rgba(48,33,97,0.06)' }}>
+          <div style={{ background: '#fff', borderRadius: 24, padding: '60px 80px', boxShadow: '0 2px 40px rgba(48,33,97,0.06)' }}>
             <div className="flex flex-col sm:flex-row items-center justify-between gap-8 sm:gap-0">
               {STATS.map((s, i) => (
                 <div key={s.label} style={{ display: 'contents' }}>
@@ -523,8 +523,8 @@ export default function Home() {
 
       {/* ── Lead magnet ───────────────────────────────────────────────────── */}
       <section className="section-pad" style={{ background: '#ede9fe', borderTop: `1px solid ${Pborder}` }}>
-        <div style={{ maxWidth: 840, margin: '0 auto' }}>
-          <div className="flex flex-col md:flex-row items-center gap-10 p-6 md:p-12" style={{ background: '#fff', borderRadius: 24, boxShadow: '0 8px 40px rgba(48,33,97,0.1)' }}>
+        <div className="container">
+          <div className="flex flex-col md:flex-row items-center gap-10 p-6 md:p-12" style={{ background: '#fff', borderRadius: 24, boxShadow: '0 8px 40px rgba(48,33,97,0.1)', maxWidth: 860, margin: '0 auto' }}>
             <div style={{ flex: 1 }}>
               <Badge text="Free Resource" />
               <h2 style={{ fontFamily: font, fontSize: 'clamp(24px,3vw,36px)', fontWeight: 700, letterSpacing: '-0.3px', color: P, margin: '0 0 14px', lineHeight: 1.2 }}>
@@ -547,7 +547,7 @@ export default function Home() {
 
       {/* ── Pricing ───────────────────────────────────────────────────────── */}
       <section id="pricing" className="section-pad" style={{ background: BgAlt, borderTop: `1px solid ${Pborder}` }}>
-        <div style={{ maxWidth: 1080, margin: '0 auto' }}>
+        <div className="container">
           <div style={{ textAlign: 'center', marginBottom: 64 }}>
             <Badge text="Simple Pricing" />
             <H2 style={{ fontSize: 'clamp(28px,4vw,40px)', margin: '0 0 16px' }}>
@@ -558,7 +558,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(290px,1fr))', gap: 16, alignItems: 'start' }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" style={{ alignItems: 'start' }}>
             {TIERS.map(tier => (
               <div key={tier.name} style={{ background: tier.highlight ? P : '#fff', border: `1px solid ${tier.highlight ? 'transparent' : Pborder}`, borderRadius: 20, padding: '36px 28px', boxShadow: tier.highlight ? '0 20px 56px rgba(48,33,97,0.28)' : 'none', position: 'relative' }}>
                 {tier.highlight && (
@@ -596,7 +596,7 @@ export default function Home() {
 
       {/* ── FAQ ───────────────────────────────────────────────────────────── */}
       <section id="faq" className="section-pad" style={{ background: BgAlt, borderTop: `1px solid ${Pborder}` }}>
-        <div className="flex flex-col lg:flex-row lg:gap-20 gap-12" style={{ maxWidth: 1200, margin: '0 auto' }}>
+        <div className="container flex flex-col lg:flex-row lg:gap-20 gap-12">
 
           {/* Left — sticky label + heading */}
           <div className="lg:w-[36%] lg:flex-none">
@@ -633,7 +633,7 @@ export default function Home() {
 
       {/* ── Social Proof ──────────────────────────────────────────────────── */}
       <section id="results" className="section-pad" style={{ background: BgAlt, borderTop: `1px solid ${Pborder}` }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+        <div className="container">
 
           {/* header */}
           <div style={{ textAlign: 'center', marginBottom: 56 }}>
@@ -720,7 +720,7 @@ export default function Home() {
 
       {/* ── Team ──────────────────────────────────────────────────────────── */}
       <section className="section-pad" style={{ background: '#fff', borderTop: `1px solid ${Pborder}` }}>
-        <div style={{ maxWidth: 1080, margin: '0 auto' }}>
+        <div className="container">
           <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-20">
             <div style={{ flex: 1 }}>
               <Badge text="Who Built This" />
@@ -759,6 +759,7 @@ export default function Home() {
 
       {/* ── Bottom CTA ────────────────────────────────────────────────────── */}
       <section className="section-pad" style={{ background: 'linear-gradient(160deg,#f0edff 0%,#e8e2ff 50%,#ede8ff 100%)', borderTop: `1px solid ${Pborder}`, textAlign: 'center' }}>
+        <div className="container">
         <div style={{ maxWidth: 640, margin: '0 auto' }}>
           <h2 style={{ fontFamily: font, fontSize: 'clamp(32px,5vw,52px)', fontWeight: 700, letterSpacing: '-0.03em', color: P, margin: '0 0 20px', lineHeight: 1.1 }}>
             Every month without a diagnosis is a month of budget you won&rsquo;t get back.
@@ -773,11 +774,12 @@ export default function Home() {
             Free &middot; No credit card &middot; No ad account access needed
           </p>
         </div>
+        </div>
       </section>
 
       {/* ── Footer ────────────────────────────────────────────────────────── */}
-      <footer style={{ background: '#fff', borderTop: `1px solid ${Pborder}`, padding: '72px 24px 40px' }}>
-        <div style={{ maxWidth: 1080, margin: '0 auto' }}>
+      <footer style={{ background: '#fff', borderTop: `1px solid ${Pborder}`, padding: '72px 0 40px' }}>
+        <div className="container">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-14">
             {/* brand */}
             <div className="md:col-span-2">
