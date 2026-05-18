@@ -130,65 +130,7 @@ function ScoreArc({ score, size = 120 }: { score: number; size?: number }) {
   )
 }
 
-// ─── Hero illustration ────────────────────────────────────────────────────────
 
-function HeroIllustration() {
-  const bars = [
-    { label: 'ICP Alignment',  v: 28 },
-    { label: 'Targeting',      v: 42 },
-    { label: 'Channel Mix',    v: 65 },
-  ]
-  const findings = [
-    { text: 'Wrong audience targeting', col: '#dc2626', bg: '#fef2f2' },
-    { text: 'High funnel friction',      col: '#d97706', bg: '#fffbeb' },
-    { text: 'Meta budget misaligned',    col: '#dc2626', bg: '#fef2f2' },
-  ]
-  return (
-    <div style={{ width: '100%', maxWidth: 400, background: 'linear-gradient(150deg, #f5f3ff 0%, #ede9fe 100%)', borderRadius: 24, padding: 28, border: `1px solid ${Pborder}`, boxShadow: '0 32px 80px rgba(48,33,97,0.15)' }}>
-
-      {/* main card */}
-      <div style={{ background: '#fff', borderRadius: 16, padding: 24, marginBottom: 14, border: `1px solid rgba(48,33,97,0.07)` }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-          <div>
-            <p style={{ margin: 0, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.7px', color: Pmuted }}>ICP Health Score</p>
-          </div>
-          <span style={{ background: '#fef2f2', color: '#dc2626', fontSize: 10, fontWeight: 700, padding: '3px 9px', borderRadius: 8 }}>Critical</span>
-        </div>
-
-        <div style={{ display: 'flex', justifyContent: 'center', position: 'relative', marginBottom: 20 }}>
-          <ScoreArc score={34} size={120} />
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-            <p style={{ margin: 0, fontSize: 28, fontWeight: 800, color: '#ef4444', lineHeight: 1 }}>34</p>
-            <p style={{ margin: 0, fontSize: 11, color: Pmuted }}>/100</p>
-          </div>
-        </div>
-
-        {bars.map(b => {
-          const col = b.v >= 70 ? '#22c55e' : b.v >= 40 ? '#f59e0b' : '#ef4444'
-          return (
-            <div key={b.label} style={{ marginBottom: 9 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                <span style={{ fontSize: 11, color: Pbody }}>{b.label}</span>
-                <span style={{ fontSize: 11, fontWeight: 700, color: col }}>{b.v}</span>
-              </div>
-              <div style={{ height: 5, background: '#f0edff', borderRadius: 99 }}>
-                <div style={{ height: '100%', width: `${b.v}%`, background: col, borderRadius: 99 }} />
-              </div>
-            </div>
-          )
-        })}
-      </div>
-
-      {/* findings */}
-      {findings.map(f => (
-        <div key={f.text} style={{ background: f.bg, borderRadius: 10, padding: '9px 13px', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 6, height: 6, borderRadius: '50%', background: f.col, flexShrink: 0 }} />
-          <span style={{ fontSize: 12, color: f.col, fontWeight: 600 }}>{f.text}</span>
-        </div>
-      ))}
-    </div>
-  )
-}
 
 // ─── Feature illustrations ────────────────────────────────────────────────────
 
