@@ -351,3 +351,145 @@ export async function sendCancellationToFounder({
   else console.log('[email] cancel founder sent id:', data?.id)
   return { data, error }
 }
+
+// ─── Email 8: Plan changed — user ─────────────────────────────────────────────
+
+export async function sendPlanChangedToUser({
+  to, name, newTier, newPriceKES, renewalDate,
+}: { to: string; name: string; newTier: string; newPriceKES: number; renewalDate?: string }) {
+  const first      = name?.split(' ')[0] ?? 'there'
+  const tierNames: Record<string, string> = { starter: 'Starter', pro: 'Pro', agency: 'Agency' }
+  const tierLabel  = tierNames[newTier] ?? newTier
+  const accessDate = renewalDate
+    ? new Date(renewalDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+    : '—'
+
+  const content = `
+<h1 style="margin:0 0 10px;color:#ffffff;font-size:24px;font-weight:800;line-height:1.2;letter-spacing:-0.5px;">Your plan has been updated.</h1>
+<p style="margin:0 0 24px;color:#9ca3af;font-size:15px;line-height:1.7;">Hi ${first}, your subscription has been switched to <strong style="color:#ffffff;">${tierLabel}</strong>. Your new plan is active immediately.</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:14px;margin-bottom:20px;">
+  <tr><td style="padding:20px 24px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+      <tr><td style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+        <p style="margin:0;color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:0.06em;">New plan</p>
+        <p style="margin:2px 0 0;color:#ffffff;font-size:15px;font-weight:700;">${tierLabel}</p>
+      </td></tr>
+      <tr><td style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+        <p style="margin:0;color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:0.06em;">New monthly price</p>
+        <p style="margin:2px 0 0;color:#ffffff;font-size:15px;font-weight:700;">KES ${newPriceKES.toLocaleString()} / month</p>
+      </td></tr>
+      <tr><td style="padding:8px 0;">
+        <p style="margin:0;color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:0.06em;">Next billing date</p>
+        <p style="margin:2px 0 0;color:#ffffff;font-size:15px;font-weight:700;">${accessDate}</p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+${cta('Go to Dashboard', 'https://icpbrand.co/dashboard')}`
+
+  const { data, error } = await getResend().emails.send({
+    from: FROM, to,
+    subject: `Your plan has been updated to ${tierLabel}`,
+    html: base(content),
+  })
+  if (error) console.error('[email] plan changed user error:', JSON.stringify(error))
+  else console.log('[email] plan changed user sent id:', data?.id)
+  return { data, error }
+}
+
+// ─── Email 9: Plan changed — founder ─────────────────────────────────────────
+
+export async function sendPlanChangedToFounder({
+  userName, userEmail, companyName, oldTier, newTier,
+}: { userName: string; userEmail: string; companyName?: string; oldTier: string; newTier: string }) {
+  const tierNames: Record<string, string> = { starter: 'Starter', pro: 'Pro', agency: 'Agency', free: 'Free' }
+  const content = `
+<h1 style="margin:0 0 10px;color:#ffffff;font-size:22px;font-weight:800;line-height:1.2;letter-spacing:-0.5px;">Plan change</h1>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:14px;margin-bottom:16px;">
+  <tr><td style="padding:20px 24px;">
+    ${[['Name', userName], ['Email', userEmail], ['Company', companyName || '—'], ['From', tierNames[oldTier] ?? oldTier], ['To', tierNames[newTier] ?? newTier]].map(([l, v]) => `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px;"><tr>
+      <td><p style="margin:0;color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:0.06em;">${l}</p>
+      <p style="margin:2px 0 0;color:#ffffff;font-size:14px;font-weight:600;">${v}</p></td>
+    </tr></table>`).join('')}
+  </td></tr>
+</table>`
+
+  const { data, error } = await getResend().emails.send({
+    from: FROM, to: 'eugene@idealicp.com', replyTo: userEmail,
+    subject: `Plan change: ${tierNames[oldTier] ?? oldTier} → ${tierNames[newTier] ?? newTier} — ${companyName || userName}`,
+    html: base(content),
+  })
+  if (error) console.error('[email] plan changed founder error:', JSON.stringify(error))
+  else console.log('[email] plan changed founder sent id:', data?.id)
+  return { data, error }
+}
+
+// ─── Email 10: Paused — user ──────────────────────────────────────────────────
+
+export async function sendPausedToUser({
+  to, name, resumeDate,
+}: { to: string; name: string; resumeDate: string }) {
+  const first  = name?.split(' ')[0] ?? 'there'
+  const resume = new Date(resumeDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+
+  const content = `
+<h1 style="margin:0 0 10px;color:#ffffff;font-size:24px;font-weight:800;line-height:1.2;letter-spacing:-0.5px;">Your subscription is paused.</h1>
+<p style="margin:0 0 24px;color:#9ca3af;font-size:15px;line-height:1.7;">Hi ${first}, your subscription has been paused for 30 days. Here is what this means for you.</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:14px;margin-bottom:20px;">
+  <tr><td style="padding:20px 24px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+      <tr><td style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+        <p style="margin:0;color:#e5e7eb;font-size:14px;font-weight:600;">No charge this month</p>
+        <p style="margin:2px 0 0;color:#6b7280;font-size:13px;">Your card will not be billed during the pause period.</p>
+      </td></tr>
+      <tr><td style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+        <p style="margin:0;color:#e5e7eb;font-size:14px;font-weight:600;">Your data is safe</p>
+        <p style="margin:2px 0 0;color:#6b7280;font-size:13px;">All your diagnostics, scores, and reports remain available.</p>
+      </td></tr>
+      <tr><td style="padding:8px 0;">
+        <p style="margin:0;color:#e5e7eb;font-size:14px;font-weight:600;">Auto-resumes on ${resume}</p>
+        <p style="margin:2px 0 0;color:#6b7280;font-size:13px;">You can also resume early from your dashboard at any time.</p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+${cta('Resume Early', 'https://icpbrand.co/dashboard')}`
+
+  const { data, error } = await getResend().emails.send({
+    from: FROM, to,
+    subject: `Subscription paused — resumes ${resume}`,
+    html: base(content),
+  })
+  if (error) console.error('[email] paused user error:', JSON.stringify(error))
+  else console.log('[email] paused user sent id:', data?.id)
+  return { data, error }
+}
+
+// ─── Email 11: Paused — founder ───────────────────────────────────────────────
+
+export async function sendPausedToFounder({
+  userName, userEmail, companyName, resumeDate,
+}: { userName: string; userEmail: string; companyName?: string; resumeDate: string }) {
+  const resume = new Date(resumeDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+  const content = `
+<h1 style="margin:0 0 10px;color:#ffffff;font-size:22px;font-weight:800;line-height:1.2;letter-spacing:-0.5px;">Subscription paused</h1>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:14px;margin-bottom:16px;">
+  <tr><td style="padding:20px 24px;">
+    ${[['Name', userName], ['Email', userEmail], ['Company', companyName || '—'], ['Resumes', resume]].map(([l, v]) => `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px;"><tr>
+      <td><p style="margin:0;color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:0.06em;">${l}</p>
+      <p style="margin:2px 0 0;color:#ffffff;font-size:14px;font-weight:600;">${v}</p></td>
+    </tr></table>`).join('')}
+  </td></tr>
+</table>`
+
+  const { data, error } = await getResend().emails.send({
+    from: FROM, to: 'eugene@idealicp.com', replyTo: userEmail,
+    subject: `Subscription paused: ${companyName || userName}`,
+    html: base(content),
+  })
+  if (error) console.error('[email] paused founder error:', JSON.stringify(error))
+  else console.log('[email] paused founder sent id:', data?.id)
+  return { data, error }
+}

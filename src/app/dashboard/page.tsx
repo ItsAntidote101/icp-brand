@@ -6,7 +6,7 @@ import Link from 'next/link'
 import {
   FileSearch, ArrowRight, TrendingUp, TrendingDown,
   BarChart2, User, FileText, LayoutDashboard, Zap, AlertCircle,
-  Check, ChevronDown, ChevronUp, CheckCircle, Target, X,
+  Check, ChevronDown, ChevronUp, CheckCircle, Target, X, FileDown,
 } from 'lucide-react'
 import { AreaChart, Area, ResponsiveContainer, Tooltip } from 'recharts'
 
@@ -34,7 +34,8 @@ type Tab = 'overview' | 'reports' | 'account'
 type UserData = {
   id: string; email: string; full_name: string | null
   company_name: string | null; subscription_tier: string
-  billing_status: string; renewal_date: string | null; created_at: string
+  billing_status: string; renewal_date: string | null
+  created_at: string; paused_until?: string | null
 }
 
 type ReportRow = {
@@ -853,6 +854,38 @@ const CANCEL_REASONS = [
   'Other',
 ]
 
+const PLAN_FEATURES: Record<string, string[]> = {
+  starter: [
+    'Monthly ICP health check',
+    'Top 3 critical findings',
+    'Funnel friction score',
+    'Quick wins report',
+  ],
+  pro: [
+    'Everything in Starter',
+    'Weekly performance snapshots',
+    'CSV campaign analysis',
+    'Benchmark comparisons',
+    'Deep research reports',
+    'Complete report history',
+  ],
+  agency: [
+    'Everything in Pro',
+    'Monthly strategy session',
+    'Media buyer implementation',
+    '30-day follow-up report',
+    'Multi-client reporting',
+    'White label reports',
+    'Priority support',
+    'Custom diagnostic frameworks',
+  ],
+}
+
+type BillingRow = {
+  id: string; date: string; plan: string
+  amount_kes: number; status: 'paid' | 'failed' | 'pending'; invoice_url?: string
+}
+
 function CancellationModal({ user, score, reportCount, onClose, onCancelled }: { user: UserData; score: number | null; reportCount: number; onClose: () => void; onCancelled: () => void }) {
   const [reason,   setReason]   = useState('')
   const [feedback, setFeedback] = useState('')
@@ -871,7 +904,7 @@ function CancellationModal({ user, score, reportCount, onClose, onCancelled }: {
       if (!res.ok) throw new Error('Request failed')
       onCancelled()
     } catch {
-      setError('Something went wrong. Please try again or email support@icpbrand.co.')
+      setError('Something went wrong. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -975,16 +1008,161 @@ function CancellationModal({ user, score, reportCount, onClose, onCancelled }: {
   )
 }
 
-function AccountTab({ user, currency, score, reportCount, onSignOut, onCancelled }: { user: UserData; currency: string; score: number | null; reportCount: number; onSignOut: () => void; onCancelled: () => void }) {
-  const [showCancelModal, setShowCancelModal] = useState(false)
-  const tierLabel  = TIER_LABEL[user.subscription_tier] ?? user.subscription_tier
-  const priceKES   = TIER_PRICE_KES[user.subscription_tier] ?? 0
-  const priceStr   = priceKES > 0 ? `${convertAmount(priceKES, 'KES', currency)} / month` : 'Free'
-  const isCancelled = user.billing_status === 'cancelled'
+function PauseModal({ user, onClose, onPaused }: { user: UserData; onClose: () => void; onPaused: (resumeDate: string) => void }) {
+  const [loading, setLoading] = useState(false)
+  const [error,   setError]   = useState('')
+  const priceKES = TIER_PRICE_KES[user.subscription_tier] ?? 0
+
+  async function handlePause() {
+    setLoading(true); setError('')
+    try {
+      const res = await fetch('/api/subscription/pause', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userEmail: user.email }),
+      })
+      if (!res.ok) throw new Error('failed')
+      const { resumeDate } = await res.json()
+      onPaused(resumeDate)
+    } catch { setError('Something went wrong. Please try again.') }
+    finally { setLoading(false) }
+  }
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 18, maxWidth: 640 }}>
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(10,10,15,0.72)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }} onClick={onClose}>
+      <div style={{ background: '#fff', borderRadius: 20, padding: '32px 28px', maxWidth: 440, width: '100%' }} onClick={e => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18 }}>
+          <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: 0, letterSpacing: '-0.02em' }}>Pause for 1 month?</p>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: Pmuted, padding: 4 }}><X size={18} /></button>
+        </div>
+        <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 20px', lineHeight: 1.7 }}>
+          Your subscription will be paused for 30 days. You keep access to all your data and reports.
+          We will not charge you this month. Your subscription resumes automatically after 30 days.
+        </p>
+        {priceKES > 0 && (
+          <div style={{ background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 12, padding: '14px 18px', marginBottom: 20, textAlign: 'center' }}>
+            <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>You will save this month</p>
+            <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: 0 }}>KES {priceKES.toLocaleString()}</p>
+          </div>
+        )}
+        {error && <p style={{ fontFamily: fontB, fontSize: 12, color: '#ef4444', margin: '0 0 12px' }}>{error}</p>}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <button onClick={handlePause} disabled={loading}
+            style={{ background: P, border: 'none', borderRadius: 12, padding: '13px 0', fontSize: 14, fontFamily: font, fontWeight: 600, color: '#fff', cursor: loading ? 'default' : 'pointer', opacity: loading ? 0.7 : 1 }}>
+            {loading ? 'Pausing…' : 'Confirm Pause'}
+          </button>
+          <button onClick={onClose}
+            style={{ background: 'none', border: `1px solid ${Pborder}`, borderRadius: 12, padding: '12px 0', fontSize: 13, fontFamily: fontB, color: P, cursor: 'pointer' }}>
+            Never mind
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function ChangePlanConfirmModal({ newTier, onClose, onConfirmed }: { newTier: string; onClose: () => void; onConfirmed: () => Promise<void> }) {
+  const [loading, setLoading] = useState(false)
+  const [error,   setError]   = useState('')
+  const label    = TIER_LABEL[newTier] ?? newTier
+  const priceKES = TIER_PRICE_KES[newTier] ?? 0
+
+  async function handleConfirm() {
+    setLoading(true); setError('')
+    try { await onConfirmed() }
+    catch { setError('Something went wrong. Please try again.'); setLoading(false) }
+  }
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(10,10,15,0.72)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }} onClick={onClose}>
+      <div style={{ background: '#fff', borderRadius: 20, padding: '32px 28px', maxWidth: 420, width: '100%' }} onClick={e => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+          <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: 0, letterSpacing: '-0.02em' }}>Switch to {label}?</p>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: Pmuted, padding: 4 }}><X size={18} /></button>
+        </div>
+        <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 16px', lineHeight: 1.7 }}>
+          Your new plan starts immediately. Your billing will be adjusted on your next renewal date.
+        </p>
+        {priceKES > 0 && (
+          <div style={{ background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 12, padding: '12px 16px', marginBottom: 20 }}>
+            <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '0 0 2px' }}>New monthly price</p>
+            <p style={{ fontFamily: font, fontSize: 20, fontWeight: 700, color: P, margin: 0 }}>KES {priceKES.toLocaleString()} / month</p>
+          </div>
+        )}
+        {error && <p style={{ fontFamily: fontB, fontSize: 12, color: '#ef4444', margin: '0 0 12px' }}>{error}</p>}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <button onClick={handleConfirm} disabled={loading}
+            style={{ background: P, border: 'none', borderRadius: 12, padding: '13px 0', fontSize: 14, fontFamily: font, fontWeight: 600, color: '#fff', cursor: loading ? 'default' : 'pointer', opacity: loading ? 0.7 : 1 }}>
+            {loading ? 'Switching…' : 'Confirm Switch'}
+          </button>
+          <button onClick={onClose}
+            style={{ background: 'none', border: `1px solid ${Pborder}`, borderRadius: 12, padding: '12px 0', fontSize: 13, fontFamily: fontB, color: P, cursor: 'pointer' }}>
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function AccountTab({ user, currency, score, reportCount, onSignOut, onCancelled, onUserUpdate, showToast }: {
+  user: UserData; currency: string; score: number | null; reportCount: number
+  onSignOut: () => void; onCancelled: () => void
+  onUserUpdate: (u: Partial<UserData>) => void; showToast: (msg: string) => void
+}) {
+  const [showChangePlan,       setShowChangePlan]       = useState(false)
+  const [showPauseModal,       setShowPauseModal]       = useState(false)
+  const [showCancelModal,      setShowCancelModal]      = useState(false)
+  const [confirmPlan,          setConfirmPlan]          = useState<string | null>(null)
+  const [billingHistory,       setBillingHistory]       = useState<BillingRow[]>([])
+  const [billingLoading,       setBillingLoading]       = useState(true)
+  const [showPaymentInfo,      setShowPaymentInfo]      = useState(false)
+
+  const isCancelled = user.billing_status === 'cancelled'
+  const isPaused    = user.billing_status === 'paused'
+  const tierLabel   = TIER_LABEL[user.subscription_tier] ?? user.subscription_tier
+  const priceKES    = TIER_PRICE_KES[user.subscription_tier] ?? 0
+
+  useEffect(() => {
+    fetch(`/api/subscription/billing-history?email=${encodeURIComponent(user.email)}`)
+      .then(r => r.ok ? r.json() : { payments: [] })
+      .then(j => setBillingHistory(j.payments ?? []))
+      .catch(() => setBillingHistory([]))
+      .finally(() => setBillingLoading(false))
+  }, [user.email])
+
+  async function handleChangePlan(newTier: string) {
+    const res = await fetch('/api/subscription/change-plan', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userEmail: user.email, newTier, oldTier: user.subscription_tier }),
+    })
+    if (!res.ok) throw new Error('failed')
+    onUserUpdate({ subscription_tier: newTier })
+    setConfirmPlan(null)
+    setShowChangePlan(false)
+    showToast(`Plan updated to ${TIER_LABEL[newTier]}. Changes take effect immediately.`)
+  }
+
+  async function handleResume() {
+    const res = await fetch('/api/subscription/resume', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userEmail: user.email }),
+    })
+    if (!res.ok) return
+    onUserUpdate({ billing_status: 'active', paused_until: null })
+    showToast('Subscription resumed successfully.')
+  }
+
+  const renewalInfo = () => {
+    if (isCancelled) return `Cancelled — access until ${user.renewal_date ? formatDate(user.renewal_date) : '—'}`
+    if (isPaused)    return `Paused — resumes ${user.paused_until ? formatDate(user.paused_until) : '—'}`
+    return user.renewal_date ? `Renews on ${formatDate(user.renewal_date)}` : '—'
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 18, maxWidth: 720 }}>
       <h2 style={{ fontFamily: font, fontSize: 'clamp(20px,4vw,28px)', fontWeight: 700, color: P, margin: 0, letterSpacing: '-0.02em' }}>Account</h2>
 
+      {/* Profile */}
       <Card style={{ padding: '24px 28px' }}>
         <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: Pmuted, margin: '0 0 14px' }}>Profile</p>
         {[
@@ -999,68 +1177,206 @@ function AccountTab({ user, currency, score, reportCount, onSignOut, onCancelled
         ))}
       </Card>
 
-      <Card style={{ padding: '24px 28px' }}>
-        <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: Pmuted, margin: '0 0 14px' }}>Subscription</p>
-        {([
-          { label: 'Plan',           value: <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, background: P, color: '#fff', padding: '3px 12px', borderRadius: 100 }}>{tierLabel}</span> },
-          { label: 'Description',    value: TIER_DESC[user.subscription_tier] ?? '' },
-          { label: 'Monthly price',  value: priceStr },
-          { label: 'Billing status', value: (
-            <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, background: isCancelled ? '#fef9c3' : user.billing_status === 'active' ? '#dcfce7' : '#fee2e2', color: isCancelled ? '#a16207' : user.billing_status === 'active' ? '#16a34a' : '#ef4444', padding: '3px 12px', borderRadius: 100 }}>
-              {isCancelled ? 'cancelled' : user.billing_status}
-            </span>
-          )},
-          { label: 'Renewal date', value: user.renewal_date ? formatDate(user.renewal_date) : '—' },
-        ] as { label: string; value: React.ReactNode }[]).map((row, i, arr) => (
-          <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: i < arr.length - 1 ? `1px solid ${Pborder}` : 'none', gap: 16 }}>
-            <span style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, flexShrink: 0 }}>{row.label}</span>
-            <span style={{ fontFamily: fontB, fontSize: 13, fontWeight: 500, color: P, textAlign: 'right' }}>{row.value}</span>
-          </div>
-        ))}
-      </Card>
+      {/* Subscription & Billing heading */}
+      <p style={{ fontFamily: font, fontSize: 20, fontWeight: 700, color: P, margin: '4px 0 -4px', letterSpacing: '-0.02em' }}>Subscription & Billing</p>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {isCancelled ? (
-          <Link href="/#pricing"
-            style={{ display: 'block', textAlign: 'center', textDecoration: 'none', background: P, color: '#fff', fontFamily: font, fontWeight: 600, fontSize: 14, padding: 15, borderRadius: 14 }}>
-            Resubscribe anytime →
-          </Link>
-        ) : (
-          <>
-            {user.subscription_tier !== 'agency' && (
-              <Link href="/#pricing"
-                style={{ display: 'block', textAlign: 'center', textDecoration: 'none', background: P, color: '#fff', fontFamily: font, fontWeight: 600, fontSize: 14, padding: 15, borderRadius: 14 }}>
-                Upgrade Plan →
+      {/* Card One: Current Plan */}
+      <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 20, padding: '28px 32px' }}>
+        <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          {/* Left */}
+          <div style={{ flex: '1 1 180px' }}>
+            <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, background: isPaused ? '#0369a1' : P, color: '#fff', padding: '3px 12px', borderRadius: 100, display: 'inline-block', marginBottom: 12 }}>
+              {isPaused ? 'Paused' : tierLabel}
+            </span>
+            <p style={{ fontFamily: font, fontSize: 20, fontWeight: 700, color: P, margin: '0 0 6px', letterSpacing: '-0.02em' }}>{tierLabel} Plan</p>
+            <p style={{ fontFamily: font, fontSize: 32, fontWeight: 800, color: P, margin: '0 0 2px', lineHeight: 1 }}>
+              {priceKES > 0 ? `KES ${priceKES.toLocaleString()}` : 'Free'}
+            </p>
+            {priceKES > 0 && <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 10px' }}>per month</p>}
+            <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: 0 }}>{renewalInfo()}</p>
+          </div>
+          {/* Right: actions */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 190 }}>
+            {isCancelled ? (
+              <Link href="/#pricing" style={{ display: 'block', textAlign: 'center', textDecoration: 'none', background: P, color: '#fff', fontFamily: fontB, fontWeight: 600, fontSize: 14, padding: '10px 20px', borderRadius: 10 }}>
+                Resubscribe →
               </Link>
+            ) : (
+              <>
+                <button onClick={() => setShowChangePlan(v => !v)}
+                  style={{ background: P, color: '#fff', border: 'none', borderRadius: 10, padding: '10px 20px', fontFamily: fontB, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
+                  Change Plan
+                </button>
+                {isPaused ? (
+                  <button onClick={handleResume}
+                    style={{ background: '#fff', color: P, border: `1px solid ${P}`, borderRadius: 10, padding: '10px 20px', fontFamily: fontB, fontSize: 14, fontWeight: 500, cursor: 'pointer' }}>
+                    Resume Now
+                  </button>
+                ) : (
+                  <button onClick={() => setShowPauseModal(true)}
+                    style={{ background: '#fff', color: P, border: `1px solid ${P}`, borderRadius: 10, padding: '10px 20px', fontFamily: fontB, fontSize: 14, fontWeight: 500, cursor: 'pointer' }}>
+                    Pause for 1 Month
+                  </button>
+                )}
+                {user.subscription_tier !== 'free' && (
+                  <button onClick={() => setShowCancelModal(true)}
+                    style={{ background: 'transparent', border: 'none', fontFamily: fontB, fontSize: 13, color: 'rgba(48,33,97,0.4)', cursor: 'pointer', textDecoration: 'underline', padding: '4px 0', textAlign: 'left' }}>
+                    Cancel subscription
+                  </button>
+                )}
+              </>
             )}
-            <a href="mailto:support@icpbrand.co"
-              style={{ display: 'block', textAlign: 'center', textDecoration: 'none', background: BgAlt, border: `1px solid ${Pborder}`, color: 'rgba(48,33,97,0.8)', fontFamily: fontB, fontWeight: 500, fontSize: 14, padding: 15, borderRadius: 14 }}>
-              Manage Subscription
-            </a>
-          </>
-        )}
-        <button onClick={onSignOut}
-          style={{ background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 14, padding: 15, fontSize: 14, fontFamily: fontB, fontWeight: 500, color: Pmuted, cursor: 'pointer' }}>
-          Sign out
-        </button>
+          </div>
+        </div>
       </div>
 
-      {!isCancelled && user.subscription_tier !== 'free' && (
-        <div style={{ textAlign: 'center' }}>
-          <button onClick={() => setShowCancelModal(true)}
-            style={{ background: 'none', border: 'none', fontFamily: fontB, fontSize: 12, color: Pmuted, cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>
-            Cancel subscription
-          </button>
+      {/* Change Plan Panel — slides open */}
+      <div style={{ overflow: 'hidden', maxHeight: showChangePlan ? 900 : 0, opacity: showChangePlan ? 1 : 0, transition: 'max-height 0.35s ease, opacity 0.25s ease' }}>
+        <div style={{ paddingTop: 4 }}>
+          <p style={{ fontFamily: font, fontSize: 16, fontWeight: 600, color: P, margin: '0 0 16px', letterSpacing: '-0.01em' }}>Choose a plan</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 14 }}>
+            {(['starter', 'pro', 'agency'] as const).map(t => {
+              const isCurrent  = user.subscription_tier === t
+              const tPrice     = TIER_PRICE_KES[t]
+              const tFeatures  = PLAN_FEATURES[t]
+              const isPopular  = t === 'pro' && !isCurrent
+              const tLabel     = TIER_LABEL[t]
+              const tiers      = ['free', 'starter', 'pro', 'agency']
+              const isUpgrade  = tiers.indexOf(t) > tiers.indexOf(user.subscription_tier)
+              const btnLabel   = isCurrent ? 'Current Plan' : isUpgrade ? `Upgrade to ${tLabel}` : `Switch to ${tLabel}`
+              return (
+                <div key={t} style={{ background: '#fff', border: isCurrent ? `2px solid ${P}` : '1px solid rgba(48,33,97,0.10)', borderRadius: 16, padding: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <div style={{ minHeight: 22 }}>
+                    {isCurrent && <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, background: P, color: '#fff', padding: '2px 10px', borderRadius: 100 }}>Current Plan</span>}
+                    {isPopular && <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, background: '#d946ef', color: '#fff', padding: '2px 10px', borderRadius: 100 }}>Most Popular</span>}
+                  </div>
+                  <div>
+                    <p style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: P, margin: '0 0 4px' }}>{tLabel}</p>
+                    <p style={{ fontFamily: fontB, fontSize: 14, fontWeight: 600, color: P, margin: 0 }}>KES {tPrice.toLocaleString()}/mo</p>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
+                    {tFeatures.map(f => (
+                      <div key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 7 }}>
+                        <Check size={12} color={P} style={{ marginTop: 3, flexShrink: 0 }} />
+                        <span style={{ fontFamily: fontB, fontSize: 12, color: P, lineHeight: 1.4 }}>{f}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <button disabled={isCurrent} onClick={() => !isCurrent && setConfirmPlan(t)}
+                    style={{ background: isCurrent ? P : 'transparent', color: isCurrent ? '#fff' : P, border: isCurrent ? 'none' : `1px solid ${P}`, borderRadius: 10, padding: '9px 0', fontFamily: fontB, fontSize: 13, fontWeight: 600, cursor: isCurrent ? 'default' : 'pointer', opacity: isCurrent ? 0.5 : 1, marginTop: 4 }}>
+                    {btnLabel}
+                  </button>
+                </div>
+              )
+            })}
+          </div>
         </div>
-      )}
+      </div>
 
+      {/* Card Two: Billing History */}
+      <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 20, padding: '28px 32px' }}>
+        <p style={{ fontFamily: font, fontSize: 16, fontWeight: 600, color: P, margin: '0 0 18px', letterSpacing: '-0.01em' }}>Billing History</p>
+        {billingLoading ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {[1, 2].map(i => <Skel key={i} style={{ height: 36 }} />)}
+          </div>
+        ) : billingHistory.length === 0 ? (
+          <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, textAlign: 'center', margin: '12px 0' }}>No payments yet.</p>
+        ) : (
+          <>
+            <div style={{ width: '100%', overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: fontB, fontSize: 13 }}>
+                <thead>
+                  <tr style={{ borderBottom: `1px solid ${Pborder}` }}>
+                    {['Date', 'Plan', 'Amount', 'Status', 'Invoice'].map(h => (
+                      <th key={h} style={{ fontWeight: 700, color: Pmuted, textAlign: 'left', padding: '8px 12px', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {billingHistory.map((row, i) => (
+                    <tr key={row.id ?? i} style={{ borderBottom: i < billingHistory.length - 1 ? `1px solid ${Pborder}` : 'none' }}>
+                      <td style={{ padding: '12px 12px', color: P }}>{formatDate(row.date)}</td>
+                      <td style={{ padding: '12px 12px' }}>
+                        <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, background: P, color: '#fff', padding: '2px 10px', borderRadius: 100 }}>{TIER_LABEL[row.plan] ?? row.plan}</span>
+                      </td>
+                      <td style={{ padding: '12px 12px', color: P, fontWeight: 600 }}>KES {row.amount_kes.toLocaleString()}</td>
+                      <td style={{ padding: '12px 12px' }}>
+                        <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, background: row.status === 'paid' ? '#dcfce7' : row.status === 'failed' ? '#fee2e2' : '#fef3c7', color: row.status === 'paid' ? '#16a34a' : row.status === 'failed' ? '#ef4444' : '#d97706', padding: '2px 10px', borderRadius: 100 }}>
+                          {row.status.charAt(0).toUpperCase() + row.status.slice(1)}
+                        </span>
+                      </td>
+                      <td style={{ padding: '12px 12px' }}>
+                        {row.invoice_url
+                          ? <a href={row.invoice_url} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: P, textDecoration: 'none', fontWeight: 600 }}><FileDown size={13} />Download</a>
+                          : <span style={{ color: Pmuted }}>—</span>
+                        }
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 14 }}>
+              <button onClick={() => window.print()} style={{ background: 'none', border: 'none', fontFamily: fontB, fontSize: 12, color: P, cursor: 'pointer', textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                <FileDown size={13} /> Download all invoices
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Card Three: Payment Method */}
+      <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 20, padding: '28px 32px' }}>
+        <p style={{ fontFamily: font, fontSize: 16, fontWeight: 600, color: P, margin: '0 0 18px', letterSpacing: '-0.01em' }}>Payment Method</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+          <div style={{ background: '#00c3f3', borderRadius: 8, padding: '4px 10px' }}>
+            <span style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, color: '#fff' }}>Paystack</span>
+          </div>
+          <p style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, color: P, margin: 0 }}>Managed securely by Paystack</p>
+        </div>
+        <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 18px', lineHeight: 1.6 }}>
+          Your card details are stored securely by Paystack. We never see your full card number.
+        </p>
+        <button onClick={() => setShowPaymentInfo(v => !v)}
+          style={{ background: '#fff', color: P, border: `1px solid ${P}`, borderRadius: 10, padding: '10px 20px', fontFamily: fontB, fontSize: 14, fontWeight: 500, cursor: 'pointer' }}>
+          Update Payment Method
+        </button>
+        {showPaymentInfo && (
+          <div style={{ background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 12, padding: '14px 16px', marginTop: 14 }}>
+            <p style={{ fontFamily: fontB, fontSize: 13, color: P, margin: 0, lineHeight: 1.6 }}>
+              To update your payment method, your next payment will prompt you to enter new card details. Alternatively reach us at <strong>hello@idealicp.com</strong>
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Sign out */}
+      <button onClick={onSignOut}
+        style={{ background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 14, padding: 15, fontSize: 14, fontFamily: fontB, fontWeight: 500, color: Pmuted, cursor: 'pointer' }}>
+        Sign out
+      </button>
+
+      {/* Modals */}
+      {showPauseModal && (
+        <PauseModal user={user} onClose={() => setShowPauseModal(false)}
+          onPaused={resumeDate => {
+            setShowPauseModal(false)
+            onUserUpdate({ billing_status: 'paused', paused_until: resumeDate })
+            showToast('Subscription paused. It will resume automatically in 30 days.')
+          }}
+        />
+      )}
       {showCancelModal && (
-        <CancellationModal
-          user={user}
-          score={score}
-          reportCount={reportCount}
+        <CancellationModal user={user} score={score} reportCount={reportCount}
           onClose={() => setShowCancelModal(false)}
           onCancelled={() => { setShowCancelModal(false); onCancelled() }}
+        />
+      )}
+      {confirmPlan && (
+        <ChangePlanConfirmModal newTier={confirmPlan}
+          onClose={() => setConfirmPlan(null)}
+          onConfirmed={() => handleChangePlan(confirmPlan)}
         />
       )}
     </div>
@@ -1329,10 +1645,11 @@ export default function DashboardPage() {
             onCancelled={() => {
               setUser(prev => prev ? { ...prev, billing_status: 'cancelled', subscription_tier: 'free' } : prev)
               const until = user.renewal_date ? formatDate(user.renewal_date) : 'your renewal date'
-              const msg = `Subscription cancelled. You have access until ${until}.`
-              setCancelToast(msg)
+              setCancelToast(`Subscription cancelled. You have access until ${until}.`)
               setTimeout(() => setCancelToast(''), 5000)
             }}
+            onUserUpdate={update => setUser(prev => prev ? { ...prev, ...update } : prev)}
+            showToast={msg => { setCancelToast(msg); setTimeout(() => setCancelToast(''), 5000) }}
           />
         )}
       </div>
