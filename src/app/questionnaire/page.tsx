@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 
 type QuestionType = 'text' | 'url' | 'textarea' | 'select' | 'radio' | 'checkbox' | 'number' | 'slider' | 'yesno'
@@ -227,6 +227,14 @@ const QUESTIONS: Question[] = [
 // Layer 1: Q1–13 (13q), Layer 2: Q14–24 (11q), Layer 3: Q25–32 (8q)
 const LAYER_STARTS = [0, 13, 24]
 const LAYER_LENGTHS = [13, 11, 8]
+
+const LOADING_STEPS = [
+  { label: 'Saving your answers...',                   sublabel: 'Storing your responses securely',              duration: 2000  },
+  { label: 'Visiting your landing page...',            sublabel: 'Analysing your funnel and offer',              duration: 5000  },
+  { label: 'Researching your industry benchmarks...', sublabel: 'Finding CPC/CPA data for your region',         duration: 10000 },
+  { label: 'Analysing your competitors...',           sublabel: 'Mapping the competitive landscape',            duration: 10000 },
+  { label: 'Generating your diagnostic report...',    sublabel: 'Compiling findings and recommendations',       duration: Infinity },
+]
 
 type Answers = Record<number, string | string[] | number>
 
@@ -497,6 +505,8 @@ export default function QuestionnairePage() {
   const [visible, setVisible] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [apiError, setApiError] = useState('')
+  const [loadingStep, setLoadingStep] = useState(0)
+  const timerRefs = useRef<ReturnType<typeof setTimeout>[]>([])
 
   // Fade in on mount and on each question change
   useEffect(() => {
@@ -547,6 +557,16 @@ export default function QuestionnairePage() {
   const handleSubmit = async () => {
     setSubmitting(true)
     setApiError('')
+    setLoadingStep(1)
+
+    // Advance steps on a schedule matching expected server timing
+    let elapsed = 0
+    LOADING_STEPS.slice(0, -1).forEach((step, i) => {
+      elapsed += step.duration as number
+      const t = setTimeout(() => setLoadingStep(i + 2), elapsed)
+      timerRefs.current.push(t)
+    })
+
     try {
       const qRes = await fetch('/api/questionnaire', {
         method: 'POST',
@@ -566,8 +586,11 @@ export default function QuestionnairePage() {
 
       router.push(`/report/${dData.id}`)
     } catch (err) {
+      timerRefs.current.forEach(clearTimeout)
+      timerRefs.current = []
       setApiError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
       setSubmitting(false)
+      setLoadingStep(0)
     }
   }
 
@@ -675,6 +698,116 @@ export default function QuestionnairePage() {
               Fill in all three fields to continue.
             </p>
           )}
+        </div>
+      </div>
+    )
+  }
+
+  if (submitting) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0f] text-white flex flex-col">
+        <header className="border-b border-white/10 px-6 py-4 flex items-center max-w-3xl mx-auto w-full">
+          <a href="/" className="text-sm font-bold tracking-tight text-white">
+            ICP<span className="text-indigo-400">Diagnostic</span>
+          </a>
+        </header>
+
+        <div className="flex-1 flex flex-col items-center justify-center px-6 pb-16">
+          <div className="w-full max-w-md">
+
+            {/* Heading */}
+            <div className="mb-10 text-center">
+              <div className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-widest mb-5 px-3 py-1.5 rounded-full border border-indigo-500/40 text-indigo-400 bg-white/[0.03]">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500" />
+                </span>
+                Running Deep Diagnostic
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+                Analysing your ICP&hellip;
+              </h2>
+              <p className="text-slate-500 text-sm">
+                We&apos;re doing real research — this takes about 30 seconds
+              </p>
+            </div>
+
+            {/* Steps */}
+            <div className="space-y-2.5">
+              {LOADING_STEPS.map((step, i) => {
+                const stepNum = i + 1
+                const isDone    = loadingStep > stepNum
+                const isCurrent = loadingStep === stepNum
+                const isPending = loadingStep < stepNum
+                return (
+                  <div
+                    key={i}
+                    className={`flex items-center gap-4 px-4 py-3.5 rounded-xl border transition-all duration-500 ${
+                      isCurrent
+                        ? 'border-indigo-500/40 bg-indigo-600/10'
+                        : isDone
+                        ? 'border-white/[0.06] bg-white/[0.02]'
+                        : 'border-white/[0.04] bg-transparent'
+                    }`}
+                  >
+                    {/* Icon */}
+                    <div className="flex-shrink-0 w-7 h-7 flex items-center justify-center">
+                      {isDone && (
+                        <div className="w-6 h-6 rounded-full bg-emerald-500/15 border border-emerald-500/40 flex items-center justify-center">
+                          <svg className="w-3.5 h-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                      )}
+                      {isCurrent && (
+                        <svg className="animate-spin w-5 h-5 text-indigo-400" viewBox="0 0 24 24" fill="none">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                        </svg>
+                      )}
+                      {isPending && (
+                        <div className="w-5 h-5 rounded-full border border-white/10 bg-white/[0.03]" />
+                      )}
+                    </div>
+
+                    {/* Label */}
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm font-medium leading-tight ${
+                        isCurrent ? 'text-white' : isDone ? 'text-slate-500' : 'text-slate-700'
+                      }`}>
+                        {step.label}
+                      </p>
+                      {isCurrent && (
+                        <p className="text-xs text-indigo-400/70 mt-0.5">{step.sublabel}</p>
+                      )}
+                      {isDone && (
+                        <p className="text-xs text-emerald-600/80 mt-0.5">Complete</p>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Overall progress bar */}
+            <div className="mt-8">
+              <div className="h-0.5 bg-white/10 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-1000 ease-out"
+                  style={{ width: `${Math.max(4, ((loadingStep - 1) / LOADING_STEPS.length) * 100)}%` }}
+                />
+              </div>
+              <p className="text-xs text-slate-700 mt-2 text-center tabular-nums">
+                Step {Math.min(loadingStep, LOADING_STEPS.length)} of {LOADING_STEPS.length}
+              </p>
+            </div>
+
+            {apiError && (
+              <p className="mt-6 text-sm text-red-400 bg-red-900/20 border border-red-800/40 rounded-lg px-4 py-3">
+                {apiError}
+              </p>
+            )}
+          </div>
         </div>
       </div>
     )
@@ -832,24 +965,14 @@ export default function QuestionnairePage() {
               <button
                 type="button"
                 onClick={handleSubmit}
-                disabled={!canProceed() || submitting}
+                disabled={!canProceed()}
                 className={`flex-1 sm:flex-none sm:min-w-[200px] py-3 px-8 rounded-xl text-sm font-semibold transition-all ${
-                  canProceed() && !submitting
+                  canProceed()
                     ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-lg shadow-indigo-600/30 active:scale-95'
                     : 'bg-white/5 text-slate-600 cursor-not-allowed border border-white/5'
                 }`}
               >
-                {submitting ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                    </svg>
-                    Analyzing…
-                  </span>
-                ) : (
-                  'Get My Diagnosis →'
-                )}
+                Get My Diagnosis →
               </button>
             )}
           </div>
