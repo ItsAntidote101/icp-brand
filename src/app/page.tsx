@@ -368,7 +368,7 @@ export default function Home() {
       <section id="how-it-works" style={{ background: '#ffffff', padding: '120px 24px', position: 'relative', overflow: 'hidden' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'center' }}>
           {/* visual */}
-          <div style={{ width: '100%', aspectRatio: '4/3', background: '#ede9fe', borderRadius: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div data-replace-with="/images/features/feature-1.jpg" style={{ width: '100%', aspectRatio: '4/3', background: '#ede9fe', borderRadius: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <span style={{ color: '#302161', opacity: 0.3, fontSize: 14 }}>Image placeholder</span>
           </div>
           {/* text */}
@@ -430,7 +430,7 @@ export default function Home() {
             </Link>
           </div>
           {/* visual */}
-          <div style={{ width: '100%', aspectRatio: '4/3', background: '#ede9fe', borderRadius: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div data-replace-with="/images/features/feature-2.jpg" style={{ width: '100%', aspectRatio: '4/3', background: '#ede9fe', borderRadius: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <span style={{ color: '#302161', opacity: 0.3, fontSize: 14 }}>Image placeholder</span>
           </div>
         </div>
@@ -441,7 +441,7 @@ export default function Home() {
       <section style={{ background: '#ffffff', padding: '120px 24px', position: 'relative', overflow: 'hidden' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'center' }}>
           {/* visual */}
-          <div style={{ width: '100%', aspectRatio: '4/3', background: '#ede9fe', borderRadius: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div data-replace-with="/images/features/feature-3.jpg" style={{ width: '100%', aspectRatio: '4/3', background: '#ede9fe', borderRadius: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <span style={{ color: '#302161', opacity: 0.3, fontSize: 14 }}>Image placeholder</span>
           </div>
           {/* text */}
