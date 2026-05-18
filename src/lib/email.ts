@@ -266,3 +266,88 @@ export async function sendSessionConfirmationToUser({
   else console.log('[email] session user sent id:', data?.id, 'to:', to)
   return { data, error }
 }
+
+// ─── Email 6: Cancellation — user confirmation ────────────────────────────────
+
+export async function sendCancellationToUser({
+  to, name, renewalDate,
+}: { to: string; name: string; renewalDate?: string }) {
+  const first = name?.split(' ')[0] ?? 'there'
+  const accessUntil = renewalDate
+    ? new Date(renewalDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+    : 'your next renewal date'
+
+  const content = `
+<h1 style="margin:0 0 10px;color:#ffffff;font-size:24px;font-weight:800;line-height:1.2;letter-spacing:-0.5px;">Your subscription has been cancelled.</h1>
+<p style="margin:0 0 24px;color:#9ca3af;font-size:15px;line-height:1.7;">Hi ${first}, your cancellation is confirmed. Here is what happens next.</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:14px;margin-bottom:20px;">
+  <tr><td style="padding:20px 24px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+      <tr><td style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+        <p style="margin:0;color:#e5e7eb;font-size:14px;font-weight:600;">Access until ${accessUntil}</p>
+        <p style="margin:2px 0 0;color:#6b7280;font-size:13px;">All your diagnostics, reports, and score history remain available until then.</p>
+      </td></tr>
+      <tr><td style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+        <p style="margin:0;color:#e5e7eb;font-size:14px;font-weight:600;">No further charges</p>
+        <p style="margin:2px 0 0;color:#6b7280;font-size:13px;">Your card will not be billed again.</p>
+      </td></tr>
+      <tr><td style="padding:8px 0;">
+        <p style="margin:0;color:#e5e7eb;font-size:14px;font-weight:600;">Resubscribe anytime</p>
+        <p style="margin:2px 0 0;color:#6b7280;font-size:13px;">Your account and data will be here when you come back.</p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+<p style="margin:0 0 0;color:#6b7280;font-size:13px;">Changed your mind? Reply to this email and we will sort it out. Or reach us at <a href="mailto:support@icpbrand.co" style="color:#6366f1;text-decoration:none;">support@icpbrand.co</a></p>`
+
+  const { data, error } = await getResend().emails.send({
+    from: FROM, to,
+    subject: 'Subscription cancelled — access continues until ' + accessUntil,
+    html: base(content),
+  })
+  if (error) console.error('[email] cancel user error:', JSON.stringify(error))
+  else console.log('[email] cancel user sent id:', data?.id, 'to:', to)
+  return { data, error }
+}
+
+// ─── Email 7: Cancellation — founder notification ─────────────────────────────
+
+export async function sendCancellationToFounder({
+  userName, userEmail, companyName, reason, renewalDate,
+}: { userName: string; userEmail: string; companyName?: string; reason?: string; renewalDate?: string }) {
+  const accessUntil = renewalDate
+    ? new Date(renewalDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+    : '—'
+
+  const content = `
+<h1 style="margin:0 0 10px;color:#ffffff;font-size:22px;font-weight:800;line-height:1.2;letter-spacing:-0.5px;">Cancellation alert</h1>
+<p style="margin:0 0 24px;color:#9ca3af;font-size:15px;line-height:1.7;">A subscriber has cancelled their plan.</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:14px;margin-bottom:20px;">
+  <tr><td style="padding:20px 24px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+      ${[
+        ['Name', userName],
+        ['Email', userEmail],
+        ['Company', companyName || '—'],
+        ['Reason', reason || 'Not provided'],
+        ['Access until', accessUntil],
+      ].map(([label, val]) => `<tr><td style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+        <p style="margin:0;color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:0.06em;">${label}</p>
+        <p style="margin:2px 0 0;color:#ffffff;font-size:14px;font-weight:600;">${val}</p>
+      </td></tr>`).join('')}
+    </table>
+  </td></tr>
+</table>
+<p style="margin:0;color:#6b7280;font-size:13px;">Reply to this email to reach the subscriber directly.</p>`
+
+  const { data, error } = await getResend().emails.send({
+    from: FROM,
+    to: 'eugene@idealicp.com',
+    replyTo: userEmail,
+    subject: `Cancellation: ${companyName || userName}`,
+    html: base(content),
+  })
+  if (error) console.error('[email] cancel founder error:', JSON.stringify(error))
+  else console.log('[email] cancel founder sent id:', data?.id)
+  return { data, error }
+}

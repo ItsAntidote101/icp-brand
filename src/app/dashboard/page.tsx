@@ -844,11 +844,143 @@ function ReportsTab({ reports, dataLoading }: { reports: ReportRow[]; dataLoadin
 
 // ─── Account tab ──────────────────────────────────────────────────────────────
 
-function AccountTab({ user, currency, onSignOut }: { user: UserData; currency: string; onSignOut: () => void }) {
-  const [cancelConfirm, setCancelConfirm] = useState(false)
+const CANCEL_REASONS = [
+  'Too expensive',
+  'Not seeing value yet',
+  'Campaign paused',
+  'Using a different tool',
+  'Just exploring',
+  'Other',
+]
+
+function CancellationModal({ user, score, reportCount, onClose, onCancelled }: { user: UserData; score: number | null; reportCount: number; onClose: () => void; onCancelled: () => void }) {
+  const [reason,   setReason]   = useState('')
+  const [feedback, setFeedback] = useState('')
+  const [loading,  setLoading]  = useState(false)
+  const [error,    setError]    = useState('')
+
+  async function handleCancel() {
+    setLoading(true)
+    setError('')
+    try {
+      const res = await fetch('/api/subscription/cancel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userEmail: user.email, reason: feedback ? `${reason} — ${feedback}` : reason }),
+      })
+      if (!res.ok) throw new Error('Request failed')
+      onCancelled()
+    } catch {
+      setError('Something went wrong. Please try again or email support@icpbrand.co.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const showRetentionExpensive  = reason === 'Too expensive'
+  const showRetentionNoValue    = reason === 'Not seeing value yet'
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(10,10,15,0.72)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
+      onClick={onClose}>
+      <div style={{ background: '#fff', borderRadius: 20, padding: '32px 28px', maxWidth: 480, width: '100%', maxHeight: '90vh', overflowY: 'auto' }}
+        onClick={e => e.stopPropagation()}>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+          <div>
+            <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: 0, letterSpacing: '-0.02em' }}>Cancel subscription</p>
+            <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '4px 0 0' }}>Help us understand why</p>
+          </div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: Pmuted, padding: 4 }}>
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Stats reminder */}
+        <div style={{ background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 14, padding: '16px 18px', marginBottom: 20 }}>
+          <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: Pmuted, margin: '0 0 10px' }}>Your account at a glance</p>
+          <div style={{ display: 'flex', gap: 24 }}>
+            <div>
+              <p style={{ fontFamily: font, fontSize: 22, fontWeight: 700, color: P, margin: 0 }}>{score ?? '—'}</p>
+              <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '2px 0 0' }}>ICP Score</p>
+            </div>
+            <div>
+              <p style={{ fontFamily: font, fontSize: 22, fontWeight: 700, color: P, margin: 0 }}>{reportCount}</p>
+              <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '2px 0 0' }}>Diagnostics</p>
+            </div>
+            <div>
+              <p style={{ fontFamily: font, fontSize: 22, fontWeight: 700, color: P, margin: 0 }}>{user.renewal_date ? formatDate(user.renewal_date) : '—'}</p>
+              <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '2px 0 0' }}>Access until</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Reason pills */}
+        <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: Pmuted, margin: '0 0 10px' }}>Reason for cancelling</p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 18 }}>
+          {CANCEL_REASONS.map(r => (
+            <button key={r} onClick={() => setReason(r)}
+              style={{ fontFamily: fontB, fontSize: 13, fontWeight: 500, padding: '7px 14px', borderRadius: 100, cursor: 'pointer', border: reason === r ? `1.5px solid ${P}` : `1.5px solid ${Pborder}`, background: reason === r ? P : '#fff', color: reason === r ? '#fff' : P, transition: 'all 0.15s' }}>
+              {r}
+            </button>
+          ))}
+        </div>
+
+        {/* Retention: Too expensive */}
+        {showRetentionExpensive && (
+          <div style={{ background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.18)', borderRadius: 14, padding: '16px 18px', marginBottom: 18 }}>
+            <p style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: P, margin: '0 0 4px' }}>Before you go — Starter plan is {convertAmount(6500, 'KES', 'KES')} / month</p>
+            <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 12px', lineHeight: 1.6 }}>Downgrade to Starter and keep running diagnostics at a fraction of the cost. No data is lost.</p>
+            <Link href="/#pricing" onClick={onClose}
+              style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, color: P, textDecoration: 'underline' }}>
+              See Starter plan →
+            </Link>
+          </div>
+        )}
+
+        {/* Retention: Not seeing value */}
+        {showRetentionNoValue && (
+          <div style={{ background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.18)', borderRadius: 14, padding: '16px 18px', marginBottom: 18 }}>
+            <p style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: P, margin: '0 0 4px' }}>Run one more diagnosis before you decide</p>
+            <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 12px', lineHeight: 1.6 }}>Most users see the biggest score jump on their second or third diagnostic. One more report could change everything.</p>
+            <Link href="/questionnaire" onClick={onClose}
+              style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, color: P, textDecoration: 'underline' }}>
+              Run a new diagnosis →
+            </Link>
+          </div>
+        )}
+
+        {/* Optional feedback */}
+        <textarea
+          value={feedback} onChange={e => setFeedback(e.target.value)}
+          placeholder="Anything else you want us to know? (optional)"
+          rows={3}
+          style={{ width: '100%', boxSizing: 'border-box', fontFamily: fontB, fontSize: 13, color: P, background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 10, padding: '10px 12px', resize: 'vertical', outline: 'none', marginBottom: 18 }}
+        />
+
+        {error && <p style={{ fontFamily: fontB, fontSize: 12, color: '#ef4444', margin: '0 0 12px' }}>{error}</p>}
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <button onClick={onClose}
+            style={{ background: P, border: 'none', borderRadius: 12, padding: '13px 0', fontSize: 14, fontFamily: font, fontWeight: 600, color: '#fff', cursor: 'pointer' }}>
+            Keep my subscription
+          </button>
+          <button onClick={handleCancel} disabled={!reason || loading}
+            style={{ background: 'none', border: '1px solid #fecaca', borderRadius: 12, padding: '12px 0', fontSize: 13, fontFamily: fontB, fontWeight: 500, color: loading || !reason ? Pmuted : '#ef4444', cursor: reason && !loading ? 'pointer' : 'default', opacity: reason && !loading ? 1 : 0.5 }}>
+            {loading ? 'Cancelling…' : 'Cancel anyway'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function AccountTab({ user, currency, score, reportCount, onSignOut, onCancelled }: { user: UserData; currency: string; score: number | null; reportCount: number; onSignOut: () => void; onCancelled: () => void }) {
+  const [showCancelModal, setShowCancelModal] = useState(false)
   const tierLabel  = TIER_LABEL[user.subscription_tier] ?? user.subscription_tier
   const priceKES   = TIER_PRICE_KES[user.subscription_tier] ?? 0
   const priceStr   = priceKES > 0 ? `${convertAmount(priceKES, 'KES', currency)} / month` : 'Free'
+  const isCancelled = user.billing_status === 'cancelled'
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 18, maxWidth: 640 }}>
       <h2 style={{ fontFamily: font, fontSize: 'clamp(20px,4vw,28px)', fontWeight: 700, color: P, margin: 0, letterSpacing: '-0.02em' }}>Account</h2>
@@ -874,8 +1006,8 @@ function AccountTab({ user, currency, onSignOut }: { user: UserData; currency: s
           { label: 'Description',    value: TIER_DESC[user.subscription_tier] ?? '' },
           { label: 'Monthly price',  value: priceStr },
           { label: 'Billing status', value: (
-            <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, background: user.billing_status === 'active' ? '#dcfce7' : '#fee2e2', color: user.billing_status === 'active' ? '#16a34a' : '#ef4444', padding: '3px 12px', borderRadius: 100 }}>
-              {user.billing_status}
+            <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, background: isCancelled ? '#fef9c3' : user.billing_status === 'active' ? '#dcfce7' : '#fee2e2', color: isCancelled ? '#a16207' : user.billing_status === 'active' ? '#16a34a' : '#ef4444', padding: '3px 12px', borderRadius: 100 }}>
+              {isCancelled ? 'cancelled' : user.billing_status}
             </span>
           )},
           { label: 'Renewal date', value: user.renewal_date ? formatDate(user.renewal_date) : '—' },
@@ -888,50 +1020,49 @@ function AccountTab({ user, currency, onSignOut }: { user: UserData; currency: s
       </Card>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {user.subscription_tier !== 'agency' && (
+        {isCancelled ? (
           <Link href="/#pricing"
             style={{ display: 'block', textAlign: 'center', textDecoration: 'none', background: P, color: '#fff', fontFamily: font, fontWeight: 600, fontSize: 14, padding: 15, borderRadius: 14 }}>
-            Upgrade Plan →
+            Resubscribe anytime →
           </Link>
+        ) : (
+          <>
+            {user.subscription_tier !== 'agency' && (
+              <Link href="/#pricing"
+                style={{ display: 'block', textAlign: 'center', textDecoration: 'none', background: P, color: '#fff', fontFamily: font, fontWeight: 600, fontSize: 14, padding: 15, borderRadius: 14 }}>
+                Upgrade Plan →
+              </Link>
+            )}
+            <a href="mailto:support@icpbrand.co"
+              style={{ display: 'block', textAlign: 'center', textDecoration: 'none', background: BgAlt, border: `1px solid ${Pborder}`, color: 'rgba(48,33,97,0.8)', fontFamily: fontB, fontWeight: 500, fontSize: 14, padding: 15, borderRadius: 14 }}>
+              Manage Subscription
+            </a>
+          </>
         )}
-        <a href="mailto:support@icpbrand.co"
-          style={{ display: 'block', textAlign: 'center', textDecoration: 'none', background: BgAlt, border: `1px solid ${Pborder}`, color: 'rgba(48,33,97,0.8)', fontFamily: fontB, fontWeight: 500, fontSize: 14, padding: 15, borderRadius: 14 }}>
-          Manage Subscription
-        </a>
         <button onClick={onSignOut}
           style={{ background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 14, padding: 15, fontSize: 14, fontFamily: fontB, fontWeight: 500, color: Pmuted, cursor: 'pointer' }}>
           Sign out
         </button>
       </div>
 
-      <div style={{ border: '1px solid #fecaca', borderRadius: 16, padding: '22px 26px' }}>
-        <p style={{ fontFamily: font, fontSize: 14, fontWeight: 600, color: '#ef4444', margin: '0 0 5px' }}>Cancel Subscription</p>
-        {!cancelConfirm ? (
-          <>
-            <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 12px', lineHeight: 1.6 }}>
-              Your access continues until your renewal date. This cannot be undone.
-            </p>
-            <button onClick={() => setCancelConfirm(true)}
-              style={{ background: 'none', border: 'none', fontFamily: fontB, fontSize: 13, color: '#ef4444', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>
-              Cancel my subscription
-            </button>
-          </>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <p style={{ fontFamily: fontB, fontSize: 13, color: P, margin: 0 }}>Are you sure? You will lose access at your next renewal date.</p>
-            <div style={{ display: 'flex', gap: 12 }}>
-              <a href={`mailto:support@icpbrand.co?subject=Cancel subscription — ${user.email}`}
-                style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, background: '#fee2e2', color: '#ef4444', padding: '9px 18px', borderRadius: 10, textDecoration: 'none' }}>
-                Yes, cancel
-              </a>
-              <button onClick={() => setCancelConfirm(false)}
-                style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, background: 'none', border: 'none', cursor: 'pointer', padding: '9px' }}>
-                Keep my subscription
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+      {!isCancelled && user.subscription_tier !== 'free' && (
+        <div style={{ textAlign: 'center' }}>
+          <button onClick={() => setShowCancelModal(true)}
+            style={{ background: 'none', border: 'none', fontFamily: fontB, fontSize: 12, color: Pmuted, cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>
+            Cancel subscription
+          </button>
+        </div>
+      )}
+
+      {showCancelModal && (
+        <CancellationModal
+          user={user}
+          score={score}
+          reportCount={reportCount}
+          onClose={() => setShowCancelModal(false)}
+          onCancelled={() => { setShowCancelModal(false); onCancelled() }}
+        />
+      )}
     </div>
   )
 }
@@ -951,6 +1082,7 @@ export default function DashboardPage() {
   const [activeTab,   setActiveTab]   = useState<Tab>('overview')
   const [currency,    setCurrency]    = useState('KES')
   const [showModal,   setShowModal]   = useState(false)
+  const [cancelToast, setCancelToast] = useState('')
 
   // Load currency preference on mount
   useEffect(() => {
@@ -1067,8 +1199,9 @@ export default function DashboardPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#fff', fontFamily: fontB }}>
       <style>{`
-        @keyframes spin   { to { transform: rotate(360deg) } }
-        @keyframes fadeUp { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:translateY(0) } }
+        @keyframes spin      { to { transform: rotate(360deg) } }
+        @keyframes fadeUp    { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:translateY(0) } }
+        @keyframes slideUp   { from { opacity:0; transform:translateY(12px) } to { opacity:1; transform:translateY(0) } }
       `}</style>
 
       {/* ── Top nav ───────────────────────────────────────────────────────── */}
@@ -1186,12 +1319,34 @@ export default function DashboardPage() {
         )}
 
         {activeTab === 'reports' && <ReportsTab reports={reports} dataLoading={dataLoading} />}
-        {activeTab === 'account' && user && <AccountTab user={user} currency={currency} onSignOut={handleSignOut} />}
+        {activeTab === 'account' && user && (
+          <AccountTab
+            user={user}
+            currency={currency}
+            score={score}
+            reportCount={reports.length}
+            onSignOut={handleSignOut}
+            onCancelled={() => {
+              setUser(prev => prev ? { ...prev, billing_status: 'cancelled', subscription_tier: 'free' } : prev)
+              const until = user.renewal_date ? formatDate(user.renewal_date) : 'your renewal date'
+              const msg = `Subscription cancelled. You have access until ${until}.`
+              setCancelToast(msg)
+              setTimeout(() => setCancelToast(''), 5000)
+            }}
+          />
+        )}
       </div>
 
       {/* ── Booking modal ─────────────────────────────────────────────────── */}
       {showModal && user && (
         <BookingModal user={user} diag={diag} score={score} onClose={() => setShowModal(false)} />
+      )}
+
+      {/* ── Cancellation toast ────────────────────────────────────────────── */}
+      {cancelToast && (
+        <div style={{ position: 'fixed', bottom: 80, left: '50%', transform: 'translateX(-50%)', zIndex: 200, background: P, color: '#fff', fontFamily: fontB, fontSize: 13, fontWeight: 500, padding: '12px 22px', borderRadius: 100, boxShadow: '0 8px 32px rgba(48,33,97,0.25)', whiteSpace: 'nowrap', animation: 'slideUp 0.25s ease both' }}>
+          {cancelToast}
+        </div>
       )}
 
       {/* ── Mobile bottom tab bar ─────────────────────────────────────────── */}
