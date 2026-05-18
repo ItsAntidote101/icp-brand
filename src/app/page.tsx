@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import {
   RefreshCw, Filter, TrendingDown, BarChart2, Activity,
-  Check, Menu, X, MapPin, ArrowRight, Globe, ChevronRight,
+  Check, Menu, X, MapPin, ArrowRight, Globe,
 } from 'lucide-react'
 
 export const dynamic = 'force-static'
@@ -91,10 +91,10 @@ const HERO_HEADLINES = [
 ]
 
 const HERO_CARDS = [
-  { gradient: 'linear-gradient(160deg, #f0abfc 0%, #e879f9 40%, #a855f7 100%)', stat: '40-60', suffix: '%',    desc: 'Of ad budgets wasted on wrong targeting' },
-  { gradient: 'linear-gradient(160deg, #fda4af 0%, #fb7185 40%, #e11d48 100%)', stat: 'KES 50K', suffix: '+',  desc: 'Average monthly waste found per diagnosis' },
-  { gradient: 'linear-gradient(160deg, #93c5fd 0%, #60a5fa 40%, #2563eb 100%)', stat: '5',       suffix: ' min', desc: 'To complete your full ICP diagnostic' },
-  { gradient: 'linear-gradient(160deg, #6ee7b7 0%, #34d399 40%, #059669 100%)', stat: '3',       suffix: 'x',   desc: 'Average improvement in lead quality' },
+  { image: '/images/Holder-2.png', stat: '40-60%',   description: 'Of ad budgets wasted on wrong audience targeting' },
+  { image: '/images/Holder-3.png', stat: 'KES 50K+', description: 'Average monthly waste found per client diagnosis' },
+  { image: '/images/Holder-1.png', stat: '5 min',    description: 'To complete your full ICP diagnostic' },
+  { image: '/images/Holder-4.png', stat: '3x',       description: 'Average improvement in lead quality after ICP fix' },
 ]
 
 // ─── Shared components ────────────────────────────────────────────────────────
@@ -129,36 +129,27 @@ export default function Home() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [openFaq,    setOpenFaq]    = useState<number | null>(null)
   const [activeTab,  setActiveTab]  = useState('Google Reviews')
-  const [heroIndex,       setHeroIndex]       = useState(0)
-  const [headlineVisible, setHeadlineVisible] = useState(true)
-  const [heroPaused,      setHeroPaused]      = useState(false)
-  // Slot per card: -2=exiting-left, -1=left-sliver, 0=center, 1=right-sliver, 2=offscreen-right
-  const [cardPositions,   setCardPositions]   = useState([0, 1, 2, -1])
-
-  const advanceHero = () => {
-    setHeadlineVisible(false)
-    // Shift every card one slot to the left
-    setCardPositions(prev => prev.map(p => {
-      if (p === -1) return -2  // left sliver → exits left
-      if (p ===  0) return -1  // center → left sliver
-      if (p ===  1) return  0  // right sliver → center
-      if (p ===  2) return  1  // off-right → right sliver (slides in)
-      return p
-    }))
-    // After slide completes: teleport exited card from off-left back to off-right (invisible)
-    setTimeout(() => {
-      setCardPositions(prev => prev.map(p => p === -2 ? 2 : p))
-      setHeroIndex(i => (i + 1) % HERO_CARDS.length)
-      setHeadlineVisible(true)
-    }, 500)
-  }
+  const [heroIndex,   setHeroIndex]   = useState(0)
+  const [heroVisible, setHeroVisible] = useState(true)
 
   useEffect(() => {
-    if (heroPaused) return
-    const id = setInterval(advanceHero, 5000)
+    const id = setInterval(() => {
+      setHeroVisible(false)
+      setTimeout(() => {
+        setHeroIndex(i => (i + 1) % HERO_HEADLINES.length)
+        setHeroVisible(true)
+      }, 600)
+    }, 4000)
     return () => clearInterval(id)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [heroPaused])
+  }, [])
+
+  const advanceHero = () => {
+    setHeroVisible(false)
+    setTimeout(() => {
+      setHeroIndex(i => (i + 1) % HERO_CARDS.length)
+      setHeroVisible(true)
+    }, 600)
+  }
 
   return (
     <main style={{ fontFamily: '-apple-system,system-ui,sans-serif', color: Pbody, background: '#fff', overflowX: 'hidden' }}>
@@ -221,7 +212,7 @@ export default function Home() {
       )}
 
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <section style={{ background: '#ffffff', paddingTop: 120, paddingBottom: 80, overflowX: 'hidden', overflowY: 'visible' }}>
+      <section style={{ background: '#ffffff', paddingTop: 120, paddingBottom: 80, overflow: 'hidden' }}>
         <div className="container flex flex-col gap-12 lg:flex-row lg:items-center lg:gap-16">
 
           {/* LEFT — animated copy */}
@@ -236,8 +227,8 @@ export default function Home() {
                 lineHeight: 1.05,
                 letterSpacing: '-0.04em',
                 margin: 0,
-                opacity: headlineVisible ? 1 : 0,
-                transition: 'opacity 400ms ease-in-out',
+                opacity: heroVisible ? 1 : 0,
+                transition: 'opacity 600ms ease-in-out',
               }}>
                 <span style={{ color: P, display: 'block' }}>{HERO_HEADLINES[heroIndex].line1}</span>
                 <span style={{ color: '#c026d3', display: 'block' }}>{HERO_HEADLINES[heroIndex].line2}</span>
@@ -273,98 +264,71 @@ export default function Home() {
             </div>
           </div>
 
-          {/* RIGHT — sliding card carousel with scale effect */}
-          <div
-            className="hidden lg:block lg:flex-1"
-            style={{ position: 'relative', height: 480, marginRight: -80, overflow: 'visible' }}
-            onMouseEnter={() => setHeroPaused(true)}
-            onMouseLeave={() => setHeroPaused(false)}
-          >
-            {HERO_CARDS.map((card, i) => {
-              const pos = cardPositions[i]
-              // Translate map: each 100% unit = 420px (card width)
-              const txMap: Record<number, string> = {
-                '-2': 'translateX(-200%)',
-                '-1': 'translateX(-100%)',
-                '0':  'translateX(0)',
-                '1':  'translateX(100%)',
-                '2':  'translateX(200%)',
-              }
-              const scaleMap: Record<number, string> = {
-                '-2': 'scale(0.85)',
-                '-1': 'scale(0.85)',
-                '0':  'scale(1)',
-                '1':  'scale(0.85)',
-                '2':  'scale(0.85)',
-              }
-              const tx    = txMap[pos]    ?? 'translateX(300%)'
-              const sc    = scaleMap[pos] ?? 'scale(0.85)'
-              // pos===2 = teleport target: no transition so the jump is invisible off-screen
-              const trans = pos === 2 ? 'none' : 'transform 500ms ease-in-out'
-              const zi    = pos === 0 ? 2 : pos === -1 || pos === 1 ? 1 : 0
+          {/* RIGHT — rotating image cards */}
+          <div className="lg:flex-1" style={{ display: 'flex', alignItems: 'flex-end', gap: 12, overflow: 'hidden', minHeight: 420 }}>
 
-              return (
-                <div key={i} style={{
-                  position: 'absolute',
-                  left: 84,          // base = right of left-sliver zone (72px) + 12px gap
-                  top: 20,           // vertical offset so slivers align center with taller center card
-                  width: 420,
-                  height: 440,
-                  borderRadius: 24,
-                  overflow: 'hidden',
-                  transform: `${tx} ${sc}`,
-                  transformOrigin: 'center center',
-                  transition: trans,
-                  zIndex: zi,
-                }}>
-                  {/* gradient background */}
-                  <div style={{ position: 'absolute', inset: 0, background: card.gradient }} />
+            {/* Small card — next item, partially visible */}
+            <div style={{
+              width: '38%',
+              height: 340,
+              borderRadius: 24,
+              overflow: 'hidden',
+              position: 'relative',
+              flexShrink: 0,
+              opacity: heroVisible ? 0.72 : 0,
+              transition: 'opacity 600ms ease-in-out',
+            }}>
+              <Image
+                src={HERO_CARDS[(heroIndex + 1) % HERO_CARDS.length].image}
+                alt=""
+                fill
+                style={{ objectFit: 'cover' }}
+              />
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 52%)' }} />
+              <div style={{ position: 'absolute', bottom: 20, left: 20, right: 20 }}>
+                <p style={{ fontFamily: font, fontSize: 32, fontWeight: 800, color: '#fff', margin: '0 0 6px', lineHeight: 1 }}>
+                  {HERO_CARDS[(heroIndex + 1) % HERO_CARDS.length].stat}
+                </p>
+                <p style={{ fontFamily: fontBody, fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.85)', margin: 0, lineHeight: 1.4, maxWidth: 140 }}>
+                  {HERO_CARDS[(heroIndex + 1) % HERO_CARDS.length].description}
+                </p>
+              </div>
+            </div>
 
-                  {/* left-sliver colour overlay — fades in/out with position */}
-                  <div style={{
-                    position: 'absolute', inset: 0,
-                    background: 'linear-gradient(to bottom, #fb923c 0%, #f472b6 100%)',
-                    opacity: pos === -1 ? 0.85 : 0,
-                    transition: 'opacity 300ms ease-in-out',
-                  }} />
-
-                  {/* right-sliver colour overlay */}
-                  <div style={{
-                    position: 'absolute', inset: 0,
-                    background: 'linear-gradient(to bottom, #818cf8 0%, #6366f1 100%)',
-                    opacity: pos === 1 ? 0.85 : 0,
-                    transition: 'opacity 300ms ease-in-out',
-                  }} />
-
-                  {/* center dark gradient + stat (always in DOM, opacity-gated) */}
-                  <div style={{
-                    position: 'absolute', inset: 0,
-                    background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 60%)',
-                    opacity: pos === 0 ? 1 : 0,
-                    transition: 'opacity 300ms ease-in-out',
-                  }} />
-                  <div style={{
-                    position: 'absolute', bottom: 28, left: 28, right: 28,
-                    display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12,
-                    opacity: pos === 0 ? 1 : 0,
-                    transition: 'opacity 300ms ease-in-out',
-                    zIndex: 1,
-                  }}>
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'baseline' }}>
-                        <span style={{ fontFamily: font, fontSize: 72, fontWeight: 800, color: '#fff', lineHeight: 1 }}>{card.stat}</span>
-                        <span style={{ fontFamily: font, fontSize: 36, fontWeight: 800, color: '#fff', lineHeight: 1 }}>{card.suffix}</span>
-                      </div>
-                      <p style={{ fontFamily: fontBody, fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.9)', margin: '8px 0 0', lineHeight: 1.4, maxWidth: 200 }}>{card.desc}</p>
-                    </div>
-                    <button onClick={advanceHero} aria-label="Next card"
-                      style={{ width: 44, height: 44, borderRadius: '50%', background: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 4px 16px rgba(0,0,0,0.2)' }}>
-                      <ChevronRight size={18} color={P} />
-                    </button>
-                  </div>
+            {/* Large card — current item */}
+            <div style={{
+              flex: 1,
+              height: 420,
+              borderRadius: 24,
+              overflow: 'hidden',
+              position: 'relative',
+              opacity: heroVisible ? 1 : 0,
+              transition: 'opacity 600ms ease-in-out',
+            }}>
+              <Image
+                src={HERO_CARDS[heroIndex].image}
+                alt={HERO_CARDS[heroIndex].description}
+                fill
+                style={{ objectFit: 'cover' }}
+                priority
+              />
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 52%)' }} />
+              <div style={{ position: 'absolute', bottom: 28, left: 28, right: 28, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
+                <div>
+                  <p style={{ fontFamily: font, fontSize: 64, fontWeight: 800, color: '#fff', margin: '0 0 8px', lineHeight: 1 }}>
+                    {HERO_CARDS[heroIndex].stat}
+                  </p>
+                  <p style={{ fontFamily: fontBody, fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.9)', margin: 0, lineHeight: 1.45, maxWidth: 200 }}>
+                    {HERO_CARDS[heroIndex].description}
+                  </p>
                 </div>
-              )
-            })}
+                <button onClick={advanceHero} aria-label="Next card"
+                  style={{ width: 44, height: 44, borderRadius: '50%', background: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 4px 16px rgba(0,0,0,0.18)' }}>
+                  <ArrowRight size={18} color={P} />
+                </button>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
