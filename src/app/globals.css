@@ -86,6 +86,22 @@ h3 { font-size: clamp(20px, 2.5vw, 28px); }
   .font-body {
     font-family: var(--font-body);
   }
+  /* responsive section padding */
+  .section-pad {
+    padding-top: 72px;
+    padding-bottom: 72px;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .section-pad {
+    padding-top: 120px;
+    padding-bottom: 120px;
+    padding-left: 24px;
+    padding-right: 24px;
+  }
 }
 
 /* ── Slider — dark theme (questionnaire / dashboard) ─────────────────────── */
