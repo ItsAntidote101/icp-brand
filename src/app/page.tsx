@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import {
   RefreshCw, Filter, TrendingDown, BarChart2, Activity,
-  Check, Menu, X, MapPin, ArrowRight, Globe,
+  Check, Menu, X, MapPin, ArrowRight, Globe, ChevronRight,
 } from 'lucide-react'
 
 export const dynamic = 'force-static'
@@ -91,10 +91,10 @@ const HERO_HEADLINES = [
 ]
 
 const HERO_CARDS = [
-  { image: '/images/Holder-2.png', stat: '40-60%',   description: 'Of ad budgets wasted on wrong audience targeting' },
-  { image: '/images/Holder-3.png', stat: 'KES 50K+', description: 'Average monthly waste found per client diagnosis' },
-  { image: '/images/Holder-1.png', stat: '5 min',    description: 'To complete your full ICP diagnostic' },
-  { image: '/images/Holder-4.png', stat: '3x',       description: 'Average improvement in lead quality after ICP fix' },
+  { gradient: 'linear-gradient(160deg, #f0abfc 0%, #e879f9 40%, #a855f7 100%)', stat: '40-60', suffix: '%',    desc: 'Of ad budgets wasted on wrong targeting' },
+  { gradient: 'linear-gradient(160deg, #fda4af 0%, #fb7185 40%, #e11d48 100%)', stat: 'KES 50K', suffix: '+',  desc: 'Average monthly waste found per diagnosis' },
+  { gradient: 'linear-gradient(160deg, #93c5fd 0%, #60a5fa 40%, #2563eb 100%)', stat: '5',       suffix: ' min', desc: 'To complete your full ICP diagnostic' },
+  { gradient: 'linear-gradient(160deg, #6ee7b7 0%, #34d399 40%, #059669 100%)', stat: '3',       suffix: 'x',   desc: 'Average improvement in lead quality' },
 ]
 
 // ─── Shared components ────────────────────────────────────────────────────────
@@ -129,27 +129,24 @@ export default function Home() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [openFaq,    setOpenFaq]    = useState<number | null>(null)
   const [activeTab,  setActiveTab]  = useState('Google Reviews')
-  const [heroIndex,   setHeroIndex]   = useState(0)
-  const [heroVisible, setHeroVisible] = useState(true)
-
-  useEffect(() => {
-    const id = setInterval(() => {
-      setHeroVisible(false)
-      setTimeout(() => {
-        setHeroIndex(i => (i + 1) % HERO_HEADLINES.length)
-        setHeroVisible(true)
-      }, 600)
-    }, 4000)
-    return () => clearInterval(id)
-  }, [])
+  const [heroIndex,      setHeroIndex]      = useState(0)
+  const [headlineVisible, setHeadlineVisible] = useState(true)
+  const [heroPaused,     setHeroPaused]     = useState(false)
 
   const advanceHero = () => {
-    setHeroVisible(false)
+    setHeadlineVisible(false)
     setTimeout(() => {
       setHeroIndex(i => (i + 1) % HERO_CARDS.length)
-      setHeroVisible(true)
-    }, 600)
+      setHeadlineVisible(true)
+    }, 400)
   }
+
+  useEffect(() => {
+    if (heroPaused) return
+    const id = setInterval(advanceHero, 5000)
+    return () => clearInterval(id)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [heroPaused])
 
   return (
     <main style={{ fontFamily: '-apple-system,system-ui,sans-serif', color: Pbody, background: '#fff', overflowX: 'hidden' }}>
@@ -227,8 +224,8 @@ export default function Home() {
                 lineHeight: 1.05,
                 letterSpacing: '-0.04em',
                 margin: 0,
-                opacity: heroVisible ? 1 : 0,
-                transition: 'opacity 600ms ease-in-out',
+                opacity: headlineVisible ? 1 : 0,
+                transition: 'opacity 400ms ease-in-out',
               }}>
                 <span style={{ color: P, display: 'block' }}>{HERO_HEADLINES[heroIndex].line1}</span>
                 <span style={{ color: '#c026d3', display: 'block' }}>{HERO_HEADLINES[heroIndex].line2}</span>
@@ -264,69 +261,66 @@ export default function Home() {
             </div>
           </div>
 
-          {/* RIGHT — rotating image cards */}
-          <div className="lg:flex-1" style={{ display: 'flex', alignItems: 'flex-end', gap: 12, overflow: 'hidden', minHeight: 420 }}>
-
-            {/* Small card — next item, partially visible */}
+          {/* RIGHT — three-slot card carousel, bleeds to viewport right edge */}
+          <div
+            className="hidden lg:block lg:flex-1"
+            style={{ position: 'relative', height: 480, marginRight: -80, overflow: 'hidden' }}
+            onMouseEnter={() => setHeroPaused(true)}
+            onMouseLeave={() => setHeroPaused(false)}
+          >
+            {/* Left sliver — previous card */}
             <div style={{
-              width: '38%',
-              height: 340,
-              borderRadius: 24,
-              overflow: 'hidden',
-              position: 'relative',
-              flexShrink: 0,
-              opacity: heroVisible ? 0.72 : 0,
-              transition: 'opacity 600ms ease-in-out',
+              position: 'absolute', left: 0, top: '5%', width: 80, height: '88%',
+              borderRadius: 24, overflow: 'hidden',
+              background: HERO_CARDS[(heroIndex + HERO_CARDS.length - 1) % HERO_CARDS.length].gradient,
+              opacity: headlineVisible ? 1 : 0,
+              transition: 'opacity 400ms ease-in-out',
+              zIndex: 1,
             }}>
-              <Image
-                src={HERO_CARDS[(heroIndex + 1) % HERO_CARDS.length].image}
-                alt=""
-                fill
-                style={{ objectFit: 'cover' }}
-              />
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 52%)' }} />
-              <div style={{ position: 'absolute', bottom: 20, left: 20, right: 20 }}>
-                <p style={{ fontFamily: font, fontSize: 32, fontWeight: 800, color: '#fff', margin: '0 0 6px', lineHeight: 1 }}>
-                  {HERO_CARDS[(heroIndex + 1) % HERO_CARDS.length].stat}
-                </p>
-                <p style={{ fontFamily: fontBody, fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.85)', margin: 0, lineHeight: 1.4, maxWidth: 140 }}>
-                  {HERO_CARDS[(heroIndex + 1) % HERO_CARDS.length].description}
-                </p>
-              </div>
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, #fb923c 0%, #f472b6 100%)', opacity: 0.85 }} />
             </div>
 
-            {/* Large card — current item */}
+            {/* Center card — current */}
             <div style={{
-              flex: 1,
-              height: 420,
-              borderRadius: 24,
-              overflow: 'hidden',
-              position: 'relative',
-              opacity: heroVisible ? 1 : 0,
-              transition: 'opacity 600ms ease-in-out',
+              position: 'absolute', left: 92, top: 0, right: 52, height: '100%',
+              borderRadius: 24, overflow: 'hidden',
+              background: HERO_CARDS[heroIndex].gradient,
+              opacity: headlineVisible ? 1 : 0,
+              transition: 'opacity 400ms ease-in-out',
+              zIndex: 2,
             }}>
-              <Image
-                src={HERO_CARDS[heroIndex].image}
-                alt={HERO_CARDS[heroIndex].description}
-                fill
-                style={{ objectFit: 'cover' }}
-                priority
-              />
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 52%)' }} />
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 60%)' }} />
               <div style={{ position: 'absolute', bottom: 28, left: 28, right: 28, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
                 <div>
-                  <p style={{ fontFamily: font, fontSize: 64, fontWeight: 800, color: '#fff', margin: '0 0 8px', lineHeight: 1 }}>
-                    {HERO_CARDS[heroIndex].stat}
-                  </p>
-                  <p style={{ fontFamily: fontBody, fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.9)', margin: 0, lineHeight: 1.45, maxWidth: 200 }}>
-                    {HERO_CARDS[heroIndex].description}
+                  <div style={{ display: 'flex', alignItems: 'baseline' }}>
+                    <span style={{ fontFamily: font, fontSize: 72, fontWeight: 800, color: '#fff', lineHeight: 1 }}>
+                      {HERO_CARDS[heroIndex].stat}
+                    </span>
+                    <span style={{ fontFamily: font, fontSize: 36, fontWeight: 800, color: '#fff', lineHeight: 1 }}>
+                      {HERO_CARDS[heroIndex].suffix}
+                    </span>
+                  </div>
+                  <p style={{ fontFamily: fontBody, fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.9)', margin: '8px 0 0', lineHeight: 1.4, maxWidth: 200 }}>
+                    {HERO_CARDS[heroIndex].desc}
                   </p>
                 </div>
                 <button onClick={advanceHero} aria-label="Next card"
-                  style={{ width: 44, height: 44, borderRadius: '50%', background: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 4px 16px rgba(0,0,0,0.18)' }}>
-                  <ArrowRight size={18} color={P} />
+                  style={{ width: 44, height: 44, borderRadius: '50%', background: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 4px 16px rgba(0,0,0,0.2)' }}>
+                  <ChevronRight size={18} color={P} />
                 </button>
               </div>
+            </div>
+
+            {/* Right sliver — next card, partially bleeds off viewport */}
+            <div style={{
+              position: 'absolute', right: -28, top: '5%', width: 80, height: '88%',
+              borderRadius: 24, overflow: 'hidden',
+              background: HERO_CARDS[(heroIndex + 1) % HERO_CARDS.length].gradient,
+              opacity: headlineVisible ? 1 : 0,
+              transition: 'opacity 400ms ease-in-out',
+              zIndex: 1,
+            }}>
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, #818cf8 0%, #6366f1 100%)', opacity: 0.85 }} />
             </div>
 
           </div>
