@@ -583,28 +583,39 @@ export default function Home() {
       </section>
 
       {/* ── FAQ ───────────────────────────────────────────────────────────── */}
-      <section id="faq" className="section-pad" style={{ background: '#fff', borderTop: `1px solid ${Pborder}` }}>
-        <div style={{ maxWidth: 700, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 64 }}>
-            <Badge text="FAQ" />
-            <H2 style={{ fontSize: 'clamp(28px,4vw,40px)' }}>You ask, we answer.</H2>
-            <p style={{ fontSize: 16, color: Pbody, margin: 0 }}>Everything you need to know before getting started.</p>
+      <section id="faq" className="section-pad" style={{ background: BgAlt, borderTop: `1px solid ${Pborder}` }}>
+        <div className="flex flex-col lg:flex-row lg:gap-20 gap-12" style={{ maxWidth: 1200, margin: '0 auto' }}>
+
+          {/* Left — sticky label + heading */}
+          <div className="lg:w-[36%] lg:flex-none">
+            <p style={{ fontFamily: fontBody, color: '#d946ef', fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 16px' }}>FAQs</p>
+            <h2 style={{ fontFamily: font, fontSize: 'clamp(32px,4vw,52px)', fontWeight: 700, letterSpacing: '-0.03em', color: P, lineHeight: 1.1, margin: '0 0 24px' }}>
+              You ask,<br />we answer.
+            </h2>
+            <p style={{ fontFamily: fontBody, fontSize: 16, lineHeight: 1.7, color: Pbody, margin: 0 }}>
+              Everything you need to know before getting started.{' '}
+              <a href="mailto:support@icpbrand.co" style={{ color: '#d946ef', fontWeight: 600, textDecoration: 'none' }}>Contact Us</a>
+            </p>
           </div>
-          {FAQ_ITEMS.map((item, i) => (
-            <div key={i} style={{ borderTop: `1px solid ${Pborder}` }}>
-              <button onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '22px 0', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
-                <span style={{ fontFamily: font, fontSize: 16, fontWeight: 600, color: P, letterSpacing: '-0.2px', lineHeight: 1.4 }}>{item.q}</span>
-                <span style={{ flexShrink: 0, width: 28, height: 28, borderRadius: '50%', background: openFaq === i ? P : '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center', color: openFaq === i ? '#fff' : P, fontSize: 18, fontWeight: 300, transition: 'background 0.2s', lineHeight: 1 }}>
-                  {openFaq === i ? '−' : '+'}
-                </span>
-              </button>
-              <div style={{ maxHeight: openFaq === i ? 400 : 0, overflow: 'hidden', transition: 'max-height 0.3s ease' }}>
-                <p style={{ fontSize: 15, lineHeight: 1.7, color: Pbody, margin: '0 0 22px', paddingRight: 44 }}>{item.a}</p>
+
+          {/* Right — accordion */}
+          <div style={{ flex: 1 }}>
+            {FAQ_ITEMS.map((item, i) => (
+              <div key={i} style={{ background: '#fff', borderRadius: 16, marginBottom: 8, overflow: 'hidden', boxShadow: openFaq === i ? '0 4px 20px rgba(48,33,97,0.08)' : 'none', transition: 'box-shadow 0.2s' }}>
+                <button onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                  style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '22px 28px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
+                  <span style={{ fontFamily: font, fontSize: 16, fontWeight: 600, color: P, letterSpacing: '-0.2px', lineHeight: 1.4 }}>{item.q}</span>
+                  <span style={{ flexShrink: 0, width: 30, height: 30, borderRadius: '50%', background: openFaq === i ? P : '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center', color: openFaq === i ? '#fff' : P, fontSize: 20, fontWeight: 300, transition: 'background 0.2s', lineHeight: 1 }}>
+                    {openFaq === i ? '−' : '+'}
+                  </span>
+                </button>
+                <div style={{ maxHeight: openFaq === i ? 400 : 0, overflow: 'hidden', transition: 'max-height 0.3s ease' }}>
+                  <p style={{ fontFamily: fontBody, fontSize: 15, lineHeight: 1.75, color: Pbody, margin: 0, padding: '0 28px 24px' }}>{item.a}</p>
+                </div>
               </div>
-            </div>
-          ))}
-          <div style={{ borderTop: `1px solid ${Pborder}` }} />
+            ))}
+          </div>
+
         </div>
       </section>
 
