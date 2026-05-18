@@ -441,42 +441,129 @@ export default function Home() {
       )}
 
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <section style={{ background: 'linear-gradient(160deg,#f5f3ff 0%,#ffffff 60%)', padding: '72px 24px 100px' }}>
-        <div className="flex flex-col lg:flex-row items-center gap-14 lg:gap-20" style={{ maxWidth: 1120, margin: '0 auto' }}>
-          {/* copy */}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <Badge text="ICP Diagnostic Platform" />
+      <section style={{ background: '#ffffff', paddingTop: 80, overflow: 'hidden' }}>
+        <div style={{ maxWidth: 1120, margin: '0 auto', display: 'flex', alignItems: 'stretch', gap: 48 }}>
 
-            <h1 style={{ fontFamily: font, fontSize: 'clamp(40px,5.5vw,64px)', fontWeight: 700, lineHeight: 1.08, letterSpacing: '-0.4px', color: P, margin: '0 0 24px' }}>
-              You&rsquo;re not bad at marketing.{' '}
-              <span style={{ background: 'linear-gradient(135deg,#6c4ddd 0%,#302161 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                You&rsquo;re targeting the wrong people.
-              </span>
+          {/* copy — left column */}
+          <div className="flex flex-col justify-center" style={{ flex: '0 0 44%', padding: '0 0 100px' }}>
+
+            {/* dual badges */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 28 }}>
+              <span style={{ background: 'linear-gradient(135deg,#e879f9,#a855f7)', color: '#fff', fontSize: 11, fontWeight: 700, padding: '5px 14px', borderRadius: 100, letterSpacing: '0.3px' }}>Free</span>
+              <span style={{ background: '#ede9fe', color: P, fontSize: 11, fontWeight: 700, padding: '5px 14px', borderRadius: 100, letterSpacing: '0.3px' }}>ICP Diagnostic Platform</span>
+            </div>
+
+            <h1 style={{ fontFamily: font, fontSize: 'clamp(36px,4.5vw,58px)', fontWeight: 800, lineHeight: 1.08, letterSpacing: '-1px', color: P, margin: '0 0 24px' }}>
+              You&rsquo;re not bad at marketing. You&rsquo;re targeting the wrong people.
             </h1>
 
-            <p style={{ fontSize: 18, lineHeight: 1.75, color: Pbody, maxWidth: 520, margin: '0 0 40px' }}>
+            <p style={{ fontSize: 17, lineHeight: 1.7, color: Pbody, margin: '0 0 36px' }}>
               Every month you run ads to the wrong audience is another month your CEO asks why
-              the pipeline is empty. We diagnose exactly who you should be targeting, where your
-              funnel is breaking, and what to fix first — in 5 minutes, for free.
+              the pipeline is empty. We diagnose exactly who you should be targeting — in 5 minutes, for free.
             </p>
 
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 24 }}>
-              <Link href="/questionnaire" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: P, color: '#fff', textDecoration: 'none', fontWeight: 600, fontSize: 15, padding: '14px 28px', borderRadius: 12, boxShadow: '0 8px 28px rgba(48,33,97,0.25)' }}>
-                Diagnose My Marketing Now <ArrowRight size={16} />
-              </Link>
-              <Link href="/report/demo" style={{ display: 'inline-block', background: 'transparent', color: P, textDecoration: 'none', fontWeight: 600, fontSize: 15, padding: '14px 28px', borderRadius: 12, border: `1.5px solid ${Pborder}` }}>
-                See A Sample Report
+            {/* CTA with circular arrow icon */}
+            <div style={{ marginBottom: 32 }}>
+              <Link href="/questionnaire" style={{ display: 'inline-flex', alignItems: 'center', gap: 12, background: P, color: '#fff', textDecoration: 'none', fontWeight: 700, fontSize: 15, padding: '10px 24px 10px 10px', borderRadius: 100, boxShadow: '0 8px 28px rgba(48,33,97,0.28)' }}>
+                <span style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <ArrowRight size={17} color="#fff" />
+                </span>
+                Get Free Diagnosis
               </Link>
             </div>
 
-            <p style={{ fontSize: 13, color: Pmuted }}>
-              Free diagnosis &middot; No ad account access needed &middot; Used by marketing teams in Kenya, Nigeria, UK &amp; US
-            </p>
+            {/* avatar social proof */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <div style={{ display: 'flex' }}>
+                {[
+                  { bg: 'linear-gradient(135deg,#6c4ddd,#302161)', t: 'KM' },
+                  { bg: 'linear-gradient(135deg,#e879f9,#a855f7)', t: 'AO' },
+                  { bg: 'linear-gradient(135deg,#f59e0b,#d97706)',  t: 'JN' },
+                ].map((a, i) => (
+                  <div key={i} style={{ width: 34, height: 34, borderRadius: '50%', background: a.bg, border: '2.5px solid #fff', marginLeft: i === 0 ? 0 : -10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff', letterSpacing: '0.3px', boxShadow: '0 2px 8px rgba(0,0,0,0.14)', position: 'relative', zIndex: 3 - i }}>
+                    {a.t}
+                  </div>
+                ))}
+              </div>
+              <div>
+                <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: P }}>50+ marketing teams</p>
+                <p style={{ margin: 0, fontSize: 12, color: Pmuted }}>no ad account access needed.</p>
+              </div>
+            </div>
           </div>
 
-          {/* illustration */}
-          <div className="w-full lg:w-auto flex justify-center flex-shrink-0">
-            <HeroIllustration />
+          {/* illustration — right column: large gradient card anchored to bottom */}
+          <div style={{ flex: 1, background: 'linear-gradient(135deg,#f472b6 0%,#c084fc 40%,#7c3aed 70%,#302161 100%)', borderRadius: '28px 28px 0 0', padding: '40px 32px 0', display: 'flex', flexDirection: 'column', gap: 16, minHeight: 540 }}>
+
+            {/* main score card */}
+            <div style={{ background: '#fff', borderRadius: 20, padding: '20px 24px', boxShadow: '0 24px 64px rgba(0,0,0,0.18)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+                <div>
+                  <p style={{ margin: '0 0 2px', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: Pmuted }}>ICP Health Score</p>
+                  <p style={{ margin: 0, fontSize: 11, color: Pmuted }}>Q2 Diagnostic — May 2025</p>
+                </div>
+                <span style={{ background: '#fef2f2', color: '#dc2626', fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 8 }}>Critical</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+                <div style={{ position: 'relative', flexShrink: 0 }}>
+                  <ScoreArc score={34} size={72} />
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ fontSize: 18, fontWeight: 800, color: '#ef4444', lineHeight: 1 }}>34</span>
+                    <span style={{ fontSize: 9, color: Pmuted }}>/100</span>
+                  </div>
+                </div>
+                <div style={{ flex: 1 }}>
+                  {[{ label: 'ICP Alignment', v: 28 }, { label: 'Funnel Score', v: 42 }, { label: 'Channel Mix', v: 65 }].map(b => {
+                    const col = b.v >= 70 ? '#22c55e' : b.v >= 40 ? '#f59e0b' : '#ef4444'
+                    return (
+                      <div key={b.label} style={{ marginBottom: 7 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+                          <span style={{ fontSize: 10, color: Pbody }}>{b.label}</span>
+                          <span style={{ fontSize: 10, fontWeight: 700, color: col }}>{b.v}</span>
+                        </div>
+                        <div style={{ height: 4, background: '#f0edff', borderRadius: 99 }}>
+                          <div style={{ height: '100%', width: `${b.v}%`, background: col, borderRadius: 99 }} />
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* two side-by-side cards */}
+            <div style={{ display: 'flex', gap: 14, flex: 1 }}>
+
+              {/* findings card (white) */}
+              <div style={{ flex: 1, background: '#fff', borderRadius: 18, padding: 18, boxShadow: '0 16px 48px rgba(0,0,0,0.15)' }}>
+                <p style={{ margin: '0 0 10px', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.7px', color: Pmuted }}>Top Findings</p>
+                <div style={{ background: '#fef2f2', borderRadius: 10, padding: '10px 12px', marginBottom: 8 }}>
+                  <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#dc2626' }}>Wrong audience segment</p>
+                  <p style={{ margin: '3px 0 0', fontSize: 11, color: '#ef4444', lineHeight: 1.4 }}>Targeting procurement — buyers are CFOs</p>
+                </div>
+                <div style={{ background: '#fffbeb', borderRadius: 10, padding: '10px 12px' }}>
+                  <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#d97706' }}>14 form fields</p>
+                  <p style={{ margin: '3px 0 0', fontSize: 11, color: '#d97706', lineHeight: 1.4 }}>Industry avg is 4 — 67% abandon</p>
+                </div>
+              </div>
+
+              {/* action card (dark purple) */}
+              <div style={{ flex: 1, background: 'rgba(30,18,72,0.92)', borderRadius: 18, padding: 18, boxShadow: '0 16px 48px rgba(0,0,0,0.28)', backdropFilter: 'blur(10px)' }}>
+                <p style={{ margin: '0 0 12px', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.7px', color: 'rgba(255,255,255,0.5)' }}>Action Plan</p>
+                {['Redefine ICP to CFO persona', 'Cut form to 4 fields now', 'Shift 40% budget to LinkedIn'].map((action, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 11 }}>
+                    <div style={{ width: 16, height: 16, borderRadius: '50%', background: '#7c3aed', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
+                      <Check size={9} color="#fff" strokeWidth={3} />
+                    </div>
+                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.85)', lineHeight: 1.4 }}>{action}</span>
+                  </div>
+                ))}
+                <div style={{ marginTop: 14, background: 'rgba(255,255,255,0.08)', borderRadius: 10, padding: '10px 13px' }}>
+                  <p style={{ margin: 0, fontSize: 10, color: 'rgba(255,255,255,0.45)' }}>Estimated waste recovered</p>
+                  <p style={{ margin: '3px 0 0', fontSize: 17, fontWeight: 800, color: '#fff' }}>KES 38,000/mo</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
