@@ -249,7 +249,7 @@ export default function Home() {
                 style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: P, color: '#fff', textDecoration: 'none', fontWeight: 600, fontSize: 15, padding: '16px 32px', borderRadius: 14, boxShadow: '0 8px 28px rgba(48,33,97,0.28)', whiteSpace: 'nowrap' }}>
                 Get Free Diagnosis
               </Link>
-              <Link href="/questionnaire?sample=1"
+              <Link href="/report/demo"
                 style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'transparent', color: P, textDecoration: 'none', fontWeight: 600, fontSize: 15, padding: '16px 32px', borderRadius: 14, border: `2px solid ${P}`, whiteSpace: 'nowrap' }}>
                 See A Sample Report
               </Link>
@@ -398,7 +398,7 @@ export default function Home() {
               ))}
             </ul>
             <Link href="/questionnaire" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, background: P, color: '#fff', textDecoration: 'none', fontWeight: 600, fontSize: 15, padding: '16px 32px', borderRadius: 14 }}>
-              <ArrowRight size={16} color="#fff" /> Diagnose My ICP
+              <ArrowRight size={16} color="#fff" /> Find My ICP Gap
             </Link>
           </div>
         </div>
@@ -509,11 +509,11 @@ export default function Home() {
               Replace scattered guesswork and agency reports with one platform that tells you exactly what is broken.
             </p>
 
-            <a href="#how-it-works" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, color: P, fontWeight: 600, fontSize: 15, textDecoration: 'none', marginBottom: 0 }}
+            <Link href="/questionnaire" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, color: P, fontWeight: 600, fontSize: 15, textDecoration: 'none', marginBottom: 0 }}
               onMouseEnter={e => (e.currentTarget.style.textDecoration = 'underline')}
               onMouseLeave={e => (e.currentTarget.style.textDecoration = 'none')}>
               Learn More <ArrowRight size={16} />
-            </a>
+            </Link>
 
             {/* image stretches to fill remaining vertical space */}
             <div style={{ flex: 1, marginTop: 32, borderRadius: 16, overflow: 'hidden', minHeight: 240 }}>
