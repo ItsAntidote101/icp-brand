@@ -6,6 +6,18 @@
 @import url('https://db.onlinewebfonts.com/c/cec88e5a4cf367c4620cd23c5a184439?family=PolySans+Median');
 @import url('https://db.onlinewebfonts.com/c/03bd7255184e8e8ad4d2a521fa920b6c?family=PolySans+Neutral');
 
+/* ── PolySans Median — direct @font-face backup ───────────────────────────── */
+@font-face {
+  font-family: 'PolySans Median';
+  src: url('https://db.onlinewebfonts.com/t/cec88e5a4cf367c4620cd23c5a184439.woff2')
+         format('woff2'),
+       url('https://db.onlinewebfonts.com/t/cec88e5a4cf367c4620cd23c5a184439.woff')
+         format('woff');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ── Design tokens ────────────────────────────────────────────────────────── */
 :root {
   --font-heading: 'PolySans Median', 'DM Sans', sans-serif;
