@@ -16,9 +16,9 @@ const config: Config = {
         },
       },
       fontFamily: {
-        heading: ['PolySans Median', 'DM Sans', 'sans-serif'],
+        heading: ['PolySans Median', '-apple-system', 'system-ui', 'sans-serif'],
         body:    ['PolySans Neutral', '-apple-system', 'system-ui', 'sans-serif'],
-        display: ['PolySans Median', 'DM Sans', 'sans-serif'],
+        display: ['PolySans Median', '-apple-system', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
         card: '20px',

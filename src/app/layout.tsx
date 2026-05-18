@@ -1,14 +1,6 @@
 import type { Metadata } from 'next'
-import { DM_Sans } from 'next/font/google'
 import localFont from 'next/font/local'
 import './globals.css'
-
-const dmSans = DM_Sans({
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700', '800'],
-  variable: '--font-dm-sans',
-  display: 'swap',
-})
 
 const geistMono = localFont({
   src: './fonts/GeistMonoVF.woff',
@@ -24,7 +16,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${dmSans.variable} ${geistMono.variable}`}>
+      <body className={geistMono.variable}>
         {children}
       </body>
     </html>

@@ -20,7 +20,7 @@
 
 /* ── Design tokens ────────────────────────────────────────────────────────── */
 :root {
-  --font-heading: 'PolySans Median', 'DM Sans', sans-serif;
+  --font-heading: 'PolySans Median', -apple-system, system-ui, sans-serif;
   --font-body:    'PolySans Neutral', -apple-system, system-ui, sans-serif;
   --color-primary: #302161;
   --color-body:    rgba(48, 33, 97, 0.88);

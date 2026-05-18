@@ -17,7 +17,7 @@ const Pmuted  = 'rgba(48,33,97,0.5)'
 const Pborder = 'rgba(48,33,97,0.1)'
 const BgAlt   = '#f8f7ff'
 const BgPurple = '#f5f3ff'
-const font    = "'PolySans Median', 'DM Sans', sans-serif"
+const font    = "'PolySans Median', -apple-system, system-ui, sans-serif"
 const fontBody = "'PolySans Neutral', -apple-system, system-ui, sans-serif"
 
 // ─── Static data ─────────────────────────────────────────────────────────────
