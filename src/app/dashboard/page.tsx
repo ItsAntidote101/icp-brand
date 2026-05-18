@@ -290,56 +290,58 @@ export default function DashboardPage() {
       <nav style={{
         position: 'sticky', top: 0, zIndex: 40,
         background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(20px)',
-        borderBottom: `1px solid ${Pborder}`, padding: '0 24px',
+        borderBottom: `1px solid ${Pborder}`,
       }}>
-        <div style={{ maxWidth: 1320, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 64, gap: 16 }}>
-
-          {/* Logo */}
-          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', flexShrink: 0 }}>
-            <div style={{ width: 26, height: 26, borderRadius: 7, background: `linear-gradient(135deg,${P},#6c4ddd)` }} />
-            <span style={{ fontFamily: font, fontWeight: 700, fontSize: 15, color: P, letterSpacing: '-0.2px' }}>ICP Diagnostic</span>
+        {/* Row 1: logo + right actions */}
+        <div style={{ maxWidth: 1320, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 56, padding: '0 16px', gap: 12 }}>
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', flexShrink: 0 }}>
+            <div style={{ width: 24, height: 24, borderRadius: 6, background: `linear-gradient(135deg,${P},#6c4ddd)` }} />
+            <span style={{ fontFamily: font, fontWeight: 700, fontSize: 14, color: P, letterSpacing: '-0.2px' }}>ICP Diagnostic</span>
           </Link>
 
-          {/* Center tabs */}
-          <div style={{ display: 'flex', gap: 4, background: BgAlt, borderRadius: 100, padding: 4 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {tierLabel && (
+              <span className="hidden sm:inline-block" style={{ fontFamily: fontBody, fontSize: 11, fontWeight: 700, background: P, color: '#fff', padding: '3px 10px', borderRadius: 100 }}>
+                {tierLabel}
+              </span>
+            )}
+            <span className="hidden lg:block" style={{ fontFamily: fontBody, fontSize: 13, color: Pbody, maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {user?.full_name ?? user?.email}
+            </span>
+            <Link href="/questionnaire" className="hidden sm:inline-flex"
+              style={{ alignItems: 'center', gap: 6, background: P, color: '#fff', textDecoration: 'none', fontFamily: font, fontWeight: 600, fontSize: 12, padding: '8px 14px', borderRadius: 100, whiteSpace: 'nowrap' }}>
+              + New Diagnosis
+            </Link>
+            <button onClick={handleSignOut}
+              style={{ background: 'none', border: `1px solid ${Pborder}`, borderRadius: 8, padding: '6px 12px', fontSize: 12, color: Pmuted, cursor: 'pointer', fontFamily: fontBody, whiteSpace: 'nowrap' }}>
+              Sign out
+            </button>
+          </div>
+        </div>
+
+        {/* Row 2: tabs — full width on mobile, centered on desktop */}
+        <div style={{ borderTop: `1px solid ${Pborder}`, padding: '0 16px' }}>
+          <div style={{ maxWidth: 1320, margin: '0 auto', display: 'flex' }}>
             {(['overview', 'reports', 'account'] as Tab[]).map(tab => (
               <button key={tab}
                 onClick={() => { setActiveTab(tab); setExpandedIdx(null); setCancelConfirm(false) }}
                 style={{
-                  fontFamily: fontBody, fontSize: 14, fontWeight: 500, padding: '8px 20px', borderRadius: 100,
-                  border: 'none', cursor: 'pointer', transition: 'all 0.2s',
-                  background: activeTab === tab ? P : 'transparent',
-                  color: activeTab === tab ? '#fff' : Pbody,
+                  flex: '1 1 0', fontFamily: fontBody, fontSize: 13, fontWeight: 500,
+                  padding: '12px 0', border: 'none', cursor: 'pointer', transition: 'all 0.15s',
+                  background: 'transparent',
+                  color: activeTab === tab ? P : Pmuted,
+                  borderBottom: `2px solid ${activeTab === tab ? P : 'transparent'}`,
+                  marginBottom: -1,
                 }}>
                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
               </button>
             ))}
           </div>
-
-          {/* Right */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-            {tierLabel && (
-              <span style={{ fontFamily: fontBody, fontSize: 12, fontWeight: 700, background: P, color: '#fff', padding: '4px 12px', borderRadius: 100 }}>
-                {tierLabel}
-              </span>
-            )}
-            <span className="hidden md:block" style={{ fontFamily: fontBody, fontSize: 14, color: Pbody, maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {user?.full_name ?? user?.email}
-            </span>
-            <Link href="/questionnaire"
-              style={{ background: P, color: '#fff', textDecoration: 'none', fontFamily: font, fontWeight: 600, fontSize: 13, padding: '10px 18px', borderRadius: 100, whiteSpace: 'nowrap' }}>
-              Run New Diagnosis
-            </Link>
-            <button onClick={handleSignOut}
-              style={{ background: 'none', border: `1px solid ${Pborder}`, borderRadius: 8, padding: '8px 14px', fontSize: 13, color: Pmuted, cursor: 'pointer', fontFamily: fontBody, whiteSpace: 'nowrap' }}>
-              Sign out
-            </button>
-          </div>
         </div>
       </nav>
 
       {/* ── Content ─────────────────────────────────────────────────────── */}
-      <div style={{ maxWidth: 1320, margin: '0 auto', padding: '40px 24px 80px' }}>
+      <div style={{ maxWidth: 1320, margin: '0 auto', padding: 'clamp(20px,4vw,40px) clamp(16px,4vw,24px) 80px' }}>
 
         {/* ══════════════════════════════ OVERVIEW ════════════════════════════ */}
         {activeTab === 'overview' && (
@@ -425,7 +427,7 @@ export default function DashboardPage() {
                     </div>
                     {dataLoading
                       ? <Skel style={{ height: 44, width: 64, marginBottom: 8 }} />
-                      : <p style={{ fontFamily: font, fontSize: 48, fontWeight: 700, color: P, margin: '0 0 4px', lineHeight: 1 }}>{findings.length}</p>}
+                      : <p style={{ fontFamily: font, fontSize: 'clamp(36px,6vw,48px)', fontWeight: 700, color: P, margin: '0 0 4px', lineHeight: 1 }}>{findings.length}</p>}
                     <p style={{ fontFamily: fontBody, fontSize: 13, color: Pmuted, margin: 0 }}>Issues ranked by revenue impact</p>
                   </div>
 
@@ -436,7 +438,7 @@ export default function DashboardPage() {
                     </div>
                     {dataLoading
                       ? <Skel style={{ height: 44, width: 64, marginBottom: 8 }} />
-                      : <p style={{ fontFamily: font, fontSize: 48, fontWeight: 700, color: P, margin: '0 0 4px', lineHeight: 1 }}>{daysSince ?? '—'}</p>}
+                      : <p style={{ fontFamily: font, fontSize: 'clamp(36px,6vw,48px)', fontWeight: 700, color: P, margin: '0 0 4px', lineHeight: 1 }}>{daysSince ?? '—'}</p>}
                     <p style={{ fontFamily: fontBody, fontSize: 13, color: Pmuted, margin: 0 }}>
                       {latestReport
                         ? `Next due ${formatDate(new Date(new Date(latestReport.generated_at).getTime() + 30 * 86400000).toISOString())}`
@@ -451,7 +453,7 @@ export default function DashboardPage() {
                     </div>
                     {dataLoading
                       ? <Skel style={{ height: 44, width: 64, marginBottom: 8 }} />
-                      : <p style={{ fontFamily: font, fontSize: 48, fontWeight: 700, color: P, margin: '0 0 4px', lineHeight: 1 }}>{diag.quick_wins?.length ?? 0}</p>}
+                      : <p style={{ fontFamily: font, fontSize: 'clamp(36px,6vw,48px)', fontWeight: 700, color: P, margin: '0 0 4px', lineHeight: 1 }}>{diag.quick_wins?.length ?? 0}</p>}
                     <p style={{ fontFamily: fontBody, fontSize: 13, color: Pmuted, margin: 0 }}>Actions you can take this week</p>
                   </div>
                 </div>
@@ -459,17 +461,17 @@ export default function DashboardPage() {
                 {/* ── S3: Fix this first ────────────────────────────────── */}
                 {(dataLoading || topFinding) && (
                   <div id="priority">
-                    <h2 style={{ fontFamily: font, fontSize: 32, fontWeight: 700, color: P, margin: '0 0 20px', letterSpacing: '-0.02em' }}>Fix this first.</h2>
+                    <h2 style={{ fontFamily: font, fontSize: 'clamp(22px,4vw,32px)', fontWeight: 700, color: P, margin: '0 0 20px', letterSpacing: '-0.02em' }}>Fix this first.</h2>
 
                     {dataLoading ? (
-                      <div style={{ background: '#fafafa', borderLeft: '4px solid #ef4444', borderRadius: '0 16px 16px 0', padding: '36px 40px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                      <div style={{ background: '#fafafa', borderLeft: '4px solid #ef4444', borderRadius: '0 16px 16px 0', padding: 'clamp(20px,4vw,36px) clamp(20px,5vw,40px)', display: 'flex', flexDirection: 'column', gap: 14 }}>
                         <Skel style={{ height: 20, width: 100 }} />
                         <Skel style={{ height: 30, width: '65%' }} />
                         <Skel style={{ height: 16, width: '90%' }} />
                         <Skel style={{ height: 16, width: '70%' }} />
                       </div>
                     ) : topFinding ? (
-                      <div style={{ background: '#fafafa', borderLeft: `4px solid ${severityColor(topFinding.severity)}`, borderRadius: '0 16px 16px 0', padding: '36px 40px' }}>
+                      <div style={{ background: '#fafafa', borderLeft: `4px solid ${severityColor(topFinding.severity)}`, borderRadius: '0 16px 16px 0', padding: 'clamp(20px,4vw,36px) clamp(20px,5vw,40px)' }}>
                         <span style={{ fontFamily: fontBody, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: severityColor(topFinding.severity), background: severityBg(topFinding.severity), padding: '3px 10px', borderRadius: 100 }}>
                           {topFinding.severity}
                         </span>
@@ -497,7 +499,7 @@ export default function DashboardPage() {
                 {/* ── S4: All findings ──────────────────────────────────── */}
                 {(dataLoading || findings.length > 0) && (
                   <div>
-                    <h2 style={{ fontFamily: font, fontSize: 32, fontWeight: 700, color: P, margin: '0 0 8px', letterSpacing: '-0.02em' }}>Everything we found.</h2>
+                    <h2 style={{ fontFamily: font, fontSize: 'clamp(22px,4vw,32px)', fontWeight: 700, color: P, margin: '0 0 8px', letterSpacing: '-0.02em' }}>Everything we found.</h2>
                     <p style={{ fontFamily: fontBody, fontSize: 15, color: Pmuted, margin: '0 0 20px' }}>Ranked by revenue impact.</p>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                       {dataLoading ? [0, 1, 2].map(i => (
@@ -544,7 +546,7 @@ export default function DashboardPage() {
                 {/* ── S5: Quick wins ────────────────────────────────────── */}
                 {(dataLoading || (diag.quick_wins?.length ?? 0) > 0) && (
                   <div>
-                    <h2 style={{ fontFamily: font, fontSize: 32, fontWeight: 700, color: P, margin: '0 0 8px', letterSpacing: '-0.02em' }}>What to do this week.</h2>
+                    <h2 style={{ fontFamily: font, fontSize: 'clamp(22px,4vw,32px)', fontWeight: 700, color: P, margin: '0 0 8px', letterSpacing: '-0.02em' }}>What to do this week.</h2>
                     <p style={{ fontFamily: fontBody, fontSize: 15, color: Pmuted, margin: '0 0 20px' }}>Small changes, immediate impact.</p>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       {dataLoading ? [0, 1, 2].map(i => (
@@ -572,7 +574,7 @@ export default function DashboardPage() {
 
                 {/* ── S6: Landing page assessment ───────────────────────── */}
                 <div>
-                  <h2 style={{ fontFamily: font, fontSize: 32, fontWeight: 700, color: P, margin: '0 0 16px', letterSpacing: '-0.02em' }}>Your landing page.</h2>
+                  <h2 style={{ fontFamily: font, fontSize: 'clamp(22px,4vw,32px)', fontWeight: 700, color: P, margin: '0 0 16px', letterSpacing: '-0.02em' }}>Your landing page.</h2>
                   {dataLoading ? (
                     <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 16, padding: '28px 32px', display: 'flex', flexDirection: 'column', gap: 12 }}>
                       <Skel style={{ height: 15, width: '95%' }} />
@@ -586,9 +588,9 @@ export default function DashboardPage() {
                       </p>
                     </div>
                   ) : (
-                    <div style={{ background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 16, padding: '32px 40px', display: 'flex', alignItems: 'center', gap: 24 }}>
-                      <div style={{ width: 48, height: 48, borderRadius: 12, background: '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <Lock size={22} color={P} />
+                    <div style={{ background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 16, padding: 'clamp(20px,4vw,32px) clamp(20px,5vw,40px)', display: 'flex', alignItems: 'flex-start', gap: 20, flexWrap: 'wrap' }}>
+                      <div style={{ width: 44, height: 44, borderRadius: 12, background: '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Lock size={20} color={P} />
                       </div>
                       <div>
                         <h3 style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: '0 0 6px' }}>
@@ -644,7 +646,7 @@ export default function DashboardPage() {
         {activeTab === 'reports' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <h2 style={{ fontFamily: font, fontSize: 32, fontWeight: 700, color: P, margin: 0, letterSpacing: '-0.02em' }}>Reports</h2>
+              <h2 style={{ fontFamily: font, fontSize: 'clamp(22px,4vw,32px)', fontWeight: 700, color: P, margin: 0, letterSpacing: '-0.02em' }}>Reports</h2>
               <Link href="/questionnaire"
                 style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: P, color: '#fff', textDecoration: 'none', fontFamily: font, fontWeight: 600, fontSize: 13, padding: '10px 18px', borderRadius: 100 }}>
                 + New Diagnosis
@@ -675,55 +677,59 @@ export default function DashboardPage() {
                   const prevS = prevD ? getScore(prevD) : null
                   const diff  = s !== null && prevS !== null ? s - prevS : null
                   return (
-                    <div key={r.id} style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 16, padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 20 }}>
-                      {/* Score */}
-                      <div style={{ textAlign: 'center', flexShrink: 0, width: 68 }}>
-                        {s !== null ? (
-                          <>
-                            <span style={{ fontFamily: font, fontSize: 34, fontWeight: 800, color: scoreColor(s), lineHeight: 1 }}>{s}</span>
-                            <p style={{ fontFamily: fontBody, fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: Pmuted, margin: '3px 0 0' }}>/100</p>
-                          </>
-                        ) : (
-                          <span style={{ fontFamily: font, fontSize: 30, fontWeight: 700, color: Pmuted }}>—</span>
-                        )}
-                      </div>
-
-                      <div style={{ width: 1, height: 52, background: Pborder, flexShrink: 0 }} />
-
-                      {/* Info */}
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                          <span style={{ fontFamily: font, fontSize: 15, fontWeight: 600, color: P }}>
-                            {formatDate(r.generated_at)}
-                          </span>
-                          {i === 0 && (
-                            <span style={{ fontFamily: fontBody, fontSize: 11, fontWeight: 700, background: '#ede9fe', color: P, padding: '2px 10px', borderRadius: 100 }}>
-                              Latest
-                            </span>
+                    <div key={r.id} style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 16, padding: '16px 20px' }}>
+                      {/* Top row: score + info + trend/view */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                        {/* Score */}
+                        <div style={{ textAlign: 'center', flexShrink: 0, width: 56 }}>
+                          {s !== null ? (
+                            <>
+                              <span style={{ fontFamily: font, fontSize: 28, fontWeight: 800, color: scoreColor(s), lineHeight: 1 }}>{s}</span>
+                              <p style={{ fontFamily: fontBody, fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: Pmuted, margin: '2px 0 0' }}>/100</p>
+                            </>
+                          ) : (
+                            <span style={{ fontFamily: font, fontSize: 24, fontWeight: 700, color: Pmuted }}>—</span>
                           )}
                         </div>
-                        {fs[0] && (
-                          <p style={{ fontFamily: fontBody, fontSize: 13, color: Pmuted, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            Top finding: {fs[0].title}
-                          </p>
-                        )}
-                      </div>
 
-                      {/* Trend */}
-                      {diff !== null && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-                          {diff > 0 ? <TrendingUp size={15} color="#22c55e" /> : <TrendingDown size={15} color="#ef4444" />}
-                          <span style={{ fontFamily: fontBody, fontSize: 13, fontWeight: 600, color: diff > 0 ? '#22c55e' : '#ef4444' }}>
-                            {diff > 0 ? '+' : ''}{diff}
-                          </span>
+                        <div style={{ width: 1, height: 44, background: Pborder, flexShrink: 0 }} />
+
+                        {/* Info */}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 3 }}>
+                            <span style={{ fontFamily: font, fontSize: 14, fontWeight: 600, color: P }}>
+                              {formatDate(r.generated_at)}
+                            </span>
+                            {i === 0 && (
+                              <span style={{ fontFamily: fontBody, fontSize: 10, fontWeight: 700, background: '#ede9fe', color: P, padding: '2px 8px', borderRadius: 100 }}>
+                                Latest
+                              </span>
+                            )}
+                          </div>
+                          {fs[0] && (
+                            <p style={{ fontFamily: fontBody, fontSize: 12, color: Pmuted, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {fs[0].title}
+                            </p>
+                          )}
                         </div>
-                      )}
 
-                      {/* CTA */}
-                      <Link href={`/report/${r.id}`}
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: P, color: '#fff', textDecoration: 'none', fontFamily: font, fontWeight: 600, fontSize: 13, padding: '10px 16px', borderRadius: 10, flexShrink: 0 }}>
-                        View Report <ArrowRight size={13} />
-                      </Link>
+                        {/* Trend — hidden on xs, shown sm+ */}
+                        {diff !== null && (
+                          <div className="hidden sm:flex" style={{ alignItems: 'center', gap: 3, flexShrink: 0 }}>
+                            {diff > 0 ? <TrendingUp size={14} color="#22c55e" /> : <TrendingDown size={14} color="#ef4444" />}
+                            <span style={{ fontFamily: fontBody, fontSize: 12, fontWeight: 600, color: diff > 0 ? '#22c55e' : '#ef4444' }}>
+                              {diff > 0 ? '+' : ''}{diff}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Arrow — always visible */}
+                        <Link href={`/report/${r.id}`}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: P, color: '#fff', textDecoration: 'none', fontFamily: font, fontWeight: 600, fontSize: 12, padding: '8px 14px', borderRadius: 10, flexShrink: 0, whiteSpace: 'nowrap' }}>
+                          <span className="hidden sm:inline">View Report</span>
+                          <ArrowRight size={13} />
+                        </Link>
+                      </div>
                     </div>
                   )
                 })}
@@ -735,7 +741,7 @@ export default function DashboardPage() {
         {/* ══════════════════════════════ ACCOUNT ═════════════════════════════ */}
         {activeTab === 'account' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 680 }}>
-            <h2 style={{ fontFamily: font, fontSize: 32, fontWeight: 700, color: P, margin: 0, letterSpacing: '-0.02em' }}>Account</h2>
+            <h2 style={{ fontFamily: font, fontSize: 'clamp(22px,4vw,32px)', fontWeight: 700, color: P, margin: 0, letterSpacing: '-0.02em' }}>Account</h2>
 
             {/* Profile */}
             <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 20, padding: '28px 32px' }}>
