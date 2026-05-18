@@ -4,11 +4,21 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer,
-} from 'recharts'
+  AlertCircle, Calendar, Zap, ArrowRight, Lock,
+  TrendingUp, TrendingDown, ChevronDown, ChevronUp, FileText,
+} from 'lucide-react'
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// ─── Design tokens ────────────────────────────────────────────────────────────
+const P        = '#302161'
+const Pbody    = 'rgba(48,33,97,0.88)'
+const Pmuted   = 'rgba(48,33,97,0.5)'
+const Pborder  = 'rgba(48,33,97,0.1)'
+const BgAlt    = '#f8f7ff'
+const font     = "'PolySans Median', -apple-system, system-ui, sans-serif"
+const fontBody = "'PolySans Neutral', -apple-system, system-ui, sans-serif"
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+type Tab = 'overview' | 'reports' | 'account'
 
 type User = {
   id: string
@@ -28,161 +38,126 @@ type ReportRow = {
   generated_at: string
 }
 
+type Finding  = { title: string; severity: string; explanation: string }
+type QuickWin = { action: string; impact: string; timeline?: string }
+
 type DiagnosisData = {
-  health_score?: number
-  findings?: Array<{ title: string; severity: string; explanation: string }>
-  breakdown?: Array<{ label: string; score: number; found: string; why: string }>
-  quick_wins?: Array<{ action: string; impact: string }>
+  overall_score?: number
+  health_score?: number          // legacy
+  executive_summary?: string
+  critical_findings?: Finding[]
+  findings?: Finding[]           // legacy
+  quick_wins?: QuickWin[]
+  landing_page_assessment?: string
+  monthly_waste_estimate?: string
+  is_deep_research?: boolean
 }
 
-type Tab = 'overview' | 'progress' | 'account'
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function parseDiagnosis(summary: string): DiagnosisData {
-  try { return JSON.parse(summary) } catch { return {} }
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function parseDiagnosis(s: string): DiagnosisData {
+  try { return JSON.parse(s) } catch { return {} }
 }
-
+function getScore(d: DiagnosisData): number | null {
+  const s = d.overall_score ?? d.health_score ?? null
+  return typeof s === 'number' ? s : null
+}
+function getFindings(d: DiagnosisData): Finding[] {
+  return d.critical_findings ?? d.findings ?? []
+}
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('en-GB', {
-    day: 'numeric', month: 'short', year: 'numeric',
-  })
+  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
 }
-
+function daysBetween(iso: string): number {
+  return Math.floor((Date.now() - new Date(iso).getTime()) / (1000 * 60 * 60 * 24))
+}
 function scoreColor(score: number): string {
   if (score >= 71) return '#22c55e'
   if (score >= 41) return '#f59e0b'
   return '#ef4444'
 }
-
-function scoreBg(score: number): string {
-  if (score >= 71) return 'bg-emerald-500/10 border-emerald-500/20'
-  if (score >= 41) return 'bg-amber-500/10 border-amber-500/20'
-  return 'bg-red-500/10 border-red-500/20'
+function severityColor(s: string): string {
+  if (s === 'Critical') return '#ef4444'
+  if (s === 'Warning')  return '#f59e0b'
+  return '#22c55e'
+}
+function severityBg(s: string): string {
+  if (s === 'Critical') return '#fee2e2'
+  if (s === 'Warning')  return '#fef3c7'
+  return '#dcfce7'
+}
+function extractWasteAmount(text: string): string {
+  if (!text || text.startsWith('Upgrade')) return '—'
+  const m = text.match(/(KES\s*[\d,]+|USD\s*[\d,]+|\$[\d,]+|€[\d,]+|£[\d,]+)/i)
+  if (m) return m[0].replace(/\s+/, ' ').trim()
+  return text.length > 28 ? text.slice(0, 28) + '…' : text
 }
 
-function humanizeFinding(title: string): string {
-  const t = title.toLowerCase()
-  if (t.includes('icp') || t.includes('alignment') || t.includes('audience') || t.includes('targeting wrong'))
-    return "Your ads are reaching the wrong people — and it's costing you money"
-  if (t.includes('funnel') || t.includes('friction') || t.includes('drop'))
-    return "Too many steps before someone becomes a lead — most people give up"
-  if (t.includes('channel') || t.includes('platform') || t.includes('media mix'))
-    return "You're spending on the wrong channels for your audience"
-  if (t.includes('message') || t.includes('copy') || t.includes('creative') || t.includes('offer'))
-    return "Your message isn't resonating with the buyers you want"
-  if (t.includes('budget') || t.includes('waste') || t.includes('spend'))
-    return "A significant portion of your budget is being wasted"
-  if (t.includes('landing') || t.includes('page') || t.includes('website'))
-    return "Your landing page is losing leads before they convert"
-  return title
-}
-
-function kesImpact(severity: string): string {
-  if (severity === 'Critical') return 'Estimated waste: KES 50,000–200,000/month'
-  if (severity === 'Warning')  return 'Estimated missed revenue: KES 15,000–60,000/month'
-  return 'Potential gain: KES 10,000–40,000/month'
-}
-
-function getPositiveSignal(diag: DiagnosisData): string {
-  const opp = diag.findings?.find(f => f.severity === 'Opportunity')
-  if (opp) return opp.explanation
-
-  const best = diag.breakdown?.reduce((a, b) => a.score > b.score ? a : b)
-  if (best && best.score >= 60) {
-    const labels: Record<string, string> = {
-      'ICP Alignment':                   `Your target customer is clearly defined — that's your competitive edge.`,
-      'Targeting Accuracy':              `Your audience targeting is above average. You're reaching the right people.`,
-      'Channel Efficiency':              `Your channel selection is working. You're showing up where your audience is.`,
-      'Funnel Friction Index':           `Your funnel is relatively smooth. Leads are moving through cleanly.`,
-      'Message to Market Fit':           `Your messaging resonates with buyers. They understand what you're offering.`,
-      'Budget Reallocation Opportunity': `Your budget allocation is solid. Spend is going to the right places.`,
-    }
-    return labels[best.label] ?? `Your ${best.label.toLowerCase()} is performing above average.`
-  }
-
-  return "You completed your ICP diagnostic. Most businesses never take this step — you're already ahead."
-}
-
-const TIER_COLORS: Record<string, string> = {
-  starter: 'text-indigo-400 bg-indigo-400/10 border border-indigo-400/30',
-  pro:     'text-purple-400 bg-purple-400/10 border border-purple-400/30',
-  agency:  'text-emerald-400 bg-emerald-400/10 border border-emerald-400/30',
-}
-
-const TIER_PRICES: Record<string, string> = {
-  starter: 'KES 6,500 / month',
-  pro:     'KES 13,000 / month',
-  agency:  'KES 26,000 / month',
-}
-
-const TIER_FEATURES: Record<string, string> = {
-  starter: 'Monthly ICP diagnostic + full report with findings and quick wins.',
+const TIER_LABEL: Record<string, string> = { starter: 'Starter', pro: 'Pro', agency: 'Agency', free: 'Free' }
+const TIER_PRICE: Record<string, string> = { starter: 'KES 6,500', pro: 'KES 13,000', agency: 'KES 26,000', free: 'Free' }
+const TIER_DESC:  Record<string, string> = {
+  starter: 'Monthly ICP diagnostic with full report, findings, and quick wins.',
   pro:     'Everything in Starter plus priority re-diagnosis and campaign CSV analysis.',
   agency:  'Everything in Pro plus multi-client reporting and dedicated strategy review.',
+  free:    'Basic ICP diagnostic based on questionnaire answers only.',
 }
 
-// ─── Score count-up ───────────────────────────────────────────────────────────
-
-function ScoreDisplay({ score }: { score: number }) {
-  const [displayed, setDisplayed] = useState(0)
-  useEffect(() => {
-    let frame = 0
-    const total = 70
-    const id = setInterval(() => {
-      frame++
-      const eased = 1 - Math.pow(1 - frame / total, 3)
-      setDisplayed(Math.min(Math.round(eased * score), score))
-      if (frame >= total) clearInterval(id)
-    }, 16)
-    return () => clearInterval(id)
-  }, [score])
-  return <>{displayed}</>
-}
-
-// ─── Chart tooltip ───────────────────────────────────────────────────────────
-
-function ChartTooltip({ active, payload, label }: {
-  active?: boolean
-  payload?: Array<{ value: number }>
-  label?: string
-}) {
-  if (!active || !payload?.length) return null
+// ─── Circular health gauge ────────────────────────────────────────────────────
+function HealthGauge({ score }: { score: number }) {
+  const r    = 58
+  const circ = 2 * Math.PI * r
+  const fill = (score / 100) * circ
+  const col  = scoreColor(score)
   return (
-    <div style={{ background: '#12121f', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: '8px 14px' }}>
-      <p style={{ margin: 0, color: '#9ca3af', fontSize: 11 }}>{label}</p>
-      <p style={{ margin: '3px 0 0', color: '#ffffff', fontSize: 22, fontWeight: 700, lineHeight: 1 }}>
-        {payload[0].value}<span style={{ color: '#6b7280', fontSize: 13, fontWeight: 400 }}>/100</span>
-      </p>
+    <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 160, height: 160 }}>
+      <svg width={160} height={160} viewBox="0 0 160 160" style={{ position: 'absolute', transform: 'rotate(-90deg)' }}>
+        <circle cx={80} cy={80} r={r} fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth={10} />
+        <circle cx={80} cy={80} r={r} fill="none" stroke={col} strokeWidth={10}
+          strokeDasharray={`${fill} ${circ}`} strokeLinecap="round" />
+      </svg>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ fontFamily: font, fontSize: 42, fontWeight: 800, color: '#fff', lineHeight: 1 }}>{score}</div>
+        <div style={{ fontFamily: fontBody, fontSize: 11, color: 'rgba(255,255,255,0.5)', marginTop: 4, letterSpacing: '0.06em', textTransform: 'uppercase' }}>/100</div>
+      </div>
     </div>
   )
 }
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
-
-function Skeleton({ className }: { className?: string }) {
-  return <div className={`animate-pulse bg-white/5 rounded-2xl ${className ?? ''}`} />
+function Skel({ style }: { style?: React.CSSProperties }) {
+  return <div className="animate-pulse" style={{ background: 'rgba(48,33,97,0.07)', borderRadius: 8, ...style }} />
 }
 
-// ─── Main Page ────────────────────────────────────────────────────────────────
+// ─── Impact badge ─────────────────────────────────────────────────────────────
+function ImpactBadge({ impact }: { impact: string }) {
+  const map: Record<string, { bg: string; color: string }> = {
+    High:   { bg: '#fee2e2', color: '#ef4444' },
+    Medium: { bg: '#fef3c7', color: '#d97706' },
+    Low:    { bg: '#dcfce7', color: '#16a34a' },
+  }
+  const s = map[impact] ?? map.Low
+  return (
+    <span style={{ fontFamily: fontBody, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '3px 10px', borderRadius: 100, background: s.bg, color: s.color }}>
+      {impact} impact
+    </span>
+  )
+}
 
+// ─── Main component ───────────────────────────────────────────────────────────
 export default function DashboardPage() {
   const router = useRouter()
 
-  const [authStep, setAuthStep]       = useState<'checking' | 'gate' | 'dashboard'>('checking')
-  const [emailInput, setEmailInput]   = useState('')
-  const [authError, setAuthError]     = useState('')
-  const [authLoading, setAuthLoading] = useState(false)
-  const [user, setUser]               = useState<User | null>(null)
-  const [reports, setReports]         = useState<ReportRow[]>([])
-  const [dataLoading, setDataLoading] = useState(true)
-  const [activeTab, setActiveTab]     = useState<Tab>('overview')
-  const [fixExpanded, setFixExpanded] = useState(false)
-  const [cancelConfirm, setCancelConfirm] = useState(false)
-  const [mounted, setMounted] = useState(false)
+  const [authStep,       setAuthStep]       = useState<'checking' | 'gate' | 'dashboard'>('checking')
+  const [emailInput,     setEmailInput]     = useState('')
+  const [authError,      setAuthError]      = useState('')
+  const [authLoading,    setAuthLoading]    = useState(false)
+  const [user,           setUser]           = useState<User | null>(null)
+  const [reports,        setReports]        = useState<ReportRow[]>([])
+  const [dataLoading,    setDataLoading]    = useState(true)
+  const [activeTab,      setActiveTab]      = useState<Tab>('overview')
+  const [expandedIdx,    setExpandedIdx]    = useState<number | null>(null)
+  const [cancelConfirm,  setCancelConfirm]  = useState(false)
 
   // ── Auth ──────────────────────────────────────────────────────────────────
-
   const loadReports = useCallback(async (email: string) => {
     try {
       const res = await fetch(`/api/user/reports?email=${encodeURIComponent(email)}`)
@@ -199,7 +174,7 @@ export default function DashboardPage() {
     if (!silent) setAuthLoading(true)
     setAuthError('')
     try {
-      const res = await fetch('/api/auth/check-email', {
+      const res  = await fetch('/api/auth/check-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
@@ -228,7 +203,6 @@ export default function DashboardPage() {
   }, [router, loadReports])
 
   useEffect(() => {
-    setMounted(true)
     const stored = localStorage.getItem('dashboard_email')
     if (stored) verifyEmail(stored, true)
     else setAuthStep('gate')
@@ -244,95 +218,62 @@ export default function DashboardPage() {
   }
 
   // ── Derived data ───────────────────────────────────────────────────────────
-
   const latestReport = reports[0]
-  const prevReport   = reports[1]
-  const latestDiag: DiagnosisData = latestReport ? parseDiagnosis(latestReport.report_summary) : {}
-  const prevDiag: DiagnosisData   = prevReport   ? parseDiagnosis(prevReport.report_summary)   : {}
+  const diag: DiagnosisData    = latestReport ? parseDiagnosis(latestReport.report_summary) : {}
+  const score                  = getScore(diag)
+  const findings               = getFindings(diag)
+  const topFinding             = findings.find(f => f.severity === 'Critical') ?? findings[0]
+  const daysSince              = latestReport ? daysBetween(latestReport.generated_at) : null
+  const prevDiag: DiagnosisData = reports[1] ? parseDiagnosis(reports[1].report_summary) : {}
+  const prevScore              = getScore(prevDiag)
+  const scoreDiff              = score !== null && prevScore !== null ? score - prevScore : null
+  const tierLabel              = user?.subscription_tier ? (TIER_LABEL[user.subscription_tier] ?? user.subscription_tier) : ''
 
-  const latestScore  = latestDiag.health_score ?? null
-  const prevScore    = prevDiag.health_score ?? null
-  const scoreDiff    = latestScore !== null && prevScore !== null ? latestScore - prevScore : null
-
-  const topFinding = latestDiag.findings?.find(f => f.severity === 'Critical')
-    ?? latestDiag.findings?.[0]
-  const positiveSignal = latestDiag.health_score !== undefined ? getPositiveSignal(latestDiag) : null
-
-  const nextDiagDate = latestReport
-    ? new Date(new Date(latestReport.generated_at).getTime() + 30 * 24 * 60 * 60 * 1000)
-    : null
-
-  const chartData = reports
-    .slice()
-    .reverse()
-    .map(r => ({
-      label: new Date(r.generated_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
-      score: parseDiagnosis(r.report_summary).health_score ?? 0,
-    }))
-    .filter(d => d.score > 0)
-
-  // Score-change milestones between consecutive reports (newest first)
-  const scoreMilestones = reports.slice(0, -1).map((r, i) => {
-    const cur  = parseDiagnosis(r.report_summary).health_score ?? 0
-    const prev = parseDiagnosis(reports[i + 1].report_summary).health_score ?? 0
-    return { date: r.generated_at, score: cur, diff: cur - prev }
-  })
-
-  const daysActive = user
-    ? Math.floor((Date.now() - new Date(user.created_at).getTime()) / (1000 * 60 * 60 * 24))
-    : 0
-
-  const tierLabel = (t: string) => t ? t.charAt(0).toUpperCase() + t.slice(1) : ''
-
-  // ── Email Gate ─────────────────────────────────────────────────────────────
-
+  // ── Checking ──────────────────────────────────────────────────────────────
   if (authStep === 'checking') {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
-        <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+      <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+        <div style={{ width: 32, height: 32, border: `3px solid ${P}`, borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
       </div>
     )
   }
 
+  // ── Auth gate ─────────────────────────────────────────────────────────────
   if (authStep === 'gate') {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] flex flex-col items-center justify-center p-6">
-        <div className="w-full max-w-sm">
-          <div className="flex items-center gap-2.5 justify-center mb-10">
-            <div className="w-7 h-7 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg" />
-            <span className="text-white font-bold text-xl">ICP Brand</span>
+      <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+        <div style={{ width: '100%', maxWidth: 400 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center', marginBottom: 40 }}>
+            <div style={{ width: 28, height: 28, borderRadius: 8, background: `linear-gradient(135deg,${P},#6c4ddd)` }} />
+            <span style={{ fontFamily: font, fontWeight: 700, fontSize: 18, color: P }}>ICP Diagnostic</span>
           </div>
-
-          <h1 className="text-2xl font-bold text-white text-center mb-1">Welcome back</h1>
-          <p className="text-gray-400 text-center text-sm mb-8">Enter your email to access your dashboard</p>
-
-          <form onSubmit={e => { e.preventDefault(); if (emailInput.trim()) verifyEmail(emailInput.trim()) }} className="space-y-3">
-            <input
-              type="email"
-              value={emailInput}
-              onChange={e => setEmailInput(e.target.value)}
-              placeholder="you@company.com"
-              required
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 transition-colors text-sm"
-            />
+          <h1 style={{ fontFamily: font, fontSize: 28, fontWeight: 700, color: P, textAlign: 'center', margin: '0 0 8px', letterSpacing: '-0.03em' }}>
+            Welcome back
+          </h1>
+          <p style={{ fontFamily: fontBody, color: Pmuted, textAlign: 'center', fontSize: 15, margin: '0 0 32px' }}>
+            Enter your email to access your dashboard
+          </p>
+          <form onSubmit={e => { e.preventDefault(); if (emailInput.trim()) verifyEmail(emailInput.trim()) }}
+            style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <input type="email" value={emailInput} onChange={e => setEmailInput(e.target.value)}
+              placeholder="you@company.com" required
+              style={{ width: '100%', background: BgAlt, border: `1.5px solid ${Pborder}`, borderRadius: 12, padding: '14px 16px', fontSize: 15, color: P, outline: 'none', fontFamily: fontBody, boxSizing: 'border-box' }} />
             {authError && (
-              <p className="text-red-400 text-sm bg-red-400/10 border border-red-400/20 rounded-xl px-4 py-3">
+              <p style={{ fontFamily: fontBody, color: '#ef4444', fontSize: 14, background: '#fee2e2', border: '1px solid #fecaca', borderRadius: 12, padding: '12px 16px', margin: 0 }}>
                 {authError}
               </p>
             )}
-            <button
-              type="submit"
-              disabled={authLoading}
-              className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-semibold py-3.5 rounded-xl transition-colors text-sm"
-            >
+            <button type="submit" disabled={authLoading}
+              style={{ background: P, color: '#fff', border: 'none', borderRadius: 12, padding: 14, fontSize: 15, fontWeight: 600, cursor: authLoading ? 'not-allowed' : 'pointer', opacity: authLoading ? 0.7 : 1, fontFamily: font }}>
               {authLoading ? 'Checking…' : 'Access Dashboard →'}
             </button>
           </form>
-
-          <p className="text-center text-sm text-gray-600 mt-6">
+          <p style={{ fontFamily: fontBody, textAlign: 'center', fontSize: 14, color: Pmuted, marginTop: 24 }}>
             No account?{' '}
-            <Link href="/questionnaire" className="text-indigo-400 hover:text-indigo-300">
-              Run a free diagnostic →
+            <Link href="/questionnaire" style={{ color: P, fontWeight: 600, textDecoration: 'none' }}>
+              Run a free diagnostic
             </Link>
           </p>
         </div>
@@ -340,518 +281,549 @@ export default function DashboardPage() {
     )
   }
 
-  // ── Dashboard ───────────────────────────────────────────────────────────────
-
+  // ── Dashboard ─────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div style={{ minHeight: '100vh', background: '#fff', fontFamily: fontBody }}>
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
 
-      {/* ── Top Nav ── */}
-      <nav className="sticky top-0 z-20 bg-[#0a0a0f]/90 backdrop-blur-md border-b border-white/5">
-        <div className="max-w-2xl mx-auto px-4">
-          {/* Row 1: logo + user */}
-          <div className="flex items-center justify-between h-14">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-6 h-6 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-md shrink-0" />
-              <span className="text-white font-bold text-base hidden sm:block">ICP Brand</span>
-            </Link>
+      {/* ── Top nav ─────────────────────────────────────────────────────── */}
+      <nav style={{
+        position: 'sticky', top: 0, zIndex: 40,
+        background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(20px)',
+        borderBottom: `1px solid ${Pborder}`, padding: '0 24px',
+      }}>
+        <div style={{ maxWidth: 1320, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 64, gap: 16 }}>
 
-            <div className="flex items-center gap-3">
-              {user?.subscription_tier && (
-                <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full hidden sm:inline-flex ${TIER_COLORS[user.subscription_tier] ?? ''}`}>
-                  {tierLabel(user.subscription_tier)}
-                </span>
-              )}
-              <span className="text-sm text-gray-400 hidden sm:block truncate max-w-[140px]">
-                {user?.full_name ?? user?.email}
-              </span>
-              <button
-                onClick={handleSignOut}
-                className="text-xs text-gray-600 hover:text-gray-300 transition-colors border border-white/10 rounded-lg px-2.5 py-1.5"
-              >
-                Sign out
-              </button>
-            </div>
-          </div>
+          {/* Logo */}
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', flexShrink: 0 }}>
+            <div style={{ width: 26, height: 26, borderRadius: 7, background: `linear-gradient(135deg,${P},#6c4ddd)` }} />
+            <span style={{ fontFamily: font, fontWeight: 700, fontSize: 15, color: P, letterSpacing: '-0.2px' }}>ICP Diagnostic</span>
+          </Link>
 
-          {/* Row 2: tabs */}
-          <div className="flex">
-            {(['overview', 'progress', 'account'] as Tab[]).map(tab => (
-              <button
-                key={tab}
-                onClick={() => { setActiveTab(tab); setFixExpanded(false); setCancelConfirm(false) }}
-                className={`
-                  flex-1 sm:flex-none sm:px-5 py-3 text-sm font-medium border-b-2 transition-colors capitalize
-                  ${activeTab === tab
-                    ? 'border-indigo-500 text-white'
-                    : 'border-transparent text-gray-500 hover:text-gray-300'
-                  }
-                `}
-              >
-                {tab}
+          {/* Center tabs */}
+          <div style={{ display: 'flex', gap: 4, background: BgAlt, borderRadius: 100, padding: 4 }}>
+            {(['overview', 'reports', 'account'] as Tab[]).map(tab => (
+              <button key={tab}
+                onClick={() => { setActiveTab(tab); setExpandedIdx(null); setCancelConfirm(false) }}
+                style={{
+                  fontFamily: fontBody, fontSize: 14, fontWeight: 500, padding: '8px 20px', borderRadius: 100,
+                  border: 'none', cursor: 'pointer', transition: 'all 0.2s',
+                  background: activeTab === tab ? P : 'transparent',
+                  color: activeTab === tab ? '#fff' : Pbody,
+                }}>
+                {tab.charAt(0).toUpperCase() + tab.slice(1)}
               </button>
             ))}
+          </div>
+
+          {/* Right */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+            {tierLabel && (
+              <span style={{ fontFamily: fontBody, fontSize: 12, fontWeight: 700, background: P, color: '#fff', padding: '4px 12px', borderRadius: 100 }}>
+                {tierLabel}
+              </span>
+            )}
+            <span className="hidden md:block" style={{ fontFamily: fontBody, fontSize: 14, color: Pbody, maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {user?.full_name ?? user?.email}
+            </span>
+            <Link href="/questionnaire"
+              style={{ background: P, color: '#fff', textDecoration: 'none', fontFamily: font, fontWeight: 600, fontSize: 13, padding: '10px 18px', borderRadius: 100, whiteSpace: 'nowrap' }}>
+              Run New Diagnosis
+            </Link>
+            <button onClick={handleSignOut}
+              style={{ background: 'none', border: `1px solid ${Pborder}`, borderRadius: 8, padding: '8px 14px', fontSize: 13, color: Pmuted, cursor: 'pointer', fontFamily: fontBody, whiteSpace: 'nowrap' }}>
+              Sign out
+            </button>
           </div>
         </div>
       </nav>
 
-      {/* ── Content ── */}
-      <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+      {/* ── Content ─────────────────────────────────────────────────────── */}
+      <div style={{ maxWidth: 1320, margin: '0 auto', padding: '40px 24px 80px' }}>
 
-        {/* ════════════════════════════════ OVERVIEW ════════════════════════════════ */}
+        {/* ══════════════════════════════ OVERVIEW ════════════════════════════ */}
         {activeTab === 'overview' && (
           <>
-            {/* Section 1 — The Number That Matters */}
-            <section className={`border rounded-3xl p-8 text-center ${latestScore !== null ? scoreBg(latestScore) : 'bg-white/5 border-white/10'}`}>
-              {dataLoading ? (
-                <div className="space-y-3">
-                  <Skeleton className="h-24 w-32 mx-auto" />
-                  <Skeleton className="h-5 w-64 mx-auto" />
+            {/* Empty state */}
+            {!dataLoading && !latestReport && (
+              <div style={{ textAlign: 'center', padding: '80px 24px' }}>
+                <div style={{ width: 72, height: 72, borderRadius: 20, background: BgAlt, border: `1px solid ${Pborder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+                  <FileText size={32} color={P} />
                 </div>
-              ) : latestScore !== null ? (
-                <>
-                  <p className="text-xs text-gray-500 uppercase tracking-widest mb-4">ICP Health Score</p>
-                  <div
-                    className="text-8xl font-black leading-none"
-                    style={{ color: scoreColor(latestScore) }}
-                  >
-                    <ScoreDisplay key={latestScore} score={latestScore} />
-                  </div>
-                  <p className="text-lg text-gray-300 mt-5 leading-snug">
-                    {scoreDiff === null
-                      ? 'This is your baseline. Here\'s where to focus first.'
-                      : scoreDiff > 0
-                        ? `Your score increased ${scoreDiff} points since last month`
-                        : scoreDiff < 0
-                          ? `Your score dropped ${Math.abs(scoreDiff)} points — here's why`
-                          : "Your score hasn't changed — here's what to focus on"
-                    }
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p className="text-4xl font-black text-gray-600">—</p>
-                  <p className="text-gray-500 mt-3 text-sm">No diagnostic yet</p>
-                  <Link
-                    href="/questionnaire"
-                    className="mt-4 inline-block bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-5 py-2.5 rounded-xl text-sm transition-colors"
-                  >
-                    Run your first diagnostic →
-                  </Link>
-                </>
-              )}
-            </section>
-
-            {/* Section 2 — #1 Priority */}
-            {(dataLoading || topFinding) && (
-              <section className="bg-white/5 border border-white/10 rounded-3xl p-7">
-                <p className="text-xs text-red-400 uppercase tracking-widest mb-4 font-semibold">
-                  Your #1 Priority Right Now
+                <h2 style={{ fontFamily: font, fontSize: 28, fontWeight: 700, color: P, margin: '0 0 12px', letterSpacing: '-0.02em' }}>
+                  No diagnosis yet.
+                </h2>
+                <p style={{ fontFamily: fontBody, fontSize: 16, color: Pmuted, margin: '0 auto 32px', maxWidth: 400, lineHeight: 1.7 }}>
+                  Run your first ICP diagnostic to see where your marketing budget is going and how to fix it.
                 </p>
+                <Link href="/questionnaire"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: P, color: '#fff', textDecoration: 'none', fontFamily: font, fontWeight: 600, fontSize: 15, padding: '16px 32px', borderRadius: 14 }}>
+                  Run My First Diagnosis <ArrowRight size={16} />
+                </Link>
+              </div>
+            )}
 
-                {dataLoading ? (
-                  <div className="space-y-3">
-                    <Skeleton className="h-8 w-full" />
-                    <Skeleton className="h-5 w-4/5" />
-                    <Skeleton className="h-5 w-3/5" />
-                    <Skeleton className="h-11 w-44 mt-2" />
-                  </div>
-                ) : topFinding ? (
-                  <>
-                    <h2 className="text-2xl font-bold text-white leading-snug">
-                      {humanizeFinding(topFinding.title)}
-                    </h2>
-                    <p className="text-gray-400 mt-3 leading-relaxed">{topFinding.explanation}</p>
-                    <p className="text-xs mt-2 font-medium" style={{ color: scoreColor(topFinding.severity === 'Critical' ? 20 : 50) }}>
-                      {kesImpact(topFinding.severity)}
+            {(dataLoading || latestReport) && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+
+                {/* ── S1: Hero card ─────────────────────────────────────── */}
+                <div style={{ background: `linear-gradient(135deg,${P} 0%,#4c1d95 100%)`, borderRadius: 24, padding: 'clamp(32px,5vw,48px) clamp(24px,5vw,56px)' }}
+                  className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-10 lg:gap-12 items-center">
+
+                  <div>
+                    <p style={{ fontFamily: fontBody, fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.6)', margin: '0 0 16px' }}>
+                      Estimated Monthly Waste
                     </p>
-
-                    <button
-                      onClick={() => setFixExpanded(v => !v)}
-                      className="mt-5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors"
-                    >
-                      {fixExpanded ? 'Hide fix ↑' : 'See How To Fix This →'}
-                    </button>
-
-                    {fixExpanded && (
-                      <div className="mt-5 pt-5 border-t border-white/10 space-y-4">
-                        {latestDiag.quick_wins && latestDiag.quick_wins.length > 0 && (
-                          <div className="space-y-3">
-                            {latestDiag.quick_wins.map((qw, i) => (
-                              <div key={i} className="flex gap-3">
-                                <span className="w-6 h-6 rounded-full bg-indigo-500/20 text-indigo-400 text-xs font-bold flex items-center justify-center shrink-0">
-                                  {i + 1}
-                                </span>
-                                <div>
-                                  <p className="text-sm text-white">{qw.action}</p>
-                                  <p className="text-xs text-gray-500 mt-0.5">Impact: {qw.impact}</p>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                        {latestReport && (
-                          <Link
-                            href={`/report/${latestReport.id}`}
-                            className="inline-block text-sm text-indigo-400 hover:text-indigo-300 transition-colors"
-                          >
-                            View full analysis with all findings →
-                          </Link>
-                        )}
+                    {dataLoading ? (
+                      <div className="animate-pulse" style={{ height: 72, width: 260, background: 'rgba(255,255,255,0.1)', borderRadius: 12, marginBottom: 20 }} />
+                    ) : (
+                      <div style={{ fontFamily: font, fontSize: 'clamp(48px,6vw,80px)', fontWeight: 800, color: '#fff', lineHeight: 1, margin: '0 0 16px' }}>
+                        {extractWasteAmount(diag.monthly_waste_estimate ?? '')}
                       </div>
                     )}
-                  </>
-                ) : null}
-              </section>
-            )}
-
-            {/* Section 3 — What's Working */}
-            {(dataLoading || positiveSignal) && (
-              <section className="bg-emerald-500/10 border border-emerald-500/20 rounded-3xl p-7">
-                <p className="text-xs text-emerald-400 uppercase tracking-widest mb-3 font-semibold">
-                  What&apos;s Working
-                </p>
-                {dataLoading ? (
-                  <div className="space-y-2">
-                    <Skeleton className="h-5 w-full" />
-                    <Skeleton className="h-5 w-3/4" />
+                    <p style={{ fontFamily: fontBody, fontSize: 16, color: 'rgba(255,255,255,0.75)', lineHeight: 1.6, margin: '0 0 28px', maxWidth: 480 }}>
+                      being lost to wrong targeting, funnel friction, and budget misallocation every month you don&apos;t fix this.
+                    </p>
+                    <a href="#priority"
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#fff', color: P, textDecoration: 'none', fontFamily: font, fontWeight: 600, fontSize: 14, padding: '14px 28px', borderRadius: 12 }}>
+                      See What To Fix First <ArrowRight size={15} />
+                    </a>
                   </div>
-                ) : (
-                  <p className="text-white text-lg leading-relaxed">{positiveSignal}</p>
-                )}
-              </section>
-            )}
 
-            {/* Section 4 — Next Diagnosis */}
-            <section className="bg-white/5 border border-white/10 rounded-3xl p-7">
-              <p className="text-xs text-gray-500 uppercase tracking-widest mb-3 font-semibold">
-                Next Diagnosis
-              </p>
-              {dataLoading ? (
-                <div className="space-y-3">
-                  <Skeleton className="h-6 w-48" />
-                  <Skeleton className="h-11 w-52 mt-1" />
+                  <div style={{ textAlign: 'center' }}>
+                    {dataLoading ? (
+                      <div className="animate-pulse" style={{ width: 160, height: 160, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', margin: '0 auto' }} />
+                    ) : score !== null ? (
+                      <HealthGauge score={score} />
+                    ) : null}
+                    <p style={{ fontFamily: fontBody, fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.7)', margin: '14px 0 4px', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+                      ICP Health Score
+                    </p>
+                    <p style={{ fontFamily: fontBody, fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: 0 }}>
+                      Last updated {latestReport ? formatDate(latestReport.generated_at) : '—'}
+                    </p>
+                    {scoreDiff !== null && (
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, marginTop: 10, background: 'rgba(255,255,255,0.1)', borderRadius: 100, padding: '5px 12px' }}>
+                        {scoreDiff > 0
+                          ? <TrendingUp size={13} color="#22c55e" />
+                          : <TrendingDown size={13} color="#ef4444" />}
+                        <span style={{ fontFamily: fontBody, fontSize: 12, fontWeight: 600, color: scoreDiff > 0 ? '#86efac' : '#fca5a5' }}>
+                          {scoreDiff > 0 ? '+' : ''}{scoreDiff} vs last report
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              ) : (
-                <>
-                  <p className="text-white font-medium text-lg">
-                    {nextDiagDate
-                      ? `Due ${formatDate(nextDiagDate.toISOString())}`
-                      : 'Ready whenever you are'
-                    }
-                  </p>
-                  <p className="text-gray-500 text-sm mt-1 mb-5">
-                    {nextDiagDate && nextDiagDate > new Date()
-                      ? 'Monthly re-diagnosis tracks your improvement over time.'
-                      : 'Run a new diagnostic to see how much you\'ve improved.'
-                    }
-                  </p>
-                  <Link
-                    href="/questionnaire"
-                    className="inline-block bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors"
-                  >
-                    Run New Diagnosis Now →
-                  </Link>
-                  <p className="mt-3 text-xs text-gray-600">
-                    Have campaign data?{' '}
-                    <Link href="/csv-analysis" className="text-indigo-500 hover:text-indigo-400">
-                      Upload a CSV for detailed analysis →
+
+                {/* ── S2: Three stat chips ──────────────────────────────── */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+                  <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 16, padding: '24px 28px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+                      <AlertCircle size={18} color="#ef4444" />
+                      <span style={{ fontFamily: fontBody, fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', color: Pmuted }}>Critical Findings</span>
+                    </div>
+                    {dataLoading
+                      ? <Skel style={{ height: 44, width: 64, marginBottom: 8 }} />
+                      : <p style={{ fontFamily: font, fontSize: 48, fontWeight: 700, color: P, margin: '0 0 4px', lineHeight: 1 }}>{findings.length}</p>}
+                    <p style={{ fontFamily: fontBody, fontSize: 13, color: Pmuted, margin: 0 }}>Issues ranked by revenue impact</p>
+                  </div>
+
+                  <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 16, padding: '24px 28px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+                      <Calendar size={18} color={P} />
+                      <span style={{ fontFamily: fontBody, fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', color: Pmuted }}>Days Since Diagnosis</span>
+                    </div>
+                    {dataLoading
+                      ? <Skel style={{ height: 44, width: 64, marginBottom: 8 }} />
+                      : <p style={{ fontFamily: font, fontSize: 48, fontWeight: 700, color: P, margin: '0 0 4px', lineHeight: 1 }}>{daysSince ?? '—'}</p>}
+                    <p style={{ fontFamily: fontBody, fontSize: 13, color: Pmuted, margin: 0 }}>
+                      {latestReport
+                        ? `Next due ${formatDate(new Date(new Date(latestReport.generated_at).getTime() + 30 * 86400000).toISOString())}`
+                        : 'No diagnosis yet'}
+                    </p>
+                  </div>
+
+                  <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 16, padding: '24px 28px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+                      <Zap size={18} color="#f59e0b" />
+                      <span style={{ fontFamily: fontBody, fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', color: Pmuted }}>Quick Wins Available</span>
+                    </div>
+                    {dataLoading
+                      ? <Skel style={{ height: 44, width: 64, marginBottom: 8 }} />
+                      : <p style={{ fontFamily: font, fontSize: 48, fontWeight: 700, color: P, margin: '0 0 4px', lineHeight: 1 }}>{diag.quick_wins?.length ?? 0}</p>}
+                    <p style={{ fontFamily: fontBody, fontSize: 13, color: Pmuted, margin: 0 }}>Actions you can take this week</p>
+                  </div>
+                </div>
+
+                {/* ── S3: Fix this first ────────────────────────────────── */}
+                {(dataLoading || topFinding) && (
+                  <div id="priority">
+                    <h2 style={{ fontFamily: font, fontSize: 32, fontWeight: 700, color: P, margin: '0 0 20px', letterSpacing: '-0.02em' }}>Fix this first.</h2>
+
+                    {dataLoading ? (
+                      <div style={{ background: '#fafafa', borderLeft: '4px solid #ef4444', borderRadius: '0 16px 16px 0', padding: '36px 40px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                        <Skel style={{ height: 20, width: 100 }} />
+                        <Skel style={{ height: 30, width: '65%' }} />
+                        <Skel style={{ height: 16, width: '90%' }} />
+                        <Skel style={{ height: 16, width: '70%' }} />
+                      </div>
+                    ) : topFinding ? (
+                      <div style={{ background: '#fafafa', borderLeft: `4px solid ${severityColor(topFinding.severity)}`, borderRadius: '0 16px 16px 0', padding: '36px 40px' }}>
+                        <span style={{ fontFamily: fontBody, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: severityColor(topFinding.severity), background: severityBg(topFinding.severity), padding: '3px 10px', borderRadius: 100 }}>
+                          {topFinding.severity}
+                        </span>
+                        <h3 style={{ fontFamily: font, fontSize: 24, fontWeight: 700, color: P, margin: '12px 0 8px', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+                          {topFinding.title}
+                        </h3>
+                        <p style={{ fontFamily: fontBody, fontSize: 15, color: Pbody, lineHeight: 1.7, margin: '0 0 20px' }}>
+                          {topFinding.explanation}
+                        </p>
+                        {diag.executive_summary && (
+                          <div style={{ background: '#ede9fe', borderRadius: 12, padding: '20px 24px' }}>
+                            <p style={{ fontFamily: fontBody, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: P, margin: '0 0 10px' }}>
+                              How to fix this
+                            </p>
+                            <p style={{ fontFamily: fontBody, fontSize: 15, color: P, lineHeight: 1.6, margin: 0 }}>
+                              {diag.executive_summary}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    ) : null}
+                  </div>
+                )}
+
+                {/* ── S4: All findings ──────────────────────────────────── */}
+                {(dataLoading || findings.length > 0) && (
+                  <div>
+                    <h2 style={{ fontFamily: font, fontSize: 32, fontWeight: 700, color: P, margin: '0 0 8px', letterSpacing: '-0.02em' }}>Everything we found.</h2>
+                    <p style={{ fontFamily: fontBody, fontSize: 15, color: Pmuted, margin: '0 0 20px' }}>Ranked by revenue impact.</p>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                      {dataLoading ? [0, 1, 2].map(i => (
+                        <div key={i} style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 16, padding: '28px 32px', display: 'flex', gap: 24 }}>
+                          <Skel style={{ width: 44, height: 36, flexShrink: 0 }} />
+                          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                            <Skel style={{ height: 22, width: '55%' }} />
+                            <Skel style={{ height: 15, width: '90%' }} />
+                          </div>
+                        </div>
+                      )) : findings.map((f, i) => (
+                        <div key={i} style={{ background: '#fff', border: `1px solid ${Pborder}`, borderLeft: `4px solid ${severityColor(f.severity)}`, borderRadius: '0 16px 16px 0', padding: '28px 32px' }}>
+                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 20 }}>
+                            <span style={{ fontFamily: font, fontSize: 36, fontWeight: 700, color: P, opacity: 0.12, lineHeight: 1, flexShrink: 0, minWidth: 44, paddingTop: 2 }}>
+                              {String(i + 1).padStart(2, '0')}
+                            </span>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 8 }}>
+                                <h3 style={{ fontFamily: font, fontSize: 20, fontWeight: 700, color: P, margin: 0, letterSpacing: '-0.01em' }}>
+                                  {f.title}
+                                </h3>
+                                <span style={{ fontFamily: fontBody, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: severityColor(f.severity), background: severityBg(f.severity), padding: '2px 8px', borderRadius: 100, flexShrink: 0 }}>
+                                  {f.severity}
+                                </span>
+                              </div>
+                              <p style={{
+                                fontFamily: fontBody, fontSize: 14, color: Pbody, lineHeight: 1.65, margin: 0,
+                                ...(expandedIdx !== i ? { display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as React.CSSProperties : {}),
+                              }}>
+                                {f.explanation}
+                              </p>
+                              <button onClick={() => setExpandedIdx(expandedIdx === i ? null : i)}
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: 5, marginTop: 10, fontFamily: fontBody, fontSize: 13, fontWeight: 600, color: P, background: 'none', border: 'none', cursor: 'pointer', padding: 0, opacity: 0.65 }}>
+                                {expandedIdx === i ? <>Show less <ChevronUp size={13} /></> : <>See fix <ChevronDown size={13} /></>}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* ── S5: Quick wins ────────────────────────────────────── */}
+                {(dataLoading || (diag.quick_wins?.length ?? 0) > 0) && (
+                  <div>
+                    <h2 style={{ fontFamily: font, fontSize: 32, fontWeight: 700, color: P, margin: '0 0 8px', letterSpacing: '-0.02em' }}>What to do this week.</h2>
+                    <p style={{ fontFamily: fontBody, fontSize: 15, color: Pmuted, margin: '0 0 20px' }}>Small changes, immediate impact.</p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {dataLoading ? [0, 1, 2].map(i => (
+                        <div key={i} style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 16, padding: 28, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                          <Skel style={{ height: 18, width: 80 }} />
+                          <Skel style={{ height: 48, width: '90%' }} />
+                          <Skel style={{ height: 24, width: 100 }} />
+                        </div>
+                      )) : (diag.quick_wins ?? []).map((qw, i) => (
+                        <div key={i} style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 16, padding: 28, display: 'flex', flexDirection: 'column', gap: 14 }}>
+                          <ImpactBadge impact={qw.impact} />
+                          <p style={{ fontFamily: font, fontSize: 18, fontWeight: 600, color: P, margin: 0, lineHeight: 1.4, flex: 1 }}>
+                            {qw.action}
+                          </p>
+                          {qw.timeline && (
+                            <span style={{ fontFamily: fontBody, fontSize: 12, fontWeight: 600, background: '#ede9fe', color: P, padding: '4px 12px', borderRadius: 100, width: 'fit-content' }}>
+                              {qw.timeline}
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* ── S6: Landing page assessment ───────────────────────── */}
+                <div>
+                  <h2 style={{ fontFamily: font, fontSize: 32, fontWeight: 700, color: P, margin: '0 0 16px', letterSpacing: '-0.02em' }}>Your landing page.</h2>
+                  {dataLoading ? (
+                    <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 16, padding: '28px 32px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                      <Skel style={{ height: 15, width: '95%' }} />
+                      <Skel style={{ height: 15, width: '82%' }} />
+                      <Skel style={{ height: 15, width: '68%' }} />
+                    </div>
+                  ) : diag.is_deep_research ? (
+                    <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 16, padding: '28px 32px' }}>
+                      <p style={{ fontFamily: fontBody, fontSize: 15, color: Pbody, lineHeight: 1.75, margin: 0 }}>
+                        {diag.landing_page_assessment}
+                      </p>
+                    </div>
+                  ) : (
+                    <div style={{ background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 16, padding: '32px 40px', display: 'flex', alignItems: 'center', gap: 24 }}>
+                      <div style={{ width: 48, height: 48, borderRadius: 12, background: '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Lock size={22} color={P} />
+                      </div>
+                      <div>
+                        <h3 style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: '0 0 6px' }}>
+                          Unlock your landing page assessment
+                        </h3>
+                        <p style={{ fontFamily: fontBody, fontSize: 14, color: Pmuted, margin: '0 0 16px', lineHeight: 1.6 }}>
+                          Subscribe to Pro or Agency for a live AI assessment of your actual landing page.
+                        </p>
+                        <Link href="/#pricing"
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: P, color: '#fff', textDecoration: 'none', fontFamily: font, fontWeight: 600, fontSize: 13, padding: '10px 20px', borderRadius: 10 }}>
+                          Upgrade Now <ArrowRight size={14} />
+                        </Link>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* ── S7: Next steps ────────────────────────────────────── */}
+                <div style={{ background: BgAlt, borderRadius: 20, padding: 'clamp(28px,4vw,40px) clamp(24px,4vw,48px)' }}
+                  className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+                  <div>
+                    <h3 style={{ fontFamily: font, fontSize: 22, fontWeight: 700, color: P, margin: '0 0 12px', letterSpacing: '-0.01em' }}>
+                      Ready for your next diagnosis?
+                    </h3>
+                    <p style={{ fontFamily: fontBody, fontSize: 15, color: Pbody, lineHeight: 1.65, margin: '0 0 20px' }}>
+                      Run a new diagnosis to track your improvement and see if your fixes are working.
+                    </p>
+                    <Link href="/questionnaire"
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: P, color: '#fff', textDecoration: 'none', fontFamily: font, fontWeight: 600, fontSize: 14, padding: '14px 24px', borderRadius: 12 }}>
+                      Run New Diagnosis <ArrowRight size={15} />
                     </Link>
-                  </p>
-                </>
-              )}
-            </section>
+                  </div>
+                  <div style={{ borderTop: `1px solid ${Pborder}`, paddingTop: 24 }} className="md:border-t-0 md:border-l md:pt-0 md:pl-12">
+                    <h3 style={{ fontFamily: font, fontSize: 22, fontWeight: 700, color: P, margin: '0 0 12px', letterSpacing: '-0.01em' }}>
+                      Have campaign data?
+                    </h3>
+                    <p style={{ fontFamily: fontBody, fontSize: 15, color: Pbody, lineHeight: 1.65, margin: '0 0 20px' }}>
+                      Upload your Google or Meta CSV for a deeper spend analysis.
+                    </p>
+                    <Link href="/dashboard/csv"
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'transparent', color: P, textDecoration: 'none', fontFamily: font, fontWeight: 600, fontSize: 14, padding: '14px 24px', borderRadius: 12, border: `2px solid ${P}` }}>
+                      Upload CSV <ArrowRight size={15} />
+                    </Link>
+                  </div>
+                </div>
+
+              </div>
+            )}
           </>
         )}
 
-        {/* ════════════════════════════════ PROGRESS ════════════════════════════════ */}
-        {activeTab === 'progress' && (
-          <>
-            <h2 className="text-2xl font-bold text-white">Your Progress</h2>
+        {/* ══════════════════════════════ REPORTS ═════════════════════════════ */}
+        {activeTab === 'reports' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <h2 style={{ fontFamily: font, fontSize: 32, fontWeight: 700, color: P, margin: 0, letterSpacing: '-0.02em' }}>Reports</h2>
+              <Link href="/questionnaire"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: P, color: '#fff', textDecoration: 'none', fontFamily: font, fontWeight: 600, fontSize: 13, padding: '10px 18px', borderRadius: 100 }}>
+                + New Diagnosis
+              </Link>
+            </div>
 
             {dataLoading ? (
-              <div className="space-y-4">
-                <Skeleton className="h-56 w-full" />
-                <Skeleton className="h-32 w-full" />
-                <Skeleton className="h-24 w-full" />
-                <Skeleton className="h-24 w-full" />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {[0, 1, 2].map(i => <Skel key={i} style={{ height: 88, borderRadius: 16 }} />)}
+              </div>
+            ) : reports.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '60px 24px', background: BgAlt, borderRadius: 20 }}>
+                <p style={{ fontFamily: fontBody, fontSize: 16, color: Pmuted, margin: '0 0 20px' }}>
+                  No reports yet. Run your first diagnosis to get started.
+                </p>
+                <Link href="/questionnaire"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: P, color: '#fff', textDecoration: 'none', fontFamily: font, fontWeight: 600, fontSize: 14, padding: '14px 24px', borderRadius: 12 }}>
+                  Run First Diagnosis <ArrowRight size={15} />
+                </Link>
               </div>
             ) : (
-              <>
-                {/* Score chart */}
-                <section className="bg-white/5 border border-white/10 rounded-3xl p-6">
-                  <p className="text-xs text-gray-500 uppercase tracking-widest mb-5 font-semibold">ICP Health Score Over Time</p>
-                  {chartData.length === 0 ? (
-                    <div className="text-center py-8">
-                      <p className="text-gray-400 mb-4">No diagnostic data yet.</p>
-                      <Link href="/questionnaire" className="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors inline-block">
-                        Run your first diagnosis →
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {reports.map((r, i) => {
+                  const d    = parseDiagnosis(r.report_summary)
+                  const s    = getScore(d)
+                  const fs   = getFindings(d)
+                  const prevD = reports[i + 1] ? parseDiagnosis(reports[i + 1].report_summary) : null
+                  const prevS = prevD ? getScore(prevD) : null
+                  const diff  = s !== null && prevS !== null ? s - prevS : null
+                  return (
+                    <div key={r.id} style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 16, padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 20 }}>
+                      {/* Score */}
+                      <div style={{ textAlign: 'center', flexShrink: 0, width: 68 }}>
+                        {s !== null ? (
+                          <>
+                            <span style={{ fontFamily: font, fontSize: 34, fontWeight: 800, color: scoreColor(s), lineHeight: 1 }}>{s}</span>
+                            <p style={{ fontFamily: fontBody, fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: Pmuted, margin: '3px 0 0' }}>/100</p>
+                          </>
+                        ) : (
+                          <span style={{ fontFamily: font, fontSize: 30, fontWeight: 700, color: Pmuted }}>—</span>
+                        )}
+                      </div>
+
+                      <div style={{ width: 1, height: 52, background: Pborder, flexShrink: 0 }} />
+
+                      {/* Info */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                          <span style={{ fontFamily: font, fontSize: 15, fontWeight: 600, color: P }}>
+                            {formatDate(r.generated_at)}
+                          </span>
+                          {i === 0 && (
+                            <span style={{ fontFamily: fontBody, fontSize: 11, fontWeight: 700, background: '#ede9fe', color: P, padding: '2px 10px', borderRadius: 100 }}>
+                              Latest
+                            </span>
+                          )}
+                        </div>
+                        {fs[0] && (
+                          <p style={{ fontFamily: fontBody, fontSize: 13, color: Pmuted, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            Top finding: {fs[0].title}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Trend */}
+                      {diff !== null && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+                          {diff > 0 ? <TrendingUp size={15} color="#22c55e" /> : <TrendingDown size={15} color="#ef4444" />}
+                          <span style={{ fontFamily: fontBody, fontSize: 13, fontWeight: 600, color: diff > 0 ? '#22c55e' : '#ef4444' }}>
+                            {diff > 0 ? '+' : ''}{diff}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* CTA */}
+                      <Link href={`/report/${r.id}`}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: P, color: '#fff', textDecoration: 'none', fontFamily: font, fontWeight: 600, fontSize: 13, padding: '10px 16px', borderRadius: 10, flexShrink: 0 }}>
+                        View Report <ArrowRight size={13} />
                       </Link>
                     </div>
-                  ) : chartData.length === 1 ? (
-                    <div className="text-center py-6">
-                      <p className="text-5xl font-black text-white mb-2">{chartData[0].score}</p>
-                      <p className="text-gray-500 text-sm">Your baseline score — {chartData[0].label}</p>
-                      <p className="text-gray-600 text-xs mt-3">Run another diagnosis to start tracking your trend.</p>
-                    </div>
-                  ) : mounted ? (
-                    <ResponsiveContainer width="100%" height={240}>
-                      <AreaChart data={chartData} margin={{ top: 20, right: 8, bottom: 0, left: -28 }}>
-                        <defs>
-                          <linearGradient id="scoreGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%"  stopColor="#6366f1" stopOpacity={0.2} />
-                            <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                        <XAxis
-                          dataKey="label"
-                          tick={{ fill: '#6b7280', fontSize: 11 }}
-                          tickLine={false}
-                          axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
-                        />
-                        <YAxis
-                          domain={[0, 100]}
-                          ticks={[0, 25, 50, 75, 100]}
-                          tick={{ fill: '#6b7280', fontSize: 11 }}
-                          tickLine={false}
-                          axisLine={false}
-                        />
-                        <Tooltip content={<ChartTooltip />} />
-                        <Area
-                          type="monotone"
-                          dataKey="score"
-                          stroke="#6366f1"
-                          strokeWidth={2.5}
-                          fill="url(#scoreGrad)"
-                          dot={{ fill: '#6366f1', r: 5, strokeWidth: 0 }}
-                          activeDot={{ r: 7, fill: '#818cf8', strokeWidth: 0 }}
-                          isAnimationActive
-                          animationDuration={800}
-                          animationEasing="ease-out"
-                        />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  ) : null}
-                </section>
-
-                {/* Milestones */}
-                <section className="bg-white/5 border border-white/10 rounded-3xl p-6">
-                  <p className="text-xs text-gray-500 uppercase tracking-widest mb-4 font-semibold">Milestones</p>
-                  <div className="space-y-3">
-                    {/* First diagnosis */}
-                    {reports.length > 0 && (() => {
-                      const first = reports[reports.length - 1]
-                      const firstScore = parseDiagnosis(first.report_summary).health_score
-                      return (
-                        <div className="flex items-start gap-3">
-                          <span className="text-indigo-400 font-bold shrink-0 text-base">★</span>
-                          <p className="text-sm text-gray-300">
-                            <span className="text-gray-500">{formatDate(first.generated_at)}</span>
-                            {' — '}First diagnosis completed.
-                            {firstScore !== undefined && <> Starting score: <span className="text-white font-semibold">{firstScore}/100</span>.</>}
-                          </p>
-                        </div>
-                      )
-                    })()}
-
-                    {/* Score improvements */}
-                    {scoreMilestones.filter(m => m.diff !== 0).map((m, i) => (
-                      <div key={i} className="flex items-start gap-3">
-                        <span className={`font-bold shrink-0 text-sm ${m.diff > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                          {m.diff > 0 ? `+${m.diff}` : m.diff}
-                        </span>
-                        <p className="text-sm text-gray-300">
-                          <span className="text-gray-500">{formatDate(m.date)}</span>
-                          {' — '}
-                          {m.diff > 0
-                            ? <>Score improved {m.diff} points to <span className="text-white font-semibold">{m.score}/100</span>. Keep applying the recommendations.</>
-                            : <>Score dropped to <span className="text-white font-semibold">{m.score}/100</span>. Review the latest findings.</>
-                          }
-                        </p>
-                      </div>
-                    ))}
-
-                    {/* Days active */}
-                    {daysActive >= 1 && (
-                      <div className="flex items-start gap-3">
-                        <span className="text-purple-400 font-bold shrink-0 text-sm">◈</span>
-                        <p className="text-sm text-gray-300">
-                          <span className="text-white font-semibold">{daysActive} days</span> active on the platform
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </section>
-
-                {/* All reports */}
-                <section className="bg-white/5 border border-white/10 rounded-3xl p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <p className="text-xs text-gray-500 uppercase tracking-widest font-semibold">All Reports</p>
-                    <Link href="/questionnaire" className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors">
-                      + New Diagnosis
-                    </Link>
-                  </div>
-                  <div className="space-y-2">
-                    {reports.map((r, i) => {
-                      const d = parseDiagnosis(r.report_summary)
-                      const score = d.health_score
-                      const topFindingTitle = d.findings?.[0]?.title
-                      return (
-                        <Link
-                          key={r.id}
-                          href={`/report/${r.id}`}
-                          className="flex items-center justify-between py-3 border-b border-white/5 last:border-0 hover:opacity-80 transition-opacity"
-                        >
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2">
-                              <p className="text-sm text-white font-medium">
-                                {formatDate(r.generated_at)}
-                              </p>
-                              {i === 0 && (
-                                <span className="text-xs bg-indigo-500/15 text-indigo-400 px-2 py-0.5 rounded-full">Latest</span>
-                              )}
-                            </div>
-                            {topFindingTitle && (
-                              <p className="text-xs text-gray-500 mt-0.5 truncate">{topFindingTitle}</p>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2 shrink-0">
-                            {score !== undefined && (
-                              <span className="text-lg font-bold" style={{ color: scoreColor(score) }}>
-                                {score}
-                              </span>
-                            )}
-                            <span className="text-gray-600 text-sm">→</span>
-                          </div>
-                        </Link>
-                      )
-                    })}
-                  </div>
-                </section>
-              </>
+                  )
+                })}
+              </div>
             )}
-          </>
+          </div>
         )}
 
-        {/* ════════════════════════════════ ACCOUNT ════════════════════════════════ */}
+        {/* ══════════════════════════════ ACCOUNT ═════════════════════════════ */}
         {activeTab === 'account' && (
-          <>
-            <h2 className="text-2xl font-bold text-white">Account</h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 680 }}>
+            <h2 style={{ fontFamily: font, fontSize: 32, fontWeight: 700, color: P, margin: 0, letterSpacing: '-0.02em' }}>Account</h2>
 
             {/* Profile */}
-            <section className="bg-white/5 border border-white/10 rounded-3xl p-6">
-              <p className="text-xs text-gray-500 uppercase tracking-widest mb-4 font-semibold">Profile</p>
-              <div className="space-y-4">
-                {[
-                  { label: 'Full name',    value: user?.full_name    ?? '—' },
-                  { label: 'Email',        value: user?.email        ?? '—' },
-                  { label: 'Company',      value: user?.company_name ?? '—' },
-                ].map(row => (
-                  <div key={row.label} className="flex justify-between items-center border-b border-white/5 pb-4 last:border-0 last:pb-0">
-                    <span className="text-sm text-gray-500">{row.label}</span>
-                    <span className="text-sm text-white font-medium">{row.value}</span>
-                  </div>
-                ))}
-              </div>
-            </section>
+            <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 20, padding: '28px 32px' }}>
+              <p style={{ fontFamily: fontBody, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: Pmuted, margin: '0 0 16px' }}>Profile</p>
+              {[
+                { label: 'Full name', value: user?.full_name   ?? '—' },
+                { label: 'Email',     value: user?.email       ?? '—' },
+                { label: 'Company',   value: user?.company_name ?? '—' },
+              ].map((row, i, arr) => (
+                <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 0', borderBottom: i < arr.length - 1 ? `1px solid ${Pborder}` : 'none' }}>
+                  <span style={{ fontFamily: fontBody, fontSize: 14, color: Pmuted }}>{row.label}</span>
+                  <span style={{ fontFamily: fontBody, fontSize: 14, fontWeight: 600, color: P }}>{row.value}</span>
+                </div>
+              ))}
+            </div>
 
             {/* Subscription */}
-            <section className="bg-white/5 border border-white/10 rounded-3xl p-6">
-              <p className="text-xs text-gray-500 uppercase tracking-widest mb-4 font-semibold">Subscription</p>
-              <div className="space-y-4">
-                <div className="flex justify-between items-start border-b border-white/5 pb-4">
-                  <span className="text-sm text-gray-500">Current plan</span>
-                  <div className="text-right">
-                    {user?.subscription_tier && (
-                      <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${TIER_COLORS[user.subscription_tier] ?? ''}`}>
-                        {tierLabel(user.subscription_tier)}
-                      </span>
-                    )}
-                    <p className="text-xs text-gray-600 mt-1.5 max-w-48 text-right leading-snug">
-                      {user?.subscription_tier ? TIER_FEATURES[user.subscription_tier] : ''}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex justify-between items-center border-b border-white/5 pb-4">
-                  <span className="text-sm text-gray-500">Monthly price</span>
-                  <span className="text-sm text-white font-medium">
-                    {user?.subscription_tier ? TIER_PRICES[user.subscription_tier] : '—'}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center border-b border-white/5 pb-4">
-                  <span className="text-sm text-gray-500">Billing status</span>
-                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                    user?.billing_status === 'active'
-                      ? 'bg-emerald-500/15 text-emerald-400'
-                      : 'bg-red-500/15 text-red-400'
-                  }`}>
+            <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 20, padding: '28px 32px' }}>
+              <p style={{ fontFamily: fontBody, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: Pmuted, margin: '0 0 16px' }}>Subscription</p>
+              {([
+                { label: 'Current plan',   value: tierLabel ? <span style={{ fontFamily: fontBody, fontSize: 12, fontWeight: 700, background: P, color: '#fff', padding: '3px 12px', borderRadius: 100 }}>{tierLabel}</span> : '—' },
+                { label: 'Description',    value: user?.subscription_tier ? (TIER_DESC[user.subscription_tier] ?? '') : '—' },
+                { label: 'Monthly price',  value: user?.subscription_tier ? `${TIER_PRICE[user.subscription_tier] ?? '—'} / month` : '—' },
+                { label: 'Billing status', value: (
+                  <span style={{ fontFamily: fontBody, fontSize: 12, fontWeight: 700, background: user?.billing_status === 'active' ? '#dcfce7' : '#fee2e2', color: user?.billing_status === 'active' ? '#16a34a' : '#ef4444', padding: '3px 12px', borderRadius: 100 }}>
                     {user?.billing_status ?? '—'}
                   </span>
+                )},
+                { label: 'Renewal date', value: user?.renewal_date ? formatDate(user.renewal_date) : '—' },
+              ] as { label: string; value: React.ReactNode }[]).map((row, i, arr) => (
+                <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 0', borderBottom: i < arr.length - 1 ? `1px solid ${Pborder}` : 'none', gap: 16 }}>
+                  <span style={{ fontFamily: fontBody, fontSize: 14, color: Pmuted, flexShrink: 0 }}>{row.label}</span>
+                  <span style={{ fontFamily: fontBody, fontSize: 14, fontWeight: 500, color: P, textAlign: 'right' }}>{row.value}</span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-500">Next renewal</span>
-                  <span className="text-sm text-white font-medium">
-                    {user?.renewal_date ? formatDate(user.renewal_date) : '—'}
-                  </span>
-                </div>
-              </div>
-            </section>
+              ))}
+            </div>
 
             {/* Actions */}
-            <div className="flex flex-col gap-3">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {user?.subscription_tier && user.subscription_tier !== 'agency' && (
-                <Link
-                  href="/questionnaire"
-                  className="w-full text-center bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-5 py-3.5 rounded-2xl transition-colors text-sm"
-                >
-                  Upgrade to {user.subscription_tier === 'starter' ? 'Pro' : 'Agency'} →
+                <Link href="/#pricing"
+                  style={{ display: 'block', textAlign: 'center', textDecoration: 'none', background: P, color: '#fff', fontFamily: font, fontWeight: 600, fontSize: 14, padding: 16, borderRadius: 14 }}>
+                  Upgrade Plan →
                 </Link>
               )}
-
-              <button
-                onClick={handleSignOut}
-                className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-gray-400 hover:text-white font-medium px-5 py-3 rounded-2xl transition-colors text-sm"
-              >
+              <a href="mailto:support@icpbrand.co"
+                style={{ display: 'block', textAlign: 'center', textDecoration: 'none', background: BgAlt, border: `1px solid ${Pborder}`, color: Pbody, fontFamily: fontBody, fontWeight: 500, fontSize: 14, padding: 16, borderRadius: 14 }}>
+                Manage Subscription
+              </a>
+              <button onClick={handleSignOut}
+                style={{ background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 14, padding: 16, fontSize: 14, fontFamily: fontBody, fontWeight: 500, color: Pmuted, cursor: 'pointer' }}>
                 Sign out
               </button>
             </div>
 
             {/* Cancel */}
-            <section className="border border-red-500/15 rounded-3xl p-6">
-              <p className="text-sm font-semibold text-red-400 mb-1">Cancel Subscription</p>
+            <div style={{ border: '1px solid #fecaca', borderRadius: 16, padding: '24px 28px' }}>
+              <p style={{ fontFamily: font, fontSize: 15, fontWeight: 600, color: '#ef4444', margin: '0 0 6px' }}>Cancel Subscription</p>
               {!cancelConfirm ? (
                 <>
-                  <p className="text-xs text-gray-500 mb-4 leading-relaxed">
+                  <p style={{ fontFamily: fontBody, fontSize: 13, color: Pmuted, margin: '0 0 14px', lineHeight: 1.6 }}>
                     Your access continues until your renewal date. This cannot be undone.
                   </p>
-                  <button
-                    onClick={() => setCancelConfirm(true)}
-                    className="text-sm text-red-400 hover:text-red-300 underline underline-offset-2 transition-colors"
-                  >
+                  <button onClick={() => setCancelConfirm(true)}
+                    style={{ background: 'none', border: 'none', fontFamily: fontBody, fontSize: 14, color: '#ef4444', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>
                     Cancel my subscription
                   </button>
                 </>
               ) : (
-                <div className="space-y-3">
-                  <p className="text-sm text-white">Are you sure? You&apos;ll lose access at your next renewal date.</p>
-                  <div className="flex gap-3">
-                    <a
-                      href={`mailto:support@icpbrand.co?subject=Cancel subscription — ${user?.email}`}
-                      className="text-sm bg-red-500/15 hover:bg-red-500/25 text-red-400 font-medium px-4 py-2 rounded-xl transition-colors"
-                    >
-                      Yes, cancel →
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <p style={{ fontFamily: fontBody, fontSize: 14, color: P, margin: 0 }}>
+                    Are you sure? You will lose access at your next renewal date.
+                  </p>
+                  <div style={{ display: 'flex', gap: 12 }}>
+                    <a href={`mailto:support@icpbrand.co?subject=Cancel subscription — ${user?.email}`}
+                      style={{ fontFamily: fontBody, fontSize: 14, fontWeight: 600, background: '#fee2e2', color: '#ef4444', padding: '10px 20px', borderRadius: 10, textDecoration: 'none' }}>
+                      Yes, cancel
                     </a>
-                    <button
-                      onClick={() => setCancelConfirm(false)}
-                      className="text-sm text-gray-400 hover:text-white px-4 py-2 transition-colors"
-                    >
+                    <button onClick={() => setCancelConfirm(false)}
+                      style={{ fontFamily: fontBody, fontSize: 14, color: Pmuted, background: 'none', border: 'none', cursor: 'pointer', padding: '10px' }}>
                       Keep my subscription
                     </button>
                   </div>
                 </div>
               )}
-            </section>
-          </>
+            </div>
+
+          </div>
         )}
 
       </div>
