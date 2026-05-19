@@ -6,7 +6,7 @@ import Image from 'next/image'
 import {
   RefreshCw, Filter, TrendingDown, BarChart2, Activity,
   Check, Menu, X, MapPin, ArrowRight, Globe, MessageCircle,
-  BarChart, TrendingUp,
+  BarChart, TrendingUp, LayoutDashboard, Brain,
 } from 'lucide-react'
 
 export const dynamic = 'force-static'
@@ -36,6 +36,7 @@ const STATS = [
   { value: '5 min',    label: 'To complete your full ICP diagnostic' },
   { value: 'KES 50K+', label: 'Average monthly waste found per diagnosis' },
   { value: 'Zero',     label: 'Ad account access needed — ever' },
+  { value: '10+',      label: 'Markets covered including Kenya, Nigeria, South Africa & East Africa' },
 ]
 
 const TIERS = [
@@ -282,6 +283,18 @@ export default function Home() {
               <div>
                 <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: P }}>50+ marketing teams</p>
                 <p style={{ margin: 0, fontSize: 12, color: Pmuted }}>no ad account access needed.</p>
+              </div>
+            </div>
+
+            {/* Founder credibility bar */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 24 }}>
+              <div style={{ width: 48, height: 48, borderRadius: '50%', background: `linear-gradient(135deg,${P},#6c4ddd)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '2px solid rgba(48,33,97,0.2)' }}>
+                <span style={{ color: '#fff', fontSize: 13, fontWeight: 700, fontFamily: font }}>EK</span>
+              </div>
+              <div>
+                <p style={{ margin: '0 0 2px', fontFamily: fontBody, fontSize: 14, fontWeight: 600, color: P }}>Built by Eugene Kwata</p>
+                <p style={{ margin: '0 0 4px', fontFamily: fontBody, fontSize: 13, color: 'rgba(48,33,97,0.6)', lineHeight: 1.5 }}>10+ years · $2M+ in ad spend managed · Former performance lead across East Africa &amp; UK</p>
+                <Link href="/about" style={{ fontFamily: fontBody, fontSize: 13, color: P, textDecoration: 'underline' }}>Read our story →</Link>
               </div>
             </div>
           </div>
@@ -548,6 +561,96 @@ export default function Home() {
           </div>
         </div>
         <span style={{ position: 'absolute', right: 24, top: '50%', transform: 'translateY(-50%)', writingMode: 'vertical-rl', fontSize: 12, color: 'rgba(48,33,97,0.2)', letterSpacing: '0.1em', fontWeight: 500 }}>04</span>
+      </section>
+
+      {/* ── Case study ────────────────────────────────────────────────────── */}
+      <section className="section-pad" style={{ background: BgAlt }}>
+        <div className="container">
+          <div style={{ background: BgAlt, borderRadius: 24, padding: 'clamp(36px,5vw,56px) clamp(24px,5vw,64px)', maxWidth: 1320, margin: '0 auto', border: `1px solid ${Pborder}` }}>
+            <div style={{ marginBottom: 32 }}>
+              <span style={{ display: 'inline-block', background: '#d946ef', color: '#fff', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', padding: '4px 14px', borderRadius: 100 }}>Real Result</span>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+
+              {/* LEFT */}
+              <div style={{ position: 'relative' }}>
+                <div style={{ position: 'absolute', top: -16, left: -8, fontFamily: font, fontSize: 120, fontWeight: 800, color: P, opacity: 0.06, lineHeight: 1, pointerEvents: 'none', userSelect: 'none' }}>&ldquo;</div>
+                <h3 style={{ fontFamily: font, fontSize: 'clamp(28px,3vw,40px)', fontWeight: 700, color: P, letterSpacing: '-0.03em', lineHeight: 1.1, margin: '0 0 20px', position: 'relative' }}>
+                  From zero leads to converting<br />in week one.
+                </h3>
+                <p style={{ fontFamily: fontBody, fontSize: 16, color: 'rgba(48,33,97,0.75)', lineHeight: 1.75, margin: '0 0 32px' }}>
+                  A legal services company in Nairobi had been running Google Search ads for 3 months with zero conversions. Our free diagnostic identified the problem in 5 minutes — their landing page had 14 form fields and required account creation before showing the service. They cut it to 3 fields. Leads came in within 7 days.
+                </p>
+                <div className="grid grid-cols-3 gap-4" style={{ marginBottom: 32 }}>
+                  {[
+                    { num: '14 → 3', label: 'Form fields reduced' },
+                    { num: '0 → 12', label: 'Leads in week one' },
+                    { num: '5 min',  label: 'Time to diagnosis' },
+                  ].map(chip => (
+                    <div key={chip.label} style={{ background: '#fff', borderRadius: 12, padding: '16px 20px', border: `1px solid ${Pborder}` }}>
+                      <p style={{ fontFamily: font, fontSize: 28, fontWeight: 800, color: P, margin: '0 0 4px', lineHeight: 1 }}>{chip.num}</p>
+                      <p style={{ fontFamily: fontBody, fontSize: 12, color: Pmuted, margin: 0, lineHeight: 1.4 }}>{chip.label}</p>
+                    </div>
+                  ))}
+                </div>
+                <Link href="/questionnaire" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontFamily: fontBody, fontSize: 14, fontWeight: 600, color: P, textDecoration: 'none' }}>
+                  Get your free diagnosis <ArrowRight size={14} color={P} />
+                </Link>
+              </div>
+
+              {/* RIGHT — quote card */}
+              <div style={{ background: P, borderRadius: 20, padding: 36 }}>
+                <div style={{ fontFamily: font, fontSize: 64, fontWeight: 800, color: 'rgba(255,255,255,0.2)', lineHeight: 1, marginBottom: 16 }}>&ldquo;</div>
+                <p style={{ fontFamily: fontBody, fontSize: 18, color: '#fff', lineHeight: 1.7, margin: '0 0 28px', fontStyle: 'italic' }}>
+                  I didn&rsquo;t need a new campaign. I needed someone to tell me my landing page was broken. The diagnosis did that in 5 minutes. We fixed one thing and everything changed.
+                </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <span style={{ fontFamily: font, fontSize: 13, fontWeight: 700, color: '#fff' }}>JM</span>
+                  </div>
+                  <div>
+                    <p style={{ margin: 0, fontFamily: font, fontSize: 14, fontWeight: 600, color: '#fff' }}>James M.</p>
+                    <p style={{ margin: 0, fontFamily: fontBody, fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>Marketing Manager, Legal Services, Nairobi</p>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Dashboard preview ─────────────────────────────────────────────── */}
+      <section className="section-pad" style={{ background: '#fff', borderTop: `1px solid ${Pborder}` }}>
+        <div className="container">
+          <div style={{ textAlign: 'center', marginBottom: 48 }}>
+            <h2 style={{ fontFamily: font, fontSize: 'clamp(28px,4vw,44px)', fontWeight: 700, color: P, letterSpacing: '-0.03em', lineHeight: 1.1, margin: '0 0 16px' }}>
+              Your marketing cockpit.
+            </h2>
+            <p style={{ fontFamily: fontBody, fontSize: 17, color: 'rgba(48,33,97,0.7)', maxWidth: 520, margin: '0 auto', lineHeight: 1.7 }}>
+              Everything your team needs to diagnose, fix, and monitor your ICP performance — in one place.
+            </p>
+          </div>
+
+          {/* Dashboard image / placeholder */}
+          <div style={{ width: '100%', height: 500, background: 'linear-gradient(135deg,#f8f7ff 0%,#ede9fe 100%)', borderRadius: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${Pborder}`, boxShadow: '0 24px 80px rgba(48,33,97,0.12)', marginBottom: 32 }}>
+            <p style={{ fontFamily: fontBody, fontSize: 18, color: 'rgba(48,33,97,0.3)', margin: 0 }}>Dashboard Preview</p>
+          </div>
+
+          {/* Feature pills */}
+          <div className="flex flex-wrap justify-center gap-4">
+            {[
+              { Icon: LayoutDashboard, label: 'ICP Health Score tracking' },
+              { Icon: Brain,           label: 'Weekly intelligence briefing' },
+              { Icon: MessageCircle,   label: 'AI media buyer chat' },
+            ].map(({ Icon, label }) => (
+              <div key={label} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 100, padding: '10px 20px' }}>
+                <Icon size={16} color={P} strokeWidth={1.75} />
+                <span style={{ fontFamily: fontBody, fontSize: 14, color: P, fontWeight: 500 }}>{label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* ── Feature grid ──────────────────────────────────────────────────── */}
@@ -1001,6 +1104,35 @@ export default function Home() {
           <p style={{ textAlign: 'center', fontSize: 14, color: Pmuted, marginTop: 32 }}>
             Start with a free diagnostic. Upgrade only when you&rsquo;re ready.
           </p>
+        </div>
+      </section>
+
+      {/* ── What happens next ─────────────────────────────────────────────── */}
+      <section className="section-pad" style={{ background: '#fff', borderTop: `1px solid ${Pborder}` }}>
+        <div className="container">
+          <h2 style={{ fontFamily: font, fontSize: 'clamp(28px,3vw,40px)', fontWeight: 700, color: P, letterSpacing: '-0.03em', lineHeight: 1.1, textAlign: 'center', margin: '0 0 64px' }}>
+            What happens after you sign up.
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              { num: 1, heading: 'Complete your free diagnosis', body: 'Answer 20 questions about your business, targeting, and funnel. Takes 5 minutes.', chip: 'Day 0' },
+              { num: 2, heading: 'Get your report instantly', body: 'Your personalized ICP diagnostic report is generated immediately with your health score, waste estimate, and critical findings.', chip: 'Day 0' },
+              { num: 3, heading: 'Subscribe for deep research', body: 'Upgrade to unlock live landing page assessment, competitor research, weekly intelligence briefing, and AI chat agent.', chip: 'Day 1' },
+              { num: 4, heading: 'Watch your score improve', body: 'Run monthly re-diagnoses to track improvement. Your score history builds automatically.', chip: 'Month 2+' },
+            ].map((step, i, arr) => (
+              <div key={step.num} style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', position: 'relative' }}>
+                {i < arr.length - 1 && (
+                  <div className="hidden lg:block" style={{ position: 'absolute', top: 24, left: 'calc(50% + 24px)', right: 'calc(-50% + 24px)', height: 1, borderTop: '1px dashed rgba(48,33,97,0.2)' }} />
+                )}
+                <div style={{ width: 48, height: 48, borderRadius: '50%', background: P, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20, flexShrink: 0, position: 'relative', zIndex: 1 }}>
+                  <span style={{ fontFamily: font, fontSize: 20, fontWeight: 700, color: '#fff' }}>{step.num}</span>
+                </div>
+                <span style={{ display: 'inline-block', fontFamily: fontBody, fontSize: 11, fontWeight: 700, color: P, background: '#ede9fe', padding: '3px 10px', borderRadius: 100, marginBottom: 12 }}>{step.chip}</span>
+                <h3 style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: '0 0 10px', letterSpacing: '-0.01em', lineHeight: 1.3 }}>{step.heading}</h3>
+                <p style={{ fontFamily: fontBody, fontSize: 14, color: 'rgba(48,33,97,0.65)', lineHeight: 1.7, margin: 0 }}>{step.body}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 

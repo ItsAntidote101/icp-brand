@@ -652,11 +652,16 @@ export default function QuestionnairePage() {
             Welcome
           </span>
 
-          <h2 className="text-xl sm:text-2xl font-bold text-white mb-2 leading-snug">
+          <h2 className="text-xl sm:text-2xl font-bold text-white mb-4 leading-snug">
             Let&apos;s get started — tell us about yourself
           </h2>
+          <div className="flex flex-wrap gap-2 mb-6">
+            {['Takes 5 minutes', '20 questions', 'Instant results'].map(chip => (
+              <span key={chip} className="inline-block text-xs font-semibold text-indigo-300 bg-white/[0.06] border border-white/10 rounded-full px-3 py-1">{chip}</span>
+            ))}
+          </div>
           <p className="text-slate-400 text-sm mb-8">
-            This takes 5 minutes. Your answers are used only to personalise your diagnostic report.
+            Your answers are used only to personalise your diagnostic report.
           </p>
 
           <div className="space-y-5 mb-8">
