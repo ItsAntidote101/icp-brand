@@ -581,3 +581,132 @@ ${cta('View Full Briefing', 'https://icpbrand.co/dashboard')}`
   else console.log('[email] weekly intelligence sent id:', data?.id, 'to:', to)
   return { data, error }
 }
+
+// ─── Email 13: Escalation — founder notification ──────────────────────────────
+
+export async function sendEscalationToFounder({
+  userName, userEmail, companyName, tier, score, wasteEstimate,
+  urgency, note, conversationTranscript,
+}: {
+  userName: string; userEmail: string; companyName?: string
+  tier: string; score: number | null; wasteEstimate: string
+  urgency: string; note: string; conversationTranscript: string
+}) {
+  const content = `
+<h1 style="margin:0 0 10px;color:#ffffff;font-size:24px;font-weight:800;line-height:1.2;letter-spacing:-0.5px;">New Escalation Request</h1>
+<p style="margin:0 0 24px;color:#9ca3af;font-size:15px;line-height:1.7;">A client has requested human review. Details below.</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:14px;margin-bottom:20px;">
+  <tr><td style="padding:20px 24px;">
+    <p style="margin:0 0 12px;color:#a5b4fc;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;">Client</p>
+    ${[
+      ['Name', userName],
+      ['Email', userEmail],
+      ['Company', companyName || '—'],
+      ['Tier', tier.charAt(0).toUpperCase() + tier.slice(1)],
+      ['ICP Health Score', score !== null ? `${score}/100` : '—'],
+      ['Est. Waste', wasteEstimate || '—'],
+      ['Urgency', urgency],
+    ].map(([k, v]) => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:8px;"><tr>
+      <td style="color:#6b7280;font-size:13px;width:160px;">${k}</td>
+      <td style="color:#e5e7eb;font-size:13px;font-weight:600;">${v}</td>
+    </tr></table>`).join('')}
+  </td></tr>
+</table>
+${note ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;margin-bottom:20px;"><tr><td style="padding:16px 20px;"><p style="margin:0 0 8px;color:#6b7280;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Note from client</p><p style="margin:0;color:#e5e7eb;font-size:14px;line-height:1.6;">${note}</p></td></tr></table>` : ''}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(10,10,15,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:12px;margin-bottom:20px;">
+  <tr><td style="padding:16px 20px;">
+    <p style="margin:0 0 10px;color:#6b7280;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Conversation transcript</p>
+    <pre style="margin:0;color:#e5e7eb;font-size:12px;line-height:1.7;white-space:pre-wrap;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',monospace;">${conversationTranscript}</pre>
+  </td></tr>
+</table>
+<p style="margin:0;color:#6b7280;font-size:13px;">Reply via email to respond directly.</p>`
+
+  const { data, error } = await getResend().emails.send({
+    from: FROM,
+    to: 'eugene@idealicp.com',
+    replyTo: userEmail,
+    subject: `Escalation: ${companyName || userName} — ${urgency}`,
+    html: base(content),
+  })
+  if (error) console.error('[email] escalation founder error:', JSON.stringify(error))
+  else console.log('[email] escalation founder sent id:', data?.id)
+  return { data, error }
+}
+
+// ─── Email 14: Escalation — user confirmation ─────────────────────────────────
+
+export async function sendEscalationConfirmationToUser({
+  to, name, tier, urgency,
+}: {
+  to: string; name: string; tier: string; urgency: string
+}) {
+  const first = name?.split(' ')[0] ?? 'there'
+  const tierKey = tier.toLowerCase()
+  const timeline =
+    tierKey === 'agency' ? 'same-day response' :
+    tierKey === 'pro'    ? 'within 24 hours' :
+                           'within 2 business days'
+
+  const content = `
+<h1 style="margin:0 0 10px;color:#ffffff;font-size:24px;font-weight:800;line-height:1.2;letter-spacing:-0.5px;">Your request has been received.</h1>
+<p style="margin:0 0 24px;color:#9ca3af;font-size:15px;line-height:1.7;">Hi ${first}, your escalation has been sent to Eugene.</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:14px;margin-bottom:20px;">
+  <tr><td style="padding:20px 24px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+      <tr><td style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+        <p style="margin:0;color:#e5e7eb;font-size:14px;font-weight:600;">Expected response time</p>
+        <p style="margin:2px 0 0;color:#9ca3af;font-size:13px;">${timeline}</p>
+      </td></tr>
+      <tr><td style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+        <p style="margin:0;color:#e5e7eb;font-size:14px;font-weight:600;">Urgency flagged</p>
+        <p style="margin:2px 0 0;color:#9ca3af;font-size:13px;">${urgency}</p>
+      </td></tr>
+      <tr><td style="padding:8px 0;">
+        <p style="margin:0;color:#e5e7eb;font-size:14px;font-weight:600;">How you'll hear back</p>
+        <p style="margin:2px 0 0;color:#9ca3af;font-size:13px;">He'll respond via the chat in your dashboard and by email.</p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+${cta('Go to Dashboard', 'https://icpbrand.co/dashboard')}`
+
+  const { data, error } = await getResend().emails.send({
+    from: FROM, to,
+    subject: 'Your request has been received',
+    html: base(content),
+  })
+  if (error) console.error('[email] escalation user error:', JSON.stringify(error))
+  else console.log('[email] escalation user sent id:', data?.id, 'to:', to)
+  return { data, error }
+}
+
+// ─── Email 15: Admin reply — user notification ────────────────────────────────
+
+export async function sendAdminReplyToUser({
+  to, name, reply, dashboardUrl,
+}: {
+  to: string; name: string; reply: string; dashboardUrl?: string
+}) {
+  const first = name?.split(' ')[0] ?? 'there'
+  const url = dashboardUrl ?? 'https://icpbrand.co/dashboard'
+
+  const content = `
+<h1 style="margin:0 0 10px;color:#ffffff;font-size:24px;font-weight:800;line-height:1.2;letter-spacing:-0.5px;">Eugene replied to your question.</h1>
+<p style="margin:0 0 24px;color:#9ca3af;font-size:15px;line-height:1.7;">Hi ${first}, Eugene reviewed your diagnostic and replied.</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.3);border-radius:14px;margin-bottom:20px;">
+  <tr><td style="padding:20px 24px;">
+    <p style="margin:0 0 10px;color:#a5b4fc;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;">Reply from Eugene</p>
+    <p style="margin:0;color:#e5e7eb;font-size:15px;line-height:1.7;">${reply}</p>
+  </td></tr>
+</table>
+${cta('View in Dashboard', url)}`
+
+  const { data, error } = await getResend().emails.send({
+    from: FROM, to,
+    subject: 'Eugene replied to your question',
+    html: base(content),
+  })
+  if (error) console.error('[email] admin reply user error:', JSON.stringify(error))
+  else console.log('[email] admin reply user sent id:', data?.id, 'to:', to)
+  return { data, error }
+}

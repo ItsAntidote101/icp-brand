@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -8,6 +8,7 @@ import {
   BarChart2, User, FileText, LayoutDashboard, Zap, AlertCircle,
   Check, ChevronDown, ChevronUp, CheckCircle, Target, X, FileDown,
   RefreshCw, Bell, Brain, Send, Settings, HelpCircle, LogOut,
+  MessageCircle, ArrowUp, UserCheck, BrainCircuit,
 } from 'lucide-react'
 import { AreaChart, Area, ResponsiveContainer, Tooltip } from 'recharts'
 
@@ -37,6 +38,7 @@ type UserData = {
   company_name: string | null; subscription_tier: string
   billing_status: string; renewal_date: string | null
   created_at: string; paused_until?: string | null
+  has_unread_reply?: boolean | null
 }
 
 type ReportRow = {
@@ -1772,6 +1774,343 @@ function IntelligenceTab({ user, score }: { user: UserData; score: number | null
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
+// ─── Chat Widget ──────────────────────────────────────────────────────────────
+
+type ChatMsg = {
+  id: string
+  role: 'user' | 'assistant' | 'media_buyer'
+  content: string
+  timestamp: Date
+}
+
+function ChatWidget({ user, score, diag }: { user: UserData; score: number | null; diag: DiagnosisData }) {
+  const [isOpen,          setIsOpen]          = useState(false)
+  const [messages,        setMessages]        = useState<ChatMsg[]>([])
+  const [input,           setInput]           = useState('')
+  const [loading,         setLoading]         = useState(false)
+  const [hasUnread,       setHasUnread]       = useState(!!(user.has_unread_reply))
+  const [initialized,     setInitialized]     = useState(false)
+  const [needsEscalation, setNeedsEscalation] = useState(false)
+  const [showEscalation,  setShowEscalation]  = useState(false)
+  const [urgency,         setUrgency]         = useState('')
+  const [escalationNote,  setEscalationNote]  = useState('')
+  const [escalating,      setEscalating]      = useState(false)
+  const [escalated,       setEscalated]       = useState(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const textareaRef    = useRef<HTMLTextAreaElement>(null)
+
+  const font  = "'PolySans Median', -apple-system, system-ui, sans-serif"
+  const fontB = "'PolySans Neutral', -apple-system, system-ui, sans-serif"
+
+  const waste = diag?.monthly_waste_estimate ?? '—'
+  const firstName = user.full_name?.split(' ')[0] ?? 'there'
+  const findings  = getFindings(diag)
+
+  const SUGGESTED = [
+    `Why is my score ${score ?? '—'}?`,
+    'How do I fix my top finding?',
+    'Write ad copy for my ICP',
+    'What should I do this week?',
+  ]
+
+  useEffect(() => {
+    if (isOpen && !initialized) {
+      const welcome: ChatMsg = {
+        id: 'welcome',
+        role: 'assistant',
+        content: `Hi ${firstName}. I'm your ICP media buyer AI.\n\nI've read your full diagnostic — your score is ${score ?? '?'}/100 and you're losing an estimated ${waste} per month.\n\nWhat would you like to work on today?`,
+        timestamp: new Date(),
+      }
+      setMessages([welcome])
+      setInitialized(true)
+      setHasUnread(false)
+    }
+    if (isOpen) {
+      setHasUnread(false)
+    }
+  }, [isOpen, initialized, firstName, score, waste])
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
+
+  const autoResize = () => {
+    const ta = textareaRef.current
+    if (!ta) return
+    ta.style.height = 'auto'
+    ta.style.height = Math.min(ta.scrollHeight, 96) + 'px'
+  }
+
+  async function sendMessage(text: string) {
+    if (!text.trim() || loading) return
+    const userMsg: ChatMsg = { id: Date.now() + 'u', role: 'user', content: text.trim(), timestamp: new Date() }
+    const typingMsg: ChatMsg = { id: 'typing', role: 'assistant', content: '', timestamp: new Date() }
+    setMessages(prev => [...prev, userMsg, typingMsg])
+    setInput('')
+    if (textareaRef.current) textareaRef.current.style.height = 'auto'
+    setLoading(true)
+
+    const history = messages
+      .filter(m => m.role !== 'media_buyer' && m.id !== 'typing')
+      .map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.content })) as { role: 'user' | 'assistant'; content: string }[]
+
+    try {
+      const res = await fetch('/api/chat/message', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user.email, message: text.trim(), conversationHistory: history }),
+      })
+      const data = await res.json()
+      const reply = data.reply ?? 'Something went wrong. Please try again.'
+      setMessages(prev => prev.filter(m => m.id !== 'typing').concat([{ id: Date.now() + 'a', role: 'assistant', content: reply, timestamp: new Date() }]))
+      if (data.needsEscalation) setNeedsEscalation(true)
+    } catch {
+      setMessages(prev => prev.filter(m => m.id !== 'typing').concat([{ id: Date.now() + 'e', role: 'assistant', content: 'Connection error. Please try again.', timestamp: new Date() }]))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleEscalate() {
+    if (!urgency || escalating) return
+    setEscalating(true)
+    try {
+      const transcript = messages
+        .filter(m => m.id !== 'typing')
+        .map(m => `${m.role === 'user' ? 'User' : m.role === 'media_buyer' ? 'Eugene' : 'AI'}: ${m.content}`)
+        .join('\n')
+      await fetch('/api/chat/escalate', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user.email, urgency, note: escalationNote, conversationHistory: transcript }),
+      })
+      setEscalated(true)
+      setShowEscalation(false)
+      const confirmMsg: ChatMsg = {
+        id: Date.now() + 'confirm',
+        role: 'assistant',
+        content: `Request sent. Eugene will review your diagnostic and respond via this chat and email. You'll get a notification when he replies.`,
+        timestamp: new Date(),
+      }
+      setMessages(prev => [...prev, confirmMsg])
+    } finally {
+      setEscalating(false)
+    }
+  }
+
+  function formatTime(d: Date) {
+    return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+  }
+
+  const URGENCY_OPTIONS = ['Same day', 'Within 24h', 'This week']
+
+  return (
+    <>
+      {/* ── Chat Panel ──────────────────────────────────────────────────── */}
+      {isOpen && (
+        <div style={{
+          position: 'fixed', zIndex: 1000, overflow: 'hidden',
+          background: '#fff',
+          boxShadow: '0 8px 48px rgba(48,33,97,0.15)',
+          display: 'flex', flexDirection: 'column',
+          // mobile: full width, 70vh, bottom sheet
+          bottom: 0, right: 0, left: 0,
+          height: '70vh',
+          borderRadius: '24px 24px 0 0',
+        }} className="chat-panel-container">
+          <style>{`
+            @media (min-width: 1024px) {
+              .chat-panel-container {
+                width: 380px !important;
+                height: 520px !important;
+                border-radius: 24px !important;
+                bottom: 100px !important;
+                right: 32px !important;
+                left: auto !important;
+              }
+            }
+            @keyframes bounce-dot {
+              0%, 80%, 100% { transform: translateY(0) }
+              40% { transform: translateY(-6px) }
+            }
+          `}</style>
+
+          {/* Header */}
+          <div style={{ background: P, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+            <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <BrainCircuit size={18} color={P} />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ fontFamily: font, fontSize: 15, fontWeight: 600, color: '#fff', margin: 0 }}>ICP Media Buyer</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#22c55e' }} />
+                <span style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>Online</span>
+              </div>
+            </div>
+            <button onClick={() => setIsOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 4 }}>
+              <X size={20} />
+            </button>
+          </div>
+
+          {/* Messages */}
+          <div style={{ flex: 1, overflowY: 'auto', padding: 16, background: BgAlt, display: 'flex', flexDirection: 'column', gap: 12 }}>
+
+            {messages.map(msg => {
+              const isUser       = msg.role === 'user'
+              const isMediaBuyer = msg.role === 'media_buyer'
+              const isTyping     = msg.id === 'typing'
+
+              return (
+                <div key={msg.id} style={{ display: 'flex', flexDirection: 'column', alignItems: isUser ? 'flex-end' : 'flex-start', gap: 4 }}>
+                  {isMediaBuyer && (
+                    <span style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, paddingLeft: 4 }}>Eugene · Media Buyer</span>
+                  )}
+
+                  <div style={{
+                    maxWidth: '85%',
+                    background: isUser ? P : isMediaBuyer ? '#ede9fe' : '#fff',
+                    color: isUser ? '#fff' : P,
+                    borderRadius: isUser ? '16px 4px 16px 16px' : '4px 16px 16px 16px',
+                    padding: '12px 16px',
+                    fontSize: 14,
+                    fontFamily: fontB,
+                    lineHeight: 1.6,
+                    boxShadow: '0 1px 4px rgba(48,33,97,0.08)',
+                    whiteSpace: 'pre-wrap',
+                  }}>
+                    {isTyping ? (
+                      <div style={{ display: 'flex', gap: 4, alignItems: 'center', padding: '2px 0' }}>
+                        {[0, 1, 2].map(i => (
+                          <div key={i} style={{
+                            width: 7, height: 7, borderRadius: '50%', background: Pmuted,
+                            animation: 'bounce-dot 0.6s infinite',
+                            animationDelay: `${i * 0.2}s`,
+                          }} />
+                        ))}
+                      </div>
+                    ) : msg.content}
+                  </div>
+
+                  {!isTyping && (
+                    <span style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, paddingLeft: isUser ? 0 : 4, paddingRight: isUser ? 4 : 0 }}>
+                      {formatTime(msg.timestamp)}
+                    </span>
+                  )}
+                </div>
+              )
+            })}
+
+            {/* Suggested pills — show after welcome message only */}
+            {messages.length === 1 && messages[0].id === 'welcome' && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 4 }}>
+                {SUGGESTED.map(q => (
+                  <button key={q} onClick={() => sendMessage(q)}
+                    style={{ background: '#fff', border: `1px solid rgba(48,33,97,0.15)`, borderRadius: 100, padding: '8px 16px', fontFamily: fontB, fontSize: 13, color: P, cursor: 'pointer' }}>
+                    {q}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Escalation card */}
+            {needsEscalation && !escalated && !showEscalation && (
+              <div style={{ background: '#ede9fe', borderRadius: 16, padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <UserCheck size={18} color={P} />
+                  <span style={{ fontFamily: font, fontSize: 15, fontWeight: 600, color: P }}>Connect with Eugene</span>
+                </div>
+                <p style={{ fontFamily: fontB, fontSize: 13, color: P, margin: 0, lineHeight: 1.6 }}>
+                  {"I'll package this conversation and your diagnostic for Eugene to review. He typically responds within 24 hours for Pro subscribers and same-day for Agency subscribers."}
+                </p>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button onClick={() => setShowEscalation(true)} style={{ flex: 1, background: P, color: '#fff', border: 'none', borderRadius: 10, padding: '10px 0', fontFamily: fontB, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Request Human Review</button>
+                  <button onClick={() => setNeedsEscalation(false)} style={{ flex: 1, background: 'transparent', color: P, border: `1px solid ${Pborder}`, borderRadius: 10, padding: '10px 0', fontFamily: fontB, fontSize: 13, cursor: 'pointer' }}>Keep chatting</button>
+                </div>
+              </div>
+            )}
+
+            {/* Escalation form */}
+            {showEscalation && !escalated && (
+              <div style={{ background: '#ede9fe', borderRadius: 16, padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <p style={{ fontFamily: fontB, fontSize: 13, fontWeight: 700, color: P, margin: 0 }}>How urgent is this?</p>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {URGENCY_OPTIONS.map(u => (
+                    <button key={u} onClick={() => setUrgency(u)}
+                      style={{ background: urgency === u ? P : '#fff', color: urgency === u ? '#fff' : P, border: `1px solid ${urgency === u ? P : Pborder}`, borderRadius: 100, padding: '7px 14px', fontFamily: fontB, fontSize: 12, cursor: 'pointer' }}>
+                      {u}
+                    </button>
+                  ))}
+                </div>
+                <textarea
+                  value={escalationNote}
+                  onChange={e => setEscalationNote(e.target.value)}
+                  placeholder="Anything specific for Eugene? (optional)"
+                  rows={2}
+                  style={{ fontFamily: fontB, fontSize: 13, color: P, background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 10, padding: '10px 12px', resize: 'none', outline: 'none' }}
+                />
+                <button onClick={handleEscalate} disabled={!urgency || escalating}
+                  style={{ background: P, color: '#fff', border: 'none', borderRadius: 10, padding: '11px 0', fontFamily: fontB, fontSize: 13, fontWeight: 600, cursor: !urgency || escalating ? 'default' : 'pointer', opacity: !urgency || escalating ? 0.6 : 1 }}>
+                  {escalating ? 'Sending…' : 'Send Request'}
+                </button>
+              </div>
+            )}
+
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Input area */}
+          <div style={{ background: '#fff', borderTop: `1px solid ${Pborder}`, padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 8, flexShrink: 0 }}>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+              <textarea
+                ref={textareaRef}
+                value={input}
+                onChange={e => { setInput(e.target.value); autoResize() }}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input) }
+                }}
+                placeholder="Ask anything about your marketing..."
+                rows={1}
+                style={{ flex: 1, fontFamily: fontB, fontSize: 14, color: P, background: BgAlt, border: `1px solid rgba(48,33,97,0.15)`, borderRadius: 12, padding: '10px 14px', outline: 'none', resize: 'none', lineHeight: 1.5 }}
+              />
+              <button
+                onClick={() => sendMessage(input)}
+                disabled={!input.trim() || loading}
+                style={{ width: 40, height: 40, borderRadius: '50%', background: P, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: input.trim() && !loading ? 'pointer' : 'default', opacity: input.trim() && !loading ? 1 : 0.4, flexShrink: 0 }}>
+                <ArrowUp size={18} color="#fff" />
+              </button>
+            </div>
+            <button onClick={() => { setNeedsEscalation(true); setShowEscalation(true) }}
+              style={{ background: 'none', border: 'none', fontFamily: fontB, fontSize: 12, color: 'rgba(48,33,97,0.4)', cursor: 'pointer', textAlign: 'left', padding: 0 }}>
+              Escalate to media buyer
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Floating button ─────────────────────────────────────────────── */}
+      <button
+        onClick={() => setIsOpen(v => !v)}
+        style={{
+          position: 'fixed', bottom: 32, right: 32, zIndex: 1001,
+          width: 56, height: 56, borderRadius: '50%',
+          background: P,
+          border: 'none',
+          boxShadow: '0 4px 24px rgba(48,33,97,0.3)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer',
+          transform: isOpen ? 'scale(0.95)' : 'scale(1)',
+          transition: 'transform 0.15s',
+        }}
+        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)' }}
+        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform = isOpen ? 'scale(0.95)' : 'scale(1)' }}
+      >
+        <MessageCircle size={24} color="#fff" />
+        {hasUnread && !isOpen && (
+          <div style={{ position: 'absolute', top: 4, right: 4, width: 12, height: 12, borderRadius: '50%', background: '#ef4444', border: '2px solid #fff' }} />
+        )}
+      </button>
+    </>
+  )
+}
+
 export default function DashboardPage() {
   const router = useRouter()
 
@@ -2108,6 +2447,9 @@ export default function DashboardPage() {
           {cancelToast}
         </div>
       )}
+
+      {/* ── Chat Widget ───────────────────────────────────────────────────── */}
+      {user && <ChatWidget user={user} score={score} diag={diag} />}
 
       {/* ── Mobile bottom tab bar (lg:hidden) ─────────────────────────────── */}
       <div className="lg:hidden" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'rgba(255,255,255,0.96)', backdropFilter: 'blur(20px)', borderTop: `1px solid ${Pborder}`, display: 'flex', zIndex: 50 }}>
