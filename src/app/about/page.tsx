@@ -301,7 +301,7 @@ export default function AboutPage() {
           {/* Team grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6" style={{ marginTop: 56 }}>
 
-            {/* Card 1 — Eugene Kwata */}
+            {/* Card 1 — Lead Media Buyer */}
             <div style={{
               background: '#fff',
               borderRadius: 20,
@@ -313,9 +313,9 @@ export default function AboutPage() {
                 background: `linear-gradient(135deg, ${P}, #6c4ddd)`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <span style={{ fontFamily: font, fontWeight: 700, fontSize: 18, color: '#fff' }}>EK</span>
+                <span style={{ fontFamily: font, fontWeight: 700, fontSize: 18, color: '#fff' }}>MB</span>
               </div>
-              <div style={{ fontFamily: font, fontWeight: 700, fontSize: 20, color: P, margin: '16px 0 4px' }}>Eugene Kwata</div>
+              <div style={{ fontFamily: font, fontWeight: 700, fontSize: 20, color: P, margin: '16px 0 4px' }}>Lead Media Buyer</div>
               <div style={{ fontFamily: fontB, fontSize: 14, color: '#a855f7' }}>Founder &amp; Lead Media Buyer</div>
               <p style={{ fontFamily: fontB, fontSize: 14, color: Pmuted, lineHeight: 1.7, margin: '12px 0 20px' }}>
                 10+ years managing performance campaigns across East Africa, UK, and US. Diagnosed over 50 ICP misalignments before building the tool to do it automatically.
@@ -532,7 +532,7 @@ export default function AboutPage() {
             color: 'rgba(255,255,255,0.5)',
             margin: '0 0 48px',
           }}>
-            — Eugene Kwata, Founder
+            — The ICP Diagnostic Team
           </p>
           <Link href="/questionnaire" style={{
             fontFamily: font,

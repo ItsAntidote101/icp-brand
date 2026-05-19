@@ -286,16 +286,11 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Founder credibility bar */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 24 }}>
-              <div style={{ width: 48, height: 48, borderRadius: '50%', background: `linear-gradient(135deg,${P},#6c4ddd)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '2px solid rgba(48,33,97,0.2)' }}>
-                <span style={{ color: '#fff', fontSize: 13, fontWeight: 700, fontFamily: font }}>EK</span>
-              </div>
-              <div>
-                <p style={{ margin: '0 0 2px', fontFamily: fontBody, fontSize: 14, fontWeight: 600, color: P }}>Built by Eugene Kwata</p>
-                <p style={{ margin: '0 0 4px', fontFamily: fontBody, fontSize: 13, color: 'rgba(48,33,97,0.6)', lineHeight: 1.5 }}>10+ years · $2M+ in ad spend managed · Former performance lead across East Africa &amp; UK</p>
-                <Link href="/about" style={{ fontFamily: fontBody, fontSize: 13, color: P, textDecoration: 'underline' }}>Read our story →</Link>
-              </div>
+            {/* Credibility bar */}
+            <div style={{ marginTop: 24 }}>
+              <p style={{ margin: '0 0 2px', fontFamily: fontBody, fontSize: 14, fontWeight: 600, color: P }}>Built by performance media buyers</p>
+              <p style={{ margin: '0 0 6px', fontFamily: fontBody, fontSize: 13, color: 'rgba(48,33,97,0.6)', lineHeight: 1.5 }}>$2M+ in ad spend managed · 10+ years experience · East Africa, UK &amp; US markets</p>
+              <Link href="/about" style={{ fontFamily: fontBody, fontSize: 13, color: P, textDecoration: 'underline' }}>Read our story →</Link>
             </div>
           </div>
 
@@ -1360,10 +1355,10 @@ export default function Home() {
               </Body>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 12, background: BgPurple, border: `1px solid ${Pborder}`, borderRadius: 16, padding: '14px 20px' }}>
                 <div style={{ width: 44, height: 44, borderRadius: '50%', background: `linear-gradient(135deg,${P},#6c4ddd)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <span style={{ color: '#fff', fontSize: 14, fontWeight: 700, fontFamily: font }}>EK</span>
+                  <span style={{ color: '#fff', fontSize: 14, fontWeight: 700, fontFamily: font }}>MB</span>
                 </div>
                 <div>
-                  <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: P }}>Eugene Kwata</p>
+                  <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: P }}>Lead Media Buyer</p>
                   <p style={{ margin: 0, fontSize: 12, color: Pbody }}>Founder &amp; Lead Media Buyer</p>
                 </div>
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#ede9fe', padding: '4px 10px', borderRadius: 100, marginLeft: 8 }}>
