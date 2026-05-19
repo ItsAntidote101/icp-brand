@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#302161"/>
+      <stop offset="100%" style="stop-color:#4c1d95"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <!-- Logo mark -->
+  <rect x="84" y="84" width="56" height="56" rx="14" fill="url(#logoGrad)"/>
+  <defs>
+    <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6c4ddd"/>
+      <stop offset="100%" style="stop-color:#a855f7"/>
+    </linearGradient>
+  </defs>
+  <!-- Brand name -->
+  <text x="156" y="123" font-family="-apple-system, system-ui, sans-serif" font-size="28" font-weight="700" fill="white" letter-spacing="-0.5">ICP Diagnostic</text>
+  <!-- Main headline -->
+  <text x="84" y="280" font-family="-apple-system, system-ui, sans-serif" font-size="64" font-weight="800" fill="white" letter-spacing="-2">Free ICP Audit Tool</text>
+  <text x="84" y="360" font-family="-apple-system, system-ui, sans-serif" font-size="64" font-weight="800" fill="#c026d3" letter-spacing="-2">for Marketing Teams</text>
+  <!-- Subtext -->
+  <text x="84" y="440" font-family="-apple-system, system-ui, sans-serif" font-size="28" fill="rgba(255,255,255,0.75)">Get a free AI-powered ICP diagnostic in 5 minutes.</text>
+  <!-- Stat chips -->
+  <rect x="84" y="500" width="200" height="48" rx="12" fill="rgba(255,255,255,0.12)"/>
+  <text x="184" y="530" text-anchor="middle" font-family="-apple-system, system-ui, sans-serif" font-size="18" font-weight="600" fill="white">5 min setup</text>
+  <rect x="300" y="500" width="220" height="48" rx="12" fill="rgba(255,255,255,0.12)"/>
+  <text x="410" y="530" text-anchor="middle" font-family="-apple-system, system-ui, sans-serif" font-size="18" font-weight="600" fill="white">Free to start</text>
+  <rect x="536" y="500" width="260" height="48" rx="12" fill="rgba(255,255,255,0.12)"/>
+  <text x="666" y="530" text-anchor="middle" font-family="-apple-system, system-ui, sans-serif" font-size="18" font-weight="600" fill="white">No ad access needed</text>
+  <!-- URL -->
+  <text x="1116" y="590" text-anchor="end" font-family="-apple-system, system-ui, sans-serif" font-size="20" fill="rgba(255,255,255,0.4)">idealicp.com</text>
+</svg>

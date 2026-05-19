@@ -32,10 +32,10 @@ const NAV_LINKS = [
 
 
 const STATS = [
-  { value: '40–60%',   label: 'Of ad budgets wasted on wrong audience targeting' },
+  { value: '40-60%',   label: 'Of ad budgets wasted on wrong audience targeting' },
   { value: '5 min',    label: 'To complete your full ICP diagnostic' },
   { value: 'KES 50K+', label: 'Average monthly waste found per diagnosis' },
-  { value: 'Zero',     label: 'Ad account access needed — ever' },
+  { value: 'Zero',     label: 'Ad account access needed. Ever.' },
   { value: '10+',      label: 'Markets covered including Kenya, Nigeria, South Africa & East Africa' },
 ]
 
@@ -50,24 +50,24 @@ const TIERS = [
     name: 'Pro', price: 'KES 13,000', period: '/ month',
     desc: 'For growing teams that need speed, depth, and campaign-level analysis.',
     features: ['Everything in Starter', 'Weekly performance snapshots', 'CSV campaign analysis', 'Benchmark comparisons', 'Revenue-ranked findings', 'Complete report history'],
-    cta: 'Start Pro', href: '/questionnaire', highlight: true,
+    cta: 'Get Started with Pro', href: '/questionnaire', highlight: true,
   },
   {
     name: 'Agency', price: 'KES 26,000', period: '/ month',
     desc: 'For agencies managing multiple clients who need reporting at scale.',
     features: ['Everything in Pro', 'Quarterly deep dive audits', 'Multi-client management', 'White label reports', 'Priority support'],
-    cta: 'Talk To Us', href: '/questionnaire', highlight: false,
+    cta: 'Contact Our Team', href: '/questionnaire', highlight: false,
   },
 ]
 
 const FAQ_ITEMS = [
   {
     q: 'What is the difference between the free report and the subscriber report?',
-    a: "The free report diagnoses your ICP based on your questionnaire answers — fast, instant, and genuinely useful. The subscriber report goes further. Our AI visits your actual landing page, researches your competitors, pulls real ad cost benchmarks for your region and industry, and gives you a report backed by live data — not just your answers. Most subscribers say the first deep report alone is worth the subscription.",
+    a: "The free report diagnoses your ICP based on your questionnaire answers. Fast, instant, and genuinely useful. The subscriber report goes further. Our AI visits your actual landing page, researches your competitors, pulls real ad cost benchmarks for your region and industry, and gives you a report backed by live data, not just your answers. Most subscribers say the first deep report alone is worth the subscription.",
   },
   {
     q: 'I already have an agency. Why do I need this?',
-    a: "Your agency optimizes what's in front of them. We diagnose what's underneath. Most agencies won't tell you your ICP is wrong — because fixing it means admitting the last six months of work was built on a broken foundation. We will.",
+    a: "Your agency optimizes what's in front of them. We diagnose what's underneath. Most agencies won't tell you your ICP is wrong, because fixing it means admitting the last six months of work was built on a broken foundation. We will.",
   },
   {
     q: 'Do you need access to my ad accounts?',
@@ -75,7 +75,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'How is this different from hiring a consultant?',
-    a: "A consultant charges KES 50,000+ for a PDF you'll read once. We give you a living diagnostic that updates every month and tells you what to fix next — automatically.",
+    a: "A consultant charges KES 50,000+ for a PDF you'll read once. We give you a living diagnostic that updates every month and tells you what to fix next, automatically.",
   },
   {
     q: 'What if my score is really low?',
@@ -87,7 +87,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'What is the AI Media Buyer Chat?',
-    a: "Every subscriber gets access to an AI chat agent that has read your full diagnostic report. You can ask it anything — why your CPA is high, what ad copy to write for your ICP, how to fix your funnel — and it answers specifically based on your data. Agency subscribers can escalate to a real human media buyer in one click.",
+    a: "Every subscriber gets access to an AI chat agent that has read your full diagnostic report. You can ask it anything: why your CPA is high, what ad copy to write for your ICP, how to fix your funnel. It answers specifically based on your data. Agency subscribers can escalate to a real human media buyer in one click.",
   },
   {
     q: 'What is the Weekly Intelligence Briefing?',
@@ -241,6 +241,9 @@ export default function Home() {
           {/* LEFT — animated copy */}
           <div className="flex flex-col justify-center lg:w-1/2 lg:flex-none">
 
+            {/* pre-heading for keyword signal */}
+            <p style={{ fontFamily: fontBody, fontSize: 13, color: '#a855f7', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600, display: 'block', margin: '0 0 16px' }}>Free ICP Diagnostic Tool</p>
+
             {/* animated headline — fixed height prevents layout shift */}
             <div style={{ minHeight: 'clamp(170px,22vw,230px)', marginBottom: 24, display: 'flex', alignItems: 'flex-start' }}>
               <h1 style={{
@@ -259,14 +262,14 @@ export default function Home() {
             </div>
 
             <p style={{ fontFamily: fontBody, fontSize: 18, lineHeight: 1.7, color: 'rgba(48,33,97,0.7)', margin: '0 0 36px', maxWidth: 480 }}>
-              Get a free ICP diagnostic in 5 minutes. Subscribers unlock weekly competitive intelligence, a media buyer chat agent, live landing page assessment, and a personal strategy session — all in one platform.
+              Get a free ICP diagnostic in 5 minutes. Subscribers unlock weekly competitive intelligence, a media buyer chat agent, live landing page assessment, and a personal strategy session. All in one platform.
             </p>
 
             {/* CTAs */}
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 36 }}>
               <Link href="/questionnaire"
                 style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: P, color: '#fff', textDecoration: 'none', fontWeight: 600, fontSize: 15, padding: '16px 32px', borderRadius: 14, boxShadow: '0 8px 28px rgba(48,33,97,0.28)', whiteSpace: 'nowrap' }}>
-                Get Free Diagnosis
+                Get My Free Diagnosis
               </Link>
               <Link href="/report/demo"
                 style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'transparent', color: P, textDecoration: 'none', fontWeight: 600, fontSize: 15, padding: '16px 32px', borderRadius: 14, border: `2px solid ${P}`, whiteSpace: 'nowrap' }}>
@@ -277,12 +280,12 @@ export default function Home() {
             {/* trust line */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
               <div style={{ width: 80, height: 34, borderRadius: 999, overflow: 'hidden', border: '2.5px solid #fff', boxShadow: '0 2px 8px rgba(0,0,0,0.14)', flexShrink: 0 }}>
-                <Image src="/images/Frame 245.png" alt="Marketing team members" width={80} height={34}
+                <Image src="/images/Frame 245.png" alt="Marketing team members using ICP Diagnostic" width={80} height={34}
                   style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
               </div>
               <div>
                 <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: P }}>50+ marketing teams</p>
-                <p style={{ margin: 0, fontSize: 12, color: Pmuted }}>no ad account access needed.</p>
+                <p style={{ margin: 0, fontSize: 12, color: Pmuted }}>No ad account access needed.</p>
               </div>
             </div>
 
@@ -372,11 +375,18 @@ export default function Home() {
         </div>
         <div className="animate-marquee" style={{ display: 'flex', alignItems: 'center', width: 'max-content', gap: 0 }}>
           {[...Array(2)].map((_, pass) =>
-            [1, 2, 3, 4, 5, 6].map(n => (
+            ([
+              { n: 1, alt: 'EA Games' },
+              { n: 2, alt: 'Amazon' },
+              { n: 3, alt: 'Slack' },
+              { n: 4, alt: 'Spotify' },
+              { n: 5, alt: 'Hertz' },
+              { n: 6, alt: 'Jeep' },
+            ] as { n: number; alt: string }[]).map(({ n, alt }) => (
               <div key={`${pass}-${n}`} style={{ padding: '0 32px', flexShrink: 0 }}>
                 <Image
                   src={`/images/Logos-${n}.png`}
-                  alt={`Partner logo ${n}`}
+                  alt={alt}
                   width={120}
                   height={32}
                   style={{ height: 32, width: 'auto', opacity: 0.5, filter: 'grayscale(100%)', display: 'block' }}
@@ -385,6 +395,7 @@ export default function Home() {
             ))
           )}
         </div>
+        <p style={{ fontFamily: fontBody, fontSize: 11, color: Pmuted, textAlign: 'center', marginTop: 12 }}>Sample brand logos shown for illustration purposes.</p>
       </div>
 
       {/* ── Feature blocks 1–3 ───────────────────────────────────────────── */}
@@ -396,7 +407,7 @@ export default function Home() {
           <div style={{ background: BgPurple, borderRadius: 24, overflow: 'hidden' }}>
             <Image
               src="/images/Holder-1.png"
-              alt="ICP Alignment diagnostic"
+              alt="ICP alignment diagnostic showing targeting gap analysis"
               width={600}
               height={500}
               style={{ width: '100%', height: 'auto', display: 'block' }}
@@ -406,7 +417,7 @@ export default function Home() {
           <div>
             <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
               <span style={{ background: 'linear-gradient(135deg,#e879f9,#a855f7)', color: '#fff', fontSize: 13, fontWeight: 500, padding: '6px 12px', borderRadius: 6 }}>Smart</span>
-              <span style={{ background: '#ede9fe', color: P, fontSize: 13, fontWeight: 500, padding: '6px 12px', borderRadius: 6 }}>Sync</span>
+              <span style={{ background: '#ede9fe', color: P, fontSize: 13, fontWeight: 500, padding: '6px 12px', borderRadius: 6 }}>ICP Targeting Diagnosis</span>
             </div>
             <h2 style={{ fontFamily: font, fontSize: 'clamp(28px,3.5vw,40px)', fontWeight: 700, color: P, lineHeight: 1.1, letterSpacing: '-0.03em', margin: '0 0 28px' }}>
               Your targeting,<br />finally diagnosed.
@@ -424,7 +435,7 @@ export default function Home() {
               ))}
             </ul>
             <Link href="/questionnaire" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, background: P, color: '#fff', textDecoration: 'none', fontWeight: 600, fontSize: 15, padding: '16px 32px', borderRadius: 14 }}>
-              <ArrowRight size={16} color="#fff" /> Find My ICP Gap
+              <ArrowRight size={16} color="#fff" /> Diagnose My Targeting
             </Link>
           </div>
         </div>
@@ -439,7 +450,7 @@ export default function Home() {
           <div>
             <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
               <span style={{ background: 'linear-gradient(135deg,#e879f9,#a855f7)', color: '#fff', fontSize: 13, fontWeight: 500, padding: '6px 12px', borderRadius: 6 }}>Pro</span>
-              <span style={{ background: '#ede9fe', color: P, fontSize: 13, fontWeight: 500, padding: '6px 12px', borderRadius: 6 }}>Analysis</span>
+              <span style={{ background: '#ede9fe', color: P, fontSize: 13, fontWeight: 500, padding: '6px 12px', borderRadius: 6 }}>Funnel Friction Analysis</span>
             </div>
             <h2 style={{ fontFamily: font, fontSize: 'clamp(28px,3.5vw,40px)', fontWeight: 700, color: P, lineHeight: 1.1, letterSpacing: '-0.03em', margin: '0 0 28px' }}>
               Stop guessing.<br />Start knowing.
@@ -464,7 +475,7 @@ export default function Home() {
           <div style={{ background: BgPurple, borderRadius: 24, overflow: 'hidden' }}>
             <Image
               src="/images/Holder-2.png"
-              alt="Funnel scoring diagnostic"
+              alt="Funnel friction scoring tool showing conversion drop-off points"
               width={600}
               height={500}
               style={{ width: '100%', height: 'auto', display: 'block' }}
@@ -481,7 +492,7 @@ export default function Home() {
           <div style={{ background: BgPurple, borderRadius: 24, overflow: 'hidden' }}>
             <Image
               src="/images/Holder-3.png"
-              alt="Budget analysis diagnostic"
+              alt="Ad budget analysis dashboard showing channel spend distribution"
               width={600}
               height={500}
               style={{ width: '100%', height: 'auto', display: 'block' }}
@@ -491,7 +502,7 @@ export default function Home() {
           <div>
             <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
               <span style={{ background: 'linear-gradient(135deg,#e879f9,#a855f7)', color: '#fff', fontSize: 13, fontWeight: 500, padding: '6px 12px', borderRadius: 6 }}>Secure</span>
-              <span style={{ background: '#ede9fe', color: P, fontSize: 13, fontWeight: 500, padding: '6px 12px', borderRadius: 6 }}>Insights</span>
+              <span style={{ background: '#ede9fe', color: P, fontSize: 13, fontWeight: 500, padding: '6px 12px', borderRadius: 6 }}>Ad Spend Audit</span>
             </div>
             <h2 style={{ fontFamily: font, fontSize: 'clamp(28px,3.5vw,40px)', fontWeight: 700, color: P, lineHeight: 1.1, letterSpacing: '-0.03em', margin: '0 0 28px' }}>
               Your budget,<br />working harder.
@@ -523,7 +534,7 @@ export default function Home() {
           <div>
             <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
               <span style={{ background: 'linear-gradient(135deg,#e879f9,#a855f7)', color: '#fff', fontSize: 13, fontWeight: 500, padding: '6px 12px', borderRadius: 6 }}>NEW</span>
-              <span style={{ background: '#ede9fe', color: P, fontSize: 13, fontWeight: 500, padding: '6px 12px', borderRadius: 6 }}>Intelligence</span>
+              <span style={{ background: '#ede9fe', color: P, fontSize: 13, fontWeight: 500, padding: '6px 12px', borderRadius: 6 }}>Competitive Intelligence</span>
             </div>
             <h2 style={{ fontFamily: font, fontSize: 'clamp(28px,3.5vw,40px)', fontWeight: 700, color: P, lineHeight: 1.1, letterSpacing: '-0.03em', margin: '0 0 28px' }}>
               Your market. Every week.<br />Automatically.
@@ -548,7 +559,7 @@ export default function Home() {
           <div style={{ background: BgPurple, borderRadius: 24, overflow: 'hidden' }}>
             <Image
               src="/images/Holder-5.png"
-              alt="Weekly intelligence briefing"
+              alt="Weekly competitive intelligence briefing dashboard"
               width={600}
               height={500}
               style={{ width: '100%', height: 'auto', display: 'block' }}
@@ -574,7 +585,7 @@ export default function Home() {
                   From zero leads to converting<br />in week one.
                 </h3>
                 <p style={{ fontFamily: fontBody, fontSize: 16, color: 'rgba(48,33,97,0.75)', lineHeight: 1.75, margin: '0 0 32px' }}>
-                  A legal services company in Nairobi had been running Google Search ads for 3 months with zero conversions. Our free diagnostic identified the problem in 5 minutes — their landing page had 14 form fields and required account creation before showing the service. They cut it to 3 fields. Leads came in within 7 days.
+                  A legal services company in Nairobi had been running Google Search ads for 3 months with zero conversions. Our free diagnostic identified the problem in 5 minutes. Their landing page had 14 form fields and required account creation before showing the service. They cut it to 3 fields. Leads came in within 7 days.
                 </p>
                 <div className="grid grid-cols-3 gap-4" style={{ marginBottom: 32 }}>
                   {[
@@ -623,14 +634,17 @@ export default function Home() {
               Your marketing cockpit.
             </h2>
             <p style={{ fontFamily: fontBody, fontSize: 17, color: 'rgba(48,33,97,0.7)', maxWidth: 520, margin: '0 auto', lineHeight: 1.7 }}>
-              Everything your team needs to diagnose, fix, and monitor your ICP performance — in one place.
+              Everything your team needs to diagnose, fix, and monitor your ICP performance, all in one place.
             </p>
           </div>
 
           {/* Dashboard image / placeholder */}
-          <div style={{ width: '100%', height: 500, background: 'linear-gradient(135deg,#f8f7ff 0%,#ede9fe 100%)', borderRadius: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${Pborder}`, boxShadow: '0 24px 80px rgba(48,33,97,0.12)', marginBottom: 32 }}>
+          <div style={{ width: '100%', height: 500, background: 'linear-gradient(135deg,#f8f7ff 0%,#ede9fe 100%)', borderRadius: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${Pborder}`, boxShadow: '0 24px 80px rgba(48,33,97,0.12)', marginBottom: 16 }}>
             <p style={{ fontFamily: fontBody, fontSize: 18, color: 'rgba(48,33,97,0.3)', margin: 0 }}>Dashboard Preview</p>
           </div>
+          <p style={{ fontFamily: fontBody, fontSize: 14, color: Pmuted, textAlign: 'center', margin: '0 0 32px' }}>
+            The ICP Diagnostic dashboard shows your health score, estimated monthly waste, performance breakdown, and weekly intelligence briefing in one place.
+          </p>
 
           {/* Feature pills */}
           <div className="flex flex-wrap justify-center gap-4">
@@ -677,7 +691,7 @@ export default function Home() {
             <div style={{ flex: 1, marginTop: 32, borderRadius: 16, overflow: 'hidden', minHeight: 240 }}>
               <Image
                 src="/images/Holder-4.png"
-                alt="ICP diagnostic dashboard"
+                alt="ICP diagnostic platform dashboard overview"
                 width={600}
                 height={450}
                 style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
@@ -739,7 +753,7 @@ export default function Home() {
                 <MessageCircle size={22} color="#a855f7" strokeWidth={1.75} />
               </div>
               <h3 style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: P, margin: '0 0 8px' }}>AI Media Buyer Chat</h3>
-              <p style={{ fontFamily: fontBody, fontSize: 14, lineHeight: 1.65, color: 'rgba(48,33,97,0.65)', margin: 0 }}>Ask anything about your marketing. Get answers grounded in your actual diagnostic data — not generic advice.</p>
+              <p style={{ fontFamily: fontBody, fontSize: 14, lineHeight: 1.65, color: 'rgba(48,33,97,0.65)', margin: 0 }}>Ask anything about your marketing. Get answers grounded in your actual diagnostic data, not generic advice.</p>
             </div>
 
           </div>
@@ -805,7 +819,7 @@ export default function Home() {
           </div>
 
           <p style={{ fontFamily: fontBody, fontSize: 14, color: 'rgba(48,33,97,0.5)', textAlign: 'center', marginTop: 24, maxWidth: 500, marginLeft: 'auto', marginRight: 'auto', lineHeight: 1.7 }}>
-            Every number above comes from real diagnostic data — not estimates. Your results may vary based on campaign size and targeting complexity.
+            Every number above comes from real diagnostic data, not estimates. Your results may vary based on campaign size and targeting complexity.
           </p>
         </div>
       </section>
@@ -820,7 +834,7 @@ export default function Home() {
                 Not ready to subscribe yet?
               </h2>
               <p style={{ fontSize: 16, lineHeight: 1.7, color: Pbody, margin: '0 0 8px' }}>
-                Download our free ICP Targeting Checklist — 27 questions that will tell you if
+                Download our free ICP Targeting Checklist: 27 questions that will tell you if
                 your targeting is broken before you spend another shilling.
               </p>
             </div>
@@ -845,7 +859,7 @@ export default function Home() {
               Good diagnosis. Or a great one.
             </H2>
             <p style={{ fontFamily: fontBody, fontSize: 17, color: Pbody, maxWidth: 500, margin: '0 auto', lineHeight: 1.65 }}>
-              The free report tells you what is broken. The subscriber report tells you exactly why — with real data to back it up.
+              The free report tells you what is broken. The subscriber report tells you exactly why, with real data to back it up.
             </p>
           </div>
 
@@ -864,7 +878,7 @@ export default function Home() {
               <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 32px', display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
                 {[
                   '30-question ICP assessment',
-                  'Overall health score 0–100',
+                  'Overall health score 0-100',
                   'Top 3 critical findings',
                   'Funnel friction score',
                   'Quick wins to implement now',
@@ -920,7 +934,7 @@ export default function Home() {
                 ))}
               </ul>
               <div style={{ borderTop: '1px solid rgba(255,255,255,0.15)', paddingTop: 24, marginBottom: 20 }}>
-                <p style={{ fontFamily: fontBody, fontSize: 13, color: 'rgba(255,255,255,0.55)', margin: 0 }}>Paid for by one saved campaign optimisation</p>
+                <p style={{ fontFamily: fontBody, fontSize: 13, color: 'rgba(255,255,255,0.55)', margin: 0 }}>Paid for by one saved campaign optimization.</p>
               </div>
               <Link href="#pricing" style={{ display: 'block', textAlign: 'center', textDecoration: 'none', background: '#fff', color: P, fontWeight: 700, fontSize: 14, padding: '14px 20px', borderRadius: 12, letterSpacing: '-0.2px' }}>
                 See Pricing
@@ -1029,7 +1043,7 @@ export default function Home() {
                     </div>
                   </>
                 ) : (
-                  <p style={{ fontFamily: fontBody, fontSize: 14, fontWeight: 600, color: '#22c55e', margin: 0 }}>Check your inbox — breakdown sent.</p>
+                  <p style={{ fontFamily: fontBody, fontSize: 14, fontWeight: 600, color: '#22c55e', margin: 0 }}>Check your inbox. Breakdown sent.</p>
                 )}
               </div>
             )}
@@ -1046,7 +1060,7 @@ export default function Home() {
               Stop guessing. Start knowing.
             </H2>
             <p style={{ fontSize: 17, color: Pbody, maxWidth: 460, margin: '0 auto', lineHeight: 1.65 }}>
-              Every paid plan includes our deep research diagnostic — we visit your landing page, research your competitors, and benchmark your performance with real data. Not estimates.
+              Every paid plan includes our deep research diagnostic. We visit your landing page, research your competitors, and benchmark your performance with real data. Not estimates.
             </p>
           </div>
 
@@ -1143,7 +1157,7 @@ export default function Home() {
             </h2>
             <p style={{ fontFamily: fontBody, fontSize: 16, lineHeight: 1.7, color: Pbody, margin: 0 }}>
               Everything you need to know before getting started.{' '}
-              <a href="mailto:support@icpbrand.co" style={{ color: '#d946ef', fontWeight: 600, textDecoration: 'none' }}>Contact Us</a>
+              <a href="mailto:hello@idealicp.com" style={{ color: '#d946ef', fontWeight: 600, textDecoration: 'none' }}>Contact Us</a>
             </p>
           </div>
 
@@ -1351,7 +1365,7 @@ export default function Home() {
               <Body style={{ maxWidth: 520 }}>
                 This platform was built by a performance media buyer who got tired of watching
                 clients waste money on the wrong audience. Every diagnostic rule, every
-                recommendation, every insight comes from real campaign experience — not theory.
+                recommendation, every insight comes from real campaign experience, not theory.
               </Body>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 12, background: BgPurple, border: `1px solid ${Pborder}`, borderRadius: 16, padding: '14px 20px' }}>
                 <div style={{ width: 44, height: 44, borderRadius: '50%', background: `linear-gradient(135deg,${P},#6c4ddd)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -1412,7 +1426,7 @@ export default function Home() {
                 {
                   n: '03',
                   heading: 'We fix it together',
-                  body: 'Live session where we implement your top 3 fixes. Targeting adjustments, landing page recommendations, budget reallocation — done on the call.',
+                  body: 'Live session where we implement your top 3 fixes. Targeting adjustments, landing page recommendations, budget reallocation, done on the call.',
                 },
               ].map((step, i) => (
                 <div key={i} style={{ display: 'flex', gap: 28, marginBottom: 44 }}>
@@ -1430,7 +1444,7 @@ export default function Home() {
             {/* Right — What's included card */}
             <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 24, padding: 40, boxShadow: '0 4px 32px rgba(48,33,97,0.08)' }}>
               <div style={{ display: 'inline-block', fontFamily: fontBody, background: P, color: '#fff', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', padding: '5px 14px', borderRadius: 100, marginBottom: 24 }}>
-                Agency Plan — KES 26,000/mo
+                Agency Plan: KES 26,000/mo
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 28 }}>
                 {[
@@ -1457,7 +1471,7 @@ export default function Home() {
                   &ldquo;I showed up to the session and they already knew my ICP score was 34, my landing page had 14 form fields, and exactly where my budget was going. We fixed three things in 45 minutes that my agency couldn&rsquo;t fix in 6 months.&rdquo;
                 </p>
                 <p style={{ fontFamily: fontBody, fontSize: 13, fontWeight: 600, color: P, margin: 0 }}>
-                  — Head of Marketing, B2B SaaS, Nairobi
+                  Head of Marketing, B2B SaaS, Nairobi
                 </p>
               </blockquote>
 
@@ -1501,7 +1515,7 @@ export default function Home() {
                 <span style={{ fontFamily: font, fontWeight: 700, fontSize: 16, color: P }}>ICP Diagnostic</span>
               </div>
               <p style={{ fontSize: 14, lineHeight: 1.65, color: Pbody, maxWidth: 280, margin: '0 0 24px' }}>
-                The fastest way to find out why your marketing isn&rsquo;t working — and exactly how to fix it.
+                The fastest way to find out why your marketing is not working and exactly how to fix it.
               </p>
               <p style={{ fontSize: 13, fontWeight: 600, color: P, margin: '0 0 10px' }}>Get diagnostic tips by email</p>
               <div style={{ display: 'flex', gap: 8 }}>
@@ -1515,11 +1529,12 @@ export default function Home() {
 
             {/* quick links */}
             <div>
-              <p style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: Pmuted, margin: '0 0 16px' }}>Quick Links</p>
+              <p style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: Pmuted, margin: '0 0 16px' }}>Product</p>
               {[
                 { label: 'How It Works',       href: '#how-it-works' },
                 { label: 'Pricing',            href: '#pricing' },
                 { label: 'FAQ',                href: '#faq' },
+                { label: 'About Us',           href: '/about' },
                 { label: 'Get Free Diagnosis', href: '/questionnaire' },
                 { label: 'Dashboard Login',    href: '/dashboard' },
               ].map(l => (
@@ -1533,8 +1548,10 @@ export default function Home() {
             <div>
               <p style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: Pmuted, margin: '0 0 16px' }}>Contact</p>
               {[
-                { label: 'support@icpbrand.co', href: 'mailto:support@icpbrand.co' },
-                { label: 'Nairobi, Kenya',       href: '#' },
+                { label: 'hello@idealicp.com', href: 'mailto:hello@idealicp.com' },
+                { label: 'Nairobi, Kenya',     href: '#' },
+                { label: 'Privacy Policy',     href: '/privacy' },
+                { label: 'Terms of Service',   href: '/terms' },
               ].map(l => (
                 <div key={l.label} style={{ marginBottom: 10 }}>
                   <a href={l.href} style={{ fontSize: 14, color: Pbody, textDecoration: 'none' }}>{l.label}</a>
