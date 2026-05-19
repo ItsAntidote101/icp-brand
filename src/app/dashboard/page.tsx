@@ -7,7 +7,7 @@ import {
   FileSearch, ArrowRight, TrendingUp, TrendingDown,
   BarChart2, User, FileText, LayoutDashboard, Zap, AlertCircle,
   Check, ChevronDown, ChevronUp, CheckCircle, Target, X, FileDown,
-  RefreshCw, Bell, Brain, Send,
+  RefreshCw, Bell, Brain, Send, Settings, HelpCircle, LogOut,
 } from 'lucide-react'
 import { AreaChart, Area, ResponsiveContainer, Tooltip } from 'recharts'
 
@@ -1160,26 +1160,36 @@ function AccountTab({ user, currency, score, reportCount, onSignOut, onCancelled
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 18, maxWidth: 720 }}>
-      <h2 style={{ fontFamily: font, fontSize: 'clamp(20px,4vw,28px)', fontWeight: 700, color: P, margin: 0, letterSpacing: '-0.02em' }}>Account</h2>
+    <div className="grid grid-cols-1 lg:grid-cols-2" style={{ gap: 24, alignItems: 'start' }}>
 
-      {/* Profile */}
-      <Card style={{ padding: '24px 28px' }}>
-        <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: Pmuted, margin: '0 0 14px' }}>Profile</p>
-        {[
-          { label: 'Full name', value: user.full_name ?? '—' },
-          { label: 'Email',     value: user.email },
-          { label: 'Company',   value: user.company_name ?? '—' },
-        ].map((row, i, arr) => (
-          <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: i < arr.length - 1 ? `1px solid ${Pborder}` : 'none' }}>
-            <span style={{ fontFamily: fontB, fontSize: 13, color: Pmuted }}>{row.label}</span>
-            <span style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, color: P }}>{row.value}</span>
-          </div>
-        ))}
-      </Card>
+      {/* ── LEFT: Profile + Sign out ────────────────────────────────────── */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-      {/* Subscription & Billing heading */}
-      <p style={{ fontFamily: font, fontSize: 20, fontWeight: 700, color: P, margin: '4px 0 -4px', letterSpacing: '-0.02em' }}>Subscription & Billing</p>
+        {/* Profile */}
+        <Card style={{ padding: '24px 28px' }}>
+          <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: Pmuted, margin: '0 0 14px' }}>Profile</p>
+          {[
+            { label: 'Full name', value: user.full_name ?? '—' },
+            { label: 'Email',     value: user.email },
+            { label: 'Company',   value: user.company_name ?? '—' },
+          ].map((row, i, arr) => (
+            <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: i < arr.length - 1 ? `1px solid ${Pborder}` : 'none' }}>
+              <span style={{ fontFamily: fontB, fontSize: 13, color: Pmuted }}>{row.label}</span>
+              <span style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, color: P, maxWidth: '55%', textAlign: 'right', wordBreak: 'break-all' }}>{row.value}</span>
+            </div>
+          ))}
+        </Card>
+
+        {/* Sign out */}
+        <button onClick={onSignOut}
+          style={{ background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 14, padding: 15, fontSize: 14, fontFamily: fontB, fontWeight: 500, color: Pmuted, cursor: 'pointer' }}>
+          Sign out
+        </button>
+      </div>
+
+      {/* ── RIGHT: Subscription & Billing ──────────────────────────────── */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <p style={{ fontFamily: font, fontSize: 20, fontWeight: 700, color: P, margin: 0, letterSpacing: '-0.02em' }}>Subscription & Billing</p>
 
       {/* Card One: Current Plan */}
       <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 20, padding: '28px 32px' }}>
@@ -1352,13 +1362,9 @@ function AccountTab({ user, currency, score, reportCount, onSignOut, onCancelled
         )}
       </div>
 
-      {/* Sign out */}
-      <button onClick={onSignOut}
-        style={{ background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 14, padding: 15, fontSize: 14, fontFamily: fontB, fontWeight: 500, color: Pmuted, cursor: 'pointer' }}>
-        Sign out
-      </button>
+      </div>{/* end right column */}
 
-      {/* Modals */}
+      {/* Modals (outside columns so they overlay everything) */}
       {showPauseModal && (
         <PauseModal user={user} onClose={() => setShowPauseModal(false)}
           onPaused={resumeDate => {
@@ -1611,138 +1617,154 @@ function IntelligenceTab({ user, score }: { user: UserData; score: number | null
     : 0
   const canRefresh = !nextRefresh || hoursLeft === 0
 
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 960 }}>
+  // ── Q&A card (shared between columns) ────────────────────────────────
+  const QACard = (
+    <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 16, padding: '24px 28px', boxShadow: '0 1px 8px rgba(48,33,97,0.04)' }}>
+      <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: '0 0 4px', letterSpacing: '-0.02em' }}>Ask your market.</p>
+      <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 16px' }}>Ask anything about your market or competitive landscape.</p>
 
-      {/* ── Section 1: Weekly Briefing Card ─────────────────────────────── */}
-      <div style={{ background: 'linear-gradient(135deg,#302161 0%,#4c1d95 100%)', borderRadius: 20, padding: 'clamp(28px,4vw,40px) clamp(24px,5vw,48px)', display: 'flex', flexWrap: 'wrap', gap: 24, justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, background: 'rgba(255,255,255,0.2)', color: '#fff', padding: '3px 12px', borderRadius: 100, letterSpacing: '0.1em', textTransform: 'uppercase', display: 'inline-block', marginBottom: 14 }}>
-            Weekly Intelligence Briefing
-          </span>
-          <h2 style={{ fontFamily: font, fontSize: 'clamp(22px,4vw,28px)', fontWeight: 700, color: '#fff', margin: '0 0 8px', letterSpacing: '-0.02em' }}>Your market this week.</h2>
-          <p style={{ fontFamily: fontB, fontSize: 13, color: 'rgba(255,255,255,0.5)', margin: 0 }}>
-            {briefing?.updatedAt
-              ? `Updated ${new Date(briefing.updatedAt).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}`
-              : 'No briefing yet'}
-          </p>
-        </div>
-        <button
-          onClick={handleRefresh}
-          disabled={!canRefresh || refreshing}
-          style={{ display: 'flex', alignItems: 'center', gap: 8, background: canRefresh && !refreshing ? '#fff' : 'rgba(255,255,255,0.15)', color: canRefresh && !refreshing ? P : 'rgba(255,255,255,0.5)', border: 'none', borderRadius: 12, padding: '12px 24px', fontFamily: fontB, fontSize: 14, fontWeight: 600, cursor: canRefresh && !refreshing ? 'pointer' : 'default', whiteSpace: 'nowrap', flexShrink: 0 }}>
-          <RefreshCw size={16} style={{ animation: refreshing ? 'spin 1s linear infinite' : 'none' }} />
-          {refreshing ? 'Researching…' : canRefresh ? 'Refresh Intelligence' : `Next refresh in ${hoursLeft}h`}
-        </button>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 14 }}>
+        {SUGGESTED.map(q => (
+          <button key={q} onClick={() => handleQuestion(q)}
+            style={{ fontFamily: fontB, fontSize: 11, color: P, background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 100, padding: '5px 12px', cursor: 'pointer' }}>
+            {q}
+          </button>
+        ))}
       </div>
 
-      {loading ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {[200, 160, 120].map(h => (
-            <div key={h} className="animate-pulse" style={{ height: h, borderRadius: 16, background: 'rgba(48,33,97,0.06)' }} />
-          ))}
-        </div>
-      ) : !briefing ? (
-        <div style={{ background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 20, padding: '48px 32px', textAlign: 'center' }}>
-          <Brain size={36} color={Pmuted} style={{ marginBottom: 16 }} />
-          <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: '0 0 8px' }}>Your first intelligence briefing will be ready next Monday.</p>
-          <p style={{ fontFamily: fontB, fontSize: 14, color: Pmuted, margin: '0 0 24px' }}>{"Can't wait? Click Refresh Intelligence for an on-demand briefing now."}</p>
-          <button onClick={handleRefresh} disabled={refreshing}
-            style={{ background: P, color: '#fff', border: 'none', borderRadius: 12, padding: '12px 24px', fontFamily: fontB, fontSize: 14, fontWeight: 600, cursor: refreshing ? 'default' : 'pointer', opacity: refreshing ? 0.7 : 1, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-            <RefreshCw size={15} style={{ animation: refreshing ? 'spin 1s linear infinite' : 'none' }} />
-            {refreshing ? 'Researching…' : 'Get My Briefing Now'}
-          </button>
-        </div>
-      ) : (
-        <>
-          {/* ── Section 2: Benchmark Comparison ─────────────────────────── */}
-          <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 20, padding: '28px 32px' }}>
-            <p style={{ fontFamily: font, fontSize: 20, fontWeight: 700, color: P, margin: '0 0 6px', letterSpacing: '-0.02em' }}>How you compare.</p>
-            <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 28px' }}>Your metrics vs industry average vs top 10% performers.</p>
-            <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', marginBottom: 18 }}>
-              {[
-                { color: '#302161', label: 'You' },
-                { color: '#a855f7', label: 'Industry Avg' },
-                { color: '#22c55e', label: 'Top 10%' },
-              ].map(l => (
-                <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: l.color }} />
-                  <span style={{ fontFamily: fontB, fontSize: 12, color: Pmuted }}>{l.label}</span>
+      <div style={{ display: 'flex', gap: 8 }}>
+        <input
+          value={question}
+          onChange={e => setQuestion(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && handleQuestion(question)}
+          placeholder="Ask anything about your market…"
+          style={{ flex: 1, fontFamily: fontB, fontSize: 13, color: P, background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 10, padding: '10px 14px', outline: 'none' }}
+        />
+        <button onClick={() => handleQuestion(question)} disabled={!question.trim() || questionLoading}
+          style={{ background: P, border: 'none', borderRadius: 10, padding: '0 16px', cursor: question.trim() && !questionLoading ? 'pointer' : 'default', opacity: question.trim() && !questionLoading ? 1 : 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          {questionLoading
+            ? <RefreshCw size={16} color="#fff" style={{ animation: 'spin 1s linear infinite' }} />
+            : <Send size={16} color="#fff" />
+          }
+        </button>
+      </div>
+      {qError && <p style={{ fontFamily: fontB, fontSize: 12, color: '#ef4444', margin: '8px 0 0' }}>{qError}</p>}
+
+      {answers.length > 0 && (
+        <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {answers.map((a, i) => (
+            <div key={i} style={{ background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 12, padding: '16px 18px' }}>
+              <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, color: Pmuted, margin: '0 0 6px', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Your question</p>
+              <p style={{ fontFamily: font, fontSize: 13, fontWeight: 600, color: P, margin: '0 0 10px' }}>{a.q}</p>
+              <p style={{ fontFamily: fontB, fontSize: 13, color: P, margin: 0, lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{a.a}</p>
+              {a.sources && a.sources.length > 0 && (
+                <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+                  {a.sources.map(s => (
+                    <span key={s} style={{ fontFamily: fontB, fontSize: 10, background: 'rgba(48,33,97,0.08)', color: Pmuted, padding: '2px 8px', borderRadius: 100 }}>{s}</span>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
-            {briefing.benchmarks.map(b => <BenchmarkTrack key={b.name} {...b} />)}
-          </div>
-
-          {/* ── Section 3: Competitor Activity Feed ──────────────────────── */}
-          <div>
-            <p style={{ fontFamily: font, fontSize: 20, fontWeight: 700, color: P, margin: '0 0 6px', letterSpacing: '-0.02em' }}>{"What's moving in your market."}</p>
-            <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 20px' }}>Intelligence gathered for your industry and region this week.</p>
-            {briefing.insights.map(ins => <InsightCard key={ins.id} insight={ins} />)}
-          </div>
-
-          {/* ── Section 4: Competitive Radar ─────────────────────────────── */}
-          <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 20, padding: '28px 32px' }}>
-            <p style={{ fontFamily: font, fontSize: 20, fontWeight: 700, color: P, margin: '0 0 6px', letterSpacing: '-0.02em' }}>Your competitive position.</p>
-            <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 24px' }}>Approximate positioning based on your ICP alignment and ad spend efficiency.</p>
-            <CompetitiveRadar userPos={briefing.userPosition} competitors={briefing.competitorPositions} />
-          </div>
-        </>
-      )}
-
-      {/* ── Section 5: On-Demand Intelligence ───────────────────────────── */}
-      <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 20, padding: '28px 32px' }}>
-        <p style={{ fontFamily: font, fontSize: 20, fontWeight: 700, color: P, margin: '0 0 6px', letterSpacing: '-0.02em' }}>Ask your market.</p>
-        <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 20px' }}>Ask anything about your market or competitive landscape.</p>
-
-        {/* Suggested questions */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
-          {SUGGESTED.map(q => (
-            <button key={q} onClick={() => handleQuestion(q)}
-              style={{ fontFamily: fontB, fontSize: 12, color: P, background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 100, padding: '6px 14px', cursor: 'pointer' }}>
-              {q}
-            </button>
           ))}
         </div>
+      )}
+    </div>
+  )
 
-        {/* Input */}
-        <div style={{ display: 'flex', gap: 10 }}>
-          <input
-            value={question}
-            onChange={e => setQuestion(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && handleQuestion(question)}
-            placeholder="Ask anything about your market… e.g. What are competitors in my industry doing with their ad spend?"
-            style={{ flex: 1, fontFamily: fontB, fontSize: 13, color: P, background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 12, padding: '12px 16px', outline: 'none' }}
-          />
-          <button onClick={() => handleQuestion(question)} disabled={!question.trim() || questionLoading}
-            style={{ background: P, border: 'none', borderRadius: 12, padding: '0 18px', cursor: question.trim() && !questionLoading ? 'pointer' : 'default', opacity: question.trim() && !questionLoading ? 1 : 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            {questionLoading
-              ? <RefreshCw size={18} color="#fff" style={{ animation: 'spin 1s linear infinite' }} />
-              : <Send size={18} color="#fff" />
-            }
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-[65%_35%]" style={{ gap: 24, alignItems: 'start' }}>
+
+      {/* ── LEFT COLUMN: briefing header + benchmarks + feed ─────────────── */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+
+        {/* Weekly Briefing header card */}
+        <div style={{ background: 'linear-gradient(135deg,#302161 0%,#4c1d95 100%)', borderRadius: 20, padding: 'clamp(24px,4vw,36px) clamp(20px,5vw,40px)', display: 'flex', flexWrap: 'wrap', gap: 20, justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, background: 'rgba(255,255,255,0.2)', color: '#fff', padding: '3px 12px', borderRadius: 100, letterSpacing: '0.1em', textTransform: 'uppercase', display: 'inline-block', marginBottom: 12 }}>
+              Weekly Intelligence Briefing
+            </span>
+            <h2 style={{ fontFamily: font, fontSize: 'clamp(20px,3vw,26px)', fontWeight: 700, color: '#fff', margin: '0 0 6px', letterSpacing: '-0.02em' }}>Your market this week.</h2>
+            <p style={{ fontFamily: fontB, fontSize: 13, color: 'rgba(255,255,255,0.5)', margin: 0 }}>
+              {briefing?.updatedAt
+                ? `Updated ${new Date(briefing.updatedAt).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}`
+                : 'No briefing yet'}
+            </p>
+          </div>
+          <button
+            onClick={handleRefresh}
+            disabled={!canRefresh || refreshing}
+            style={{ display: 'flex', alignItems: 'center', gap: 8, background: canRefresh && !refreshing ? '#fff' : 'rgba(255,255,255,0.15)', color: canRefresh && !refreshing ? P : 'rgba(255,255,255,0.5)', border: 'none', borderRadius: 12, padding: '11px 22px', fontFamily: fontB, fontSize: 13, fontWeight: 600, cursor: canRefresh && !refreshing ? 'pointer' : 'default', whiteSpace: 'nowrap', flexShrink: 0 }}>
+            <RefreshCw size={15} style={{ animation: refreshing ? 'spin 1s linear infinite' : 'none' }} />
+            {refreshing ? 'Researching…' : canRefresh ? 'Refresh Intelligence' : `Next refresh in ${hoursLeft}h`}
           </button>
         </div>
-        {qError && <p style={{ fontFamily: fontB, fontSize: 12, color: '#ef4444', margin: '8px 0 0' }}>{qError}</p>}
 
-        {/* Answer cards */}
-        {answers.length > 0 && (
-          <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
-            {answers.map((a, i) => (
-              <div key={i} style={{ background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 14, padding: '18px 20px' }}>
-                <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, color: Pmuted, margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Your question</p>
-                <p style={{ fontFamily: font, fontSize: 14, fontWeight: 600, color: P, margin: '0 0 14px' }}>{a.q}</p>
-                <p style={{ fontFamily: fontB, fontSize: 13, color: P, margin: 0, lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{a.a}</p>
-                {a.sources && a.sources.length > 0 && (
-                  <div style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                    {a.sources.map(s => (
-                      <span key={s} style={{ fontFamily: fontB, fontSize: 10, background: 'rgba(48,33,97,0.08)', color: Pmuted, padding: '2px 8px', borderRadius: 100 }}>{s}</span>
-                    ))}
-                  </div>
-                )}
-              </div>
+        {loading ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {[200, 160, 120].map(h => (
+              <div key={h} className="animate-pulse" style={{ height: h, borderRadius: 16, background: 'rgba(48,33,97,0.06)' }} />
             ))}
           </div>
+        ) : !briefing ? (
+          <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 16, padding: '40px 28px', textAlign: 'center', boxShadow: '0 1px 8px rgba(48,33,97,0.04)' }}>
+            <Brain size={32} color={Pmuted} style={{ marginBottom: 14 }} />
+            <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: '0 0 8px' }}>Your first briefing will be ready next Monday.</p>
+            <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 20px' }}>{"Can't wait? Click Refresh for an on-demand briefing now."}</p>
+            <button onClick={handleRefresh} disabled={refreshing}
+              style={{ background: P, color: '#fff', border: 'none', borderRadius: 12, padding: '11px 22px', fontFamily: fontB, fontSize: 13, fontWeight: 600, cursor: refreshing ? 'default' : 'pointer', opacity: refreshing ? 0.7 : 1, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+              <RefreshCw size={14} style={{ animation: refreshing ? 'spin 1s linear infinite' : 'none' }} />
+              {refreshing ? 'Researching…' : 'Get My Briefing Now'}
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* Benchmark Comparison */}
+            <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 16, padding: '24px 28px', boxShadow: '0 1px 8px rgba(48,33,97,0.04)' }}>
+              <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: '0 0 4px', letterSpacing: '-0.02em' }}>How you compare.</p>
+              <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 24px' }}>Your metrics vs industry average vs top 10% performers.</p>
+              <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', marginBottom: 16 }}>
+                {[
+                  { color: '#302161', label: 'You' },
+                  { color: '#a855f7', label: 'Industry Avg' },
+                  { color: '#22c55e', label: 'Top 10%' },
+                ].map(l => (
+                  <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <div style={{ width: 10, height: 10, borderRadius: '50%', background: l.color }} />
+                    <span style={{ fontFamily: fontB, fontSize: 12, color: Pmuted }}>{l.label}</span>
+                  </div>
+                ))}
+              </div>
+              {briefing.benchmarks.map(b => <BenchmarkTrack key={b.name} {...b} />)}
+            </div>
+
+            {/* Competitor Activity Feed */}
+            <div>
+              <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: '0 0 4px', letterSpacing: '-0.02em' }}>{"What's moving in your market."}</p>
+              <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 16px' }}>Intelligence gathered for your industry and region this week.</p>
+              {briefing.insights.map(ins => <InsightCard key={ins.id} insight={ins} />)}
+            </div>
+          </>
         )}
+
+        {/* Q&A on mobile (hidden on lg) */}
+        <div className="lg:hidden">
+          {QACard}
+        </div>
+      </div>
+
+      {/* ── RIGHT COLUMN: Ask + Radar (desktop only, sticky) ─────────────── */}
+      <div className="hidden lg:block">
+        <div style={{ position: 'sticky', top: 32, display: 'flex', flexDirection: 'column', gap: 24 }}>
+          {QACard}
+
+          {briefing && (
+            <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 16, padding: '24px 28px', boxShadow: '0 1px 8px rgba(48,33,97,0.04)' }}>
+              <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: '0 0 4px', letterSpacing: '-0.02em' }}>Your competitive position.</p>
+              <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '0 0 20px' }}>Approximate positioning based on ICP alignment and ad spend efficiency.</p>
+              <CompetitiveRadar userPos={briefing.userPosition} competitors={briefing.competitorPositions} />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
@@ -1878,73 +1900,126 @@ export default function DashboardPage() {
     account:      <User size={20} />,
   }
 
+  const TAB_LABELS: Record<Tab, string> = { overview: 'Overview', intelligence: 'Intelligence', reports: 'Reports', account: 'Account' }
+  const userInitials = (user?.full_name ?? user?.email ?? '?').split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase()
+
   return (
-    <div style={{ minHeight: '100vh', background: '#fff', fontFamily: fontB }}>
+    <div style={{ minHeight: '100vh', background: BgAlt, fontFamily: fontB }}>
       <style>{`
         @keyframes spin      { to { transform: rotate(360deg) } }
         @keyframes fadeUp    { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:translateY(0) } }
         @keyframes slideUp   { from { opacity:0; transform:translateY(12px) } to { opacity:1; transform:translateY(0) } }
+        .sidebar-nav-item:hover { background: #f8f7ff !important; }
       `}</style>
 
-      {/* ── Top nav ───────────────────────────────────────────────────────── */}
-      <nav style={{ position: 'sticky', top: 0, zIndex: 40, background: 'rgba(255,255,255,0.93)', backdropFilter: 'blur(20px)', borderBottom: `1px solid ${Pborder}` }}>
-        <div style={{ maxWidth: 1320, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 56, padding: '0 16px', gap: 10 }}>
+      {/* ── LEFT SIDEBAR (desktop only) ───────────────────────────────────── */}
+      <aside className="hidden lg:flex" style={{ position: 'fixed', top: 0, left: 0, width: 240, height: '100vh', background: '#fff', borderRight: `1px solid ${Pborder}`, flexDirection: 'column', zIndex: 40 }}>
+        {/* Logo */}
+        <div style={{ padding: '24px 20px 20px', borderBottom: `1px solid ${Pborder}` }}>
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 9, textDecoration: 'none' }}>
+            <div style={{ width: 28, height: 28, borderRadius: 8, background: `linear-gradient(135deg,${P},#6c4ddd)`, flexShrink: 0 }} />
+            <span style={{ fontFamily: font, fontWeight: 700, fontSize: 15, color: P }}>ICP Diagnostic</span>
+          </Link>
+        </div>
+
+        {/* User section */}
+        <div style={{ padding: '18px 20px', borderBottom: `1px solid ${Pborder}` }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 36, height: 36, borderRadius: '50%', background: `linear-gradient(135deg,${P},#6c4ddd)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <span style={{ fontFamily: font, fontSize: 13, fontWeight: 700, color: '#fff' }}>{userInitials}</span>
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <p style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, color: P, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {user?.full_name ?? user?.email}
+              </p>
+              {user?.company_name && (
+                <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '1px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.company_name}</p>
+              )}
+            </div>
+          </div>
+          {tierLabel && (
+            <span style={{ display: 'inline-block', marginTop: 10, fontFamily: fontB, fontSize: 10, fontWeight: 700, background: P, color: '#fff', padding: '2px 10px', borderRadius: 100 }}>{tierLabel}</span>
+          )}
+        </div>
+
+        {/* Nav items */}
+        <nav style={{ flex: 1, padding: '12px 12px', overflowY: 'auto' }}>
+          {(['overview', 'intelligence', 'reports', 'account'] as Tab[]).map(tab => {
+            const isActive = activeTab === tab
+            return (
+              <button key={tab} onClick={() => setActiveTab(tab)} className="sidebar-nav-item"
+                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', marginBottom: 2, textAlign: 'left', background: isActive ? '#ede9fe' : 'transparent', color: isActive ? P : 'rgba(48,33,97,0.6)', fontFamily: fontB, fontSize: 13, fontWeight: isActive ? 600 : 500, transition: 'background 0.12s' }}>
+                {TAB_ICONS[tab]}
+                {TAB_LABELS[tab]}
+              </button>
+            )
+          })}
+
+          <div style={{ margin: '12px 0', borderTop: `1px solid ${Pborder}` }} />
+
+          <a href="mailto:hello@idealicp.com"
+            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', textAlign: 'left', background: 'transparent', color: 'rgba(48,33,97,0.6)', fontFamily: fontB, fontSize: 13, fontWeight: 500, textDecoration: 'none' }}>
+            <HelpCircle size={18} />
+            Help & Support
+          </a>
+          <button onClick={handleSignOut} className="sidebar-nav-item"
+            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', marginTop: 2, textAlign: 'left', background: 'transparent', color: 'rgba(48,33,97,0.6)', fontFamily: fontB, fontSize: 13, fontWeight: 500 }}>
+            <LogOut size={18} />
+            Sign out
+          </button>
+        </nav>
+
+        {/* Currency selector at bottom */}
+        <div style={{ padding: '16px 20px', borderTop: `1px solid ${Pborder}` }}>
+          <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: Pmuted, margin: '0 0 8px' }}>Currency</p>
+          <div style={{ position: 'relative' }}>
+            <select value={currency} onChange={e => handleCurrencyChange(e.target.value)}
+              style={{ width: '100%', appearance: 'none', WebkitAppearance: 'none', fontFamily: fontB, fontSize: 13, fontWeight: 600, color: P, background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 8, padding: '8px 32px 8px 12px', cursor: 'pointer', outline: 'none' }}>
+              {CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+            <span style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', fontSize: 10, color: P }}>▾</span>
+          </div>
+        </div>
+      </aside>
+
+      {/* ── MOBILE TOP NAV (lg:hidden) ─────────────────────────────────────── */}
+      <nav className="lg:hidden" style={{ position: 'sticky', top: 0, zIndex: 40, background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(20px)', borderBottom: `1px solid ${Pborder}` }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 56, padding: '0 16px', gap: 10 }}>
           <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', flexShrink: 0 }}>
             <div style={{ width: 24, height: 24, borderRadius: 6, background: `linear-gradient(135deg,${P},#6c4ddd)` }} />
             <span style={{ fontFamily: font, fontWeight: 700, fontSize: 14, color: P }}>ICP Diagnostic</span>
           </Link>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            {/* Currency selector */}
             <div style={{ position: 'relative' }}>
-              <select
-                value={currency}
-                onChange={e => handleCurrencyChange(e.target.value)}
-                style={{
-                  appearance: 'none', WebkitAppearance: 'none',
-                  fontFamily: fontB, fontSize: 12, fontWeight: 600, color: P,
-                  background: BgAlt, border: `1px solid ${Pborder}`,
-                  borderRadius: 100, padding: '5px 28px 5px 12px',
-                  cursor: 'pointer', outline: 'none',
-                }}
-              >
+              <select value={currency} onChange={e => handleCurrencyChange(e.target.value)}
+                style={{ appearance: 'none', WebkitAppearance: 'none', fontFamily: fontB, fontSize: 12, fontWeight: 600, color: P, background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 100, padding: '5px 28px 5px 12px', cursor: 'pointer', outline: 'none' }}>
                 {CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
               <span style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', fontSize: 9, color: P }}>▾</span>
             </div>
-
             {tierLabel && (
               <span className="hidden sm:inline-block" style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, background: P, color: '#fff', padding: '3px 10px', borderRadius: 100 }}>{tierLabel}</span>
             )}
-            <span className="hidden md:block" style={{ fontFamily: fontB, fontSize: 13, color: 'rgba(48,33,97,0.8)', maxWidth: 130, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {user?.full_name ?? user?.email}
-            </span>
-            <button onClick={handleSignOut}
-              style={{ background: 'none', border: `1px solid ${Pborder}`, borderRadius: 8, padding: '6px 12px', fontSize: 12, color: Pmuted, cursor: 'pointer', fontFamily: fontB, whiteSpace: 'nowrap' }}>
-              Sign out
-            </button>
-          </div>
-        </div>
-
-        {/* Desktop tab row */}
-        <div className="hidden md:block" style={{ borderTop: `1px solid ${Pborder}`, padding: '0 16px' }}>
-          <div style={{ maxWidth: 1320, margin: '0 auto', display: 'flex' }}>
-            {(['overview', 'intelligence', 'reports', 'account'] as Tab[]).map(tab => (
-              <button key={tab} onClick={() => setActiveTab(tab)} style={{
-                fontFamily: fontB, fontSize: 13, fontWeight: 500, padding: '11px 20px',
-                border: 'none', cursor: 'pointer', background: 'transparent',
-                color: activeTab === tab ? P : Pmuted,
-                borderBottom: `2px solid ${activeTab === tab ? P : 'transparent'}`,
-                marginBottom: -1, transition: 'all 0.15s',
-              }}>
-                {tab.charAt(0).toUpperCase() + tab.slice(1)}
-              </button>
-            ))}
           </div>
         </div>
       </nav>
 
-      {/* ── Content ───────────────────────────────────────────────────────── */}
-      <div style={{ maxWidth: 1320, margin: '0 auto', padding: 'clamp(20px,4vw,36px) clamp(14px,4vw,24px) 100px' }}>
+      {/* ── MAIN CONTENT ──────────────────────────────────────────────────────── */}
+      <div className="lg:ml-[240px]">
+        {/* Desktop page header */}
+        <div className="hidden lg:flex" style={{ alignItems: 'center', justifyContent: 'space-between', padding: '28px 40px 0', gap: 16 }}>
+          <h1 style={{ fontFamily: font, fontSize: 22, fontWeight: 700, color: P, margin: 0, letterSpacing: '-0.02em' }}>{TAB_LABELS[activeTab]}</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <button onClick={() => setActiveTab('overview')} style={{ display: 'flex', alignItems: 'center', gap: 7, background: P, color: '#fff', border: 'none', borderRadius: 10, padding: '9px 18px', fontFamily: fontB, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+              <Zap size={14} /> Run New Diagnosis
+            </button>
+            <button style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 10, width: 38, height: 38, cursor: 'pointer' }}>
+              <Bell size={16} color={Pmuted} />
+            </button>
+          </div>
+        </div>
+
+        <div style={{ padding: 'clamp(20px,4vw,32px) clamp(14px,4vw,40px) 100px' }}>
 
         {/* OVERVIEW */}
         {activeTab === 'overview' && (
@@ -2019,7 +2094,8 @@ export default function DashboardPage() {
             showToast={msg => { setCancelToast(msg); setTimeout(() => setCancelToast(''), 5000) }}
           />
         )}
-      </div>
+        </div>{/* end inner padding div */}
+      </div>{/* end lg:ml-[240px] */}
 
       {/* ── Booking modal ─────────────────────────────────────────────────── */}
       {showModal && user && (
@@ -2033,8 +2109,8 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* ── Mobile bottom tab bar ─────────────────────────────────────────── */}
-      <div className="md:hidden" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'rgba(255,255,255,0.96)', backdropFilter: 'blur(20px)', borderTop: `1px solid ${Pborder}`, display: 'flex', zIndex: 50 }}>
+      {/* ── Mobile bottom tab bar (lg:hidden) ─────────────────────────────── */}
+      <div className="lg:hidden" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'rgba(255,255,255,0.96)', backdropFilter: 'blur(20px)', borderTop: `1px solid ${Pborder}`, display: 'flex', zIndex: 50 }}>
         {(['overview', 'intelligence', 'reports', 'account'] as Tab[]).map(tab => (
           <button key={tab} onClick={() => setActiveTab(tab)} style={{
             flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
