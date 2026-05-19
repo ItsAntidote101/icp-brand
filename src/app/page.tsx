@@ -5,7 +5,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import {
   RefreshCw, Filter, TrendingDown, BarChart2, Activity,
-  Check, Menu, X, MapPin, ArrowRight, Globe,
+  Check, Menu, X, MapPin, ArrowRight, Globe, MessageCircle,
+  BarChart, TrendingUp,
 } from 'lucide-react'
 
 export const dynamic = 'force-static'
@@ -83,6 +84,14 @@ const FAQ_ITEMS = [
     q: 'Do you cover my region?',
     a: "Yes. East Africa, West Africa, South Africa, UK, Europe, US, Southeast Asia and more. Your recommendations reflect local ad costs, platform behavior, and audience psychology.",
   },
+  {
+    q: 'What is the AI Media Buyer Chat?',
+    a: "Every subscriber gets access to an AI chat agent that has read your full diagnostic report. You can ask it anything — why your CPA is high, what ad copy to write for your ICP, how to fix your funnel — and it answers specifically based on your data. Agency subscribers can escalate to a real human media buyer in one click.",
+  },
+  {
+    q: 'What is the Weekly Intelligence Briefing?',
+    a: "Every Monday your dashboard updates with a fresh competitive intelligence report for your industry and region. It shows how your metrics compare to industry benchmarks, what competitors are doing, what is moving in your market, and one specific opportunity to act on that week. You also get it delivered to your inbox.",
+  },
 ]
 
 
@@ -135,6 +144,15 @@ export default function Home() {
   const [activeTab,  setActiveTab]  = useState('Google Reviews')
   const [heroIndex,   setHeroIndex]   = useState(0)
   const [heroVisible, setHeroVisible] = useState(true)
+
+  const [calcBudget,      setCalcBudget]      = useState('')
+  const [calcConvRate,    setCalcConvRate]     = useState('')
+  const [calcResult,      setCalcResult]       = useState<number | null>(null)
+  const [calcEmail,       setCalcEmail]        = useState('')
+  const [calcSubmitted,   setCalcSubmitted]    = useState(false)
+  const [calcEmailSent,   setCalcEmailSent]    = useState(false)
+  const [checklistEmail,  setChecklistEmail]   = useState('')
+  const [checklistSent,   setChecklistSent]    = useState(false)
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -240,7 +258,7 @@ export default function Home() {
             </div>
 
             <p style={{ fontFamily: fontBody, fontSize: 18, lineHeight: 1.7, color: 'rgba(48,33,97,0.7)', margin: '0 0 36px', maxWidth: 480 }}>
-              Get a free ICP diagnostic in 5 minutes. Subscribers unlock a deeper AI-researched report — we visit your landing page, research your competitors, and benchmark your spend against your industry. Live.
+              Get a free ICP diagnostic in 5 minutes. Subscribers unlock weekly competitive intelligence, a media buyer chat agent, live landing page assessment, and a personal strategy session — all in one platform.
             </p>
 
             {/* CTAs */}
@@ -490,6 +508,48 @@ export default function Home() {
         <span style={{ position: 'absolute', right: 24, top: '50%', transform: 'translateY(-50%)', writingMode: 'vertical-rl', fontSize: 12, color: 'rgba(48,33,97,0.2)', letterSpacing: '0.1em', fontWeight: 500 }}>03</span>
       </section>
 
+      {/* Block 4 — Text LEFT, Visual RIGHT */}
+      <section className="section-pad" style={{ background: BgAlt, position: 'relative', overflow: 'hidden' }}>
+        <div className="container grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-20 items-center">
+          {/* text */}
+          <div>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
+              <span style={{ background: 'linear-gradient(135deg,#e879f9,#a855f7)', color: '#fff', fontSize: 13, fontWeight: 500, padding: '6px 12px', borderRadius: 6 }}>NEW</span>
+              <span style={{ background: '#ede9fe', color: P, fontSize: 13, fontWeight: 500, padding: '6px 12px', borderRadius: 6 }}>Intelligence</span>
+            </div>
+            <h2 style={{ fontFamily: font, fontSize: 'clamp(28px,3.5vw,40px)', fontWeight: 700, color: P, lineHeight: 1.1, letterSpacing: '-0.03em', margin: '0 0 28px' }}>
+              Your market. Every week.<br />Automatically.
+            </h2>
+            <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 36px' }}>
+              {[
+                'Weekly competitive briefing delivered to your dashboard every Monday',
+                'Benchmark your CTR, CPA and conversion rate against top performers in your region and industry',
+                'Real-time competitor activity feed showing what\'s moving in your market',
+              ].map(item => (
+                <li key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontFamily: fontBody, fontSize: 17, color: 'rgba(48,33,97,0.75)', lineHeight: 1.7, marginBottom: 8 }}>
+                  <span style={{ marginTop: 6, width: 6, height: 6, borderRadius: '50%', background: 'rgba(48,33,97,0.4)', flexShrink: 0 }} />
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <a href="#pricing" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, background: P, color: '#fff', textDecoration: 'none', fontWeight: 600, fontSize: 15, padding: '16px 32px', borderRadius: 14 }}>
+              <ArrowRight size={16} color="#fff" /> See Intelligence Feature
+            </a>
+          </div>
+          {/* visual */}
+          <div style={{ background: BgPurple, borderRadius: 24, overflow: 'hidden' }}>
+            <Image
+              src="/images/Holder-5.png"
+              alt="Weekly intelligence briefing"
+              width={600}
+              height={500}
+              style={{ width: '100%', height: 'auto', display: 'block' }}
+            />
+          </div>
+        </div>
+        <span style={{ position: 'absolute', right: 24, top: '50%', transform: 'translateY(-50%)', writingMode: 'vertical-rl', fontSize: 12, color: 'rgba(48,33,97,0.2)', letterSpacing: '0.1em', fontWeight: 500 }}>04</span>
+      </section>
+
       {/* ── Feature grid ──────────────────────────────────────────────────── */}
       <section id="features" className="section-pad" style={{ background: BgAlt }}>
         <div className="container grid grid-cols-1 lg:grid-cols-[2fr_3fr] gap-4 items-stretch">
@@ -578,12 +638,46 @@ export default function Home() {
             {/* Card 6 */}
             <div style={{ background: '#fff', borderRadius: 20, padding: '28px 24px', display: 'flex', flexDirection: 'column' }}>
               <div style={{ width: 44, height: 44, borderRadius: 12, background: '#f3e8ff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
-                <Activity size={22} color="#a855f7" strokeWidth={1.75} />
+                <MessageCircle size={22} color="#a855f7" strokeWidth={1.75} />
               </div>
-              <h3 style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: P, margin: '0 0 8px' }}>Monthly Health Check</h3>
-              <p style={{ fontFamily: fontBody, fontSize: 14, lineHeight: 1.65, color: 'rgba(48,33,97,0.65)', margin: 0 }}>Track ICP score improvement month over month automatically.</p>
+              <h3 style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: P, margin: '0 0 8px' }}>AI Media Buyer Chat</h3>
+              <p style={{ fontFamily: fontBody, fontSize: 14, lineHeight: 1.65, color: 'rgba(48,33,97,0.65)', margin: 0 }}>Ask anything about your marketing. Get answers grounded in your actual diagnostic data — not generic advice.</p>
             </div>
 
+          </div>
+        </div>
+      </section>
+
+      {/* ── Agency human escalation card ─────────────────────────────────── */}
+      <section className="section-pad" style={{ background: BgAlt, paddingTop: 0 }}>
+        <div className="container">
+          <div style={{ background: 'linear-gradient(135deg,#302161 0%,#4c1d95 100%)', borderRadius: 20, padding: 'clamp(28px,4vw,40px) clamp(24px,5vw,48px)' }}>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+              {/* Left */}
+              <div>
+                <span style={{ display: 'inline-block', background: 'rgba(255,255,255,0.2)', color: '#fff', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', padding: '4px 14px', borderRadius: 100, marginBottom: 20 }}>Agency Feature</span>
+                <h3 style={{ fontFamily: font, fontSize: 'clamp(22px,3vw,28px)', fontWeight: 700, color: '#fff', margin: '0 0 16px', lineHeight: 1.2, letterSpacing: '-0.02em' }}>Talk to a real media buyer.</h3>
+                <p style={{ fontFamily: fontBody, fontSize: 16, color: 'rgba(255,255,255,0.8)', margin: '0 0 28px', lineHeight: 1.7 }}>
+                  Escalate from AI to human when you need it. Your assigned media buyer reviews your diagnostic before the call. No briefing needed.
+                </p>
+                <a href="#pricing" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#fff', color: P, textDecoration: 'none', fontWeight: 700, fontSize: 14, padding: '13px 28px', borderRadius: 12 }}>
+                  See Agency Plan
+                </a>
+              </div>
+              {/* Right */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {[
+                  'AI chat agent knows your full diagnostic',
+                  'Escalate to human in one click',
+                  'Media buyer responds within 24 hours',
+                ].map(feat => (
+                  <div key={feat} style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.12)', borderRadius: 100, padding: '10px 18px' }}>
+                    <Check size={14} color="#fff" strokeWidth={2.5} />
+                    <span style={{ fontFamily: fontBody, fontSize: 14, color: '#fff', fontWeight: 500 }}>{feat}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -739,6 +833,112 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── Ad Waste Calculator ───────────────────────────────────────────── */}
+      <section className="section-pad" style={{ background: '#fff', borderTop: `1px solid ${Pborder}` }}>
+        <div className="container">
+          <div style={{ maxWidth: 800, margin: '0 auto', background: '#fff', border: `1px solid rgba(48,33,97,0.1)`, borderRadius: 24, padding: 'clamp(32px,5vw,56px) clamp(24px,5vw,64px)' }}>
+            <div style={{ textAlign: 'center', marginBottom: 40 }}>
+              <span style={{ display: 'inline-block', background: '#d946ef', color: '#fff', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', padding: '4px 14px', borderRadius: 100, marginBottom: 20 }}>Free Tool</span>
+              <h2 style={{ fontFamily: font, fontSize: 'clamp(28px,3.5vw,44px)', fontWeight: 700, color: P, letterSpacing: '-0.03em', lineHeight: 1.1, margin: '0 0 16px' }}>
+                How much are you wasting<br />on ads right now?
+              </h2>
+              <p style={{ fontFamily: fontBody, fontSize: 16, color: 'rgba(48,33,97,0.7)', lineHeight: 1.7, margin: 0 }}>
+                Enter your numbers below. We will show you your estimated monthly waste in seconds. No email required.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6" style={{ marginBottom: 24 }}>
+              {/* Input 1: Monthly Budget */}
+              <div>
+                <label style={{ display: 'block', fontFamily: fontBody, fontSize: 13, fontWeight: 600, color: P, marginBottom: 8 }}>Monthly Ad Budget</label>
+                <div style={{ display: 'flex', alignItems: 'center', border: `1px solid rgba(48,33,97,0.2)`, borderRadius: 10, overflow: 'hidden' }}>
+                  <span style={{ fontFamily: fontBody, fontSize: 14, fontWeight: 600, color: Pmuted, background: BgAlt, padding: '12px 14px', borderRight: `1px solid rgba(48,33,97,0.1)`, flexShrink: 0 }}>KES</span>
+                  <input
+                    type="number"
+                    value={calcBudget}
+                    onChange={e => { setCalcBudget(e.target.value); setCalcResult(null) }}
+                    placeholder="50000"
+                    style={{ flex: 1, fontFamily: fontBody, fontSize: 15, color: P, background: '#fff', border: 'none', padding: '12px 14px', outline: 'none' }}
+                  />
+                </div>
+              </div>
+              {/* Input 2: Conversion Rate */}
+              <div>
+                <label style={{ display: 'block', fontFamily: fontBody, fontSize: 13, fontWeight: 600, color: P, marginBottom: 8 }}>Current Conversion Rate</label>
+                <div style={{ display: 'flex', alignItems: 'center', border: `1px solid rgba(48,33,97,0.2)`, borderRadius: 10, overflow: 'hidden' }}>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={calcConvRate}
+                    onChange={e => { setCalcConvRate(e.target.value); setCalcResult(null) }}
+                    placeholder="2.5"
+                    style={{ flex: 1, fontFamily: fontBody, fontSize: 15, color: P, background: '#fff', border: 'none', padding: '12px 14px', outline: 'none' }}
+                  />
+                  <span style={{ fontFamily: fontBody, fontSize: 14, fontWeight: 600, color: Pmuted, background: BgAlt, padding: '12px 14px', borderLeft: `1px solid rgba(48,33,97,0.1)`, flexShrink: 0 }}>%</span>
+                </div>
+                <p style={{ fontFamily: fontBody, fontSize: 12, color: Pmuted, margin: '6px 0 0' }}>leads / landing page visitors x 100</p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => {
+                const budget = parseFloat(calcBudget)
+                const rate   = parseFloat(calcConvRate)
+                if (!budget || !rate || budget <= 0 || rate <= 0) return
+                const industryAvg = 3.5
+                const waste = rate < industryAvg
+                  ? Math.round(budget * (1 - rate / industryAvg))
+                  : Math.round(budget * 0.1)
+                setCalcResult(waste)
+                setCalcSubmitted(true)
+              }}
+              disabled={!calcBudget || !calcConvRate}
+              style={{ width: '100%', background: P, color: '#fff', border: 'none', borderRadius: 12, padding: 16, fontFamily: font, fontSize: 16, fontWeight: 600, cursor: calcBudget && calcConvRate ? 'pointer' : 'default', opacity: calcBudget && calcConvRate ? 1 : 0.5 }}
+            >
+              Calculate My Waste
+            </button>
+
+            {calcResult !== null && calcSubmitted && (
+              <div style={{ marginTop: 32, padding: '32px', background: BgAlt, borderRadius: 16, textAlign: 'center', animation: 'fadeUp 0.4s ease both' }}>
+                <style>{`@keyframes fadeUp { from { opacity:0; transform:translateY(16px) } to { opacity:1; transform:translateY(0) } }`}</style>
+                <p style={{ fontFamily: fontBody, fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: Pmuted, margin: '0 0 8px' }}>Estimated Monthly Waste</p>
+                <p style={{ fontFamily: font, fontSize: 'clamp(44px,6vw,72px)', fontWeight: 800, letterSpacing: '-0.04em', margin: '0 0 8px', lineHeight: 1, color: calcResult > parseFloat(calcBudget) * 0.3 ? '#ef4444' : calcResult > parseFloat(calcBudget) * 0.15 ? '#f59e0b' : '#22c55e' }}>
+                  KES {calcResult.toLocaleString()}
+                </p>
+                <p style={{ fontFamily: fontBody, fontSize: 15, color: 'rgba(48,33,97,0.75)', lineHeight: 1.7, margin: '0 0 28px', maxWidth: 480, marginLeft: 'auto', marginRight: 'auto' }}>
+                  Based on industry benchmarks, you are likely wasting KES {calcResult.toLocaleString()} per month due to ICP misalignment and funnel friction.
+                </p>
+                {!calcEmailSent ? (
+                  <>
+                    <p style={{ fontFamily: fontBody, fontSize: 14, fontWeight: 600, color: P, margin: '0 0 14px' }}>Get the full breakdown showing exactly where this waste is coming from.</p>
+                    <div style={{ display: 'flex', gap: 8, maxWidth: 440, margin: '0 auto' }}>
+                      <input
+                        type="email"
+                        value={calcEmail}
+                        onChange={e => setCalcEmail(e.target.value)}
+                        placeholder="your@email.com"
+                        style={{ flex: 1, fontFamily: fontBody, fontSize: 14, color: P, background: '#fff', border: `1px solid rgba(48,33,97,0.2)`, borderRadius: 10, padding: '11px 14px', outline: 'none' }}
+                      />
+                      <button
+                        onClick={async () => {
+                          if (!calcEmail) return
+                          await fetch('/api/lead-magnet', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: calcEmail, type: 'calculator', wasteEstimate: calcResult }) })
+                          setCalcEmailSent(true)
+                        }}
+                        style={{ background: P, color: '#fff', border: 'none', borderRadius: 10, padding: '11px 18px', fontFamily: fontBody, fontSize: 14, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                        Send My Breakdown
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <p style={{ fontFamily: fontBody, fontSize: 14, fontWeight: 600, color: '#22c55e', margin: 0 }}>Check your inbox — breakdown sent.</p>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
       {/* ── Pricing ───────────────────────────────────────────────────────── */}
       <section id="pricing" className="section-pad" style={{ background: BgAlt, borderTop: `1px solid ${Pborder}` }}>
         <div className="container">
@@ -752,35 +952,51 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" style={{ alignItems: 'start' }}>
-            {TIERS.map(tier => (
-              <div key={tier.name} style={{ background: tier.highlight ? P : '#fff', border: `1px solid ${tier.highlight ? 'transparent' : Pborder}`, borderRadius: 20, padding: '36px 28px', boxShadow: tier.highlight ? '0 20px 56px rgba(48,33,97,0.28)' : 'none', position: 'relative' }}>
-                {tier.highlight && (
-                  <div style={{ position: 'absolute', top: -13, left: '50%', transform: 'translateX(-50%)', background: 'linear-gradient(135deg,#a78bfa,#6c4ddd)', color: '#fff', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.6px', padding: '4px 16px', borderRadius: 100, whiteSpace: 'nowrap' }}>
-                    Most Popular
+          {/* Features comparison banner */}
+          <div style={{ background: P, borderRadius: '16px 16px 0 0', padding: '14px 28px', marginBottom: 0, display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontFamily: fontBody, fontSize: 13, color: 'rgba(255,255,255,0.9)', lineHeight: 1.6 }}>
+              All paid plans include:
+            </span>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+              {['Weekly Intelligence Briefing', 'AI Media Buyer Chat', 'Deep Research Diagnostic', 'Self-Serve Subscription Management'].map(f => (
+                <span key={f} style={{ fontFamily: fontBody, fontSize: 12, color: 'rgba(255,255,255,0.75)', display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <Check size={11} color="rgba(255,255,255,0.6)" strokeWidth={2.5} />
+                  {f}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div style={{ borderRadius: '0 0 20px 20px', overflow: 'hidden', marginBottom: 24 }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" style={{ alignItems: 'start' }}>
+              {TIERS.map(tier => (
+                <div key={tier.name} style={{ background: tier.highlight ? P : '#fff', border: `1px solid ${tier.highlight ? 'transparent' : Pborder}`, borderRadius: 20, padding: '36px 28px', boxShadow: tier.highlight ? '0 20px 56px rgba(48,33,97,0.28)' : 'none', position: 'relative' }}>
+                  {tier.highlight && (
+                    <div style={{ position: 'absolute', top: -13, left: '50%', transform: 'translateX(-50%)', background: 'linear-gradient(135deg,#a78bfa,#6c4ddd)', color: '#fff', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.6px', padding: '4px 16px', borderRadius: 100, whiteSpace: 'nowrap' }}>
+                      Most Popular
+                    </div>
+                  )}
+                  <p style={{ fontFamily: font, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: tier.highlight ? 'rgba(255,255,255,0.6)' : Pmuted, margin: '0 0 10px' }}>{tier.name}</p>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 8 }}>
+                    <span style={{ fontFamily: font, fontSize: 36, fontWeight: 800, letterSpacing: '-1px', color: tier.highlight ? '#fff' : P, lineHeight: 1 }}>{tier.price}</span>
+                    <span style={{ fontSize: 14, color: tier.highlight ? 'rgba(255,255,255,0.55)' : Pmuted }}>{tier.period}</span>
                   </div>
-                )}
-                <p style={{ fontFamily: font, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: tier.highlight ? 'rgba(255,255,255,0.6)' : Pmuted, margin: '0 0 10px' }}>{tier.name}</p>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 8 }}>
-                  <span style={{ fontFamily: font, fontSize: 36, fontWeight: 800, letterSpacing: '-1px', color: tier.highlight ? '#fff' : P, lineHeight: 1 }}>{tier.price}</span>
-                  <span style={{ fontSize: 14, color: tier.highlight ? 'rgba(255,255,255,0.55)' : Pmuted }}>{tier.period}</span>
+                  <p style={{ fontSize: 14, lineHeight: 1.6, color: tier.highlight ? 'rgba(255,255,255,0.75)' : Pbody, margin: '0 0 24px' }}>{tier.desc}</p>
+                  <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {tier.features.map(f => (
+                      <li key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 14 }}>
+                        <span style={{ flexShrink: 0, width: 18, height: 18, borderRadius: '50%', background: tier.highlight ? 'rgba(255,255,255,0.18)' : '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 1 }}>
+                          <Check size={10} color={tier.highlight ? '#fff' : P} strokeWidth={3} />
+                        </span>
+                        <span style={{ color: tier.highlight ? 'rgba(255,255,255,0.85)' : Pbody }}>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Link href={tier.href} style={{ display: 'block', textAlign: 'center', textDecoration: 'none', background: tier.highlight ? '#fff' : P, color: tier.highlight ? P : '#fff', fontWeight: 700, fontSize: 14, padding: '14px 20px', borderRadius: 12, letterSpacing: '-0.2px' }}>
+                    {tier.cta}
+                  </Link>
                 </div>
-                <p style={{ fontSize: 14, lineHeight: 1.6, color: tier.highlight ? 'rgba(255,255,255,0.75)' : Pbody, margin: '0 0 24px' }}>{tier.desc}</p>
-                <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {tier.features.map(f => (
-                    <li key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 14 }}>
-                      <span style={{ flexShrink: 0, width: 18, height: 18, borderRadius: '50%', background: tier.highlight ? 'rgba(255,255,255,0.18)' : '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 1 }}>
-                        <Check size={10} color={tier.highlight ? '#fff' : P} strokeWidth={3} />
-                      </span>
-                      <span style={{ color: tier.highlight ? 'rgba(255,255,255,0.85)' : Pbody }}>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Link href={tier.href} style={{ display: 'block', textAlign: 'center', textDecoration: 'none', background: tier.highlight ? '#fff' : P, color: tier.highlight ? P : '#fff', fontWeight: 700, fontSize: 14, padding: '14px 20px', borderRadius: 12, letterSpacing: '-0.2px' }}>
-                  {tier.cta}
-                </Link>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
           <p style={{ textAlign: 'center', fontSize: 14, color: Pmuted, marginTop: 32 }}>
             Start with a free diagnostic. Upgrade only when you&rsquo;re ready.
@@ -908,6 +1124,92 @@ export default function Home() {
               </div>
             </div>
 
+          </div>
+        </div>
+      </section>
+
+      {/* ── LP Friction Checklist Lead Magnet ────────────────────────────── */}
+      <section className="section-pad" style={{ background: BgAlt, borderTop: `1px solid ${Pborder}` }}>
+        <div className="container">
+          <div style={{ borderRadius: 24, padding: 'clamp(32px,5vw,56px) clamp(24px,5vw,64px)', background: BgAlt }}>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+              {/* LEFT */}
+              <div>
+                <span style={{ display: 'inline-block', background: '#d946ef', color: '#fff', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', padding: '4px 14px', borderRadius: 100, marginBottom: 20 }}>Free Download</span>
+                <h2 style={{ fontFamily: font, fontSize: 'clamp(24px,3vw,38px)', fontWeight: 700, color: P, letterSpacing: '-0.03em', lineHeight: 1.15, margin: '0 0 20px' }}>
+                  Is your landing page<br />killing your conversions?
+                </h2>
+                <p style={{ fontFamily: fontBody, fontSize: 16, color: 'rgba(48,33,97,0.75)', lineHeight: 1.7, margin: '0 0 28px' }}>
+                  Download our 27-point Landing Page Friction Checklist. Every question maps to a real conversion killer we diagnose. Takes 10 minutes to complete. Most marketers find at least 8 problems.
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 28 }}>
+                  {[
+                    'Used by 50+ marketing teams',
+                    'Covers mobile, desktop, and form friction',
+                    'Includes industry benchmarks for each checkpoint',
+                  ].map(point => (
+                    <div key={point} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <span style={{ flexShrink: 0, width: 20, height: 20, borderRadius: '50%', background: '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Check size={11} color={P} strokeWidth={3} />
+                      </span>
+                      <span style={{ fontFamily: fontBody, fontSize: 15, color: P }}>{point}</span>
+                    </div>
+                  ))}
+                </div>
+                {!checklistSent ? (
+                  <>
+                    <input
+                      type="email"
+                      value={checklistEmail}
+                      onChange={e => setChecklistEmail(e.target.value)}
+                      placeholder="Your work email"
+                      style={{ width: '100%', fontFamily: fontBody, fontSize: 14, color: P, background: '#fff', border: `1px solid rgba(48,33,97,0.2)`, borderRadius: 10, padding: '14px 16px', outline: 'none', marginBottom: 12, boxSizing: 'border-box' }}
+                    />
+                    <button
+                      onClick={async () => {
+                        if (!checklistEmail) return
+                        await fetch('/api/lead-magnet', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: checklistEmail, type: 'checklist' }) })
+                        setChecklistSent(true)
+                      }}
+                      style={{ width: '100%', background: P, color: '#fff', border: 'none', borderRadius: 12, padding: 16, fontFamily: font, fontSize: 15, fontWeight: 600, cursor: 'pointer' }}>
+                      Send Me The Checklist
+                    </button>
+                    <p style={{ fontFamily: fontBody, fontSize: 12, color: Pmuted, margin: '10px 0 0', textAlign: 'center' }}>Free. No spam. Unsubscribe anytime.</p>
+                  </>
+                ) : (
+                  <div style={{ background: '#dcfce7', border: '1px solid #86efac', borderRadius: 12, padding: '16px 20px' }}>
+                    <p style={{ fontFamily: fontBody, fontSize: 14, fontWeight: 600, color: '#16a34a', margin: 0 }}>Checklist on its way. Check your inbox.</p>
+                  </div>
+                )}
+              </div>
+
+              {/* RIGHT — checklist preview card */}
+              <div>
+                <div style={{ background: '#fff', borderRadius: 16, padding: 24, boxShadow: '0 4px 32px rgba(48,33,97,0.1)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20, paddingBottom: 16, borderBottom: `1px solid ${Pborder}` }}>
+                    <div style={{ width: 28, height: 28, borderRadius: 7, background: `linear-gradient(135deg,${P},#6c4ddd)` }} />
+                    <span style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: P }}>Landing Page Friction Checklist</span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {[
+                      { checked: true,  label: 'Value proposition visible in 5 seconds' },
+                      { checked: true,  label: 'Form has fewer than 5 fields' },
+                      { checked: false, label: 'Mobile load time under 3 seconds' },
+                      { checked: true,  label: 'Primary CTA above the fold' },
+                      { checked: false, label: 'Trust signals visible without scrolling' },
+                    ].map((item, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <div style={{ width: 18, height: 18, borderRadius: 4, border: `2px solid ${item.checked ? P : 'rgba(48,33,97,0.25)'}`, background: item.checked ? P : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          {item.checked && <Check size={10} color="#fff" strokeWidth={3} />}
+                        </div>
+                        <span style={{ fontFamily: fontBody, fontSize: 13, color: item.checked ? P : Pmuted, lineHeight: 1.4 }}>{item.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p style={{ fontFamily: fontBody, fontSize: 12, color: Pmuted, margin: '16px 0 0', textAlign: 'center' }}>+ 22 more checkpoints</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -1046,13 +1348,13 @@ export default function Home() {
         <div className="container">
         <div style={{ maxWidth: 640, margin: '0 auto' }}>
           <h2 style={{ fontFamily: font, fontSize: 'clamp(32px,5vw,52px)', fontWeight: 700, letterSpacing: '-0.03em', color: P, margin: '0 0 20px', lineHeight: 1.1 }}>
-            Every month without a diagnosis is a month of budget you won&rsquo;t get back.
+            Your competitors are getting smarter every week. Are you?
           </h2>
           <p style={{ fontFamily: fontBody, fontSize: 17, color: 'rgba(48,33,97,0.75)', maxWidth: 520, margin: '0 auto 44px', lineHeight: 1.7 }}>
-            You don&rsquo;t have a spending problem. You have a targeting problem. And it has a name, a score, and a fix.
+            While you&rsquo;re reading this, top performers in your industry are optimizing their targeting, reading their weekly intelligence briefing, and fixing their funnel friction. Your free diagnosis takes 5 minutes. Start now.
           </p>
           <Link href="/questionnaire" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: P, color: '#fff', textDecoration: 'none', fontWeight: 700, fontSize: 17, padding: '17px 40px', borderRadius: 12, letterSpacing: '-0.3px', boxShadow: '0 12px 40px rgba(48,33,97,0.25)' }}>
-            Get My Free Diagnosis <ArrowRight size={18} />
+            Get My Free Diagnosis &rarr;
           </Link>
           <p style={{ fontSize: 13, color: Pmuted, marginTop: 16 }}>
             Free &middot; No credit card &middot; No ad account access needed
