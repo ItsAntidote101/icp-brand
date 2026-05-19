@@ -7,6 +7,7 @@ import {
   FileSearch, ArrowRight, TrendingUp, TrendingDown,
   BarChart2, User, FileText, LayoutDashboard, Zap, AlertCircle,
   Check, ChevronDown, ChevronUp, CheckCircle, Target, X, FileDown,
+  RefreshCw, Bell, Brain, Send,
 } from 'lucide-react'
 import { AreaChart, Area, ResponsiveContainer, Tooltip } from 'recharts'
 
@@ -29,7 +30,7 @@ function convertAmount(amount: number, fromCurrency: string, toCurrency: string)
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type Tab = 'overview' | 'reports' | 'account'
+type Tab = 'overview' | 'intelligence' | 'reports' | 'account'
 
 type UserData = {
   id: string; email: string; full_name: string | null
@@ -1383,6 +1384,370 @@ function AccountTab({ user, currency, score, reportCount, onSignOut, onCancelled
   )
 }
 
+// ─── Intelligence tab ─────────────────────────────────────────────────────────
+
+type MarketInsight = {
+  id: string
+  type: 'market_movement' | 'competitor_strategy' | 'opportunity' | 'platform_update'
+  title: string
+  body: string
+  source?: string
+  timeLabel: string
+  implication?: string
+  recommendation?: string
+}
+
+type IntelBenchmark = {
+  name: string
+  userValue: number | null
+  industryAvg: number
+  top10: number
+  unit: string
+  higherIsBetter: boolean
+}
+
+type CompetitorPos = { label: string; x: number; y: number }
+
+type IntelligenceBriefing = {
+  weekOf: string
+  updatedAt: string
+  insights: MarketInsight[]
+  benchmarks: IntelBenchmark[]
+  competitorPositions: CompetitorPos[]
+  userPosition: { x: number; y: number }
+}
+
+function BenchmarkTrack({ name, userValue, industryAvg, top10, unit, higherIsBetter }: IntelBenchmark) {
+  const vals = [userValue ?? industryAvg, industryAvg, top10].filter(v => v > 0)
+  const lo   = Math.min(...vals) * (higherIsBetter ? 0.5 : 0.6)
+  const hi   = Math.max(...vals) * (higherIsBetter ? 1.4 : 1.5)
+  const span = hi - lo || 1
+
+  function pos(v: number) { return Math.max(4, Math.min(96, ((v - lo) / span) * 100)) }
+
+  const uPos = pos(userValue ?? industryAvg)
+  const aPos = pos(industryAvg)
+  const tPos = pos(top10)
+
+  const fmt = (v: number) => unit === '%' ? `${v}%` : unit === '$' ? `$${v.toLocaleString()}` : `${unit}${v.toLocaleString()}`
+
+  const DOTS = [
+    { p: uPos, color: '#302161', label: fmt(userValue ?? industryAvg), name: 'You', size: 14 },
+    { p: aPos, color: '#a855f7', label: fmt(industryAvg), name: 'Avg', size: 12 },
+    { p: tPos, color: '#22c55e', label: fmt(top10), name: 'Top 10%', size: 12 },
+  ]
+
+  return (
+    <div style={{ marginBottom: 28 }}>
+      <div style={{ fontFamily: "'PolySans Median', system-ui, sans-serif", fontSize: 15, fontWeight: 600, color: '#302161', marginBottom: 20 }}>{name}</div>
+      <div style={{ position: 'relative', height: 52 }}>
+        {/* Track */}
+        <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', height: 6, borderRadius: 3, background: higherIsBetter ? 'linear-gradient(90deg,#ef4444,#f59e0b,#22c55e)' : 'linear-gradient(90deg,#22c55e,#f59e0b,#ef4444)', transform: 'translateY(-50%)' }} />
+        {/* Dots + labels */}
+        {DOTS.map(d => (
+          <div key={d.name} style={{ position: 'absolute', left: `${d.p}%`, top: '50%', transform: 'translate(-50%,-50%)' }}>
+            <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: 4, whiteSpace: 'nowrap', textAlign: 'center' }}>
+              <div style={{ fontFamily: "'PolySans Neutral', system-ui, sans-serif", fontSize: 11, fontWeight: 700, color: d.color }}>{d.label}</div>
+              <div style={{ fontFamily: "'PolySans Neutral', system-ui, sans-serif", fontSize: 10, color: 'rgba(48,33,97,0.4)' }}>{d.name}</div>
+            </div>
+            <div style={{ width: d.size, height: d.size, borderRadius: '50%', background: d.color, border: '2px solid #fff', boxShadow: '0 1px 4px rgba(0,0,0,0.15)', position: 'relative', zIndex: 1 }} />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function InsightCard({ insight }: { insight: MarketInsight }) {
+  const iconConfig = {
+    market_movement:     { icon: <TrendingUp size={16} color="#fff" />,  bg: insight.title.toLowerCase().includes('declin') || insight.title.toLowerCase().includes('drop') ? '#ef4444' : '#302161' },
+    competitor_strategy: { icon: <Target size={16} color="#fff" />,      bg: '#a855f7' },
+    opportunity:         { icon: <Zap size={16} color="#fff" />,         bg: '#f59e0b' },
+    platform_update:     { icon: <Bell size={16} color="#fff" />,        bg: '#3b82f6' },
+  }
+  const cfg = iconConfig[insight.type]
+
+  return (
+    <div style={{ background: '#fff', border: '1px solid rgba(48,33,97,0.08)', borderRadius: 16, padding: '20px 24px', marginBottom: 12 }}>
+      <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+        <div style={{ width: 34, height: 34, borderRadius: '50%', background: cfg.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          {cfg.icon}
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 6 }}>
+            <p style={{ fontFamily: "'PolySans Median', system-ui", fontSize: 14, fontWeight: 700, color: '#302161', margin: 0, lineHeight: 1.3 }}>{insight.title}</p>
+            <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+              {insight.source && <span style={{ fontFamily: "'PolySans Neutral', system-ui", fontSize: 10, fontWeight: 700, background: '#f8f7ff', color: 'rgba(48,33,97,0.6)', padding: '2px 8px', borderRadius: 100, whiteSpace: 'nowrap' }}>{insight.source}</span>}
+              <span style={{ fontFamily: "'PolySans Neutral', system-ui", fontSize: 10, color: 'rgba(48,33,97,0.35)' }}>{insight.timeLabel}</span>
+            </div>
+          </div>
+          <p style={{ fontFamily: "'PolySans Neutral', system-ui", fontSize: 13, color: 'rgba(48,33,97,0.6)', margin: 0, lineHeight: 1.6 }}>{insight.body}</p>
+          {insight.implication && (
+            <div style={{ marginTop: 10, background: '#f8f7ff', borderRadius: 8, padding: '8px 12px' }}>
+              <span style={{ fontFamily: "'PolySans Neutral', system-ui", fontSize: 12, fontWeight: 700, color: '#302161' }}>What this means for you: </span>
+              <span style={{ fontFamily: "'PolySans Neutral', system-ui", fontSize: 12, color: 'rgba(48,33,97,0.65)' }}>{insight.implication}</span>
+            </div>
+          )}
+          {insight.recommendation && (
+            <p style={{ fontFamily: "'PolySans Neutral', system-ui", fontSize: 12, fontWeight: 600, color: '#22c55e', margin: '8px 0 0' }}>→ {insight.recommendation}</p>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function CompetitiveRadar({ userPos, competitors }: { userPos: { x: number; y: number }; competitors: CompetitorPos[] }) {
+  const W = 480; const H = 320; const PAD = 48
+  const toSVG = (x: number, y: number) => ({ cx: PAD + (x / 100) * (W - 2 * PAD), cy: H - PAD - (y / 100) * (H - 2 * PAD) })
+  const midX = W / 2; const midY = H / 2
+
+  const quadrants = [
+    { x: midX, y: PAD,    w: W - midX - PAD, h: midY - PAD,    label: 'Market Leaders',                   color: 'rgba(34,197,94,0.06)' },
+    { x: PAD,  y: PAD,    w: midX - PAD,     h: midY - PAD,    label: 'Targeting Well, Spending Poorly',  color: 'rgba(245,158,11,0.06)' },
+    { x: midX, y: midY,   w: W - midX - PAD, h: H - midY - PAD, label: 'Spending Well, Targeting Poorly', color: 'rgba(245,158,11,0.06)' },
+    { x: PAD,  y: midY,   w: midX - PAD,     h: H - midY - PAD, label: 'Needs Attention',                 color: 'rgba(239,68,68,0.06)' },
+  ]
+  const quadLabColors = ['#16a34a', '#d97706', '#d97706', '#ef4444']
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', borderRadius: 12, overflow: 'visible' }}>
+      {/* Quadrant fills */}
+      {quadrants.map((q, i) => <rect key={i} x={q.x} y={q.y} width={q.w} height={q.h} fill={q.color} />)}
+      {/* Center lines */}
+      <line x1={midX} y1={PAD} x2={midX} y2={H - PAD} stroke="rgba(48,33,97,0.1)" strokeWidth={1} strokeDasharray="4 3" />
+      <line x1={PAD}  y1={midY} x2={W - PAD} y2={midY} stroke="rgba(48,33,97,0.1)" strokeWidth={1} strokeDasharray="4 3" />
+      {/* Border */}
+      <rect x={PAD} y={PAD} width={W - 2 * PAD} height={H - 2 * PAD} fill="none" stroke="rgba(48,33,97,0.12)" strokeWidth={1} rx={4} />
+      {/* Axis labels */}
+      <text x={W / 2} y={H - 8}  textAnchor="middle" fill="rgba(48,33,97,0.45)" fontSize={11} fontFamily="sans-serif">Ad Spend Efficiency →</text>
+      <text x={10}    y={H / 2}   textAnchor="middle" fill="rgba(48,33,97,0.45)" fontSize={11} fontFamily="sans-serif" transform={`rotate(-90,10,${H / 2})`}>ICP Alignment →</text>
+      {/* Quadrant labels */}
+      {quadrants.map((q, i) => (
+        <text key={i} x={q.x + q.w / 2} y={q.y + q.h / 2} textAnchor="middle" fill={quadLabColors[i]} fontSize={10} fontFamily="sans-serif" fontWeight="600" opacity={0.8}>{q.label}</text>
+      ))}
+      {/* Competitor dots */}
+      {competitors.map(c => {
+        const { cx, cy } = toSVG(c.x, c.y)
+        return (
+          <g key={c.label}>
+            <circle cx={cx} cy={cy} r={7} fill="rgba(160,160,180,0.5)" stroke="#fff" strokeWidth={1.5} />
+            <text x={cx} y={cy - 11} textAnchor="middle" fill="rgba(48,33,97,0.5)" fontSize={9} fontFamily="sans-serif">{c.label}</text>
+          </g>
+        )
+      })}
+      {/* Industry avg */}
+      {(() => { const { cx, cy } = toSVG(45, 45); return <g><circle cx={cx} cy={cy} r={9} fill="rgba(100,100,120,0.4)" stroke="#fff" strokeWidth={2} /><text x={cx} y={cy - 13} textAnchor="middle" fill="rgba(48,33,97,0.5)" fontSize={9} fontFamily="sans-serif">Industry Avg</text></g> })()}
+      {/* User dot */}
+      {(() => { const { cx, cy } = toSVG(userPos.x, userPos.y); return <g><circle cx={cx} cy={cy} r={13} fill="#302161" stroke="#fff" strokeWidth={2.5} /><text x={cx} y={cy + 4} textAnchor="middle" fill="#fff" fontSize={9} fontFamily="sans-serif" fontWeight="700">You</text></g> })()}
+    </svg>
+  )
+}
+
+function IntelligenceTab({ user, score }: { user: UserData; score: number | null }) {
+  const [briefing,        setBriefing]        = useState<IntelligenceBriefing | null>(null)
+  const [loading,         setLoading]         = useState(true)
+  const [refreshing,      setRefreshing]      = useState(false)
+  const [nextRefresh,     setNextRefresh]     = useState<string | null>(null)
+  const [question,        setQuestion]        = useState('')
+  const [questionLoading, setQuestionLoading] = useState(false)
+  const [answers,         setAnswers]         = useState<{ q: string; a: string; sources?: string[] }[]>([])
+  const [qError,          setQError]          = useState('')
+
+  useEffect(() => {
+    fetch('/api/intelligence/research', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: user.email, type: 'fetch' }),
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d) { setBriefing(d.briefing); setNextRefresh(d.nextRefreshAvailable) } })
+      .catch(() => null)
+      .finally(() => setLoading(false))
+  }, [user.email])
+
+  async function handleRefresh() {
+    setRefreshing(true)
+    try {
+      const res = await fetch('/api/intelligence/research', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user.email, type: 'refresh' }),
+      })
+      if (res.ok) { const d = await res.json(); setBriefing(d.briefing); setNextRefresh(d.nextRefreshAvailable) }
+    } catch { /* noop */ }
+    finally { setRefreshing(false) }
+  }
+
+  async function handleQuestion(q: string) {
+    if (!q.trim() || questionLoading) return
+    setQuestionLoading(true); setQError(''); setQuestion('')
+    try {
+      const res = await fetch('/api/intelligence/research', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user.email, type: 'question', question: q }),
+      })
+      if (!res.ok) throw new Error('failed')
+      const d = await res.json()
+      setAnswers(prev => [{ q, a: d.answer, sources: d.sources }, ...prev])
+    } catch { setQError('Something went wrong. Please try again.') }
+    finally { setQuestionLoading(false) }
+  }
+
+  const SUGGESTED = [
+    'What CPCs should I expect in my region?',
+    'What landing page patterns work in my industry?',
+    'What are top performers spending on?',
+    'What platforms dominate my ICP?',
+  ]
+
+  const font  = "'PolySans Median', -apple-system, system-ui, sans-serif"
+  const fontB = "'PolySans Neutral', -apple-system, system-ui, sans-serif"
+  const P     = '#302161'
+  const Pmuted  = 'rgba(48,33,97,0.45)'
+  const Pborder = 'rgba(48,33,97,0.08)'
+  const BgAlt   = '#f8f7ff'
+
+  const hoursLeft = nextRefresh
+    ? Math.max(0, Math.ceil((new Date(nextRefresh).getTime() - Date.now()) / 3_600_000))
+    : 0
+  const canRefresh = !nextRefresh || hoursLeft === 0
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 960 }}>
+
+      {/* ── Section 1: Weekly Briefing Card ─────────────────────────────── */}
+      <div style={{ background: 'linear-gradient(135deg,#302161 0%,#4c1d95 100%)', borderRadius: 20, padding: 'clamp(28px,4vw,40px) clamp(24px,5vw,48px)', display: 'flex', flexWrap: 'wrap', gap: 24, justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, background: 'rgba(255,255,255,0.2)', color: '#fff', padding: '3px 12px', borderRadius: 100, letterSpacing: '0.1em', textTransform: 'uppercase', display: 'inline-block', marginBottom: 14 }}>
+            Weekly Intelligence Briefing
+          </span>
+          <h2 style={{ fontFamily: font, fontSize: 'clamp(22px,4vw,28px)', fontWeight: 700, color: '#fff', margin: '0 0 8px', letterSpacing: '-0.02em' }}>Your market this week.</h2>
+          <p style={{ fontFamily: fontB, fontSize: 13, color: 'rgba(255,255,255,0.5)', margin: 0 }}>
+            {briefing?.updatedAt
+              ? `Updated ${new Date(briefing.updatedAt).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}`
+              : 'No briefing yet'}
+          </p>
+        </div>
+        <button
+          onClick={handleRefresh}
+          disabled={!canRefresh || refreshing}
+          style={{ display: 'flex', alignItems: 'center', gap: 8, background: canRefresh && !refreshing ? '#fff' : 'rgba(255,255,255,0.15)', color: canRefresh && !refreshing ? P : 'rgba(255,255,255,0.5)', border: 'none', borderRadius: 12, padding: '12px 24px', fontFamily: fontB, fontSize: 14, fontWeight: 600, cursor: canRefresh && !refreshing ? 'pointer' : 'default', whiteSpace: 'nowrap', flexShrink: 0 }}>
+          <RefreshCw size={16} style={{ animation: refreshing ? 'spin 1s linear infinite' : 'none' }} />
+          {refreshing ? 'Researching…' : canRefresh ? 'Refresh Intelligence' : `Next refresh in ${hoursLeft}h`}
+        </button>
+      </div>
+
+      {loading ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {[200, 160, 120].map(h => (
+            <div key={h} className="animate-pulse" style={{ height: h, borderRadius: 16, background: 'rgba(48,33,97,0.06)' }} />
+          ))}
+        </div>
+      ) : !briefing ? (
+        <div style={{ background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 20, padding: '48px 32px', textAlign: 'center' }}>
+          <Brain size={36} color={Pmuted} style={{ marginBottom: 16 }} />
+          <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: '0 0 8px' }}>Your first intelligence briefing will be ready next Monday.</p>
+          <p style={{ fontFamily: fontB, fontSize: 14, color: Pmuted, margin: '0 0 24px' }}>{"Can't wait? Click Refresh Intelligence for an on-demand briefing now."}</p>
+          <button onClick={handleRefresh} disabled={refreshing}
+            style={{ background: P, color: '#fff', border: 'none', borderRadius: 12, padding: '12px 24px', fontFamily: fontB, fontSize: 14, fontWeight: 600, cursor: refreshing ? 'default' : 'pointer', opacity: refreshing ? 0.7 : 1, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+            <RefreshCw size={15} style={{ animation: refreshing ? 'spin 1s linear infinite' : 'none' }} />
+            {refreshing ? 'Researching…' : 'Get My Briefing Now'}
+          </button>
+        </div>
+      ) : (
+        <>
+          {/* ── Section 2: Benchmark Comparison ─────────────────────────── */}
+          <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 20, padding: '28px 32px' }}>
+            <p style={{ fontFamily: font, fontSize: 20, fontWeight: 700, color: P, margin: '0 0 6px', letterSpacing: '-0.02em' }}>How you compare.</p>
+            <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 28px' }}>Your metrics vs industry average vs top 10% performers.</p>
+            <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', marginBottom: 18 }}>
+              {[
+                { color: '#302161', label: 'You' },
+                { color: '#a855f7', label: 'Industry Avg' },
+                { color: '#22c55e', label: 'Top 10%' },
+              ].map(l => (
+                <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: l.color }} />
+                  <span style={{ fontFamily: fontB, fontSize: 12, color: Pmuted }}>{l.label}</span>
+                </div>
+              ))}
+            </div>
+            {briefing.benchmarks.map(b => <BenchmarkTrack key={b.name} {...b} />)}
+          </div>
+
+          {/* ── Section 3: Competitor Activity Feed ──────────────────────── */}
+          <div>
+            <p style={{ fontFamily: font, fontSize: 20, fontWeight: 700, color: P, margin: '0 0 6px', letterSpacing: '-0.02em' }}>{"What's moving in your market."}</p>
+            <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 20px' }}>Intelligence gathered for your industry and region this week.</p>
+            {briefing.insights.map(ins => <InsightCard key={ins.id} insight={ins} />)}
+          </div>
+
+          {/* ── Section 4: Competitive Radar ─────────────────────────────── */}
+          <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 20, padding: '28px 32px' }}>
+            <p style={{ fontFamily: font, fontSize: 20, fontWeight: 700, color: P, margin: '0 0 6px', letterSpacing: '-0.02em' }}>Your competitive position.</p>
+            <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 24px' }}>Approximate positioning based on your ICP alignment and ad spend efficiency.</p>
+            <CompetitiveRadar userPos={briefing.userPosition} competitors={briefing.competitorPositions} />
+          </div>
+        </>
+      )}
+
+      {/* ── Section 5: On-Demand Intelligence ───────────────────────────── */}
+      <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 20, padding: '28px 32px' }}>
+        <p style={{ fontFamily: font, fontSize: 20, fontWeight: 700, color: P, margin: '0 0 6px', letterSpacing: '-0.02em' }}>Ask your market.</p>
+        <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 20px' }}>Ask anything about your market or competitive landscape.</p>
+
+        {/* Suggested questions */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+          {SUGGESTED.map(q => (
+            <button key={q} onClick={() => handleQuestion(q)}
+              style={{ fontFamily: fontB, fontSize: 12, color: P, background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 100, padding: '6px 14px', cursor: 'pointer' }}>
+              {q}
+            </button>
+          ))}
+        </div>
+
+        {/* Input */}
+        <div style={{ display: 'flex', gap: 10 }}>
+          <input
+            value={question}
+            onChange={e => setQuestion(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleQuestion(question)}
+            placeholder="Ask anything about your market… e.g. What are competitors in my industry doing with their ad spend?"
+            style={{ flex: 1, fontFamily: fontB, fontSize: 13, color: P, background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 12, padding: '12px 16px', outline: 'none' }}
+          />
+          <button onClick={() => handleQuestion(question)} disabled={!question.trim() || questionLoading}
+            style={{ background: P, border: 'none', borderRadius: 12, padding: '0 18px', cursor: question.trim() && !questionLoading ? 'pointer' : 'default', opacity: question.trim() && !questionLoading ? 1 : 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {questionLoading
+              ? <RefreshCw size={18} color="#fff" style={{ animation: 'spin 1s linear infinite' }} />
+              : <Send size={18} color="#fff" />
+            }
+          </button>
+        </div>
+        {qError && <p style={{ fontFamily: fontB, fontSize: 12, color: '#ef4444', margin: '8px 0 0' }}>{qError}</p>}
+
+        {/* Answer cards */}
+        {answers.length > 0 && (
+          <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {answers.map((a, i) => (
+              <div key={i} style={{ background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 14, padding: '18px 20px' }}>
+                <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, color: Pmuted, margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Your question</p>
+                <p style={{ fontFamily: font, fontSize: 14, fontWeight: 600, color: P, margin: '0 0 14px' }}>{a.q}</p>
+                <p style={{ fontFamily: fontB, fontSize: 13, color: P, margin: 0, lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{a.a}</p>
+                {a.sources && a.sources.length > 0 && (
+                  <div style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                    {a.sources.map(s => (
+                      <span key={s} style={{ fontFamily: fontB, fontSize: 10, background: 'rgba(48,33,97,0.08)', color: Pmuted, padding: '2px 8px', borderRadius: 100 }}>{s}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
@@ -1507,9 +1872,10 @@ export default function DashboardPage() {
   const tierLabel           = user ? (TIER_LABEL[user.subscription_tier] ?? user.subscription_tier) : ''
 
   const TAB_ICONS: Record<Tab, React.ReactNode> = {
-    overview: <LayoutDashboard size={20} />,
-    reports:  <FileText size={20} />,
-    account:  <User size={20} />,
+    overview:     <LayoutDashboard size={20} />,
+    intelligence: <Brain size={20} />,
+    reports:      <FileText size={20} />,
+    account:      <User size={20} />,
   }
 
   return (
@@ -1562,7 +1928,7 @@ export default function DashboardPage() {
         {/* Desktop tab row */}
         <div className="hidden md:block" style={{ borderTop: `1px solid ${Pborder}`, padding: '0 16px' }}>
           <div style={{ maxWidth: 1320, margin: '0 auto', display: 'flex' }}>
-            {(['overview', 'reports', 'account'] as Tab[]).map(tab => (
+            {(['overview', 'intelligence', 'reports', 'account'] as Tab[]).map(tab => (
               <button key={tab} onClick={() => setActiveTab(tab)} style={{
                 fontFamily: fontB, fontSize: 13, fontWeight: 500, padding: '11px 20px',
                 border: 'none', cursor: 'pointer', background: 'transparent',
@@ -1634,6 +2000,7 @@ export default function DashboardPage() {
           </>
         )}
 
+        {activeTab === 'intelligence' && user && <IntelligenceTab user={user} score={score} />}
         {activeTab === 'reports' && <ReportsTab reports={reports} dataLoading={dataLoading} />}
         {activeTab === 'account' && user && (
           <AccountTab
@@ -1668,7 +2035,7 @@ export default function DashboardPage() {
 
       {/* ── Mobile bottom tab bar ─────────────────────────────────────────── */}
       <div className="md:hidden" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'rgba(255,255,255,0.96)', backdropFilter: 'blur(20px)', borderTop: `1px solid ${Pborder}`, display: 'flex', zIndex: 50 }}>
-        {(['overview', 'reports', 'account'] as Tab[]).map(tab => (
+        {(['overview', 'intelligence', 'reports', 'account'] as Tab[]).map(tab => (
           <button key={tab} onClick={() => setActiveTab(tab)} style={{
             flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
             gap: 4, padding: '10px 0', border: 'none', background: 'transparent', cursor: 'pointer',

@@ -493,3 +493,91 @@ export async function sendPausedToFounder({
   else console.log('[email] paused founder sent id:', data?.id)
   return { data, error }
 }
+
+// ─── Email 12: Weekly intelligence briefing ───────────────────────────────────
+
+type IntelligenceInsight = { title: string; body: string }
+type IntelligenceBenchmark = { name: string; userValue: number | null; industryAvg: number; unit: string }
+
+export async function sendWeeklyIntelligenceEmail({
+  to, name, weekOf, insights, benchmarks, opportunity, recommendation,
+}: {
+  to: string
+  name: string
+  weekOf: string
+  insights: IntelligenceInsight[]
+  benchmarks: IntelligenceBenchmark[]
+  opportunity: string
+  recommendation: string
+}) {
+  const first = name?.split(' ')[0] ?? 'there'
+  const weekLabel = new Date(weekOf).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+
+  const insightRows = insights.slice(0, 3).map((ins, i) => `
+    <tr><td style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+      <p style="margin:0;color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:0.07em;">${i + 1}</p>
+      <p style="margin:2px 0 0;color:#e5e7eb;font-size:14px;font-weight:600;">${ins.title}</p>
+      <p style="margin:3px 0 0;color:#9ca3af;font-size:13px;line-height:1.5;">${ins.body}</p>
+    </td></tr>`).join('')
+
+  const benchmarkRows = benchmarks.slice(0, 4).map(b => {
+    const fmt = (v: number) => b.unit === '%' ? `${v}%` : b.unit === '$' ? `$${v}` : `${v}${b.unit}`
+    return `<tr>
+      <td style="padding:8px 12px;color:#9ca3af;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.05);">${b.name}</td>
+      <td style="padding:8px 12px;color:#ffffff;font-size:13px;font-weight:600;border-bottom:1px solid rgba(255,255,255,0.05);">${b.userValue != null ? fmt(b.userValue) : '—'}</td>
+      <td style="padding:8px 12px;color:#a78bfa;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.05);">${fmt(b.industryAvg)}</td>
+    </tr>`
+  }).join('')
+
+  const content = `
+<h1 style="margin:0 0 6px;color:#ffffff;font-size:22px;font-weight:800;line-height:1.2;letter-spacing:-0.5px;">Your Weekly Market Intelligence</h1>
+<p style="margin:0 0 28px;color:#9ca3af;font-size:14px;line-height:1.6;">Hi ${first}, here is what moved in your market this week — ${weekLabel}.</p>
+
+<p style="margin:0 0 10px;color:#ffffff;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">3 things to know this week</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:14px;margin-bottom:22px;">
+  <tr><td style="padding:16px 22px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+      ${insightRows}
+    </table>
+  </td></tr>
+</table>
+
+<p style="margin:0 0 10px;color:#ffffff;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Your benchmark position</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:14px;margin-bottom:22px;">
+  <tr><td style="padding:0;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+      <tr>
+        <th style="padding:10px 12px;color:#6b7280;font-size:11px;text-align:left;text-transform:uppercase;letter-spacing:0.07em;border-bottom:1px solid rgba(255,255,255,0.08);">Metric</th>
+        <th style="padding:10px 12px;color:#ffffff;font-size:11px;text-align:left;text-transform:uppercase;letter-spacing:0.07em;border-bottom:1px solid rgba(255,255,255,0.08);">You</th>
+        <th style="padding:10px 12px;color:#a78bfa;font-size:11px;text-align:left;text-transform:uppercase;letter-spacing:0.07em;border-bottom:1px solid rgba(255,255,255,0.08);">Industry Avg</th>
+      </tr>
+      ${benchmarkRows}
+    </table>
+  </td></tr>
+</table>
+
+<p style="margin:0 0 10px;color:#ffffff;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">This week's opportunity</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);border-radius:14px;margin-bottom:22px;">
+  <tr><td style="padding:18px 22px;">
+    <p style="margin:0;color:#fcd34d;font-size:14px;line-height:1.6;">${opportunity}</p>
+  </td></tr>
+</table>
+
+<p style="margin:0 0 10px;color:#ffffff;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Recommended action this week</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.25);border-radius:14px;margin-bottom:24px;">
+  <tr><td style="padding:18px 22px;">
+    <p style="margin:0;color:#86efac;font-size:14px;line-height:1.6;">→ ${recommendation}</p>
+  </td></tr>
+</table>
+
+${cta('View Full Briefing', 'https://icpbrand.co/dashboard')}`
+
+  const { data, error } = await getResend().emails.send({
+    from: FROM, to,
+    subject: `Your weekly market intelligence — ${weekLabel}`,
+    html: base(content),
+  })
+  if (error) console.error('[email] weekly intelligence error:', JSON.stringify(error))
+  else console.log('[email] weekly intelligence sent id:', data?.id, 'to:', to)
+  return { data, error }
+}
