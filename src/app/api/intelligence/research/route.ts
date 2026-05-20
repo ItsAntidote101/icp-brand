@@ -11,6 +11,24 @@ const supabase = createClient(
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
+// ─── Refresh limits by tier ───────────────────────────────────────────────────
+
+type Tier = 'free' | 'starter' | 'pro' | 'agency'
+
+const REFRESH_INTERVALS_HOURS: Record<Tier, number | null> = {
+  free:    null,
+  starter: 168,  // 7 days
+  pro:     24,
+  agency:  8,
+}
+
+const REFRESH_LIMITS: Record<Tier, number> = {
+  free:    0,
+  starter: 1,
+  pro:     1,
+  agency:  3,
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function hoursAgo(iso: string): number {
@@ -181,7 +199,7 @@ export async function POST(req: NextRequest) {
     // Fetch user record
     const { data: userData } = await supabase
       .from('users')
-      .select('id, full_name, last_refresh_at, questions_today, questions_reset_date')
+      .select('id, full_name, subscription_tier, last_refresh_at, refresh_count_today, refresh_count_reset_date, questions_today, questions_reset_date')
       .eq('email', email)
       .single()
 
@@ -197,21 +215,69 @@ export async function POST(req: NextRequest) {
         .limit(1)
         .single()
 
-      const nextRefreshAvailable = userData.last_refresh_at && hoursAgo(userData.last_refresh_at) < 24
-        ? new Date(new Date(userData.last_refresh_at).getTime() + 24 * 3600_000).toISOString()
+      const tier = (userData.subscription_tier ?? 'free') as Tier
+      const intervalHours = REFRESH_INTERVALS_HOURS[tier] ?? REFRESH_INTERVALS_HOURS.pro
+
+      const nextRefreshAvailable = userData.last_refresh_at && intervalHours && hoursAgo(userData.last_refresh_at) < intervalHours
+        ? new Date(new Date(userData.last_refresh_at).getTime() + intervalHours * 3_600_000).toISOString()
         : null
 
       return NextResponse.json({
         briefing: latest ? { ...(latest.briefing_data as Record<string, unknown>), updatedAt: latest.research_date } : null,
         nextRefreshAvailable,
+        tier,
       })
     }
 
-    // ── REFRESH: rate-limit 24h, generate new briefing ────────────────────────
+    // ── REFRESH: tier-aware rate limiting ─────────────────────────────────────
     if (type === 'refresh') {
-      if (userData.last_refresh_at && hoursAgo(userData.last_refresh_at) < 24) {
-        const nextAt = new Date(new Date(userData.last_refresh_at).getTime() + 24 * 3600_000).toISOString()
-        return NextResponse.json({ error: 'Rate limited', nextRefreshAvailable: nextAt }, { status: 429 })
+      const tier = (userData.subscription_tier ?? 'free') as Tier
+      const intervalHours = REFRESH_INTERVALS_HOURS[tier]
+
+      // Free users cannot refresh on-demand
+      if (!intervalHours) {
+        return NextResponse.json({
+          error: 'upgrade_required',
+          message: 'On-demand intelligence refresh requires a paid subscription.',
+          upgradeUrl: '/#pricing',
+        }, { status: 403 })
+      }
+
+      const lastRefresh = userData.last_refresh_at ? new Date(userData.last_refresh_at) : null
+      const hoursSinceLast = lastRefresh ? (Date.now() - lastRefresh.getTime()) / 3_600_000 : Infinity
+
+      if (hoursSinceLast < intervalHours) {
+        const nextRefreshAt = new Date(lastRefresh!.getTime() + intervalHours * 3_600_000)
+        const msRemaining   = nextRefreshAt.getTime() - Date.now()
+        return NextResponse.json({
+          error:            'rate_limited',
+          message:          'Refresh not available yet.',
+          nextRefreshAt:    nextRefreshAt.toISOString(),
+          hoursRemaining:   Math.ceil(msRemaining / 3_600_000),
+          minutesRemaining: Math.ceil(msRemaining / 60_000),
+          tier,
+          upgradeAvailable: tier !== 'agency',
+        }, { status: 429 })
+      }
+
+      // Agency daily count check
+      if (tier === 'agency') {
+        const today      = new Date().toISOString().split('T')[0]
+        const resetDate  = userData.refresh_count_reset_date
+        const countToday = resetDate === today ? (userData.refresh_count_today ?? 0) : 0
+
+        if (countToday >= REFRESH_LIMITS.agency) {
+          const midnight = new Date(); midnight.setUTCHours(24, 0, 0, 0)
+          return NextResponse.json({
+            error:         'rate_limited',
+            message:       `You have used all ${REFRESH_LIMITS.agency} refreshes today. Your next refresh is available at midnight.`,
+            nextRefreshAt: midnight.toISOString(),
+            hoursRemaining: Math.ceil((midnight.getTime() - Date.now()) / 3_600_000),
+            minutesRemaining: Math.ceil((midnight.getTime() - Date.now()) / 60_000),
+            tier,
+            upgradeAvailable: false,
+          }, { status: 429 })
+        }
       }
 
       // Fetch questionnaire context
@@ -260,11 +326,18 @@ export async function POST(req: NextRequest) {
         briefing_type: 'on_demand',
       })
 
-      // Update last_refresh_at
-      await supabase.from('users').update({ last_refresh_at: now }).eq('id', userData.id)
+      // Update refresh tracking
+      const today      = now.split('T')[0]
+      const resetDate  = userData.refresh_count_reset_date
+      const countToday = resetDate === today ? (userData.refresh_count_today ?? 0) : 0
+      await supabase.from('users').update({
+        last_refresh_at:          now,
+        refresh_count_today:      countToday + 1,
+        refresh_count_reset_date: today,
+      }).eq('id', userData.id)
 
-      const nextAt = new Date(Date.now() + 24 * 3600_000).toISOString()
-      return NextResponse.json({ briefing: { ...data, updatedAt: now }, nextRefreshAvailable: nextAt })
+      const nextAt = new Date(Date.now() + intervalHours * 3_600_000).toISOString()
+      return NextResponse.json({ briefing: { ...data, updatedAt: now }, nextRefreshAvailable: nextAt, tier })
     }
 
     // ── QUESTION: rate-limit 5/day ─────────────────────────────────────────────

@@ -8,7 +8,7 @@ import {
   BarChart2, User, FileText, LayoutDashboard, Zap, AlertCircle,
   Check, ChevronDown, ChevronUp, CheckCircle, Target, X, FileDown,
   RefreshCw, Bell, Brain, Send, Settings, HelpCircle, LogOut,
-  MessageCircle, ArrowUp, UserCheck, BrainCircuit,
+  MessageCircle, ArrowUp, UserCheck, BrainCircuit, Clock, Lock,
 } from 'lucide-react'
 import { AreaChart, Area, ResponsiveContainer, Tooltip } from 'recharts'
 
@@ -1557,10 +1557,18 @@ function IntelligenceTab({ user, score }: { user: UserData; score: number | null
   const [loading,         setLoading]         = useState(true)
   const [refreshing,      setRefreshing]      = useState(false)
   const [nextRefresh,     setNextRefresh]     = useState<string | null>(null)
+  const [rateLimitModal,  setRateLimitModal]  = useState<{ tier: string; nextAt: string; agencyLimit: boolean } | null>(null)
   const [question,        setQuestion]        = useState('')
   const [questionLoading, setQuestionLoading] = useState(false)
   const [answers,         setAnswers]         = useState<{ q: string; a: string; sources?: string[] }[]>([])
   const [qError,          setQError]          = useState('')
+  const [, setTick]                           = useState(0)
+
+  // Countdown tick — updates every 60s so displayed time stays fresh
+  useEffect(() => {
+    const id = setInterval(() => setTick(t => t + 1), 60_000)
+    return () => clearInterval(id)
+  }, [])
 
   useEffect(() => {
     fetch('/api/intelligence/research', {
@@ -1574,13 +1582,26 @@ function IntelligenceTab({ user, score }: { user: UserData; score: number | null
   }, [user.email])
 
   async function handleRefresh() {
+    const tier = user.subscription_tier
+    if (tier === 'free') {
+      document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })
+      return
+    }
     setRefreshing(true)
     try {
       const res = await fetch('/api/intelligence/research', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: user.email, type: 'refresh' }),
       })
-      if (res.ok) { const d = await res.json(); setBriefing(d.briefing); setNextRefresh(d.nextRefreshAvailable) }
+      if (res.ok) {
+        const d = await res.json()
+        setBriefing(d.briefing)
+        setNextRefresh(d.nextRefreshAvailable)
+      } else if (res.status === 429) {
+        const d = await res.json()
+        setRateLimitModal({ tier: d.tier ?? tier, nextAt: d.nextRefreshAt, agencyLimit: d.upgradeAvailable === false })
+        setNextRefresh(d.nextRefreshAt)
+      }
     } catch { /* noop */ }
     finally { setRefreshing(false) }
   }
@@ -1614,10 +1635,19 @@ function IntelligenceTab({ user, score }: { user: UserData; score: number | null
   const Pborder = 'rgba(48,33,97,0.08)'
   const BgAlt   = '#f8f7ff'
 
-  const hoursLeft = nextRefresh
-    ? Math.max(0, Math.ceil((new Date(nextRefresh).getTime() - Date.now()) / 3_600_000))
-    : 0
-  const canRefresh = !nextRefresh || hoursLeft === 0
+  const tier = user.subscription_tier as 'free' | 'starter' | 'pro' | 'agency'
+
+  const msRemaining   = nextRefresh ? Math.max(0, new Date(nextRefresh).getTime() - Date.now()) : 0
+  const hoursLeft     = Math.floor(msRemaining / 3_600_000)
+  const minsLeft      = Math.ceil((msRemaining % 3_600_000) / 60_000)
+  const canRefresh    = !nextRefresh || msRemaining === 0
+
+  const TIER_BADGE: Record<string, { label: string; color: string; icon: JSX.Element }> = {
+    starter: { label: 'Starter: 1 refresh per week',   color: '#d97706', icon: <Clock size={12} /> },
+    pro:     { label: 'Pro: 1 refresh per day',         color: P,         icon: <Clock size={12} /> },
+    agency:  { label: 'Agency: 3 refreshes per day',    color: '#22c55e', icon: <Zap  size={12} /> },
+  }
+  const tierBadge = TIER_BADGE[tier]
 
   // ── Q&A card (shared between columns) ────────────────────────────────
   const QACard = (
@@ -1676,29 +1706,123 @@ function IntelligenceTab({ user, score }: { user: UserData; score: number | null
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[65%_35%]" style={{ gap: 24, alignItems: 'start' }}>
 
+      {/* ── Rate limit modal ───────────────────────────────────────────────── */}
+      {rateLimitModal && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+          <div style={{ background: '#fff', borderRadius: 20, padding: '32px 36px', maxWidth: 440, width: '100%', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+              <Clock size={28} color={P} />
+              <button onClick={() => setRateLimitModal(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+                <X size={18} color={Pmuted} />
+              </button>
+            </div>
+            {rateLimitModal.agencyLimit ? (
+              <>
+                <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: '0 0 8px' }}>All 3 refreshes used today.</p>
+                <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 24px', lineHeight: 1.6 }}>
+                  Your next refresh is available at midnight.
+                </p>
+                <button onClick={() => setRateLimitModal(null)}
+                  style={{ width: '100%', background: P, color: '#fff', border: 'none', borderRadius: 12, padding: '12px 0', fontFamily: fontB, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
+                  Got it
+                </button>
+              </>
+            ) : (
+              <>
+                <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: '0 0 8px' }}>Refresh not available yet.</p>
+                <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 8px', lineHeight: 1.6 }}>
+                  Want more frequent intelligence updates? Agency subscribers refresh up to 3 times per day.
+                </p>
+                <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 24px' }}>
+                  Next available: {new Date(rateLimitModal.nextAt).toLocaleString('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit' })}
+                </p>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <Link href="/#pricing" onClick={() => setRateLimitModal(null)}
+                    style={{ flex: 1, background: P, color: '#fff', borderRadius: 12, padding: '12px 0', fontFamily: fontB, fontSize: 13, fontWeight: 600, textDecoration: 'none', textAlign: 'center' }}>
+                    Upgrade to Agency
+                  </Link>
+                  <button onClick={() => setRateLimitModal(null)}
+                    style={{ flex: 1, background: 'none', color: P, border: `1px solid ${Pborder}`, borderRadius: 12, padding: '12px 0', fontFamily: fontB, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                    I will wait
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* ── LEFT COLUMN: briefing header + benchmarks + feed ─────────────── */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
         {/* Weekly Briefing header card */}
-        <div style={{ background: 'linear-gradient(135deg,#302161 0%,#4c1d95 100%)', borderRadius: 20, padding: 'clamp(24px,4vw,36px) clamp(20px,5vw,40px)', display: 'flex', flexWrap: 'wrap', gap: 20, justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, background: 'rgba(255,255,255,0.2)', color: '#fff', padding: '3px 12px', borderRadius: 100, letterSpacing: '0.1em', textTransform: 'uppercase', display: 'inline-block', marginBottom: 12 }}>
-              Weekly Intelligence Briefing
-            </span>
-            <h2 style={{ fontFamily: font, fontSize: 'clamp(20px,3vw,26px)', fontWeight: 700, color: '#fff', margin: '0 0 6px', letterSpacing: '-0.02em' }}>Your market this week.</h2>
-            <p style={{ fontFamily: fontB, fontSize: 13, color: 'rgba(255,255,255,0.5)', margin: 0 }}>
-              {briefing?.updatedAt
-                ? `Updated ${new Date(briefing.updatedAt).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}`
-                : 'No briefing yet'}
-            </p>
+        <div style={{ background: 'linear-gradient(135deg,#302161 0%,#4c1d95 100%)', borderRadius: 20, padding: 'clamp(24px,4vw,36px) clamp(20px,5vw,40px)' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20, justifyContent: 'space-between', alignItems: 'center', marginBottom: tierBadge || !canRefresh ? 16 : 0 }}>
+            <div>
+              <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, background: 'rgba(255,255,255,0.2)', color: '#fff', padding: '3px 12px', borderRadius: 100, letterSpacing: '0.1em', textTransform: 'uppercase', display: 'inline-block', marginBottom: 12 }}>
+                Weekly Intelligence Briefing
+              </span>
+              <h2 style={{ fontFamily: font, fontSize: 'clamp(20px,3vw,26px)', fontWeight: 700, color: '#fff', margin: '0 0 6px', letterSpacing: '-0.02em' }}>Your market this week.</h2>
+              <p style={{ fontFamily: fontB, fontSize: 13, color: 'rgba(255,255,255,0.5)', margin: 0 }}>
+                {briefing?.updatedAt
+                  ? `Updated ${new Date(briefing.updatedAt).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}`
+                  : 'No briefing yet'}
+              </p>
+            </div>
+
+            {/* Refresh button — 4 states */}
+            {tier === 'free' ? (
+              <button onClick={handleRefresh}
+                style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(248,247,255,0.12)', color: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 12, padding: '11px 22px', fontFamily: fontB, fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                <Lock size={14} />
+                Upgrade for on-demand refresh
+              </button>
+            ) : refreshing ? (
+              <button disabled
+                style={{ display: 'flex', alignItems: 'center', gap: 8, background: P, color: '#fff', border: 'none', borderRadius: 12, padding: '11px 22px', fontFamily: fontB, fontSize: 13, fontWeight: 600, cursor: 'default', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                <RefreshCw size={15} style={{ animation: 'spin 1s linear infinite' }} />
+                Researching your market...
+              </button>
+            ) : canRefresh ? (
+              <button onClick={handleRefresh}
+                style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#fff', color: P, border: 'none', borderRadius: 12, padding: '11px 22px', fontFamily: fontB, fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                <RefreshCw size={15} />
+                Refresh Intelligence
+              </button>
+            ) : (
+              <button disabled
+                style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.45)', border: 'none', borderRadius: 12, padding: '11px 22px', fontFamily: fontB, fontSize: 13, fontWeight: 600, cursor: 'default', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                <Clock size={14} />
+                {`Next refresh in ${hoursLeft}h ${minsLeft}m`}
+              </button>
+            )}
           </div>
-          <button
-            onClick={handleRefresh}
-            disabled={!canRefresh || refreshing}
-            style={{ display: 'flex', alignItems: 'center', gap: 8, background: canRefresh && !refreshing ? '#fff' : 'rgba(255,255,255,0.15)', color: canRefresh && !refreshing ? P : 'rgba(255,255,255,0.5)', border: 'none', borderRadius: 12, padding: '11px 22px', fontFamily: fontB, fontSize: 13, fontWeight: 600, cursor: canRefresh && !refreshing ? 'pointer' : 'default', whiteSpace: 'nowrap', flexShrink: 0 }}>
-            <RefreshCw size={15} style={{ animation: refreshing ? 'spin 1s linear infinite' : 'none' }} />
-            {refreshing ? 'Researching…' : canRefresh ? 'Refresh Intelligence' : `Next refresh in ${hoursLeft}h`}
-          </button>
+
+          {/* Countdown display when rate-limited */}
+          {!canRefresh && tier !== 'free' && (
+            <div style={{ marginTop: 4 }}>
+              <p style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.45)', margin: '0 0 4px' }}>Research refreshes in:</p>
+              <p style={{ fontFamily: font, fontSize: 24, fontWeight: 700, color: '#fff', margin: 0, letterSpacing: '-0.02em' }}>
+                {hoursLeft}h {minsLeft}m
+              </p>
+            </div>
+          )}
+
+          {/* Tier badge + upgrade nudge */}
+          {tierBadge && (
+            <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontFamily: fontB, fontSize: 11, fontWeight: 600, color: tierBadge.color, background: 'rgba(255,255,255,0.1)', border: `1px solid rgba(255,255,255,0.15)`, borderRadius: 100, padding: '3px 10px' }}>
+                {tierBadge.icon}
+                {tierBadge.label}
+              </span>
+              {tier !== 'agency' && (
+                <p style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: 0 }}>
+                  Agency subscribers get 3 refreshes per day.{' '}
+                  <Link href="/#pricing" style={{ color: '#a855f7', textDecoration: 'none', fontWeight: 600 }}>Upgrade</Link>
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         {loading ? (
