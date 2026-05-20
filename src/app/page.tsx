@@ -6,6 +6,7 @@ import {
   ArrowRight, Check, Menu, X, Filter, TrendingDown,
   Target, Shield, Globe, Users, Lock, ChevronDown, ChevronUp,
 } from 'lucide-react'
+import SocialProofToast from '@/components/SocialProofToast'
 export const dynamic = 'force-static'
 
 // Design tokens
@@ -784,6 +785,8 @@ export default function Page() {
           </div>
         </div>
       </footer>
+
+      <SocialProofToast />
 
       {/* STICKY EXIT BAR */}
       {showStickyBar && !stickyDismissed && (

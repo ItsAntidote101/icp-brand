@@ -480,6 +480,17 @@ Rules:
     console.log('[diagnostic] reports insert success — id:', reportRow?.id)
   }
 
+  // ── Save social proof waste event (non-blocking) ──────────────────────────
+  if (reportRow && (diagnosis as Record<string, unknown>)?.monthly_waste_estimate) {
+    const raw      = String((diagnosis as Record<string, unknown>).monthly_waste_estimate)
+    const match    = raw.match(/[\d,]+/)
+    const wasteAmt = match ? parseInt(match[0].replace(/,/g, ''), 10) : null
+    supabase
+      .from('social_proof_events')
+      .insert({ event_type: 'waste_found', region: geographicRegion, waste_amount: wasteAmt, created_at: new Date().toISOString() })
+      .then(() => {}, (e: unknown) => console.error('[diagnostic] social-proof event failed:', e))
+  }
+
   // ── Fire welcome email (non-blocking) ─────────────────────────────────────
   if (questionnaire?.user_id) {
     const proto   = req.headers.get('x-forwarded-proto') ?? 'https'
