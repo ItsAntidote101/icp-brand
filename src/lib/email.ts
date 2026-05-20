@@ -710,3 +710,41 @@ ${cta('View in Dashboard', url)}`
   else console.log('[email] admin reply user sent id:', data?.id, 'to:', to)
   return { data, error }
 }
+
+// ─── Email: Account created (signup) ─────────────────────────────────────────
+
+export async function sendAccountCreatedEmail({
+  to, name,
+}: { to: string; name?: string }) {
+  const first = name?.split(' ')[0] ?? 'there'
+  const url = 'https://icpbrand.co/questionnaire'
+
+  const content = `
+<h1 style="margin:0 0 10px;color:#ffffff;font-size:26px;font-weight:800;line-height:1.2;letter-spacing:-0.5px;">Welcome to ICP Brand</h1>
+<p style="margin:0 0 28px;color:#9ca3af;font-size:15px;line-height:1.7;">Hi ${first}, your account is ready. Run your first ICP diagnostic to see how well your ideal customer profile is defined and where you are losing revenue.</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:14px;margin-bottom:4px;">
+  <tr><td style="padding:20px 24px;">
+    <p style="margin:0 0 12px;color:#a5b4fc;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;">What you get with a free diagnostic</p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+      ${[
+        ['ICP Health Score', 'A 0-100 score showing how strong your customer profile is'],
+        ['Top 3 Findings', 'Issues costing you revenue, ranked by impact'],
+        ['Quick Wins', '3 specific actions you can take this week'],
+      ].map(([label, desc]) => `<tr><td style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+        <p style="margin:0;color:#e5e7eb;font-size:14px;font-weight:600;">${label}</p>
+        <p style="margin:2px 0 0;color:#6b7280;font-size:13px;">${desc}</p>
+      </td></tr>`).join('')}
+    </table>
+  </td></tr>
+</table>
+${cta('Run your free diagnostic', url)}`
+
+  const { data, error } = await getResend().emails.send({
+    from: FROM, to,
+    subject: 'Welcome to ICP Brand',
+    html: base(content),
+  })
+  if (error) console.error('[email] account-created error:', JSON.stringify(error))
+  else console.log('[email] account-created sent id:', data?.id, 'to:', to)
+  return { data, error }
+}

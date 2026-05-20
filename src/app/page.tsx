@@ -216,7 +216,7 @@ export default function Page() {
 
           {/* Desktop actions */}
           <div className="hidden md:flex" style={{ gap: 12, alignItems: 'center' }}>
-            <Link href="/dashboard" style={{ fontFamily: fontB, fontSize: 14, color: P, textDecoration: 'none', fontWeight: 600 }}>Login</Link>
+            <Link href="/auth?tab=login" style={{ fontFamily: fontB, fontSize: 14, color: P, textDecoration: 'none', fontWeight: 600 }}>Login</Link>
             <Link href="/questionnaire" style={{ fontFamily: fontB, fontSize: 14, fontWeight: 700, color: '#fff', background: P, padding: '10px 22px', borderRadius: 100, textDecoration: 'none' }}>Get Free Diagnosis</Link>
           </div>
 

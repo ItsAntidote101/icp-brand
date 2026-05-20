@@ -2805,11 +2805,8 @@ function ChatWidget({ user, score, diag }: { user: UserData; score: number | nul
 export default function DashboardPage() {
   const router = useRouter()
 
-  const [authStep,    setAuthStep]    = useState<'checking' | 'gate' | 'dashboard'>('checking')
-  const [emailInput,  setEmailInput]  = useState('')
-  const [authError,   setAuthError]   = useState('')
-  const [authLoading, setAuthLoading] = useState(false)
-  const [user,        setUser]        = useState<UserData | null>(null)
+  const [authStep, setAuthStep] = useState<'checking' | 'dashboard'>('checking')
+  const [user,     setUser]     = useState<UserData | null>(null)
   const [reports,     setReports]     = useState<ReportRow[]>([])
   const [dataLoading, setDataLoading] = useState(true)
   const [activeTab,   setActiveTab]   = useState<Tab>('overview')
@@ -2838,37 +2835,27 @@ export default function DashboardPage() {
     } finally { setDataLoading(false) }
   }, [])
 
-  const verifyEmail = useCallback(async (email: string, silent = false) => {
-    if (!silent) setAuthLoading(true)
-    setAuthError('')
+  const verifyEmail = useCallback(async (email: string) => {
     try {
       const res  = await fetch('/api/auth/check-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) })
-      const json = await res.json()
-      if (json.status === 'active') {
+      const json = await res.json() as { status?: string; user?: UserData }
+      if (json.status === 'active' && json.user) {
         localStorage.setItem('dashboard_email', email)
         setUser(json.user); setAuthStep('dashboard'); loadReports(email)
-      } else if (json.status === 'inactive') {
-        localStorage.removeItem('dashboard_email')
-        if (!silent) router.push('/report/demo?message=Subscribe+to+unlock+your+dashboard')
-        else setAuthStep('gate')
       } else {
         localStorage.removeItem('dashboard_email')
-        if (!silent) setAuthError('No active subscription found for that email.')
-        setAuthStep('gate')
+        router.replace('/auth?tab=login')
       }
     } catch {
-      if (!silent) setAuthError('Connection error. Please try again.')
-      setAuthStep('gate')
-    } finally {
-      if (!silent) setAuthLoading(false)
+      router.replace('/auth?tab=login')
     }
   }, [router, loadReports])
 
   useEffect(() => {
     const stored = localStorage.getItem('dashboard_email')
-    if (stored) verifyEmail(stored, true)
-    else setAuthStep('gate')
-  }, [verifyEmail])
+    if (stored) verifyEmail(stored)
+    else router.replace('/auth?tab=login')
+  }, [verifyEmail, router])
 
   useEffect(() => {
     if (!user?.email) return
@@ -2905,7 +2892,7 @@ export default function DashboardPage() {
 
   const handleSignOut = () => {
     localStorage.removeItem('dashboard_email')
-    setUser(null); setReports([]); setDataLoading(true); setAuthStep('gate'); setEmailInput('')
+    router.push('/auth?tab=login')
   }
 
   // ── Checking ────────────────────────────────────────────────────────────────
@@ -2914,40 +2901,6 @@ export default function DashboardPage() {
       <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
         <div style={{ width: 32, height: 32, border: `3px solid ${P}`, borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-      </div>
-    )
-  }
-
-  // ── Auth gate ────────────────────────────────────────────────────────────────
-  if (authStep === 'gate') {
-    return (
-      <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-        <div style={{ width: '100%', maxWidth: 400 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center', marginBottom: 40 }}>
-            <div style={{ width: 28, height: 28, borderRadius: 8, background: `linear-gradient(135deg,${P},#6c4ddd)` }} />
-            <span style={{ fontFamily: font, fontWeight: 700, fontSize: 18, color: P }}>ICP Diagnostic</span>
-          </div>
-          <h1 style={{ fontFamily: font, fontSize: 28, fontWeight: 700, color: P, textAlign: 'center', margin: '0 0 8px', letterSpacing: '-0.03em' }}>Welcome back</h1>
-          <p style={{ fontFamily: fontB, color: Pmuted, textAlign: 'center', fontSize: 15, margin: '0 0 32px' }}>Enter your email to access your dashboard</p>
-          <form onSubmit={e => { e.preventDefault(); if (emailInput.trim()) verifyEmail(emailInput.trim()) }}
-            style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <input type="email" value={emailInput} onChange={e => setEmailInput(e.target.value)}
-              placeholder="you@company.com" required
-              style={{ width: '100%', background: BgAlt, border: `1.5px solid ${Pborder}`, borderRadius: 12, padding: '14px 16px', fontSize: 15, color: P, outline: 'none', fontFamily: fontB, boxSizing: 'border-box' }} />
-            {authError && (
-              <p style={{ fontFamily: fontB, color: '#ef4444', fontSize: 14, background: '#fee2e2', border: '1px solid #fecaca', borderRadius: 12, padding: '12px 16px', margin: 0 }}>{authError}</p>
-            )}
-            <button type="submit" disabled={authLoading}
-              style={{ background: P, color: '#fff', border: 'none', borderRadius: 12, padding: 14, fontSize: 15, fontWeight: 600, cursor: authLoading ? 'not-allowed' : 'pointer', opacity: authLoading ? 0.7 : 1, fontFamily: font }}>
-              {authLoading ? 'Checking…' : 'Access Dashboard →'}
-            </button>
-          </form>
-          <p style={{ fontFamily: fontB, textAlign: 'center', fontSize: 14, color: Pmuted, marginTop: 24 }}>
-            No account?{' '}
-            <Link href="/questionnaire" style={{ color: P, fontWeight: 600, textDecoration: 'none' }}>Run a free diagnostic</Link>
-          </p>
-        </div>
       </div>
     )
   }
