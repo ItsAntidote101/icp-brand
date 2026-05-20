@@ -604,6 +604,8 @@ export default function QuestionnairePage() {
       const dData = await dRes.json()
       if (!dRes.ok) throw new Error(dData.error || 'Failed to generate diagnostic')
 
+      localStorage.setItem('dashboard_email', profile.email)
+      if (profile.name) localStorage.setItem('dashboard_name', profile.name)
       router.push(`/report/${dData.id}`)
     } catch (err) {
       timerRefs.current.forEach(clearTimeout)

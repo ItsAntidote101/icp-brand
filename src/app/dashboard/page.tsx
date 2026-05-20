@@ -2892,7 +2892,8 @@ export default function DashboardPage() {
 
   const handleSignOut = () => {
     localStorage.removeItem('dashboard_email')
-    router.push('/auth?tab=login')
+    localStorage.removeItem('dashboard_name')
+    router.push('/auth')
   }
 
   // ── Checking ────────────────────────────────────────────────────────────────
