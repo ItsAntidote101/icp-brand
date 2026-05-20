@@ -9,6 +9,7 @@ import {
   Check, ChevronDown, ChevronUp, CheckCircle, Target, X, FileDown,
   RefreshCw, Bell, Brain, Send, Settings, HelpCircle, LogOut,
   MessageCircle, ArrowUp, UserCheck, BrainCircuit, Clock, Lock,
+  Star, Flame,
 } from 'lucide-react'
 import { AreaChart, Area, ResponsiveContainer, Tooltip } from 'recharts'
 
@@ -39,6 +40,10 @@ type UserData = {
   billing_status: string; renewal_date: string | null
   created_at: string; paused_until?: string | null
   has_unread_reply?: boolean | null
+  current_streak?: number; longest_streak?: number
+  total_fixes_completed?: number
+  last_seen_intelligence_at?: string | null
+  last_seen_overview_at?: string | null
 }
 
 type ReportRow = {
@@ -110,6 +115,21 @@ function deriveDimensions(diag: DiagnosisData, base: number) {
     return { name, score }
   })
 }
+
+// ─── Milestones ───────────────────────────────────────────────────────────────
+
+type MilestoneKey = 'first_diagnosis' | 'quick_win' | 'score_climber' | 'intelligence_reader' | 'consistent' | 'power_user'
+type Milestone = { key: MilestoneKey; name: string; description: string; unlock_hint: string; earned: boolean; earned_at: string | null }
+type MilestoneDef = { key: MilestoneKey; name: string; description: string; unlock_hint: string; Icon: React.ComponentType<{ size?: number | string; color?: string }>; color: string }
+
+const MILESTONE_DEFS: MilestoneDef[] = [
+  { key: 'first_diagnosis',     name: 'First Diagnosis',     description: 'Completed your first ICP diagnostic',  unlock_hint: 'Run your first diagnosis',      Icon: FileSearch, color: '#f59e0b' },
+  { key: 'quick_win',           name: 'Quick Win',           description: 'Marked your first fix as complete',    unlock_hint: 'Mark a quick win as done',      Icon: Zap,        color: '#22c55e' },
+  { key: 'score_climber',       name: 'Score Climber',       description: 'Improved ICP score by 10+ points',     unlock_hint: 'Improve your score 10 points',  Icon: TrendingUp, color: '#3b82f6' },
+  { key: 'intelligence_reader', name: 'Intelligence Reader', description: 'Read 5 intelligence briefings',        unlock_hint: 'Open Intelligence tab 5 times', Icon: Brain,      color: '#a855f7' },
+  { key: 'consistent',          name: 'Consistent',          description: 'Ran 3 or more diagnoses',              unlock_hint: 'Complete 3 total diagnoses',    Icon: RefreshCw,  color: '#f97316' },
+  { key: 'power_user',          name: 'Power User',          description: 'Earned all other badges',              unlock_hint: 'Earn all other badges first',   Icon: Star,       color: '#f59e0b' },
+]
 
 const TIER_LABEL: Record<string, string> = { starter: 'Starter', pro: 'Pro', agency: 'Agency', free: 'Free' }
 // Base prices in KES
@@ -456,6 +476,400 @@ function CampaignInsightsWidget({ delay }: { delay: number }) {
         Upload CSV →
       </Link>
     </Card>
+  )
+}
+
+// ─── New Overview Components ──────────────────────────────────────────────────
+
+function DailyBriefCard({ diag, reports, score, hasIntelligence, onTabChange }: {
+  diag: DiagnosisData; reports: ReportRow[]; score: number | null
+  hasIntelligence: boolean; onTabChange: (tab: Tab) => void
+}) {
+  const findings   = getFindings(diag)
+  const topFinding = findings[0]
+  const secondF    = findings[1]
+  const waste      = parseWaste(diag.monthly_waste_estimate)
+  const daysSince  = reports[0] ? daysBetween(reports[0].generated_at) : 0
+  const dailyWaste = Math.round(waste.amount / 30)
+  const costAccum  = dailyWaste * daysSince
+
+  const prevScore  = reports.length >= 2 ? getScore(parseDiagnosis(reports[1].report_summary)) : null
+  const delta      = score !== null && prevScore !== null ? score - prevScore : null
+
+  let briefText: string
+  if (daysSince >= 14 && score !== null && score < 50) {
+    briefText = `Your ICP score has not changed in ${daysSince} days. Your top finding is still unresolved and has cost you an estimated KES ${costAccum.toLocaleString()} since your last diagnosis. One quick win below takes 10 minutes to fix today.`
+  } else if (delta !== null && delta > 0 && secondF) {
+    briefText = `Your ICP score improved ${delta} points since last month. Good progress on your funnel friction. Your next priority is ${secondF.title}, which is still costing you KES ${dailyWaste.toLocaleString()} per day.`
+  } else if (hasIntelligence) {
+    briefText = `New competitive intelligence is available for your market this week. Your industry is seeing increased ad competition. Check the Intelligence tab for your full briefing.`
+  } else {
+    briefText = `Welcome to your ICP Diagnostic cockpit. Your baseline score is ${score ?? '—'}/100. You are losing an estimated KES ${waste.amount.toLocaleString()} per month on misaligned targeting. Start with the quick win below.`
+  }
+
+  const statusColor = score === null ? '#f59e0b'
+    : score < 41 && daysSince >= 14 ? '#ef4444'
+    : score < 41 ? '#f59e0b'
+    : score < 71 ? '#f59e0b'
+    : '#22c55e'
+
+  const ctaStyle: React.CSSProperties = {
+    display: 'inline-flex', alignItems: 'center', gap: 6,
+    background: P, color: '#fff', borderRadius: 12, padding: '11px 18px',
+    fontFamily: fontB, fontSize: 13, fontWeight: 600,
+    textDecoration: 'none', border: 'none', cursor: 'pointer',
+    whiteSpace: 'nowrap', flexShrink: 0,
+  }
+
+  return (
+    <div style={{ background: '#fff', borderRadius: 20, borderLeft: `4px solid ${statusColor}`, padding: '28px 32px', boxShadow: '0 2px 16px rgba(48,33,97,0.06)', animation: 'fadeUp 0.4s ease both' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+            <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: statusColor }}>TODAY&apos;S BRIEF</span>
+            <span style={{ fontFamily: fontB, fontSize: 12, color: Pmuted }}>
+              {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+            </span>
+          </div>
+          <p style={{ fontFamily: font, fontSize: 16, color: P, lineHeight: 1.7, margin: 0, fontWeight: 400 }}>{briefText}</p>
+        </div>
+        {hasIntelligence && !topFinding ? (
+          <button onClick={() => onTabChange('intelligence')} style={ctaStyle}>
+            Read This Week&apos;s Intelligence <ArrowRight size={14} />
+          </button>
+        ) : topFinding ? (
+          <a href="#findings" style={ctaStyle}>
+            Fix Top Finding <ArrowRight size={14} />
+          </a>
+        ) : (
+          <Link href="/questionnaire" style={ctaStyle}>
+            Run New Diagnosis <ArrowRight size={14} />
+          </Link>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function WasteTicker({ diag, report, currency }: { diag: DiagnosisData; report: ReportRow; currency: string }) {
+  const waste      = parseWaste(diag.monthly_waste_estimate)
+  const perTick    = (waste.amount / 30 / 24 / 3600) / 10
+  const daysSince  = daysBetween(report.generated_at)
+  const startAmt   = Math.round((waste.amount / 30) * daysSince)
+
+  const [displayed,   setDisplayed]   = useState(startAmt)
+  const [isPulsing,   setIsPulsing]   = useState(false)
+
+  useEffect(() => {
+    if (waste.amount === 0) return
+    const id = setInterval(() => setDisplayed(v => v + perTick), 100)
+    return () => clearInterval(id)
+  }, [perTick, waste.amount])
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setIsPulsing(true)
+      setTimeout(() => setIsPulsing(false), 600)
+    }, 3000)
+    return () => clearInterval(id)
+  }, [])
+
+  const displayVal = waste.amount > 0
+    ? convertAmount(Math.round(displayed), waste.fromCurrency, currency)
+    : '—'
+
+  return (
+    <Card style={{ position: 'relative', overflow: 'hidden', borderColor: isPulsing ? '#ef4444' : Pborder, transition: 'border-color 0.3s ease' }}>
+      <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: '#ef4444', margin: '0 0 12px' }}>MONEY LOST SINCE DIAGNOSIS</p>
+      <div style={{ fontFamily: font, fontSize: 'clamp(28px,3vw,44px)', fontWeight: 800, color: '#ef4444', lineHeight: 1, fontVariantNumeric: 'tabular-nums' as const, margin: '0 0 8px' }}>
+        {displayVal}
+      </div>
+      <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 4px' }}>
+        accumulating at {currency} {Math.round(waste.amount / 30).toLocaleString()} per day
+      </p>
+      <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: 0 }}>
+        Based on your {diag.monthly_waste_estimate ?? '—'} monthly waste estimate
+      </p>
+    </Card>
+  )
+}
+
+function ICPScoreCard({ diag, reports }: { diag: DiagnosisData; reports: ReportRow[] }) {
+  const score     = getScore(diag)
+  const prevScore = reports.length >= 2 ? getScore(parseDiagnosis(reports[1].report_summary)) : null
+  const delta     = score !== null && prevScore !== null ? score - prevScore : null
+
+  if (score === null) return null
+
+  const nextThreshold = score < 41 ? 41 : score < 71 ? 71 : null
+  const nextLabel     = score < 41 ? 'At Risk' : score < 71 ? 'Healthy' : null
+  const zoneStart     = nextThreshold === 41 ? 0 : 41
+  const zoneSize      = nextThreshold === 41 ? 41 : 30
+  const progressToNext = nextThreshold ? Math.min(100, ((score - zoneStart) / zoneSize) * 100) : 100
+
+  return (
+    <Card style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, textAlign: 'center' }}>
+      <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: 0 }}>ICP Health Score</p>
+      <AnimatedGauge score={score} />
+      <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, background: scoreLabelBg(score), color: scoreColor(score), padding: '4px 14px', borderRadius: 100, textTransform: 'uppercase' as const, letterSpacing: '0.07em' }}>
+        {scoreLabel(score)}
+      </span>
+      {delta !== null && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          {delta > 0 ? <TrendingUp size={13} color="#22c55e" /> : delta < 0 ? <TrendingDown size={13} color="#ef4444" /> : null}
+          <span style={{ fontFamily: fontB, fontSize: 12, color: delta > 0 ? '#22c55e' : delta < 0 ? '#ef4444' : Pmuted }}>
+            {delta > 0 ? `+${delta}` : delta === 0 ? 'No change' : String(delta)} since last month
+          </span>
+        </div>
+      )}
+      {nextThreshold && nextLabel && (
+        <div style={{ width: '100%' }}>
+          <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '0 0 6px' }}>
+            {nextThreshold - score} points to {nextLabel} ({nextThreshold})
+          </p>
+          <div style={{ height: 6, background: '#f3f4f6', borderRadius: 100, overflow: 'hidden' }}>
+            <div style={{ height: '100%', background: scoreColor(score), borderRadius: 100, width: `${progressToNext}%`, transition: 'width 1s ease' }} />
+          </div>
+        </div>
+      )}
+    </Card>
+  )
+}
+
+function FixStreakWidget({ streak }: { streak: number }) {
+  return (
+    <Card style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, textAlign: 'center' }}>
+      <Flame size={32} color={streak > 0 ? '#f97316' : Pmuted} />
+      <div style={{ fontFamily: font, fontSize: 48, fontWeight: 800, color: streak > 0 ? '#f97316' : Pmuted, lineHeight: 1 }}>{streak}</div>
+      <p style={{ fontFamily: fontB, fontSize: 14, color: Pmuted, margin: 0 }}>week streak</p>
+      <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: 0, lineHeight: 1.5, maxWidth: 160 }}>Weeks with at least one fix implemented</p>
+      <p style={{ fontFamily: fontB, fontSize: 13, color: streak >= 3 ? '#f97316' : Pmuted, margin: 0, fontWeight: streak >= 3 ? 600 : 400 }}>
+        {streak === 0 ? 'Start your streak this week' : streak === 1 ? 'Keep it going next week' : 'You are on fire'}
+      </p>
+      <div style={{ display: 'flex', gap: 4, marginTop: 4 }}>
+        {Array.from({ length: 8 }, (_, i) => (
+          <div key={i} style={{ width: 8, height: 8, borderRadius: '50%', background: i < Math.min(streak, 8) ? '#f97316' : '#e5e7eb' }} />
+        ))}
+      </div>
+    </Card>
+  )
+}
+
+function ScoreJourneyWidget({ score, reports }: { score: number; reports: ReportRow[] }) {
+  const milestones = [
+    { zone: 'Critical', range: '0-40',   color: '#ef4444', bg: '#fee2e2', reached: score <= 40, text: 'Immediate action required. 40% of your budget is at risk.' },
+    { zone: 'At Risk',  range: '41-70',  color: '#f59e0b', bg: '#fef3c7', reached: score > 40,  text: 'Targeting improving. Funnel optimization phase.' },
+    { zone: 'Healthy',  range: '71-100', color: '#22c55e', bg: '#dcfce7', reached: score > 70,  text: 'ICP aligned. Scale with confidence.' },
+  ]
+  const prevScore = reports.length >= 2 ? getScore(parseDiagnosis(reports[1].report_summary)) : null
+
+  return (
+    <Card>
+      <p style={{ fontFamily: font, fontSize: 20, fontWeight: 700, color: P, margin: '0 0 20px', letterSpacing: '-0.02em' }}>Your journey to Healthy.</p>
+
+      {/* Track */}
+      <div style={{ position: 'relative', height: 32, borderRadius: 16, background: '#f3f4f6', overflow: 'hidden', marginBottom: 8 }}>
+        <div style={{ position: 'absolute', left: 0, width: '40%', height: '100%', background: 'rgba(239,68,68,0.15)' }} />
+        <div style={{ position: 'absolute', left: '40%', width: '30%', height: '100%', background: 'rgba(245,158,11,0.12)' }} />
+        <div style={{ position: 'absolute', left: '70%', right: 0, height: '100%', background: 'rgba(34,197,94,0.12)' }} />
+
+        {/* Previous score dot */}
+        {prevScore !== null && (
+          <div style={{ position: 'absolute', left: `${prevScore}%`, top: '50%', transform: 'translate(-50%,-50%)', width: 12, height: 12, borderRadius: '50%', background: scoreColor(prevScore), opacity: 0.45, border: '2px solid #fff' }} />
+        )}
+
+        {/* Current score dot */}
+        <div style={{ position: 'absolute', left: `${score}%`, top: '50%', transform: 'translate(-50%,-50%)', width: 28, height: 28, borderRadius: '50%', background: scoreColor(score), border: '3px solid #fff', boxShadow: '0 2px 8px rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}>
+          <span style={{ fontFamily: font, fontSize: 9, fontWeight: 800, color: '#fff' }}>{score}</span>
+        </div>
+      </div>
+
+      {/* Zone labels */}
+      <div style={{ display: 'flex', marginBottom: 24 }}>
+        <span style={{ flex: '0 0 40%', fontFamily: fontB, fontSize: 10, color: '#ef4444', fontWeight: 600 }}>Critical (0-40)</span>
+        <span style={{ flex: '0 0 30%', fontFamily: fontB, fontSize: 10, color: '#f59e0b', fontWeight: 600 }}>At Risk (41-70)</span>
+        <span style={{ flex: '0 0 30%', fontFamily: fontB, fontSize: 10, color: '#22c55e', fontWeight: 600, textAlign: 'right' as const }}>Healthy (71-100)</span>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {milestones.map(m => (
+          <div key={m.zone} style={{ background: m.reached ? m.bg : '#f9fafb', borderRadius: 14, padding: '16px 18px', border: `1px solid ${m.reached ? m.color + '40' : '#e5e7eb'}` }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+              <span style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: m.reached ? m.color : Pmuted }}>{m.zone}</span>
+              <span style={{ fontFamily: fontB, fontSize: 11, color: m.reached ? m.color : Pmuted }}>{m.range}</span>
+            </div>
+            <p style={{ fontFamily: fontB, fontSize: 12, color: m.reached ? P : Pmuted, margin: 0, lineHeight: 1.5 }}>{m.text}</p>
+            {m.reached && (
+              <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+                <CheckCircle size={12} color={m.color} />
+                <span style={{ fontFamily: fontB, fontSize: 11, color: m.color }}>Reached</span>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </Card>
+  )
+}
+
+function EnhancedQuickWinsWidget({ diag, user, onStreakUpdate }: { diag: DiagnosisData; user: UserData; onStreakUpdate: (s: number) => void }) {
+  const wins    = (diag.quick_wins ?? []).slice(0, 3)
+  const [checked,    setChecked]    = useState<boolean[]>(() => wins.map(() => false))
+  const [confirming, setConfirming] = useState<number | null>(null)
+  const [saving,     setSaving]     = useState<number | null>(null)
+  const [badgeToast, setBadgeToast] = useState('')
+
+  const impactLabel = (impact: string) =>
+    impact === 'High' ? 'Estimated impact: KES 8,000-15,000/month'
+    : impact === 'Medium' ? 'Estimated impact: KES 3,000-6,000/month'
+    : 'Estimated impact: KES 1,000-2,500/month'
+
+  async function completeWin(i: number) {
+    setSaving(i); setConfirming(null)
+    try {
+      const res = await fetch('/api/quick-wins/complete', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user.email, win_index: i, win_text: wins[i]?.action }),
+      })
+      if (res.ok) {
+        const d = await res.json() as { streak: number; badges_unlocked: { key: string; name: string }[] }
+        setChecked(p => { const n = [...p]; n[i] = true; return n })
+        onStreakUpdate(d.streak)
+        if (d.badges_unlocked?.length > 0) {
+          setBadgeToast(`Achievement unlocked: ${d.badges_unlocked[0].name}`)
+          setTimeout(() => setBadgeToast(''), 4000)
+        }
+        const mod = await import('canvas-confetti')
+        mod.default({ particleCount: 60, spread: 70, origin: { y: 0.6 }, colors: ['#302161', '#a855f7', '#22c55e'] })
+      }
+    } catch { /* noop */ }
+    finally { setSaving(null) }
+  }
+
+  const done = checked.filter(Boolean).length
+
+  return (
+    <Card>
+      {wins.map((w, i) => (
+        <div key={i} style={{ marginBottom: i < wins.length - 1 ? 20 : 0 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+            <button
+              onClick={() => !checked[i] && setConfirming(confirming === i ? null : i)}
+              disabled={saving === i}
+              style={{ width: 24, height: 24, borderRadius: '50%', border: `2px solid ${checked[i] ? P : 'rgba(48,33,97,0.25)'}`, background: checked[i] ? P : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: checked[i] ? 'default' : 'pointer', flexShrink: 0, transition: 'all 0.2s', marginTop: 1 }}>
+              {checked[i] && <Check size={12} color="#fff" strokeWidth={3} />}
+              {saving === i && <div style={{ width: 8, height: 8, borderRadius: '50%', border: '2px solid rgba(48,33,97,0.3)', borderTopColor: P, animation: 'spin 0.6s linear infinite' }} />}
+            </button>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', background: impactBg(w.impact), color: impactColor(w.impact), padding: '2px 8px', borderRadius: 100, display: 'inline-block', marginBottom: 5 }}>
+                {w.impact}
+              </span>
+              <p style={{ fontFamily: fontB, fontSize: 13, color: checked[i] ? Pmuted : P, margin: '0 0 4px', lineHeight: 1.4, textDecoration: checked[i] ? 'line-through' : 'none', transition: 'all 0.2s' }}>
+                {w.action}
+              </p>
+              <p style={{ fontFamily: fontB, fontSize: 12, color: '#d97706', margin: 0 }}>{impactLabel(w.impact)}</p>
+            </div>
+          </div>
+
+          {confirming === i && (
+            <div style={{ marginTop: 10, marginLeft: 36, background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 10, padding: '12px 14px' }}>
+              <p style={{ fontFamily: fontB, fontSize: 13, color: P, margin: '0 0 10px' }}>Mark &ldquo;{w.action.slice(0, 40)}{w.action.length > 40 ? '…' : ''}&rdquo; as complete?</p>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={() => completeWin(i)} style={{ fontFamily: fontB, fontSize: 12, fontWeight: 600, background: P, color: '#fff', border: 'none', borderRadius: 8, padding: '7px 14px', cursor: 'pointer' }}>Yes, done</button>
+                <button onClick={() => setConfirming(null)} style={{ fontFamily: fontB, fontSize: 12, background: 'none', color: Pmuted, border: `1px solid ${Pborder}`, borderRadius: 8, padding: '7px 14px', cursor: 'pointer' }}>Not yet</button>
+              </div>
+            </div>
+          )}
+        </div>
+      ))}
+
+      {wins.length > 0 && (
+        <div style={{ marginTop: 20 }}>
+          <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '0 0 6px' }}>{done}/{wins.length} completed</p>
+          <div style={{ height: 6, background: Pborder, borderRadius: 100, overflow: 'hidden' }}>
+            <div style={{ height: '100%', background: P, borderRadius: 100, width: `${(done / wins.length) * 100}%`, transition: 'width 0.4s ease' }} />
+          </div>
+        </div>
+      )}
+
+      {wins.length === 0 && <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: 0 }}>No quick wins in this report.</p>}
+
+      {badgeToast && (
+        <div style={{ position: 'fixed', bottom: 100, left: '50%', transform: 'translateX(-50%)', zIndex: 300, background: P, color: '#fff', fontFamily: fontB, fontSize: 13, fontWeight: 600, padding: '12px 22px', borderRadius: 100, boxShadow: '0 8px 32px rgba(48,33,97,0.25)', whiteSpace: 'nowrap', animation: 'slideUp 0.25s ease both' }}>
+          {badgeToast}
+        </div>
+      )}
+    </Card>
+  )
+}
+
+function EnhancedFindingsSection({ diag, report }: { diag: DiagnosisData; report: ReportRow }) {
+  const [expandedIdx, setExpandedIdx] = useState<number | null>(null)
+  const findings = getFindings(diag)
+  const days     = daysBetween(report.generated_at)
+  if (findings.length === 0) return null
+  return (
+    <div id="findings" style={{ animation: 'fadeUp 0.4s ease both', animationDelay: '350ms' }}>
+      <p style={{ fontFamily: font, fontSize: 20, fontWeight: 700, color: P, margin: '0 0 14px', letterSpacing: '-0.02em' }}>All Findings</p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {findings.map((f, i) => (
+          <div key={i} style={{ background: '#fff', border: `1px solid ${Pborder}`, borderLeft: `4px solid ${sevColor(f.severity)}`, borderRadius: '0 14px 14px 0', padding: '18px 22px' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+              <span style={{ fontFamily: font, fontSize: 26, fontWeight: 700, color: P, opacity: 0.1, lineHeight: 1, flexShrink: 0, minWidth: 34 }}>
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 5 }}>
+                  <h3 style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: 0 }}>{f.title}</h3>
+                  <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: sevColor(f.severity), background: sevBg(f.severity), padding: '2px 8px', borderRadius: 100, flexShrink: 0 }}>
+                    {f.severity}
+                  </span>
+                  {days > 0 && (
+                    <span style={{ fontFamily: fontB, fontSize: 11, background: sevBg(f.severity), color: sevColor(f.severity), padding: '2px 8px', borderRadius: 100, flexShrink: 0 }}>
+                      Unresolved {days} {days === 1 ? 'day' : 'days'}
+                    </span>
+                  )}
+                </div>
+                <p style={{ fontFamily: fontB, fontSize: 13, color: 'rgba(48,33,97,0.8)', lineHeight: 1.65, margin: 0,
+                  ...(expandedIdx !== i ? { display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as React.CSSProperties : {}) }}>
+                  {f.explanation}
+                </p>
+                <button onClick={() => setExpandedIdx(expandedIdx === i ? null : i)}
+                  style={{ marginTop: 7, fontFamily: fontB, fontSize: 12, fontWeight: 600, color: P, background: 'none', border: 'none', cursor: 'pointer', padding: 0, opacity: 0.6, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  {expandedIdx === i ? <>Show less <ChevronUp size={12} /></> : <>Read more <ChevronDown size={12} /></>}
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function MilestonesSection({ milestones }: { milestones: Milestone[] }) {
+  return (
+    <div style={{ animation: 'fadeUp 0.4s ease both', animationDelay: '450ms' }}>
+      <p style={{ fontFamily: font, fontSize: 20, fontWeight: 700, color: P, margin: '0 0 16px', letterSpacing: '-0.02em' }}>Your achievements.</p>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14 }}>
+        {MILESTONE_DEFS.map(def => {
+          const ms     = milestones.find(m => m.key === def.key)
+          const earned = ms?.earned ?? false
+          return (
+            <div key={def.key} style={{ width: 140, background: '#fff', borderRadius: 16, padding: '20px 16px', textAlign: 'center', border: `1px solid ${earned ? def.color + '30' : Pborder}`, opacity: earned ? 1 : 0.5, position: 'relative', transition: 'opacity 0.2s' }}>
+              <div style={{ width: 52, height: 52, borderRadius: '50%', background: earned ? def.color + '20' : '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px' }}>
+                <def.Icon size={24} color={earned ? def.color : '#9ca3af'} />
+              </div>
+              {!earned && <div style={{ position: 'absolute', top: 8, right: 8 }}><Lock size={10} color="#9ca3af" /></div>}
+              <p style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, color: earned ? P : Pmuted, margin: '0 0 4px' }}>{def.name}</p>
+              <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: 0, lineHeight: 1.4 }}>
+                {earned ? (ms?.earned_at ? `Earned ${formatDate(ms.earned_at)}` : 'Earned') : def.unlock_hint}
+              </p>
+            </div>
+          )
+        })}
+      </div>
+    </div>
   )
 }
 
@@ -1552,7 +1966,7 @@ function CompetitiveRadar({ userPos, competitors }: { userPos: { x: number; y: n
   )
 }
 
-function IntelligenceTab({ user, score }: { user: UserData; score: number | null }) {
+function IntelligenceTab({ user, score, hasNewIntelligence }: { user: UserData; score: number | null; hasNewIntelligence: boolean }) {
   const [briefing,        setBriefing]        = useState<IntelligenceBriefing | null>(null)
   const [loading,         setLoading]         = useState(true)
   const [refreshing,      setRefreshing]      = useState(false)
@@ -1704,7 +2118,14 @@ function IntelligenceTab({ user, score }: { user: UserData; score: number | null
   )
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[65%_35%]" style={{ gap: 24, alignItems: 'start' }}>
+    <>
+      {hasNewIntelligence && (
+        <div style={{ background: 'linear-gradient(135deg,#302161 0%,#4c1d95 100%)', borderRadius: 14, padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+          <Bell size={16} color="#fff" />
+          <span style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, color: '#fff' }}>New market intelligence is available since your last visit.</span>
+        </div>
+      )}
+      <div className="grid grid-cols-1 lg:grid-cols-[65%_35%]" style={{ gap: 24, alignItems: 'start' }}>
 
       {/* ── Rate limit modal ───────────────────────────────────────────────── */}
       {rateLimitModal && (
@@ -1893,6 +2314,7 @@ function IntelligenceTab({ user, score }: { user: UserData; score: number | null
         </div>
       </div>
     </div>
+    </>
   )
 }
 
@@ -2249,6 +2671,8 @@ export default function DashboardPage() {
   const [currency,    setCurrency]    = useState('KES')
   const [showModal,   setShowModal]   = useState(false)
   const [cancelToast, setCancelToast] = useState('')
+  const [milestones,  setMilestones]  = useState<Milestone[]>([])
+  const [streak,      setStreak]      = useState(0)
 
   // Load currency preference on mount
   useEffect(() => {
@@ -2299,6 +2723,19 @@ export default function DashboardPage() {
     if (stored) verifyEmail(stored, true)
     else setAuthStep('gate')
   }, [verifyEmail])
+
+  useEffect(() => {
+    if (!user?.email) return
+    setStreak(user.current_streak ?? 0)
+    const email = user.email
+    void fetch(`/api/milestones?email=${encodeURIComponent(email)}`)
+      .then(r => r.ok ? r.json() : { milestones: [] })
+      .then((j: { milestones: Milestone[] }) => { setMilestones(j.milestones ?? []) }, () => {})
+    void fetch('/api/milestones', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    }).then(() => {}, () => {})
+  }, [user?.email, user?.current_streak])
 
   const handleSignOut = () => {
     localStorage.removeItem('dashboard_email')
@@ -2356,6 +2793,11 @@ export default function DashboardPage() {
   const hasReports          = reports.length >= 1
   const tierLabel           = user ? (TIER_LABEL[user.subscription_tier] ?? user.subscription_tier) : ''
 
+  const hasNewIntelligence  = user ? (
+    !user.last_seen_intelligence_at ||
+    (Date.now() - new Date(user.last_seen_intelligence_at).getTime()) > 7 * 86_400_000
+  ) : false
+
   const TAB_ICONS: Record<Tab, React.ReactNode> = {
     overview:     <LayoutDashboard size={20} />,
     intelligence: <Brain size={20} />,
@@ -2369,10 +2811,18 @@ export default function DashboardPage() {
   return (
     <div style={{ minHeight: '100vh', background: BgAlt, fontFamily: fontB }}>
       <style>{`
-        @keyframes spin      { to { transform: rotate(360deg) } }
-        @keyframes fadeUp    { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:translateY(0) } }
-        @keyframes slideUp   { from { opacity:0; transform:translateY(12px) } to { opacity:1; transform:translateY(0) } }
+        @keyframes spin        { to { transform: rotate(360deg) } }
+        @keyframes fadeUp      { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:translateY(0) } }
+        @keyframes slideUp     { from { opacity:0; transform:translateY(12px) } to { opacity:1; transform:translateY(0) } }
+        @keyframes wastePulse  { 0%,100% { border-color: rgba(48,33,97,0.08) } 50% { border-color: #ef4444 } }
         .sidebar-nav-item:hover { background: #f8f7ff !important; }
+        @media (prefers-reduced-motion: reduce) {
+          *, *::before, *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+          }
+        }
       `}</style>
 
       {/* ── LEFT SIDEBAR (desktop only) ───────────────────────────────────── */}
@@ -2387,9 +2837,9 @@ export default function DashboardPage() {
 
         {/* User section */}
         <div style={{ padding: '18px 20px', borderBottom: `1px solid ${Pborder}` }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 36, height: 36, borderRadius: '50%', background: `linear-gradient(135deg,${P},#6c4ddd)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <span style={{ fontFamily: font, fontSize: 13, fontWeight: 700, color: '#fff' }}>{userInitials}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+            <div style={{ width: 48, height: 48, borderRadius: '50%', background: `linear-gradient(135deg,${P},#6c4ddd)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <span style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: '#fff' }}>{userInitials}</span>
             </div>
             <div style={{ minWidth: 0 }}>
               <p style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, color: P, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -2398,11 +2848,23 @@ export default function DashboardPage() {
               {user?.company_name && (
                 <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '1px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.company_name}</p>
               )}
+              {tierLabel && (
+                <span style={{ display: 'inline-block', marginTop: 4, fontFamily: fontB, fontSize: 10, fontWeight: 700, background: P, color: '#fff', padding: '2px 10px', borderRadius: 100 }}>{tierLabel}</span>
+              )}
             </div>
           </div>
-          {tierLabel && (
-            <span style={{ display: 'inline-block', marginTop: 10, fontFamily: fontB, fontSize: 10, fontWeight: 700, background: P, color: '#fff', padding: '2px 10px', borderRadius: 100 }}>{tierLabel}</span>
-          )}
+          {/* Milestone badge row */}
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {MILESTONE_DEFS.map(def => {
+              const earned = milestones.find(m => m.key === def.key)?.earned ?? false
+              return (
+                <div key={def.key} title={earned ? def.name : def.unlock_hint}
+                  style={{ width: 28, height: 28, borderRadius: '50%', background: earned ? def.color + '20' : '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: earned ? 1 : 0.4, transition: 'opacity 0.2s', flexShrink: 0 }}>
+                  <def.Icon size={14} color={earned ? def.color : '#9ca3af'} />
+                </div>
+              )
+            })}
+          </div>
         </div>
 
         {/* Nav items */}
@@ -2412,8 +2874,28 @@ export default function DashboardPage() {
             return (
               <button key={tab} onClick={() => setActiveTab(tab)} className="sidebar-nav-item"
                 style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', marginBottom: 2, textAlign: 'left', background: isActive ? '#ede9fe' : 'transparent', color: isActive ? P : 'rgba(48,33,97,0.6)', fontFamily: fontB, fontSize: 13, fontWeight: isActive ? 600 : 500, transition: 'background 0.12s' }}>
-                {TAB_ICONS[tab]}
-                {TAB_LABELS[tab]}
+                <span style={{ position: 'relative', flexShrink: 0, display: 'flex' }}>
+                  {TAB_ICONS[tab]}
+                  {tab === 'intelligence' && hasNewIntelligence && (
+                    <span style={{ position: 'absolute', top: -2, right: -2, width: 7, height: 7, borderRadius: '50%', background: '#ef4444', border: '1.5px solid #fff' }} />
+                  )}
+                </span>
+                <span style={{ flex: 1 }}>{TAB_LABELS[tab]}</span>
+                {tab === 'overview' && score !== null && (
+                  <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, background: scoreLabelBg(score), color: scoreColor(score), padding: '2px 7px', borderRadius: 100, flexShrink: 0 }}>{score}</span>
+                )}
+                {tab === 'reports' && reports.length > 0 && (
+                  <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, background: Pborder, color: Pmuted, padding: '2px 7px', borderRadius: 100, flexShrink: 0 }}>{reports.length}</span>
+                )}
+                {tab === 'intelligence' && hasNewIntelligence && (
+                  <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, background: '#fee2e2', color: '#ef4444', padding: '2px 7px', borderRadius: 100, flexShrink: 0 }}>New</span>
+                )}
+                {tab === 'account' && user?.renewal_date && (() => {
+                  const days = Math.ceil((new Date(user.renewal_date).getTime() - Date.now()) / 86_400_000)
+                  return days > 0 && days <= 7 ? (
+                    <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, background: '#fef3c7', color: '#d97706', padding: '2px 7px', borderRadius: 100, flexShrink: 0 }}>{days}d</span>
+                  ) : null
+                })()}
               </button>
             )
           })}
@@ -2504,41 +2986,47 @@ export default function DashboardPage() {
 
             {!dataLoading && hasReports && user && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-                <WelcomeBanner user={user} />
+                {/* Daily brief */}
+                <DailyBriefCard
+                  diag={diag}
+                  reports={reports}
+                  score={score}
+                  hasIntelligence={hasNewIntelligence}
+                  onTabChange={setActiveTab}
+                />
 
-                {/* Row 1 */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <HealthScoreWidget diag={diag} report={latestReport} delay={80} />
-                  <MonthlyWasteWidget diag={diag} currency={currency} delay={140} />
-                  <QuickWinsWidget diag={diag} delay={200} />
+                {/* Real-time waste ticker */}
+                <WasteTicker diag={diag} report={latestReport} currency={currency} />
+
+                {/* Score + Streak */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <ICPScoreCard diag={diag} reports={reports} />
+                  <FixStreakWidget streak={streak} />
                 </div>
+
+                {/* Score Journey */}
+                {score !== null && <ScoreJourneyWidget score={score} reports={reports} />}
+
+                {/* Quick Wins */}
+                <div>
+                  <p style={{ fontFamily: font, fontSize: 20, fontWeight: 700, color: P, margin: '0 0 14px', letterSpacing: '-0.02em' }}>This week&apos;s quick wins.</p>
+                  <EnhancedQuickWinsWidget diag={diag} user={user} onStreakUpdate={setStreak} />
+                </div>
+
+                {/* Findings */}
+                <EnhancedFindingsSection diag={diag} report={latestReport} />
+
+                {/* Milestones */}
+                <MilestonesSection milestones={milestones} />
 
                 {/* Get It Done */}
                 <GetItDoneCard tier={user.subscription_tier} onBook={() => setShowModal(true)} />
-
-                {/* Row 2 */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="md:col-span-2">
-                    {score !== null && <PerformanceBreakdownWidget diag={diag} score={score} delay={260} />}
-                  </div>
-                  <ScoreHistoryWidget reports={reports} latestReport={latestReport} renewalDate={user.renewal_date} delay={300} />
-                </div>
-
-                {/* All Findings */}
-                <FindingsSection diag={diag} />
-
-                {/* Row 3 */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <LandingPageWidget diag={diag} delay={400} />
-                  <NextDiagnosisWidget lastReport={latestReport} renewalDate={user.renewal_date} delay={450} />
-                  <CampaignInsightsWidget delay={500} />
-                </div>
               </div>
             )}
           </>
         )}
 
-        {activeTab === 'intelligence' && user && <IntelligenceTab user={user} score={score} />}
+        {activeTab === 'intelligence' && user && <IntelligenceTab user={user} score={score} hasNewIntelligence={hasNewIntelligence} />}
         {activeTab === 'reports' && <ReportsTab reports={reports} dataLoading={dataLoading} />}
         {activeTab === 'account' && user && (
           <AccountTab
