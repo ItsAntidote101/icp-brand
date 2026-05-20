@@ -9,7 +9,7 @@ import {
   Check, ChevronDown, ChevronUp, CheckCircle, Target, X, FileDown,
   RefreshCw, Bell, Brain, Send, Settings, HelpCircle, LogOut,
   MessageCircle, ArrowUp, UserCheck, BrainCircuit, Clock, Lock,
-  Star, Flame,
+  Star, Flame, AlertTriangle,
 } from 'lucide-react'
 import { AreaChart, Area, ResponsiveContainer, Tooltip } from 'recharts'
 
@@ -496,6 +496,17 @@ function DailyBriefCard({ diag, reports, score, hasIntelligence, onTabChange }: 
   const prevScore  = reports.length >= 2 ? getScore(parseDiagnosis(reports[1].report_summary)) : null
   const delta      = score !== null && prevScore !== null ? score - prevScore : null
 
+  // Since last visit feed items
+  const feedItems = [
+    hasIntelligence ? { color: '#22c55e', text: 'Intelligence updated', time: 'This week' } : null,
+    delta !== null && delta !== 0
+      ? { color: delta > 0 ? '#22c55e' : '#ef4444', text: `Score ${delta > 0 ? '+' : ''}${delta} since last report`, time: daysSince > 0 ? `${daysSince}d ago` : 'Today' }
+      : delta === 0
+      ? { color: '#a855f7', text: `Score unchanged at ${score}`, time: daysSince > 0 ? `${daysSince} days` : 'Today' }
+      : null,
+    topFinding ? { color: '#ef4444', text: `${topFinding.title.slice(0, 32)}${topFinding.title.length > 32 ? '…' : ''} unresolved`, time: daysSince > 0 ? `${daysSince} days` : 'Today' } : null,
+  ].filter(Boolean).slice(0, 3) as { color: string; text: string; time: string }[]
+
   let briefText: string
   if (daysSince >= 14 && score !== null && score < 50) {
     briefText = `Your ICP score has not changed in ${daysSince} days. Your top finding is still unresolved and has cost you an estimated KES ${costAccum.toLocaleString()} since your last diagnosis. One quick win below takes 10 minutes to fix today.`
@@ -522,29 +533,45 @@ function DailyBriefCard({ diag, reports, score, hasIntelligence, onTabChange }: 
   }
 
   return (
-    <div style={{ background: '#fff', borderRadius: 20, borderLeft: `4px solid ${statusColor}`, padding: '28px 32px', boxShadow: '0 2px 16px rgba(48,33,97,0.06)', animation: 'fadeUp 0.4s ease both' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' }}>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-            <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: statusColor }}>TODAY&apos;S BRIEF</span>
+    <div style={{ background: '#fff', borderRadius: 20, borderLeft: `4px solid ${statusColor}`, padding: '24px 32px', boxShadow: '0 2px 16px rgba(48,33,97,0.06)', animation: 'fadeUp 0.4s ease both' }}>
+      <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap' }}>
+        {/* Left: brief */}
+        <div style={{ flex: '1 1 300px', minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
+            <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: '#a855f7' }}>TODAY&apos;S BRIEF</span>
             <span style={{ fontFamily: fontB, fontSize: 12, color: Pmuted }}>
               {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
             </span>
           </div>
-          <p style={{ fontFamily: font, fontSize: 16, color: P, lineHeight: 1.7, margin: 0, fontWeight: 400 }}>{briefText}</p>
+          <p style={{ fontFamily: font, fontSize: 15, color: 'rgba(48,33,97,0.8)', lineHeight: 1.7, margin: '0 0 16px', fontWeight: 400 }}>{briefText}</p>
+          {hasIntelligence && !topFinding ? (
+            <button onClick={() => onTabChange('intelligence')} style={ctaStyle}>
+              Read This Week&apos;s Intelligence <ArrowRight size={14} />
+            </button>
+          ) : topFinding ? (
+            <a href="#findings" style={ctaStyle}>
+              Fix Top Finding <ArrowRight size={14} />
+            </a>
+          ) : (
+            <Link href="/questionnaire" style={ctaStyle}>
+              Run New Diagnosis <ArrowRight size={14} />
+            </Link>
+          )}
         </div>
-        {hasIntelligence && !topFinding ? (
-          <button onClick={() => onTabChange('intelligence')} style={ctaStyle}>
-            Read This Week&apos;s Intelligence <ArrowRight size={14} />
-          </button>
-        ) : topFinding ? (
-          <a href="#findings" style={ctaStyle}>
-            Fix Top Finding <ArrowRight size={14} />
-          </a>
-        ) : (
-          <Link href="/questionnaire" style={ctaStyle}>
-            Run New Diagnosis <ArrowRight size={14} />
-          </Link>
+        {/* Right: since last visit */}
+        {feedItems.length > 0 && (
+          <div style={{ flex: '0 1 200px', minWidth: 160 }}>
+            <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 12px' }}>SINCE YOUR LAST VISIT</p>
+            {feedItems.map((item, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 12 }}>
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: item.color, flexShrink: 0, marginTop: 4 }} />
+                <div>
+                  <p style={{ fontFamily: fontB, fontSize: 12, color: P, margin: '0 0 2px', lineHeight: 1.35 }}>{item.text}</p>
+                  <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: 0 }}>{item.time}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>
@@ -579,18 +606,26 @@ function WasteTicker({ diag, report, currency }: { diag: DiagnosisData; report: 
     : '—'
 
   return (
-    <Card style={{ position: 'relative', overflow: 'hidden', borderColor: isPulsing ? '#ef4444' : Pborder, transition: 'border-color 0.3s ease' }}>
-      <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: '#ef4444', margin: '0 0 12px' }}>MONEY LOST SINCE DIAGNOSIS</p>
-      <div style={{ fontFamily: font, fontSize: 'clamp(28px,3vw,44px)', fontWeight: 800, color: '#ef4444', lineHeight: 1, fontVariantNumeric: 'tabular-nums' as const, margin: '0 0 8px' }}>
+    <div style={{
+      background: 'linear-gradient(135deg,#1a0a2e 0%,#302161 100%)',
+      borderRadius: 20,
+      padding: '28px 32px',
+      boxShadow: '0 2px 16px rgba(48,33,97,0.15)',
+      border: isPulsing ? '1px solid rgba(239,68,68,0.5)' : '1px solid transparent',
+      transition: 'border-color 0.3s ease',
+      animation: 'fadeUp 0.4s ease both',
+    }}>
+      <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.5)', margin: '0 0 10px' }}>MONEY LOST SINCE DIAGNOSIS</p>
+      <div style={{ fontFamily: font, fontSize: 'clamp(32px,4vw,52px)', fontWeight: 800, color: '#fff', lineHeight: 1, fontVariantNumeric: 'tabular-nums' as const, margin: '0 0 10px' }}>
         {displayVal}
       </div>
-      <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 4px' }}>
-        accumulating at {currency} {Math.round(waste.amount / 30).toLocaleString()} per day
+      <p style={{ fontFamily: fontB, fontSize: 13, color: 'rgba(255,255,255,0.6)', margin: '0 0 4px' }}>
+        and counting. Fix your top finding to stop the leak.
       </p>
-      <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: 0 }}>
-        Based on your {diag.monthly_waste_estimate ?? '—'} monthly waste estimate
-      </p>
-    </Card>
+      <a href="#findings" style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.8)', textDecoration: 'underline', cursor: 'pointer' }}>
+        See What To Fix →
+      </a>
+    </div>
   )
 }
 
@@ -868,6 +903,116 @@ function MilestonesSection({ milestones }: { milestones: Milestone[] }) {
             </div>
           )
         })}
+      </div>
+    </div>
+  )
+}
+
+// ─── Today's Priority Action card ────────────────────────────────────────────
+
+function TodaysPriorityCard({ diag, report, user, onComplete }: {
+  diag: DiagnosisData; report: ReportRow; user: UserData
+  onComplete: (streak: number) => void
+}) {
+  const findings   = getFindings(diag)
+  const topFinding = findings.find(f => f.severity === 'Critical') ?? findings[0]
+  const topWin     = (diag.quick_wins ?? [])[0]
+  const [done,   setDone]   = useState(false)
+  const [saving, setSaving] = useState(false)
+  const days = daysBetween(report.generated_at)
+
+  if (!topFinding) return null
+
+  const col = topFinding.severity === 'Critical' ? '#ef4444' : '#f59e0b'
+
+  async function markDone() {
+    if (done || saving) return
+    setSaving(true)
+    try {
+      const res = await fetch('/api/quick-wins/complete', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user.email, win_index: 0, win_text: topWin?.action ?? topFinding.title }),
+      })
+      if (res.ok) {
+        const d = await res.json() as { streak: number }
+        setDone(true)
+        onComplete(d.streak)
+        const mod = await import('canvas-confetti')
+        mod.default({ particleCount: 80, spread: 90, origin: { y: 0.5 }, colors: ['#302161', '#a855f7', '#22c55e', '#f59e0b'] })
+      }
+    } catch { /* noop */ }
+    finally { setSaving(false) }
+  }
+
+  return (
+    <div style={{ background: '#fafafa', borderLeft: `4px solid ${col}`, borderRadius: '0 20px 20px 0', padding: '28px 32px', boxShadow: '0 2px 16px rgba(48,33,97,0.06)', animation: 'fadeUp 0.4s ease both' }}>
+      <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: col }}>FIX THIS TODAY</span>
+      <h3 style={{ fontFamily: font, fontSize: 22, fontWeight: 700, color: P, margin: '8px 0 6px', letterSpacing: '-0.01em', lineHeight: 1.2 }}>{topFinding.title}</h3>
+      {days > 0 && (
+        <span style={{ fontFamily: fontB, fontSize: 12, fontWeight: 600, background: days > 14 ? '#fee2e2' : '#fef3c7', color: days > 14 ? '#ef4444' : '#d97706', padding: '4px 12px', borderRadius: 100, display: 'inline-block', margin: '0 0 12px' }}>
+          Unresolved for {days} {days === 1 ? 'day' : 'days'}
+        </span>
+      )}
+      <p style={{ fontFamily: fontB, fontSize: 14, color: 'rgba(48,33,97,0.75)', lineHeight: 1.65, margin: '0 0 18px', ...({ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as React.CSSProperties) }}>
+        {topFinding.explanation}
+      </p>
+      {topWin && (
+        <div style={{ background: '#ede9fe', borderRadius: 12, padding: '16px 20px', marginBottom: 18 }}>
+          <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 6px' }}>HOW TO FIX THIS</p>
+          <p style={{ fontFamily: fontB, fontSize: 14, color: P, margin: '0 0 8px', lineHeight: 1.55 }}>{topWin.action}</p>
+          <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 600, background: '#fef3c7', color: '#d97706', padding: '3px 10px', borderRadius: 100 }}>
+            {topWin.timeline ?? 'Estimated: 15 minutes'}
+          </span>
+        </div>
+      )}
+      <button
+        onClick={markDone}
+        disabled={done || saving}
+        style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: done ? '#22c55e' : P, color: '#fff', border: 'none', borderRadius: 12, padding: '12px 22px', fontFamily: fontB, fontSize: 14, fontWeight: 600, cursor: done || saving ? 'default' : 'pointer', opacity: saving ? 0.75 : 1, transition: 'background 0.25s' }}>
+        {done ? <><Check size={15} /> Fixed</> : saving ? 'Saving…' : 'Mark as Fixed'}
+      </button>
+    </div>
+  )
+}
+
+// ─── Achievement Modal ────────────────────────────────────────────────────────
+
+function AchievementModal({ achievement, onDismiss }: {
+  achievement: { name: string; description: string; color: string; iconName: string }
+  onDismiss: () => void
+}) {
+  const iconMap: Record<string, React.ReactNode> = {
+    FileSearch: <FileSearch size={36} color="#fff" />,
+    Zap:        <Zap size={36} color="#fff" />,
+    Target:     <Target size={36} color="#fff" />,
+    TrendingUp: <TrendingUp size={36} color="#fff" />,
+    Brain:      <Brain size={36} color="#fff" />,
+    BarChart2:  <BarChart2 size={36} color="#fff" />,
+  }
+
+  useEffect(() => {
+    const t = setTimeout(onDismiss, 3500)
+    import('canvas-confetti').then(mod => {
+      mod.default({ particleCount: 100, spread: 80, origin: { y: 0.5 }, colors: [achievement.color, '#302161', '#fff'] })
+    })
+    return () => clearTimeout(t)
+  }, [onDismiss, achievement.color])
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
+      onClick={onDismiss}>
+      <div style={{ background: '#fff', borderRadius: 24, padding: '40px 32px', maxWidth: 360, width: '100%', textAlign: 'center', animation: 'fadeUp 0.35s ease both' }}
+        onClick={e => e.stopPropagation()}>
+        <div style={{ width: 80, height: 80, borderRadius: '50%', background: achievement.color, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+          {iconMap[achievement.iconName] ?? <Star size={36} color="#fff" />}
+        </div>
+        <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: achievement.color, margin: '0 0 8px' }}>Achievement Unlocked</p>
+        <h2 style={{ fontFamily: font, fontSize: 22, fontWeight: 700, color: P, margin: '0 0 8px', letterSpacing: '-0.02em' }}>{achievement.name}</h2>
+        <p style={{ fontFamily: fontB, fontSize: 15, color: Pmuted, margin: '0 0 24px', lineHeight: 1.6 }}>{achievement.description}</p>
+        <button onClick={onDismiss}
+          style={{ background: P, color: '#fff', border: 'none', borderRadius: 12, padding: '11px 24px', fontFamily: fontB, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+          Keep going
+        </button>
       </div>
     </div>
   )
@@ -2671,8 +2816,9 @@ export default function DashboardPage() {
   const [currency,    setCurrency]    = useState('KES')
   const [showModal,   setShowModal]   = useState(false)
   const [cancelToast, setCancelToast] = useState('')
-  const [milestones,  setMilestones]  = useState<Milestone[]>([])
-  const [streak,      setStreak]      = useState(0)
+  const [milestones,      setMilestones]      = useState<Milestone[]>([])
+  const [streak,          setStreak]          = useState(0)
+  const [newAchievement,  setNewAchievement]  = useState<{ name: string; description: string; color: string; iconName: string } | null>(null)
 
   // Load currency preference on mount
   useEffect(() => {
@@ -2735,6 +2881,26 @@ export default function DashboardPage() {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email }),
     }).then(() => {}, () => {})
+    // Check achievements and surface any newly earned
+    void fetch('/api/achievements/update', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then((d: { newlyEarned?: string[] } | null) => {
+        if (d?.newlyEarned && d.newlyEarned.length > 0) {
+          const ACHIEVEMENT_DEFS_MAP: Record<string, { name: string; description: string; color: string; iconName: string }> = {
+            first_diagnosis:     { name: 'First Diagnosis',     description: 'Completed your first ICP diagnostic',     color: '#302161', iconName: 'FileSearch' },
+            quick_win:           { name: 'Quick Win',           description: 'Marked your first fix as complete',       color: '#f59e0b', iconName: 'Zap' },
+            consistent:          { name: 'Consistent',          description: 'Completed 3 ICP diagnoses',               color: '#22c55e', iconName: 'Target' },
+            score_climber:       { name: 'Score Climber',       description: 'Improved your ICP score by 10+ points',  color: '#a855f7', iconName: 'TrendingUp' },
+            intelligence_reader: { name: 'Intelligence Reader', description: 'Viewed 5 weekly intelligence briefings', color: '#3b82f6', iconName: 'Brain' },
+            csv_analyst:         { name: 'CSV Analyst',         description: 'Uploaded and analyzed campaign data',    color: '#f97316', iconName: 'BarChart2' },
+          }
+          const first = ACHIEVEMENT_DEFS_MAP[d.newlyEarned[0]]
+          if (first) setNewAchievement(first)
+        }
+      }, () => {})
   }, [user?.email, user?.current_streak])
 
   const handleSignOut = () => {
@@ -2966,6 +3132,19 @@ export default function DashboardPage() {
 
         <div style={{ padding: 'clamp(20px,4vw,32px) clamp(14px,4vw,40px) 100px' }}>
 
+        {/* Daily Brief — always visible when reports exist */}
+        {!dataLoading && hasReports && user && (
+          <div style={{ marginBottom: 24 }}>
+            <DailyBriefCard
+              diag={diag}
+              reports={reports}
+              score={score}
+              hasIntelligence={hasNewIntelligence}
+              onTabChange={setActiveTab}
+            />
+          </div>
+        )}
+
         {/* OVERVIEW */}
         {activeTab === 'overview' && (
           <>
@@ -2986,14 +3165,6 @@ export default function DashboardPage() {
 
             {!dataLoading && hasReports && user && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-                {/* Daily brief */}
-                <DailyBriefCard
-                  diag={diag}
-                  reports={reports}
-                  score={score}
-                  hasIntelligence={hasNewIntelligence}
-                  onTabChange={setActiveTab}
-                />
 
                 {/* Real-time waste ticker */}
                 <WasteTicker diag={diag} report={latestReport} currency={currency} />
@@ -3007,10 +3178,13 @@ export default function DashboardPage() {
                 {/* Score Journey */}
                 {score !== null && <ScoreJourneyWidget score={score} reports={reports} />}
 
-                {/* Quick Wins */}
-                <div>
-                  <p style={{ fontFamily: font, fontSize: 20, fontWeight: 700, color: P, margin: '0 0 14px', letterSpacing: '-0.02em' }}>This week&apos;s quick wins.</p>
-                  <EnhancedQuickWinsWidget diag={diag} user={user} onStreakUpdate={setStreak} />
+                {/* Priority action + Quick Wins checklist */}
+                <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
+                  <TodaysPriorityCard diag={diag} report={latestReport} user={user} onComplete={setStreak} />
+                  <div>
+                    <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 14px' }}>THIS WEEK</p>
+                    <EnhancedQuickWinsWidget diag={diag} user={user} onStreakUpdate={setStreak} />
+                  </div>
                 </div>
 
                 {/* Findings */}
@@ -3051,6 +3225,11 @@ export default function DashboardPage() {
       {/* ── Booking modal ─────────────────────────────────────────────────── */}
       {showModal && user && (
         <BookingModal user={user} diag={diag} score={score} onClose={() => setShowModal(false)} />
+      )}
+
+      {/* ── Achievement unlock modal ───────────────────────────────────────── */}
+      {newAchievement && (
+        <AchievementModal achievement={newAchievement} onDismiss={() => setNewAchievement(null)} />
       )}
 
       {/* ── Cancellation toast ────────────────────────────────────────────── */}
