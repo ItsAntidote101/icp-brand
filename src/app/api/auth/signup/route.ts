@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { sendAccountCreatedEmail } from '@/lib/email'
+import { createSessionToken, sessionCookieOptions } from '@/lib/session'
 
 export const dynamic = 'force-dynamic'
 
@@ -47,7 +48,10 @@ export async function POST(req: NextRequest) {
     void sendAccountCreatedEmail({ to: email.toLowerCase().trim(), name: fullName ?? undefined })
       .then(() => {}, (e: unknown) => { console.error('[auth/signup] email error:', e) })
 
-    return NextResponse.json({ success: true, isNew: true, userId: newUser.id })
+    const token = createSessionToken(email.toLowerCase().trim(), newUser.id)
+    const res = NextResponse.json({ success: true, isNew: true, userId: newUser.id })
+    res.cookies.set(sessionCookieOptions(token))
+    return res
   } catch (err) {
     console.error('[auth/signup] error:', err)
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })

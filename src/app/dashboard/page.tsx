@@ -2890,7 +2890,8 @@ export default function DashboardPage() {
       }, () => {})
   }, [user?.email, user?.current_streak])
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' })
     localStorage.removeItem('dashboard_email')
     localStorage.removeItem('dashboard_name')
     router.push('/auth')

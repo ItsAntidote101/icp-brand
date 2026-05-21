@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { createSessionToken, sessionCookieOptions } from '@/lib/session'
 
 export const dynamic = 'force-dynamic'
 
@@ -27,7 +28,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ inactive: true }, { status: 200 })
     }
 
-    return NextResponse.json({ success: true, user })
+    const token = createSessionToken(user.email, user.id)
+    const res = NextResponse.json({ success: true, user })
+    res.cookies.set(sessionCookieOptions(token))
+    return res
   } catch (err) {
     console.error('[auth/login] error:', err)
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })
