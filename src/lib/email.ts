@@ -852,3 +852,36 @@ ${cta('Run your free diagnostic', url)}`
   else console.log('[email] account-created sent id:', data?.id, 'to:', to)
   return { data, error }
 }
+
+// ─── New signup notification — founder ───────────────────────────────────────
+
+export async function sendNewSignupToFounder({
+  userEmail, userName, source,
+}: { userEmail: string; userName?: string; source?: string }) {
+  const rows = [
+    ['Email', userEmail],
+    ['Name', userName || '—'],
+    ['Signup method', source === 'google' ? 'Google OAuth' : source ?? 'Email'],
+    ['Time', new Date().toLocaleString('en-GB', { timeZone: 'Africa/Nairobi', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })],
+  ]
+  const content = `
+<h1 style="margin:0 0 10px;color:#ffffff;font-size:22px;font-weight:800;line-height:1.2;letter-spacing:-0.5px;">New signup</h1>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:14px;margin-bottom:16px;">
+  <tr><td style="padding:20px 24px;">
+    ${rows.map(([l, v]) => `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px;"><tr>
+      <td><p style="margin:0;color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:0.06em;">${l}</p>
+      <p style="margin:2px 0 0;color:#ffffff;font-size:14px;font-weight:600;">${v}</p></td>
+    </tr></table>`).join('')}
+  </td></tr>
+</table>`
+
+  const { data, error } = await getResend().emails.send({
+    from: FROM, to: 'eugene@idealicp.com', replyTo: userEmail,
+    subject: `New signup: ${userName || userEmail}${source === 'google' ? ' (Google)' : ''}`,
+    html: base(content),
+  })
+  if (error) console.error('[email] new-signup founder error:', JSON.stringify(error))
+  else console.log('[email] new-signup founder sent id:', data?.id)
+  return { data, error }
+}

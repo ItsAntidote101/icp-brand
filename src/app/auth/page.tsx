@@ -37,13 +37,21 @@ const inputStyle: React.CSSProperties = {
   boxSizing: 'border-box',
 }
 
+const OAUTH_ERRORS: Record<string, string> = {
+  no_code:           'Sign-in was cancelled. Please try again.',
+  oauth_failed:      'Google sign-in failed. Please try again.',
+  account_cancelled: 'This account has been cancelled. Contact support if you think this is a mistake.',
+  server_error:      'Something went wrong on our end. Please try again in a moment.',
+}
+
 function AuthInner() {
   const router       = useRouter()
   const searchParams = useSearchParams()
   const defaultTab   = searchParams.get('tab') === 'login' ? 'login' : 'signup'
+  const oauthError   = searchParams.get('error')
 
   const [tab,    setTab]    = useState<'signup' | 'login'>(defaultTab)
-  const [toast,  setToast]  = useState('')
+  const [toast,  setToast]  = useState(() => oauthError ? (OAUTH_ERRORS[oauthError] ?? 'Sign-in failed. Please try again.') : '')
 
   // Sign Up state
   const [firstName,     setFirstName]     = useState('')

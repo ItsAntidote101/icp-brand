@@ -2,18 +2,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
 import { createSessionToken, sessionCookieOptions } from '@/lib/session'
+import { sendAccountCreatedEmail, sendNewSignupToFounder } from '@/lib/email'
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
-  const code  = searchParams.get('code')
-  const next  = searchParams.get('next') ?? '/dashboard'
+  const code   = searchParams.get('code')
+  const next   = searchParams.get('next') ?? '/dashboard'
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://idealicp.com'
 
   if (!code) {
     return NextResponse.redirect(`${appUrl}/auth?error=no_code`)
   }
 
-  // Exchange the OAuth code for a Supabase session
   const response = NextResponse.redirect(`${appUrl}${next}`)
 
   const supabaseAuth = createServerClient(
@@ -38,7 +38,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(`${appUrl}/auth?error=oauth_failed`)
   }
 
-  // Upsert the Google user into our own users table
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
   if (!serviceKey) {
     return NextResponse.redirect(`${appUrl}/auth?error=server_error`)
@@ -57,16 +56,22 @@ export async function GET(req: NextRequest) {
     .single()
 
   let userId: string
+  let isNewUser = false
 
   if (existing) {
+    // Existing account: check it's still active
+    if (existing.billing_status === 'cancelled') {
+      return NextResponse.redirect(`${appUrl}/auth?error=account_cancelled`)
+    }
+
     userId = existing.id
-    // Update name/avatar from Google if we don't have them yet
     await db.from('users').update({
-      full_name:   fullName ?? undefined,
-      avatar_url:  avatar   ?? undefined,
-      updated_at:  new Date().toISOString(),
+      full_name:  fullName ?? undefined,
+      avatar_url: avatar   ?? undefined,
+      updated_at: new Date().toISOString(),
     }).eq('id', userId)
   } else {
+    // Brand new user: create account
     const { data: inserted, error: insertErr } = await db
       .from('users')
       .insert({
@@ -84,11 +89,22 @@ export async function GET(req: NextRequest) {
       return NextResponse.redirect(`${appUrl}/auth?error=server_error`)
     }
 
-    userId = inserted.id
+    userId    = inserted.id
+    isNewUser = true
+
+    // Send welcome email and notify founder — fire and forget
+    void Promise.allSettled([
+      sendAccountCreatedEmail({ to: email, name: fullName }),
+      sendNewSignupToFounder({ userEmail: email, userName: fullName, source: 'google' }),
+    ])
   }
 
-  // Set our custom icp_session cookie so all protected routes work
   response.cookies.set(sessionCookieOptions(createSessionToken(email, userId)))
+
+  // New users go to dashboard (FirstRunDashboard handles the onboarding)
+  if (isNewUser) {
+    return NextResponse.redirect(`${appUrl}/dashboard`)
+  }
 
   return response
 }

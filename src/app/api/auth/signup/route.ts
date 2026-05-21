@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { sendAccountCreatedEmail } from '@/lib/email'
+import { sendAccountCreatedEmail, sendNewSignupToFounder } from '@/lib/email'
 import { createSessionToken, sessionCookieOptions } from '@/lib/session'
 
 export const dynamic = 'force-dynamic'
@@ -45,8 +45,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Failed to create account' }, { status: 500 })
     }
 
-    void sendAccountCreatedEmail({ to: email.toLowerCase().trim(), name: fullName ?? undefined })
-      .then(() => {}, (e: unknown) => { console.error('[auth/signup] email error:', e) })
+    void Promise.allSettled([
+      sendAccountCreatedEmail({ to: email.toLowerCase().trim(), name: fullName ?? undefined }),
+      sendNewSignupToFounder({ userEmail: email.toLowerCase().trim(), userName: fullName ?? undefined, source: 'email' }),
+    ])
 
     const token = createSessionToken(email.toLowerCase().trim(), newUser.id)
     const res = NextResponse.json({ success: true, isNew: true, userId: newUser.id })
