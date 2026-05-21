@@ -16,7 +16,7 @@ interface Question {
 }
 
 const QUESTIONS: Question[] = [
-  // ── Layer 1 · ICP Foundation ──────────────────────────────────────────
+  // Layer 1 · ICP Foundation (7 questions)
   {
     id: 1, layer: 1, layerName: 'ICP Foundation',
     question: 'What does your business do? Describe your core service or product offering.',
@@ -31,92 +31,56 @@ const QUESTIONS: Question[] = [
   },
   {
     id: 3, layer: 1, layerName: 'ICP Foundation',
-    question: 'What is your company\'s annual revenue range?',
+    question: 'What is the typical company size of your best customers?',
     type: 'radio',
-    options: ['Under $500K', '$500K – $2M', '$2M – $10M', '$10M – $50M', '$50M+'],
+    options: ['Solopreneur / Freelancer', 'Small (2–20 employees)', 'Mid-market (21–200 employees)', 'Enterprise (201–1,000)', 'Large Enterprise (1,000+)'],
   },
   {
     id: 4, layer: 1, layerName: 'ICP Foundation',
-    question: 'How many employees does your company have?',
-    type: 'radio',
-    options: ['1 – 10', '11 – 50', '51 – 200', '201 – 1,000', '1,000+'],
-  },
-  {
-    id: 5, layer: 1, layerName: 'ICP Foundation',
-    question: 'Which geographic regions do you currently serve?',
-    type: 'text',
-    placeholder: 'e.g. North America, EMEA, Global…',
-  },
-  {
-    id: 6, layer: 1, layerName: 'ICP Foundation',
-    question: 'What is the typical company size of your best customers?',
-    type: 'radio',
-    options: ['Solopreneur / Freelancer', 'Small (2 – 20 employees)', 'Mid-market (21 – 200 employees)', 'Enterprise (201 – 1,000)', 'Large Enterprise (1,000+)'],
-  },
-  {
-    id: 7, layer: 1, layerName: 'ICP Foundation',
-    question: 'What industry or vertical do your best customers come from?',
-    type: 'text',
-    placeholder: 'e.g. B2B SaaS startups, regional law firms, independent e-commerce brands…',
-  },
-  {
-    id: 8, layer: 1, layerName: 'ICP Foundation',
     question: 'What was the core problem your best customers had before working with you?',
     type: 'textarea',
     placeholder: 'Describe the pain in their words, not yours…',
   },
   {
-    id: 9, layer: 1, layerName: 'ICP Foundation',
+    id: 5, layer: 1, layerName: 'ICP Foundation',
     question: 'How did your best customers typically discover you?',
     type: 'radio',
     options: ['Paid ads', 'Organic search / SEO', 'Referral / word of mouth', 'Social media (organic)', 'Cold outreach', 'Events / conferences', 'Partnership or agency'],
   },
   {
-    id: 10, layer: 1, layerName: 'ICP Foundation',
-    question: 'What keeps your best customers loyal? What makes them stay and not leave?',
-    type: 'textarea',
-    placeholder: 'Think about the last 3 customers who renewed or expanded their contract…',
-  },
-  {
-    id: 11, layer: 1, layerName: 'ICP Foundation',
+    id: 6, layer: 1, layerName: 'ICP Foundation',
     question: 'What is your average deal size?',
     type: 'radio',
-    options: ['Under $1,000', '$1,000 – $5,000', '$5,000 – $25,000', '$25,000 – $100,000', '$100,000+'],
+    options: ['Under $1,000', '$1,000–$5,000', '$5,000–$25,000', '$25,000–$100,000', '$100,000+'],
   },
   {
-    id: 12, layer: 1, layerName: 'ICP Foundation',
-    question: 'How long is your typical sales cycle from first contact to closed deal?',
-    type: 'radio',
-    options: ['Same day', '1 – 7 days', '1 – 4 weeks', '1 – 3 months', '3+ months'],
-  },
-  {
-    id: 13, layer: 1, layerName: 'ICP Foundation',
+    id: 7, layer: 1, layerName: 'ICP Foundation',
     question: 'What job titles hold the final buying decision at your best customer accounts?',
     type: 'text',
     placeholder: 'e.g. VP of Marketing, Founder / CEO, Head of Operations…',
   },
 
-  // ── Layer 2 · Targeting Mismatch ──────────────────────────────────────
+  // Layer 2 · Targeting Mismatch (8 questions)
   {
-    id: 14, layer: 2, layerName: 'Targeting Mismatch',
+    id: 8, layer: 2, layerName: 'Targeting Mismatch',
     question: 'Describe who you currently believe your ideal customer is.',
     type: 'textarea',
     placeholder: 'Be specific — company size, role, industry, annual budget, primary goal…',
   },
   {
-    id: 15, layer: 2, layerName: 'Targeting Mismatch',
+    id: 9, layer: 2, layerName: 'Targeting Mismatch',
     question: 'Which ad channels are you currently running?',
     type: 'checkbox',
     options: ['Meta (Facebook / Instagram)', 'Google Search', 'Google Display', 'YouTube', 'LinkedIn', 'TikTok', 'Twitter / X', 'Programmatic / Display', 'Retargeting only', 'None — all organic'],
   },
   {
-    id: 16, layer: 2, layerName: 'Targeting Mismatch',
+    id: 10, layer: 2, layerName: 'Targeting Mismatch',
     question: 'What is the URL of your main landing page or primary traffic destination?',
     type: 'url',
     placeholder: 'https://yoursite.com/landing-page',
   },
   {
-    id: 17, layer: 2, layerName: 'Targeting Mismatch',
+    id: 11, layer: 2, layerName: 'Targeting Mismatch',
     question: 'What is the primary geographic region you are targeting with ads?',
     type: 'select',
     options: [
@@ -135,209 +99,126 @@ const QUESTIONS: Question[] = [
     ],
   },
   {
-    id: 18, layer: 2, layerName: 'Targeting Mismatch',
+    id: 12, layer: 2, layerName: 'Targeting Mismatch',
     question: 'Describe your current ad targeting parameters — audiences, keywords, job titles, etc.',
     type: 'textarea',
-    placeholder: 'e.g. Lookalike of buyers, keyword "CRM software", job title "Marketing Manager", retargeting visitors…',
+    placeholder: 'e.g. Lookalike of buyers, keyword "CRM software", job title "Marketing Manager"…',
   },
   {
-    id: 19, layer: 2, layerName: 'Targeting Mismatch',
+    id: 13, layer: 2, layerName: 'Targeting Mismatch',
     question: 'What is your total monthly ad spend across all channels?',
     type: 'radio',
-    options: ['Under $1,000', '$1,000 – $5,000', '$5,000 – $20,000', '$20,000 – $100,000', '$100,000+'],
+    options: ['Under $1,000', '$1,000–$5,000', '$5,000–$20,000', '$20,000–$100,000', '$100,000+'],
   },
   {
-    id: 20, layer: 2, layerName: 'Targeting Mismatch',
-    question: 'How is your budget currently allocated across channels?',
-    type: 'textarea',
-    placeholder: 'e.g. 60% Meta, 30% Google Search, 10% LinkedIn…',
-  },
-  {
-    id: 21, layer: 2, layerName: 'Targeting Mismatch',
+    id: 14, layer: 2, layerName: 'Targeting Mismatch',
     question: 'How many leads did you generate in the last 3 months?',
     type: 'number',
     placeholder: 'Total leads across all channels',
   },
   {
-    id: 22, layer: 2, layerName: 'Targeting Mismatch',
-    question: 'Of those leads, how many converted to paying customers?',
-    type: 'number',
-    placeholder: 'Total new customers in the same period',
-  },
-  {
-    id: 23, layer: 2, layerName: 'Targeting Mismatch',
-    question: 'What is your current cost per acquisition (CPA)?',
-    type: 'text',
-    placeholder: 'e.g. $340 per customer, or "not tracked"',
-  },
-  {
-    id: 24, layer: 2, layerName: 'Targeting Mismatch',
-    question: 'Do the leads you\'re currently generating match the profile of your best customers?',
+    id: 15, layer: 2, layerName: 'Targeting Mismatch',
+    question: 'Do the leads you are currently generating match the profile of your best customers?',
     type: 'yesno',
   },
 
-  // ── Layer 3 · Funnel Friction ─────────────────────────────────────────
+  // Layer 3 · Funnel Friction (5 questions)
   {
-    id: 25, layer: 3, layerName: 'Funnel Friction',
-    question: 'What is the primary CTA (call-to-action) on your main landing page?',
+    id: 16, layer: 3, layerName: 'Funnel Friction',
+    question: 'What is the primary call-to-action on your main landing page?',
     type: 'text',
     placeholder: 'e.g. "Book a Free Call", "Start Free Trial", "Get a Quote"…',
   },
   {
-    id: 26, layer: 3, layerName: 'Funnel Friction',
-    question: 'How many steps does a visitor go through before becoming a lead or customer?',
-    type: 'number',
-    placeholder: 'e.g. 3',
-  },
-  {
-    id: 27, layer: 3, layerName: 'Funnel Friction',
+    id: 17, layer: 3, layerName: 'Funnel Friction',
     question: 'What form fields do you currently require from leads?',
     type: 'textarea',
-    placeholder: 'e.g. First name, Email, Phone, Company name, Monthly budget, Message…',
+    placeholder: 'e.g. First name, Email, Phone, Company name, Monthly budget…',
   },
   {
-    id: 28, layer: 3, layerName: 'Funnel Friction',
+    id: 18, layer: 3, layerName: 'Funnel Friction',
     question: 'How easy is your landing page to use on a mobile device?',
     type: 'slider',
   },
   {
-    id: 29, layer: 3, layerName: 'Funnel Friction',
-    question: 'What percentage of visitors who reach your form actually complete and submit it?',
-    type: 'number',
-    placeholder: 'Enter as a whole number, e.g. 12 for 12%',
-  },
-  {
-    id: 30, layer: 3, layerName: 'Funnel Friction',
-    question: 'Have you ever tested reducing the number of form fields to improve completion rates?',
-    type: 'yesno',
-  },
-  {
-    id: 31, layer: 3, layerName: 'Funnel Friction',
+    id: 19, layer: 3, layerName: 'Funnel Friction',
     question: 'What trust signals do you currently show on your landing page?',
     type: 'textarea',
-    placeholder: 'e.g. Client logos, testimonials, case study results, money-back guarantee, certifications…',
+    placeholder: 'e.g. Client logos, testimonials, case study results, money-back guarantee…',
   },
   {
-    id: 32, layer: 3, layerName: 'Funnel Friction',
-    question: 'How clearly does your landing page communicate why you\'re different from every alternative?',
+    id: 20, layer: 3, layerName: 'Funnel Friction',
+    question: 'How clearly does your landing page communicate why you are different from every alternative?',
     type: 'slider',
   },
 ]
 
-// Layer 1: Q1–13 (13q), Layer 2: Q14–24 (11q), Layer 3: Q25–32 (8q)
-const LAYER_STARTS = [0, 13, 24]
-const LAYER_LENGTHS = [13, 11, 8]
+const LAYER_STARTS  = [0, 7, 15]
+const LAYER_LENGTHS = [7, 8, 5]
+
+const XP_PER_Q = 10
+
+const LAYER_UNLOCK: Record<1 | 2, { next: string; description: string }> = {
+  1: {
+    next: 'Targeting Mismatch',
+    description: 'We will now compare your ideal customer against who you are actually targeting with ads.',
+  },
+  2: {
+    next: 'Funnel Friction',
+    description: 'Final layer. We will audit your landing page and conversion funnel for friction points.',
+  },
+}
 
 const LOADING_STEPS = [
-  { label: 'Saving your answers...',                   sublabel: 'Storing your responses securely',              duration: 2000  },
-  { label: 'Visiting your landing page...',            sublabel: 'Analysing your funnel and offer',              duration: 5000  },
-  { label: 'Researching your industry benchmarks...', sublabel: 'Finding CPC/CPA data for your region',         duration: 10000 },
-  { label: 'Analysing your competitors...',           sublabel: 'Mapping the competitive landscape',            duration: 10000 },
-  { label: 'Generating your diagnostic report...',    sublabel: 'Compiling findings and recommendations',       duration: Infinity },
+  { label: 'Saving your answers…',               sublabel: 'Storing your responses securely',        duration: 2000     },
+  { label: 'Visiting your landing page…',         sublabel: 'Analysing your funnel and offer',        duration: 5000     },
+  { label: 'Researching industry benchmarks…',    sublabel: 'Finding CPC/CPA data for your region',   duration: 10000    },
+  { label: 'Analysing your competitors…',         sublabel: 'Mapping the competitive landscape',      duration: 10000    },
+  { label: 'Generating your diagnostic report…',  sublabel: 'Compiling findings and recommendations', duration: Infinity },
 ]
 
 type Answers = Record<number, string | string[] | number>
 
-// ── Input Components ──────────────────────────────────────────────────────────
+// ── Input components ──────────────────────────────────────────────────────────
 
-function TextInput({ value, onChange, placeholder }: {
-  value: string
-  onChange: (v: string) => void
-  placeholder?: string
-}) {
+function TextInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
   return (
-    <input
-      type="text"
-      value={value}
-      onChange={e => onChange(e.target.value)}
-      placeholder={placeholder}
-      autoFocus
-      className="w-full bg-white/5 border border-white/10 focus:border-indigo-500 rounded-xl px-4 py-3.5 text-white placeholder-slate-500 text-base outline-none transition-colors"
-    />
+    <input type="text" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} autoFocus
+      className="w-full bg-white/5 border border-white/10 focus:border-indigo-500 rounded-xl px-4 py-3.5 text-white placeholder-slate-500 text-base outline-none transition-colors" />
   )
 }
 
-function UrlInput({ value, onChange, onBlur, placeholder }: {
-  value: string
-  onChange: (v: string) => void
-  onBlur?: () => void
-  placeholder?: string
-}) {
+function UrlInput({ value, onChange, onBlur, placeholder }: { value: string; onChange: (v: string) => void; onBlur?: () => void; placeholder?: string }) {
   return (
-    <div className="relative">
-      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm select-none pointer-events-none">
-        🔗
-      </span>
-      <input
-        type="url"
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        onBlur={onBlur}
-        placeholder={placeholder}
-        autoFocus
-        className="w-full bg-white/5 border border-white/10 focus:border-indigo-500 rounded-xl pl-10 pr-4 py-3.5 text-white placeholder-slate-500 text-base outline-none transition-colors"
-      />
-    </div>
+    <input type="url" value={value} onChange={e => onChange(e.target.value)} onBlur={onBlur} placeholder={placeholder} autoFocus
+      className="w-full bg-white/5 border border-white/10 focus:border-indigo-500 rounded-xl px-4 py-3.5 text-white placeholder-slate-500 text-base outline-none transition-colors" />
   )
 }
 
-function TextareaInput({ value, onChange, placeholder }: {
-  value: string
-  onChange: (v: string) => void
-  placeholder?: string
-}) {
+function TextareaInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
   return (
-    <textarea
-      value={value}
-      onChange={e => onChange(e.target.value)}
-      placeholder={placeholder}
-      rows={4}
-      autoFocus
-      className="w-full bg-white/5 border border-white/10 focus:border-indigo-500 rounded-xl px-4 py-3.5 text-white placeholder-slate-500 text-base outline-none resize-none transition-colors leading-relaxed"
-    />
+    <textarea value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} rows={4} autoFocus
+      className="w-full bg-white/5 border border-white/10 focus:border-indigo-500 rounded-xl px-4 py-3.5 text-white placeholder-slate-500 text-base outline-none resize-none transition-colors leading-relaxed" />
   )
 }
 
-function SelectInput({ value, onChange, options }: {
-  value: string
-  onChange: (v: string) => void
-  options: string[]
-}) {
+function SelectInput({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: string[] }) {
   return (
-    <select
-      value={value}
-      onChange={e => onChange(e.target.value)}
-      className="w-full bg-[#12121c] border border-white/10 focus:border-indigo-500 rounded-xl px-4 py-3.5 text-white text-base outline-none transition-colors cursor-pointer appearance-none"
-    >
+    <select value={value} onChange={e => onChange(e.target.value)}
+      className="w-full bg-[#12121c] border border-white/10 focus:border-indigo-500 rounded-xl px-4 py-3.5 text-white text-base outline-none transition-colors cursor-pointer appearance-none">
       <option value="" disabled>Select an option…</option>
-      {options.map(o => (
-        <option key={o} value={o}>{o}</option>
-      ))}
+      {options.map(o => <option key={o} value={o}>{o}</option>)}
     </select>
   )
 }
 
-function RadioInput({ value, onChange, options }: {
-  value: string
-  onChange: (v: string) => void
-  options: string[]
-}) {
+function RadioInput({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: string[] }) {
   return (
     <div className="flex flex-col gap-3">
       {options.map(o => (
-        <button
-          key={o}
-          type="button"
-          onClick={() => onChange(o)}
-          className={`flex items-center gap-3 w-full px-5 py-3.5 rounded-xl border text-left text-sm font-medium transition-all ${
-            value === o
-              ? 'border-indigo-500 bg-indigo-600/20 text-white'
-              : 'border-white/10 bg-white/[0.03] text-slate-300 hover:border-white/25 hover:bg-white/[0.06]'
-          }`}
-        >
-          <span className={`flex-shrink-0 w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-            value === o ? 'border-indigo-400' : 'border-slate-600'
-          }`}>
+        <button key={o} type="button" onClick={() => onChange(o)}
+          className={`flex items-center gap-3 w-full px-5 py-3.5 rounded-xl border text-left text-sm font-medium transition-all ${value === o ? 'border-indigo-500 bg-indigo-600/20 text-white' : 'border-white/10 bg-white/[0.03] text-slate-300 hover:border-white/25 hover:bg-white/[0.06]'}`}>
+          <span className={`flex-shrink-0 w-4 h-4 rounded-full border-2 flex items-center justify-center ${value === o ? 'border-indigo-400' : 'border-slate-600'}`}>
             {value === o && <span className="w-2 h-2 rounded-full bg-indigo-400 block" />}
           </span>
           {o}
@@ -347,30 +228,14 @@ function RadioInput({ value, onChange, options }: {
   )
 }
 
-function CheckboxInput({ value, onChange, options }: {
-  value: string[]
-  onChange: (v: string[]) => void
-  options: string[]
-}) {
-  const toggle = (o: string) => {
-    onChange(value.includes(o) ? value.filter(v => v !== o) : [...value, o])
-  }
+function CheckboxInput({ value, onChange, options }: { value: string[]; onChange: (v: string[]) => void; options: string[] }) {
+  const toggle = (o: string) => onChange(value.includes(o) ? value.filter(v => v !== o) : [...value, o])
   return (
     <div className="flex flex-col gap-3">
       {options.map(o => (
-        <button
-          key={o}
-          type="button"
-          onClick={() => toggle(o)}
-          className={`flex items-center gap-3 w-full px-5 py-3.5 rounded-xl border text-left text-sm font-medium transition-all ${
-            value.includes(o)
-              ? 'border-indigo-500 bg-indigo-600/20 text-white'
-              : 'border-white/10 bg-white/[0.03] text-slate-300 hover:border-white/25 hover:bg-white/[0.06]'
-          }`}
-        >
-          <span className={`flex-shrink-0 w-4 h-4 rounded border-2 flex items-center justify-center ${
-            value.includes(o) ? 'border-indigo-400 bg-indigo-500' : 'border-slate-600'
-          }`}>
+        <button key={o} type="button" onClick={() => toggle(o)}
+          className={`flex items-center gap-3 w-full px-5 py-3.5 rounded-xl border text-left text-sm font-medium transition-all ${value.includes(o) ? 'border-indigo-500 bg-indigo-600/20 text-white' : 'border-white/10 bg-white/[0.03] text-slate-300 hover:border-white/25 hover:bg-white/[0.06]'}`}>
+          <span className={`flex-shrink-0 w-4 h-4 rounded border-2 flex items-center justify-center ${value.includes(o) ? 'border-indigo-400 bg-indigo-500' : 'border-slate-600'}`}>
             {value.includes(o) && (
               <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -384,60 +249,28 @@ function CheckboxInput({ value, onChange, options }: {
   )
 }
 
-function NumberInput({ value, onChange, placeholder }: {
-  value: string
-  onChange: (v: string) => void
-  placeholder?: string
-}) {
+function NumberInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
   return (
-    <input
-      type="number"
-      value={value}
-      onChange={e => onChange(e.target.value)}
-      placeholder={placeholder}
-      min={0}
-      autoFocus
-      className="w-full bg-white/5 border border-white/10 focus:border-indigo-500 rounded-xl px-4 py-3.5 text-white placeholder-slate-500 text-base outline-none transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-    />
+    <input type="number" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} min={0} autoFocus
+      className="w-full bg-white/5 border border-white/10 focus:border-indigo-500 rounded-xl px-4 py-3.5 text-white placeholder-slate-500 text-base outline-none transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
   )
 }
 
-function SliderInput({ value, onChange, question }: {
-  value: number
-  onChange: (v: number) => void
-  question: string
-}) {
-  const labels =
-    question.includes('mobile') || question.includes('Mobile')
-      ? ['Very difficult', 'Perfectly smooth']
-      : ['Not at all clear', 'Crystal clear']
-
+function SliderInput({ value, onChange, question }: { value: number; onChange: (v: number) => void; question: string }) {
+  const labels = question.toLowerCase().includes('mobile')
+    ? ['Very difficult', 'Perfectly smooth']
+    : ['Not at all clear', 'Crystal clear']
   return (
     <div className="py-4">
       <div className="flex justify-between text-xs text-slate-500 mb-3">
-        <span>{labels[0]}</span>
-        <span>{labels[1]}</span>
+        <span>{labels[0]}</span><span>{labels[1]}</span>
       </div>
-      <input
-        type="range"
-        min={1}
-        max={10}
-        value={value}
-        onChange={e => onChange(Number(e.target.value))}
-        className="w-full"
-        style={{
-          background: `linear-gradient(to right, #6366f1 0%, #6366f1 ${(value - 1) / 9 * 100}%, #1e1e2e ${(value - 1) / 9 * 100}%, #1e1e2e 100%)`,
-        }}
-      />
+      <input type="range" min={1} max={10} value={value} onChange={e => onChange(Number(e.target.value))} className="w-full"
+        style={{ background: `linear-gradient(to right,#6366f1 0%,#6366f1 ${(value - 1) / 9 * 100}%,#1e1e2e ${(value - 1) / 9 * 100}%,#1e1e2e 100%)` }} />
       <div className="flex justify-between mt-3">
         <div className="text-xs text-slate-500 flex gap-1">
           {Array.from({ length: 10 }, (_, i) => (
-            <span
-              key={i}
-              className={`w-5 text-center ${i + 1 === value ? 'text-indigo-400 font-bold' : 'text-slate-600'}`}
-            >
-              {i + 1}
-            </span>
+            <span key={i} className={`w-5 text-center ${i + 1 === value ? 'text-indigo-400 font-bold' : 'text-slate-600'}`}>{i + 1}</span>
           ))}
         </div>
       </div>
@@ -446,25 +279,16 @@ function SliderInput({ value, onChange, question }: {
   )
 }
 
-function YesNoInput({ value, onChange }: {
-  value: string
-  onChange: (v: string) => void
-}) {
+function YesNoInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
     <div className="flex gap-4">
       {['Yes', 'No'].map(opt => (
-        <button
-          key={opt}
-          type="button"
-          onClick={() => onChange(opt)}
+        <button key={opt} type="button" onClick={() => onChange(opt)}
           className={`flex-1 py-5 rounded-xl border text-base font-semibold transition-all ${
             value === opt
-              ? opt === 'Yes'
-                ? 'border-emerald-500 bg-emerald-600/20 text-emerald-300'
-                : 'border-red-500 bg-red-600/20 text-red-300'
+              ? opt === 'Yes' ? 'border-emerald-500 bg-emerald-600/20 text-emerald-300' : 'border-red-500 bg-red-600/20 text-red-300'
               : 'border-white/10 bg-white/[0.03] text-slate-300 hover:border-white/25 hover:bg-white/[0.06]'
-          }`}
-        >
+          }`}>
           {opt === 'Yes' ? '✓  Yes' : '✕  No'}
         </button>
       ))}
@@ -472,70 +296,170 @@ function YesNoInput({ value, onChange }: {
   )
 }
 
-// ── Welcome step email input ──────────────────────────────────────────────────
+// ── XP Badge ─────────────────────────────────────────────────────────────────
 
-function EmailFieldInput({ value, onChange, placeholder }: {
-  value: string
-  onChange: (v: string) => void
-  placeholder?: string
-}) {
+function XpBadge({ xp }: { xp: number }) {
   return (
-    <input
-      type="email"
-      value={value}
-      onChange={e => onChange(e.target.value)}
-      placeholder={placeholder}
-      className="w-full bg-white/5 border border-white/10 focus:border-indigo-500 rounded-xl px-4 py-3.5 text-white placeholder-slate-500 text-base outline-none transition-colors"
-    />
+    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-600/20 border border-indigo-500/30">
+      <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+        <polygon points="6,1 7.5,4.5 11,5 8.5,7.5 9,11 6,9.5 3,11 3.5,7.5 1,5 4.5,4.5" fill="#818cf8" />
+      </svg>
+      <span className="text-[11px] font-bold text-indigo-300 tabular-nums">{xp} XP</span>
+    </div>
+  )
+}
+
+// ── Layer completion screen ───────────────────────────────────────────────────
+
+function LayerCompleteScreen({
+  layer,
+  xpEarned,
+  onContinue,
+}: {
+  layer: 1 | 2
+  xpEarned: number
+  onContinue: () => void
+}) {
+  const [countedXp, setCountedXp] = useState(0)
+  const [ready, setReady] = useState(false)
+  const info = LAYER_UNLOCK[layer]
+
+  useEffect(() => {
+    const t = setTimeout(() => setReady(true), 100)
+    return () => clearTimeout(t)
+  }, [])
+
+  // Count up XP
+  useEffect(() => {
+    if (!ready) return
+    const target = xpEarned
+    const step = Math.ceil(target / 30)
+    let current = 0
+    const interval = setInterval(() => {
+      current = Math.min(current + step, target)
+      setCountedXp(current)
+      if (current >= target) clearInterval(interval)
+    }, 40)
+    return () => clearInterval(interval)
+  }, [ready, xpEarned])
+
+  const layerColors: Record<number, { ring: string; bg: string; text: string; badge: string }> = {
+    1: { ring: 'border-indigo-500/60', bg: 'bg-indigo-600/15', text: 'text-indigo-300', badge: 'bg-indigo-600/20 border-indigo-500/40' },
+    2: { ring: 'border-violet-500/60', bg: 'bg-violet-600/15', text: 'text-violet-300', badge: 'bg-violet-600/20 border-violet-500/40' },
+  }
+  const c = layerColors[layer]
+
+  return (
+    <div className="min-h-screen bg-[#0a0a0f] text-white flex flex-col">
+      <style>{`
+        @keyframes scaleIn { from { transform: scale(0.7); opacity: 0 } to { transform: scale(1); opacity: 1 } }
+        @keyframes fadeUp  { from { opacity: 0; transform: translateY(16px) } to { opacity: 1; transform: translateY(0) } }
+        @keyframes pulse-ring { 0%,100% { box-shadow: 0 0 0 0 rgba(99,102,241,0.3) } 50% { box-shadow: 0 0 0 16px rgba(99,102,241,0) } }
+        @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
+      `}</style>
+
+      <header className="border-b border-white/10 px-6 py-4 flex items-center justify-between max-w-3xl mx-auto w-full">
+        <a href="/" className="text-sm font-bold tracking-tight text-white">ICP<span className="text-indigo-400">Diagnostic</span></a>
+        <XpBadge xp={xpEarned} />
+      </header>
+
+      <div className="flex-1 flex flex-col items-center justify-center px-6 pb-16 text-center">
+        <div style={{ animation: ready ? 'scaleIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both' : 'none' }}>
+
+          {/* Check circle */}
+          <div className={`mx-auto mb-6 w-20 h-20 rounded-full border-2 ${c.ring} ${c.bg} flex items-center justify-center`}
+            style={{ animation: ready ? 'pulse-ring 2s ease-in-out infinite' : 'none' }}>
+            <svg className={`w-9 h-9 ${c.text}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+
+          {/* Heading */}
+          <div style={{ animation: ready ? 'fadeUp 0.4s 0.1s ease both' : 'none' }}>
+            <span className={`inline-block text-[10px] font-semibold uppercase tracking-widest px-3 py-1 rounded-full border ${c.badge} ${c.text} mb-4`}>
+              Layer {layer} Complete
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+              {info.next === 'Targeting Mismatch' ? 'ICP Foundation' : 'Targeting Mismatch'} locked in.
+            </h2>
+            <p className="text-slate-400 text-sm max-w-xs mx-auto leading-relaxed">
+              Your foundation answers are saved. Your score is building.
+            </p>
+          </div>
+
+          {/* XP earned */}
+          <div style={{ animation: ready ? 'fadeUp 0.4s 0.2s ease both' : 'none' }}
+            className="mt-8 mb-8 inline-flex flex-col items-center gap-1 px-8 py-5 rounded-2xl border border-white/10 bg-white/[0.03]">
+            <span className="text-xs text-slate-500 uppercase tracking-widest font-semibold">XP Earned</span>
+            <span className="text-4xl font-black text-indigo-300 tabular-nums">+{countedXp}</span>
+            <span className="text-xs text-slate-600">Keep going — diagnosis unlocks at 200 XP</span>
+          </div>
+
+          {/* Next layer teaser */}
+          <div style={{ animation: ready ? 'fadeUp 0.4s 0.3s ease both' : 'none' }}
+            className="mb-8 max-w-sm mx-auto px-5 py-4 rounded-xl border border-white/10 bg-white/[0.03] text-left">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500 mb-1">Unlocking next</p>
+            <p className="text-sm font-bold text-white mb-1">{info.next}</p>
+            <p className="text-xs text-slate-400 leading-relaxed">{info.description}</p>
+          </div>
+
+          {/* CTA */}
+          <div style={{ animation: ready ? 'fadeUp 0.4s 0.4s ease both' : 'none' }}>
+            <button type="button" onClick={onContinue}
+              className="px-10 py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm transition-all active:scale-95 shadow-lg shadow-indigo-600/25">
+              Unlock Layer {layer + 1} →
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
-interface Profile {
-  name: string
-  email: string
-  company: string
-}
+interface Profile { name: string; email: string; company: string }
 
 export default function QuestionnairePage() {
   const router = useRouter()
-  const [step, setStep] = useState<'welcome' | 'questions'>('welcome')
-  const [profile, setProfile] = useState<Profile>({ name: '', email: '', company: '' })
-  const [current, setCurrent] = useState(0)
-  const [answers, setAnswers] = useState<Answers>({})
-  const [visible, setVisible] = useState(false)
-  const [submitting, setSubmitting] = useState(false)
-  const [apiError, setApiError] = useState('')
+  const [step,        setStep]        = useState<'welcome' | 'questions'>('welcome')
+  const [profile,     setProfile]     = useState<Profile>({ name: '', email: '', company: '' })
+  const [current,     setCurrent]     = useState(0)
+  const [answers,     setAnswers]     = useState<Answers>({})
+  const [visible,     setVisible]     = useState(false)
+  const [submitting,  setSubmitting]  = useState(false)
+  const [apiError,    setApiError]    = useState('')
   const [loadingStep, setLoadingStep] = useState(0)
+  const [layerDone,   setLayerDone]   = useState<null | 1 | 2>(null)
   const [urlPreviewBanner, setUrlPreviewBanner] = useState(false)
   const timerRefs = useRef<ReturnType<typeof setTimeout>[]>([])
 
-  // Fade in on mount and on each question change
+  const xp = Object.keys(answers).length * XP_PER_Q
+
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 20)
     return () => clearTimeout(t)
   }, [current])
 
-  const q = QUESTIONS[current]
-  const totalQ = QUESTIONS.length
-  const layerIdx = q.layer - 1
+  const q          = QUESTIONS[current]
+  const totalQ     = QUESTIONS.length
+  const layerIdx   = q.layer - 1
   const layerStart = LAYER_STARTS[layerIdx]
-  const layerLen = LAYER_LENGTHS[layerIdx]
+  const layerLen   = LAYER_LENGTHS[layerIdx]
   const posInLayer = current - layerStart + 1
   const overallPct = Math.round(((current + 1) / totalQ) * 100)
 
   const rawAnswer = answers[q.id]
-  const textVal = (rawAnswer as string) ?? ''
-  const arrVal = (rawAnswer as string[]) ?? []
-  const numVal = typeof rawAnswer === 'number' ? rawAnswer : 5
+  const textVal   = (rawAnswer as string)   ?? ''
+  const arrVal    = (rawAnswer as string[]) ?? []
+  const numVal    = typeof rawAnswer === 'number' ? rawAnswer : 5
 
   const canProceed = (): boolean => {
     const a = answers[q.id]
     if (q.type === 'checkbox') return Array.isArray(a) && a.length > 0
-    if (q.type === 'slider') return true // always has default
+    if (q.type === 'slider')   return true
     if (q.type === 'yesno' || q.type === 'radio' || q.type === 'select') return typeof a === 'string' && a.length > 0
-    if (q.type === 'number') return typeof a === 'string' && a.length > 0
+    if (q.type === 'number')   return typeof a === 'string' && a.length > 0
     return typeof a === 'string' && a.trim().length > 0
   }
 
@@ -544,10 +468,10 @@ export default function QuestionnairePage() {
   }, [q.id])
 
   const handleUrlBlur = useCallback(async () => {
-    const url = (answers[16] as string) ?? ''
+    const url = (answers[10] as string) ?? ''
     if (!url || !url.startsWith('http')) return
     try {
-      const res = await fetch(`/api/fetch-url-preview?url=${encodeURIComponent(url)}`)
+      const res  = await fetch(`/api/fetch-url-preview?url=${encodeURIComponent(url)}`)
       if (!res.ok) return
       const data = await res.json() as { title?: string; description?: string; h1?: string }
       const prefill = data.description || data.h1 || data.title || ''
@@ -555,12 +479,9 @@ export default function QuestionnairePage() {
         setAnswers(prev => ({ ...prev, [1]: prefill }))
         setUrlPreviewBanner(true)
       }
-    } catch {
-      // non-fatal — ignore preview failures
-    }
+    } catch { /* non-fatal */ }
   }, [answers])
 
-  // Initialize slider default
   useEffect(() => {
     if (q.type === 'slider' && answers[q.id] === undefined) {
       setAnswers(prev => ({ ...prev, [q.id]: 5 }))
@@ -570,8 +491,26 @@ export default function QuestionnairePage() {
   const navigate = (dir: 'next' | 'back') => {
     setVisible(false)
     setTimeout(() => {
-      setCurrent(c => dir === 'next' ? c + 1 : c - 1)
+      if (dir === 'next') {
+        const nextIdx = current + 1
+        if (nextIdx < totalQ) {
+          const nextLayer = QUESTIONS[nextIdx].layer
+          if (nextLayer !== q.layer && (q.layer === 1 || q.layer === 2)) {
+            setLayerDone(q.layer as 1 | 2)
+            return
+          }
+        }
+        setCurrent(c => c + 1)
+      } else {
+        setCurrent(c => c - 1)
+      }
     }, 160)
+  }
+
+  const handleLayerContinue = () => {
+    setLayerDone(null)
+    setVisible(false)
+    setTimeout(() => setCurrent(c => c + 1), 80)
   }
 
   const handleSubmit = async () => {
@@ -579,16 +518,15 @@ export default function QuestionnairePage() {
     setApiError('')
     setLoadingStep(1)
 
-    // Advance steps on a schedule matching expected server timing
     let elapsed = 0
-    LOADING_STEPS.slice(0, -1).forEach((step, i) => {
-      elapsed += step.duration as number
+    LOADING_STEPS.slice(0, -1).forEach((s, i) => {
+      elapsed += s.duration as number
       const t = setTimeout(() => setLoadingStep(i + 2), elapsed)
       timerRefs.current.push(t)
     })
 
     try {
-      const qRes = await fetch('/api/questionnaire', {
+      const qRes  = await fetch('/api/questionnaire', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ answers, profile }),
@@ -596,7 +534,7 @@ export default function QuestionnairePage() {
       const qData = await qRes.json()
       if (!qRes.ok) throw new Error(qData.error || 'Failed to save questionnaire')
 
-      const dRes = await fetch('/api/diagnostic', {
+      const dRes  = await fetch('/api/diagnostic', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ questionnaireId: qData.id, responses: answers, profile }),
@@ -618,20 +556,10 @@ export default function QuestionnairePage() {
 
   const isLast = current === totalQ - 1
 
-  const layerColors: Record<number, string> = {
-    1: 'bg-indigo-500',
-    2: 'bg-violet-500',
-    3: 'bg-purple-500',
-  }
-  const layerTextColors: Record<number, string> = {
-    1: 'text-indigo-400',
-    2: 'text-violet-400',
-    3: 'text-purple-400',
-  }
-  const layerBorderColors: Record<number, string> = {
-    1: 'border-indigo-500/40',
-    2: 'border-violet-500/40',
-    3: 'border-purple-500/40',
+  const layerColors = {
+    bar:    { 1: 'bg-indigo-500',        2: 'bg-violet-500',        3: 'bg-purple-500'        },
+    text:   { 1: 'text-indigo-400',      2: 'text-violet-400',      3: 'text-purple-400'      },
+    border: { 1: 'border-indigo-500/40', 2: 'border-violet-500/40', 3: 'border-purple-500/40' },
   }
 
   const welcomeValid =
@@ -639,13 +567,19 @@ export default function QuestionnairePage() {
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profile.email) &&
     profile.company.trim().length > 0
 
+  // ── Layer completion screen ──────────────────────────────────────────────
+  if (layerDone !== null) {
+    const xpEarned = LAYER_STARTS[layerDone] * XP_PER_Q + LAYER_LENGTHS[layerDone] * XP_PER_Q
+    return <LayerCompleteScreen layer={layerDone} xpEarned={xpEarned} onContinue={handleLayerContinue} />
+  }
+
+  // ── Welcome screen ───────────────────────────────────────────────────────
   if (step === 'welcome') {
     return (
       <div className="min-h-screen bg-[#0a0a0f] text-white flex flex-col">
+        <style>{`@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }`}</style>
         <header className="border-b border-white/10 px-6 py-4 flex items-center justify-between max-w-3xl mx-auto w-full">
-          <a href="/" className="text-sm font-bold tracking-tight text-white">
-            ICP<span className="text-indigo-400">Diagnostic</span>
-          </a>
+          <a href="/" className="text-sm font-bold tracking-tight text-white">ICP<span className="text-indigo-400">Diagnostic</span></a>
           <span className="text-xs text-slate-500 font-medium">Step 1 of 4</span>
         </header>
 
@@ -653,12 +587,11 @@ export default function QuestionnairePage() {
           <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest mb-4 px-2.5 py-1 rounded-full border border-indigo-500/40 text-indigo-400 bg-white/[0.03] w-fit">
             Welcome
           </span>
-
           <h2 className="text-xl sm:text-2xl font-bold text-white mb-4 leading-snug">
             Let&apos;s get started — tell us about yourself
           </h2>
           <div className="flex flex-wrap gap-2 mb-6">
-            {['Takes 5 minutes', '20 questions', 'Instant results'].map(chip => (
+            {['3 layers', '20 questions', '5 minutes', 'Instant results'].map(chip => (
               <span key={chip} className="inline-block text-xs font-semibold text-indigo-300 bg-white/[0.06] border border-white/10 rounded-full px-3 py-1">{chip}</span>
             ))}
           </div>
@@ -668,81 +601,46 @@ export default function QuestionnairePage() {
 
           <div className="space-y-5 mb-8">
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-widest text-slate-500 mb-2">
-                Full Name
-              </label>
-              <input
-                type="text"
-                value={profile.name}
-                onChange={e => setProfile(p => ({ ...p, name: e.target.value }))}
-                placeholder="Jane Smith"
-                autoFocus
-                className="w-full bg-white/5 border border-white/10 focus:border-indigo-500 rounded-xl px-4 py-3.5 text-white placeholder-slate-500 text-base outline-none transition-colors"
-              />
+              <label className="block text-xs font-semibold uppercase tracking-widest text-slate-500 mb-2">Full Name</label>
+              <input type="text" value={profile.name} onChange={e => setProfile(p => ({ ...p, name: e.target.value }))}
+                placeholder="Jane Smith" autoFocus
+                className="w-full bg-white/5 border border-white/10 focus:border-indigo-500 rounded-xl px-4 py-3.5 text-white placeholder-slate-500 text-base outline-none transition-colors" />
             </div>
-
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-widest text-slate-500 mb-2">
-                Email Address
-              </label>
-              <EmailFieldInput
-                value={profile.email}
-                onChange={v => setProfile(p => ({ ...p, email: v }))}
+              <label className="block text-xs font-semibold uppercase tracking-widest text-slate-500 mb-2">Email Address</label>
+              <input type="email" value={profile.email} onChange={e => setProfile(p => ({ ...p, email: e.target.value }))}
                 placeholder="jane@company.com"
-              />
+                className="w-full bg-white/5 border border-white/10 focus:border-indigo-500 rounded-xl px-4 py-3.5 text-white placeholder-slate-500 text-base outline-none transition-colors" />
             </div>
-
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-widest text-slate-500 mb-2">
-                Company Name
-              </label>
-              <input
-                type="text"
-                value={profile.company}
-                onChange={e => setProfile(p => ({ ...p, company: e.target.value }))}
-                placeholder="Acme Inc."
-                onKeyDown={e => { if (e.key === 'Enter' && welcomeValid) setStep('questions') }}
-                className="w-full bg-white/5 border border-white/10 focus:border-indigo-500 rounded-xl px-4 py-3.5 text-white placeholder-slate-500 text-base outline-none transition-colors"
-              />
+              <label className="block text-xs font-semibold uppercase tracking-widest text-slate-500 mb-2">Company Name</label>
+              <input type="text" value={profile.company} onChange={e => setProfile(p => ({ ...p, company: e.target.value }))}
+                placeholder="Acme Inc." onKeyDown={e => { if (e.key === 'Enter' && welcomeValid) setStep('questions') }}
+                className="w-full bg-white/5 border border-white/10 focus:border-indigo-500 rounded-xl px-4 py-3.5 text-white placeholder-slate-500 text-base outline-none transition-colors" />
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setStep('questions')}
-            disabled={!welcomeValid}
-            className={`sm:w-fit px-8 py-3 rounded-xl text-sm font-semibold transition-all ${
-              welcomeValid
-                ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/25 active:scale-95'
-                : 'bg-white/5 text-slate-600 cursor-not-allowed border border-white/5'
-            }`}
-          >
+          <button type="button" onClick={() => setStep('questions')} disabled={!welcomeValid}
+            className={`sm:w-fit px-8 py-3 rounded-xl text-sm font-semibold transition-all ${welcomeValid ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/25 active:scale-95' : 'bg-white/5 text-slate-600 cursor-not-allowed border border-white/5'}`}>
             Get Started →
           </button>
-
           {!welcomeValid && (profile.name || profile.email || profile.company) && (
-            <p className="mt-3 text-xs text-slate-600">
-              Fill in all three fields to continue.
-            </p>
+            <p className="mt-3 text-xs text-slate-600">Fill in all three fields to continue.</p>
           )}
         </div>
       </div>
     )
   }
 
+  // ── Loading / analysis screen ────────────────────────────────────────────
   if (submitting) {
     return (
       <div className="min-h-screen bg-[#0a0a0f] text-white flex flex-col">
         <header className="border-b border-white/10 px-6 py-4 flex items-center max-w-3xl mx-auto w-full">
-          <a href="/" className="text-sm font-bold tracking-tight text-white">
-            ICP<span className="text-indigo-400">Diagnostic</span>
-          </a>
+          <a href="/" className="text-sm font-bold tracking-tight text-white">ICP<span className="text-indigo-400">Diagnostic</span></a>
         </header>
-
         <div className="flex-1 flex flex-col items-center justify-center px-6 pb-16">
           <div className="w-full max-w-md">
-
-            {/* Heading */}
             <div className="mb-10 text-center">
               <div className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-widest mb-5 px-3 py-1.5 rounded-full border border-indigo-500/40 text-indigo-400 bg-white/[0.03]">
                 <span className="relative flex h-2 w-2">
@@ -751,33 +649,18 @@ export default function QuestionnairePage() {
                 </span>
                 Running Deep Diagnostic
               </div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">
-                Analysing your ICP&hellip;
-              </h2>
-              <p className="text-slate-500 text-sm">
-                We&apos;re doing real research — this takes about 30 seconds
-              </p>
+              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">Analysing your ICP&hellip;</h2>
+              <p className="text-slate-500 text-sm">We are doing real research — this takes about 30 seconds</p>
             </div>
 
-            {/* Steps */}
             <div className="space-y-2.5">
-              {LOADING_STEPS.map((step, i) => {
-                const stepNum = i + 1
-                const isDone    = loadingStep > stepNum
-                const isCurrent = loadingStep === stepNum
-                const isPending = loadingStep < stepNum
+              {LOADING_STEPS.map((s, i) => {
+                const num       = i + 1
+                const isDone    = loadingStep > num
+                const isCurrent = loadingStep === num
+                const isPending = loadingStep < num
                 return (
-                  <div
-                    key={i}
-                    className={`flex items-center gap-4 px-4 py-3.5 rounded-xl border transition-all duration-500 ${
-                      isCurrent
-                        ? 'border-indigo-500/40 bg-indigo-600/10'
-                        : isDone
-                        ? 'border-white/[0.06] bg-white/[0.02]'
-                        : 'border-white/[0.04] bg-transparent'
-                    }`}
-                  >
-                    {/* Icon */}
+                  <div key={i} className={`flex items-center gap-4 px-4 py-3.5 rounded-xl border transition-all duration-500 ${isCurrent ? 'border-indigo-500/40 bg-indigo-600/10' : isDone ? 'border-white/[0.06] bg-white/[0.02]' : 'border-white/[0.04] bg-transparent'}`}>
                     <div className="flex-shrink-0 w-7 h-7 flex items-center justify-center">
                       {isDone && (
                         <div className="w-6 h-6 rounded-full bg-emerald-500/15 border border-emerald-500/40 flex items-center justify-center">
@@ -792,37 +675,22 @@ export default function QuestionnairePage() {
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                         </svg>
                       )}
-                      {isPending && (
-                        <div className="w-5 h-5 rounded-full border border-white/10 bg-white/[0.03]" />
-                      )}
+                      {isPending && <div className="w-5 h-5 rounded-full border border-white/10 bg-white/[0.03]" />}
                     </div>
-
-                    {/* Label */}
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-medium leading-tight ${
-                        isCurrent ? 'text-white' : isDone ? 'text-slate-500' : 'text-slate-700'
-                      }`}>
-                        {step.label}
-                      </p>
-                      {isCurrent && (
-                        <p className="text-xs text-indigo-400/70 mt-0.5">{step.sublabel}</p>
-                      )}
-                      {isDone && (
-                        <p className="text-xs text-emerald-600/80 mt-0.5">Complete</p>
-                      )}
+                      <p className={`text-sm font-medium leading-tight ${isCurrent ? 'text-white' : isDone ? 'text-slate-500' : 'text-slate-700'}`}>{s.label}</p>
+                      {isCurrent && <p className="text-xs text-indigo-400/70 mt-0.5">{s.sublabel}</p>}
+                      {isDone    && <p className="text-xs text-emerald-600/80 mt-0.5">Complete</p>}
                     </div>
                   </div>
                 )
               })}
             </div>
 
-            {/* Overall progress bar */}
             <div className="mt-8">
               <div className="h-0.5 bg-white/10 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-1000 ease-out"
-                  style={{ width: `${Math.max(4, ((loadingStep - 1) / LOADING_STEPS.length) * 100)}%` }}
-                />
+                <div className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-1000 ease-out"
+                  style={{ width: `${Math.max(4, ((loadingStep - 1) / LOADING_STEPS.length) * 100)}%` }} />
               </div>
               <p className="text-xs text-slate-700 mt-2 text-center tabular-nums">
                 Step {Math.min(loadingStep, LOADING_STEPS.length)} of {LOADING_STEPS.length}
@@ -830,9 +698,7 @@ export default function QuestionnairePage() {
             </div>
 
             {apiError && (
-              <p className="mt-6 text-sm text-red-400 bg-red-900/20 border border-red-800/40 rounded-lg px-4 py-3">
-                {apiError}
-              </p>
+              <p className="mt-6 text-sm text-red-400 bg-red-900/20 border border-red-800/40 rounded-lg px-4 py-3">{apiError}</p>
             )}
           </div>
         </div>
@@ -840,17 +706,17 @@ export default function QuestionnairePage() {
     )
   }
 
+  // ── Question screen ──────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white flex flex-col">
+      <style>{`@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }`}</style>
 
-      {/* Top bar */}
       <header className="border-b border-white/10 px-6 py-4 flex items-center justify-between max-w-3xl mx-auto w-full">
-        <a href="/" className="text-sm font-bold tracking-tight text-white">
-          ICP<span className="text-indigo-400">Diagnostic</span>
-        </a>
-        <span className="text-xs text-slate-500 font-medium">
-          Question {current + 1} of {totalQ}
-        </span>
+        <a href="/" className="text-sm font-bold tracking-tight text-white">ICP<span className="text-indigo-400">Diagnostic</span></a>
+        <div className="flex items-center gap-3">
+          <XpBadge xp={xp} />
+          <span className="text-xs text-slate-500 font-medium tabular-nums">Q{current + 1}/{totalQ}</span>
+        </div>
       </header>
 
       {/* Progress */}
@@ -858,39 +724,18 @@ export default function QuestionnairePage() {
         {/* Layer tabs */}
         <div className="flex gap-2 mb-4">
           {([1, 2, 3] as const).map(l => (
-            <div
-              key={l}
-              className={`flex-1 flex flex-col gap-1.5 px-3 py-2 rounded-lg border transition-all ${
-                l === q.layer
-                  ? `border ${layerBorderColors[l]} bg-white/[0.04]`
-                  : l < q.layer
-                  ? 'border-white/10 bg-white/[0.02]'
-                  : 'border-white/5 bg-transparent'
-              }`}
-            >
+            <div key={l} className={`flex-1 flex flex-col gap-1.5 px-3 py-2 rounded-lg border transition-all ${l === q.layer ? `border ${layerColors.border[l]} bg-white/[0.04]` : l < q.layer ? 'border-white/10 bg-white/[0.02]' : 'border-white/5 bg-transparent'}`}>
               <div className="flex items-center justify-between">
-                <span className={`text-[10px] font-semibold uppercase tracking-widest ${
-                  l === q.layer ? layerTextColors[l] : l < q.layer ? 'text-slate-500' : 'text-slate-700'
-                }`}>
+                <span className={`text-[10px] font-semibold uppercase tracking-widest ${l === q.layer ? layerColors.text[l] : l < q.layer ? 'text-slate-500' : 'text-slate-700'}`}>
                   {l < q.layer ? '✓ ' : ''}Layer {l}
                 </span>
                 {l === q.layer && (
-                  <span className={`text-[10px] font-medium ${layerTextColors[l]}`}>
-                    {posInLayer}/{layerLen}
-                  </span>
+                  <span className={`text-[10px] font-medium ${layerColors.text[l]}`}>{posInLayer}/{layerLen}</span>
                 )}
               </div>
               <div className="h-1 rounded-full bg-white/10 overflow-hidden">
-                <div
-                  className={`h-full rounded-full transition-all duration-500 ${layerColors[l]}`}
-                  style={{
-                    width: l < q.layer
-                      ? '100%'
-                      : l === q.layer
-                      ? `${(posInLayer / layerLen) * 100}%`
-                      : '0%',
-                  }}
-                />
+                <div className={`h-full rounded-full transition-all duration-500 ${layerColors.bar[l]}`}
+                  style={{ width: l < q.layer ? '100%' : l === q.layer ? `${(posInLayer / layerLen) * 100}%` : '0%' }} />
               </div>
             </div>
           ))}
@@ -899,145 +744,75 @@ export default function QuestionnairePage() {
         {/* Overall progress */}
         <div className="flex items-center gap-3 mb-1">
           <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-500"
-              style={{ width: `${overallPct}%` }}
-            />
+            <div className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-500"
+              style={{ width: `${overallPct}%` }} />
           </div>
           <span className="text-xs text-slate-500 tabular-nums w-8 text-right">{overallPct}%</span>
         </div>
-        <p className="text-xs text-slate-600 mb-6">
-          Layer {q.layer} of 3 — {q.layerName}
-        </p>
+        <p className="text-xs text-slate-600 mb-6">Layer {q.layer} of 3 — {q.layerName}</p>
       </div>
 
       {/* Question card */}
       <div className="flex-1 flex flex-col justify-start max-w-3xl mx-auto w-full px-6 pb-16">
-        <div
-          className="transition-all duration-150"
-          style={{
-            opacity: visible ? 1 : 0,
-            transform: visible ? 'translateY(0)' : 'translateY(12px)',
-          }}
-        >
-          {/* Question number badge */}
-          <div className={`inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest mb-4 px-2.5 py-1 rounded-full border ${layerBorderColors[q.layer]} ${layerTextColors[q.layer]} bg-white/[0.03]`}>
+        <div className="transition-all duration-150" style={{ opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(12px)' }}>
+
+          <div className={`inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest mb-4 px-2.5 py-1 rounded-full border ${layerColors.border[q.layer]} ${layerColors.text[q.layer]} bg-white/[0.03]`}>
             <span>Q{q.id}</span>
             <span className="text-white/20">·</span>
             <span>{q.layerName}</span>
           </div>
 
-          {/* Question text */}
-          <h2 className="text-xl sm:text-2xl font-bold text-white mb-6 leading-snug">
-            {q.question}
-          </h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-white mb-6 leading-snug">{q.question}</h2>
 
-          {/* Input */}
           <div className="mb-8">
-            {q.type === 'text' && (
-              <TextInput value={textVal} onChange={setAnswer} placeholder={q.placeholder} />
-            )}
-            {q.type === 'url' && (
-              <UrlInput
-                value={textVal}
-                onChange={setAnswer}
-                onBlur={q.id === 16 ? handleUrlBlur : undefined}
-                placeholder={q.placeholder}
-              />
-            )}
-            {q.type === 'textarea' && (
-              <TextareaInput value={textVal} onChange={setAnswer} placeholder={q.placeholder} />
-            )}
-            {q.type === 'select' && (
-              <SelectInput value={textVal} onChange={setAnswer} options={q.options!} />
-            )}
-            {q.type === 'radio' && (
-              <RadioInput value={textVal} onChange={setAnswer} options={q.options!} />
-            )}
-            {q.type === 'checkbox' && (
-              <CheckboxInput value={arrVal} onChange={setAnswer} options={q.options!} />
-            )}
-            {q.type === 'number' && (
-              <NumberInput value={textVal} onChange={setAnswer} placeholder={q.placeholder} />
-            )}
-            {q.type === 'slider' && (
-              <SliderInput value={numVal} onChange={setAnswer} question={q.question} />
-            )}
-            {q.type === 'yesno' && (
-              <YesNoInput value={textVal} onChange={setAnswer} />
-            )}
+            {q.type === 'text'     && <TextInput     value={textVal} onChange={setAnswer} placeholder={q.placeholder} />}
+            {q.type === 'url'      && <UrlInput      value={textVal} onChange={setAnswer} onBlur={q.id === 10 ? handleUrlBlur : undefined} placeholder={q.placeholder} />}
+            {q.type === 'textarea' && <TextareaInput value={textVal} onChange={setAnswer} placeholder={q.placeholder} />}
+            {q.type === 'select'   && <SelectInput   value={textVal} onChange={setAnswer} options={q.options!} />}
+            {q.type === 'radio'    && <RadioInput    value={textVal} onChange={setAnswer} options={q.options!} />}
+            {q.type === 'checkbox' && <CheckboxInput value={arrVal}  onChange={setAnswer} options={q.options!} />}
+            {q.type === 'number'   && <NumberInput   value={textVal} onChange={setAnswer} placeholder={q.placeholder} />}
+            {q.type === 'slider'   && <SliderInput   value={numVal}  onChange={setAnswer} question={q.question} />}
+            {q.type === 'yesno'    && <YesNoInput    value={textVal} onChange={setAnswer} />}
           </div>
 
-          {/* URL pre-fill banner */}
           {urlPreviewBanner && (
             <div className="mb-6 flex items-start gap-3 px-4 py-3 rounded-xl border border-indigo-500/30 bg-indigo-600/10 text-sm text-indigo-300">
-              <span className="flex-shrink-0 mt-0.5">✦</span>
-              <p className="flex-1 leading-snug">
-                We found your site — some answers have been pre-filled. Review and edit if needed.
-              </p>
-              <button
-                type="button"
-                onClick={() => setUrlPreviewBanner(false)}
-                className="flex-shrink-0 text-indigo-500 hover:text-indigo-300 transition-colors text-base leading-none"
-                aria-label="Dismiss"
-              >
-                ✕
+              <span className="flex-shrink-0 mt-0.5 text-indigo-400">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+              </span>
+              <p className="flex-1 leading-snug">We found your site — some answers have been pre-filled. Review and edit if needed.</p>
+              <button type="button" onClick={() => setUrlPreviewBanner(false)} className="flex-shrink-0 text-indigo-500 hover:text-indigo-300 transition-colors text-base leading-none">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M18 6 6 18M6 6l12 12"/></svg>
               </button>
             </div>
           )}
 
-          {/* Nav */}
           <div className="flex items-center gap-3">
             {current > 0 && (
-              <button
-                type="button"
-                onClick={() => navigate('back')}
-                className="px-5 py-3 rounded-xl border border-white/10 text-slate-400 text-sm font-medium hover:border-white/20 hover:text-white transition-all"
-              >
-                ← Back
+              <button type="button" onClick={() => navigate('back')}
+                className="px-5 py-3 rounded-xl border border-white/10 text-slate-400 text-sm font-medium hover:border-white/20 hover:text-white transition-all">
+                Back
               </button>
             )}
-
             {!isLast ? (
-              <button
-                type="button"
-                onClick={() => navigate('next')}
-                disabled={!canProceed()}
-                className={`flex-1 sm:flex-none sm:min-w-[160px] py-3 px-6 rounded-xl text-sm font-semibold transition-all ${
-                  canProceed()
-                    ? `bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/25 active:scale-95`
-                    : 'bg-white/5 text-slate-600 cursor-not-allowed border border-white/5'
-                }`}
-              >
+              <button type="button" onClick={() => navigate('next')} disabled={!canProceed()}
+                className={`flex-1 sm:flex-none sm:min-w-[160px] py-3 px-6 rounded-xl text-sm font-semibold transition-all ${canProceed() ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/25 active:scale-95' : 'bg-white/5 text-slate-600 cursor-not-allowed border border-white/5'}`}>
                 Next →
               </button>
             ) : (
-              <button
-                type="button"
-                onClick={handleSubmit}
-                disabled={!canProceed()}
-                className={`flex-1 sm:flex-none sm:min-w-[200px] py-3 px-8 rounded-xl text-sm font-semibold transition-all ${
-                  canProceed()
-                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-lg shadow-indigo-600/30 active:scale-95'
-                    : 'bg-white/5 text-slate-600 cursor-not-allowed border border-white/5'
-                }`}
-              >
+              <button type="button" onClick={handleSubmit} disabled={!canProceed()}
+                className={`flex-1 sm:flex-none sm:min-w-[200px] py-3 px-8 rounded-xl text-sm font-semibold transition-all ${canProceed() ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-lg shadow-indigo-600/30 active:scale-95' : 'bg-white/5 text-slate-600 cursor-not-allowed border border-white/5'}`}>
                 Get My Diagnosis →
               </button>
             )}
           </div>
 
           {apiError && (
-            <p className="mt-4 text-sm text-red-400 bg-red-900/20 border border-red-800/40 rounded-lg px-4 py-3">
-              {apiError}
-            </p>
+            <p className="mt-4 text-sm text-red-400 bg-red-900/20 border border-red-800/40 rounded-lg px-4 py-3">{apiError}</p>
           )}
-
-          {/* Skip hint for non-required */}
           {!isLast && !canProceed() && (
-            <p className="mt-3 text-xs text-slate-600">
-              Answer to continue — all questions help improve your diagnosis.
-            </p>
+            <p className="mt-3 text-xs text-slate-600">Answer to continue — all questions help improve your diagnosis.</p>
           )}
         </div>
       </div>
