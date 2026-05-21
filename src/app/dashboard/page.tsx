@@ -747,12 +747,23 @@ function ScoreJourneyWidget({ score, reports }: { score: number; reports: Report
   )
 }
 
-function EnhancedQuickWinsWidget({ diag, user, onStreakUpdate, maxWins = 3 }: { diag: DiagnosisData; user: UserData; onStreakUpdate: (s: number) => void; maxWins?: number }) {
+function EnhancedQuickWinsWidget({ diag, user, onStreakUpdate, maxWins = 3, reportId }: { diag: DiagnosisData; user: UserData; onStreakUpdate: (s: number) => void; maxWins?: number; reportId?: string }) {
   const wins    = (diag.quick_wins ?? []).slice(0, maxWins)
-  const [checked,    setChecked]    = useState<boolean[]>(() => wins.map(() => false))
+  const [checked,    setChecked]    = useState<boolean[]>(() => {
+    if (!reportId) return wins.map(() => false)
+    try {
+      const stored = localStorage.getItem(`qw_${reportId}`)
+      if (stored) {
+        const arr = JSON.parse(stored) as boolean[]
+        return wins.map((_, i) => arr[i] ?? false)
+      }
+    } catch { /* ignore */ }
+    return wins.map(() => false)
+  })
   const [confirming, setConfirming] = useState<number | null>(null)
   const [saving,     setSaving]     = useState<number | null>(null)
   const [badgeToast, setBadgeToast] = useState('')
+  const [winError,   setWinError]   = useState('')
 
   const impactLabel = (impact: string) =>
     impact === 'High' ? 'Estimated impact: KES 8,000-15,000/month'
@@ -768,7 +779,13 @@ function EnhancedQuickWinsWidget({ diag, user, onStreakUpdate, maxWins = 3 }: { 
       })
       if (res.ok) {
         const d = await res.json() as { streak: number; badges_unlocked: { key: string; name: string }[] }
-        setChecked(p => { const n = [...p]; n[i] = true; return n })
+        setChecked(p => {
+          const n = [...p]; n[i] = true
+          if (reportId) {
+            try { localStorage.setItem(`qw_${reportId}`, JSON.stringify(n)) } catch { /* ignore */ }
+          }
+          return n
+        })
         onStreakUpdate(d.streak)
         if (d.badges_unlocked?.length > 0) {
           setBadgeToast(`Achievement unlocked: ${d.badges_unlocked[0].name}`)
@@ -777,7 +794,10 @@ function EnhancedQuickWinsWidget({ diag, user, onStreakUpdate, maxWins = 3 }: { 
         const mod = await import('canvas-confetti')
         mod.default({ particleCount: 60, spread: 70, origin: { y: 0.6 }, colors: ['#302161', '#a855f7', '#22c55e'] })
       }
-    } catch { /* noop */ }
+    } catch {
+      setWinError('Could not save. Please try again.')
+      setTimeout(() => setWinError(''), 4000)
+    }
     finally { setSaving(null) }
   }
 
@@ -832,6 +852,12 @@ function EnhancedQuickWinsWidget({ diag, user, onStreakUpdate, maxWins = 3 }: { 
       {badgeToast && (
         <div style={{ position: 'fixed', bottom: 100, left: '50%', transform: 'translateX(-50%)', zIndex: 300, background: P, color: '#fff', fontFamily: fontB, fontSize: 13, fontWeight: 600, padding: '12px 22px', borderRadius: 100, boxShadow: '0 8px 32px rgba(48,33,97,0.25)', whiteSpace: 'nowrap', animation: 'slideUp 0.25s ease both' }}>
           {badgeToast}
+        </div>
+      )}
+
+      {winError && (
+        <div style={{ position: 'fixed', bottom: 100, left: '50%', transform: 'translateX(-50%)', zIndex: 300, background: '#ef4444', color: '#fff', fontFamily: fontB, fontSize: 13, fontWeight: 600, padding: '12px 22px', borderRadius: 100, boxShadow: '0 8px 32px rgba(239,68,68,0.3)', whiteSpace: 'nowrap', animation: 'slideUp 0.25s ease both' }}>
+          {winError}
         </div>
       )}
     </Card>
@@ -1178,7 +1204,7 @@ function BookingModal({
   }
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1050, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
       onClick={e => { if (e.target === e.currentTarget) onClose() }}>
       <div style={{ background: '#fff', borderRadius: 24, padding: 'clamp(28px,5vw,40px)', maxWidth: 560, width: '100%', maxHeight: '90vh', overflowY: 'auto', position: 'relative' }}>
         {/* Close */}
@@ -2291,6 +2317,7 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
   const [loading,         setLoading]         = useState(true)
   const [refreshing,      setRefreshing]      = useState(false)
   const [nextRefresh,     setNextRefresh]     = useState<string | null>(null)
+  const [refreshError,    setRefreshError]    = useState('')
   const [rateLimitModal,  setRateLimitModal]  = useState<{ tier: string; nextAt: string; agencyLimit: boolean } | null>(null)
   const [question,        setQuestion]        = useState('')
   const [questionLoading, setQuestionLoading] = useState(false)
@@ -2318,7 +2345,7 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
   async function handleRefresh() {
     const tier = user.subscription_tier
     if (tier === 'free') {
-      document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })
+      onUpgrade?.()
       return
     }
     setRefreshing(true)
@@ -2336,7 +2363,10 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
         setRateLimitModal({ tier: d.tier ?? tier, nextAt: d.nextRefreshAt, agencyLimit: d.upgradeAvailable === false })
         setNextRefresh(d.nextRefreshAt)
       }
-    } catch { /* noop */ }
+    } catch {
+      setRefreshError('Refresh failed. Please try again.')
+      setTimeout(() => setRefreshError(''), 5000)
+    }
     finally { setRefreshing(false) }
   }
 
@@ -2564,6 +2594,9 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
               )}
             </div>
           )}
+          {refreshError && (
+            <p style={{ fontFamily: fontB, fontSize: 12, color: '#ef4444', margin: '8px 0 0' }}>{refreshError}</p>
+          )}
         </div>
 
         {loading ? (
@@ -2693,6 +2726,8 @@ function ChatWidget({ user, score, diag }: { user: UserData; score: number | nul
     }
     if (isOpen) {
       setHasUnread(false)
+      // Fire-and-forget mark-read
+      void fetch('/api/chat/mark-read', { method: 'POST' })
     }
   }, [isOpen, initialized, firstName, score, waste])
 
@@ -2783,6 +2818,11 @@ function ChatWidget({ user, score, diag }: { user: UserData; score: number | nul
           borderRadius: '24px 24px 0 0',
         }} className="chat-panel-container">
           <style>{`
+            @media (max-width: 1023px) {
+              .chat-panel-container {
+                bottom: 60px !important;
+              }
+            }
             @media (min-width: 1024px) {
               .chat-panel-container {
                 width: 380px !important;
@@ -2992,6 +3032,8 @@ export default function DashboardPage() {
   const [milestones,      setMilestones]      = useState<Milestone[]>([])
   const [streak,          setStreak]          = useState(0)
   const [newAchievement,  setNewAchievement]  = useState<{ name: string; description: string; color: string; iconName: string } | null>(null)
+  const [intelligenceSeenThisSession, setIntelligenceSeenThisSession] = useState(false)
+  const [reportsError,    setReportsError]    = useState(false)
 
   // Load currency preference on mount
   useEffect(() => {
@@ -3005,10 +3047,20 @@ export default function DashboardPage() {
   }
 
   const loadReports = useCallback(async (email: string) => {
+    setReportsError(false)
     try {
       const res = await fetch(`/api/user/reports?email=${encodeURIComponent(email)}`)
-      if (res.ok) { const j = await res.json(); setReports(j.reports ?? []) }
-    } finally { setDataLoading(false) }
+      if (res.ok) {
+        const j = await res.json()
+        setReports(j.reports ?? [])
+      } else {
+        setReportsError(true)
+      }
+    } catch {
+      setReportsError(true)
+    } finally {
+      setDataLoading(false)
+    }
   }, [])
 
   const verifyEmail = useCallback(async (email: string) => {
@@ -3066,6 +3118,17 @@ export default function DashboardPage() {
       }, () => {})
   }, [user?.email, user?.current_streak])
 
+  useEffect(() => {
+    if (activeTab === 'intelligence' && user && !intelligenceSeenThisSession) {
+      setIntelligenceSeenThisSession(true)
+      void fetch('/api/user/seen', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ field: 'intelligence' }),
+      })
+    }
+  }, [activeTab, user, intelligenceSeenThisSession])
+
   const handleSignOut = async () => {
     await fetch('/api/auth/logout', { method: 'POST' })
     localStorage.removeItem('dashboard_email')
@@ -3090,7 +3153,7 @@ export default function DashboardPage() {
   const hasReports          = reports.length >= 1
   const tierLabel           = user ? (TIER_LABEL[user.subscription_tier] ?? user.subscription_tier) : ''
 
-  const hasNewIntelligence  = user ? (
+  const hasNewIntelligence  = !intelligenceSeenThisSession && user ? (
     !user.last_seen_intelligence_at ||
     (Date.now() - new Date(user.last_seen_intelligence_at).getTime()) > 7 * 86_400_000
   ) : false
@@ -3292,17 +3355,73 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {!dataLoading && !hasReports && <EmptyState />}
+            {!dataLoading && reportsError && (
+              <div style={{ textAlign: 'center', padding: '60px 24px', background: '#fff', borderRadius: 20, border: `1px solid rgba(239,68,68,0.2)` }}>
+                <AlertCircle size={32} color="#ef4444" style={{ marginBottom: 12 }} />
+                <p style={{ fontFamily: fontB, fontSize: 15, color: P, margin: '0 0 8px', fontWeight: 600 }}>Could not load your reports.</p>
+                <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 20px' }}>Check your connection and try again.</p>
+                <button onClick={() => user && loadReports(user.email)} style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, background: P, color: '#fff', border: 'none', borderRadius: 10, padding: '11px 24px', cursor: 'pointer' }}>
+                  Retry
+                </button>
+              </div>
+            )}
 
-            {!dataLoading && hasReports && user && (() => {
+            {!dataLoading && !reportsError && !hasReports && <EmptyState />}
+
+            {!dataLoading && !reportsError && hasReports && user && (() => {
               const t         = user.subscription_tier
               const tierOrder = ['free', 'starter', 'pro', 'agency']
               const tierIdx   = tierOrder.indexOf(t)
               const isStarter = tierIdx >= 1
               const isPro     = tierIdx >= 2
+              const daysSinceDiag = latestReport ? daysBetween(latestReport.generated_at) : 999
+              const reDiagThreshold = t === 'agency' ? 7 : t === 'pro' ? 14 : 30
 
               return (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+
+                {/* Re-diagnosis nudge: score may have drifted */}
+                {daysSinceDiag > reDiagThreshold && (
+                  <div style={{ background: 'linear-gradient(135deg,#302161 0%,#4c1d95 100%)', borderRadius: 16, padding: '18px 24px', display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                      <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <RefreshCw size={16} color="#fff" />
+                      </div>
+                      <div>
+                        <p style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: '#fff', margin: '0 0 2px' }}>
+                          {t === 'agency' ? 'Your competitive window is closing.' : t === 'pro' ? 'Your ICP may have drifted.' : `Your last diagnosis was ${daysSinceDiag} days ago.`}
+                        </p>
+                        <p style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.55)', margin: 0 }}>
+                          {t === 'agency' ? `${daysSinceDiag} days since last diagnosis. Agency tier gives you fresh intelligence weekly.` : t === 'pro' ? `${daysSinceDiag} days without a new diagnostic. Markets shift fast.` : 'Markets shift. A fresh diagnostic will show whether your ICP score has drifted.'}
+                        </p>
+                      </div>
+                    </div>
+                    <Link href="/questionnaire"
+                      style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, background: '#fff', color: P, padding: '10px 20px', borderRadius: 10, textDecoration: 'none', whiteSpace: 'nowrap' as const, flexShrink: 0 }}>
+                      Run New Diagnosis →
+                    </Link>
+                  </div>
+                )}
+
+                {/* Free-tier score improvement nudge */}
+                {t === 'free' && daysSinceDiag > 30 && score !== null && score < 50 && (
+                  <div style={{ background: '#fff', border: '1px solid rgba(239,68,68,0.2)', borderLeft: '4px solid #ef4444', borderRadius: '0 16px 16px 0', padding: '18px 24px', display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                      <AlertTriangle size={20} color="#ef4444" style={{ flexShrink: 0 }} />
+                      <div>
+                        <p style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: P, margin: '0 0 2px' }}>
+                          Your score has been critical for {daysSinceDiag} days.
+                        </p>
+                        <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: 0 }}>
+                          Starter subscribers get weekly intelligence briefings and priority re-diagnosis to start recovering.
+                        </p>
+                      </div>
+                    </div>
+                    <button onClick={() => setShowUpgradeModal(true)} style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, background: '#ef4444', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 20px', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                      See Upgrade Options
+                    </button>
+                  </div>
+                )}
 
                 {/* Real-time waste ticker */}
                 <WasteTicker diag={diag} report={latestReport} currency={currency} />
@@ -3333,7 +3452,7 @@ export default function DashboardPage() {
                   <TodaysPriorityCard diag={diag} report={latestReport} user={user} onComplete={setStreak} />
                   <div>
                     <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 14px' }}>THIS WEEK</p>
-                    <EnhancedQuickWinsWidget diag={diag} user={user} onStreakUpdate={setStreak} maxWins={isStarter ? 3 : 1} />
+                    <EnhancedQuickWinsWidget diag={diag} user={user} onStreakUpdate={setStreak} maxWins={isStarter ? 3 : 1} reportId={latestReport?.id} />
                     {!isStarter && (
                       <div style={{ marginTop: 10, background: BgAlt, border: `1.5px dashed ${Pborder}`, borderRadius: 12, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
                         <Lock size={13} color={Pmuted} />
@@ -3344,6 +3463,35 @@ export default function DashboardPage() {
                     )}
                   </div>
                 </div>
+
+                {/* Escalation nudge: critical findings + no quick wins completed */}
+                {(() => {
+                  const criticalCount = getFindings(diag).filter(f => f.severity === 'Critical').length
+                  const hasNoWins = (diag.quick_wins ?? []).length === 0
+                  if (criticalCount >= 2 && hasNoWins) {
+                    return (
+                      <div style={{ background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 16, padding: '18px 24px', display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                          <div style={{ width: 36, height: 36, borderRadius: 10, background: '#fed7aa', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            <AlertTriangle size={18} color="#c2410c" />
+                          </div>
+                          <div>
+                            <p style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: '#7c2d12', margin: '0 0 2px' }}>
+                              {criticalCount} critical findings, no quick wins yet.
+                            </p>
+                            <p style={{ fontFamily: fontB, fontSize: 12, color: '#9a3412', margin: 0 }}>
+                              A strategy session with your media buyer can unblock your highest-leverage fix in 30 minutes.
+                            </p>
+                          </div>
+                        </div>
+                        <button onClick={() => setShowModal(true)} style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, background: '#ea580c', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 20px', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                          Book Strategy Session
+                        </button>
+                      </div>
+                    )
+                  }
+                  return null
+                })()}
 
                 {/* Findings — Free sees max 2 */}
                 <EnhancedFindingsSection diag={diag} report={latestReport} maxFindings={isStarter ? undefined : 2} onUpgrade={() => setShowUpgradeModal(true)} />
