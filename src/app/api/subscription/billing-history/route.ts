@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { getSession } from '@/lib/session'
 
 export const dynamic = 'force-dynamic'
 
@@ -10,8 +11,12 @@ const supabase = createClient(
 
 export async function GET(req: NextRequest) {
   try {
+    const session = await getSession()
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
     const email = req.nextUrl.searchParams.get('email')
     if (!email) return NextResponse.json({ payments: [] }, { status: 200 })
+    if (session.email !== email) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
     const { data: userData } = await supabase
       .from('users')

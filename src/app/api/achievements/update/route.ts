@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { calculateAchievements, getNewlyEarned } from '@/lib/achievements'
+import { getSession } from '@/lib/session'
 
 export const dynamic = 'force-dynamic'
 
@@ -11,8 +12,12 @@ const supabase = createClient(
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await getSession()
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
     const { email } = await req.json()
     if (!email) return NextResponse.json({ error: 'Missing email' }, { status: 400 })
+    if (session.email !== email) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
     const { data: user } = await supabase
       .from('users')

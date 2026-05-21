@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { sendSessionRequestToFounder, sendSessionConfirmationToUser } from '@/lib/email'
+import { getSession } from '@/lib/session'
 
 export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
+  const session = await getSession()
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   const body = await req.json() as {
     userEmail: string
     userName: string
@@ -19,6 +23,9 @@ export async function POST(req: NextRequest) {
 
   if (!userEmail) {
     return NextResponse.json({ error: 'Missing user email' }, { status: 400 })
+  }
+  if (session.email !== userEmail) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
   // Save to Supabase (non-fatal if table doesn't exist yet)

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { sendPlanChangedToUser, sendPlanChangedToFounder } from '@/lib/email'
+import { getSession } from '@/lib/session'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,10 +14,16 @@ const TIER_PRICE_KES: Record<string, number> = { starter: 6500, pro: 13000, agen
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await getSession()
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
     const { userEmail, newTier, oldTier } = await req.json()
 
     if (!userEmail || !newTier) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    }
+    if (session.email !== userEmail) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     const VALID_TIERS = ['starter', 'pro', 'agency', 'free'] as const

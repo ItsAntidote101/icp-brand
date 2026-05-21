@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import Anthropic from '@anthropic-ai/sdk'
+import { getSession } from '@/lib/session'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,6 +13,9 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await getSession()
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
     const body = await req.json() as {
       email: string
       message: string
@@ -21,6 +25,9 @@ export async function POST(req: NextRequest) {
 
     if (!email || !message) {
       return NextResponse.json({ error: 'Missing email or message' }, { status: 400 })
+    }
+    if (session.email !== email) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     // 1. Fetch user

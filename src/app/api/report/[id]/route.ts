@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { getSession } from '@/lib/session'
 
 export async function GET(
   _req: NextRequest,
@@ -12,8 +13,6 @@ export async function GET(
     serviceKey
   )
 
-  console.log('[report] fetching diagnostic id:', params.id)
-
   // ── Fetch diagnostic + linked questionnaire ────────────────────────────
   const { data: diagnostic, error: fetchError } = await supabase
     .from('diagnostics')
@@ -23,10 +22,19 @@ export async function GET(
 
   if (fetchError) {
     console.error('[report] diagnostics fetch error:', JSON.stringify(fetchError))
-    return NextResponse.json({ error: fetchError.message }, { status: 404 })
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
-  console.log('[report] diagnostics fetch success — questionnaire_id:', diagnostic.questionnaire_id)
+  // ── Ownership check: if a session exists, verify it owns this report ───
+  // If no session (e.g. immediate post-questionnaire view), allow via UUID obscurity.
+  const session = await getSession()
+  if (session) {
+    const questionnaire = diagnostic.questionnaires as Record<string, unknown> | null
+    const reportEmail = (questionnaire?.email as string | undefined)?.toLowerCase()
+    if (reportEmail && reportEmail !== session.email) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+  }
 
   // ── Upsert to reports table ────────────────────────────────────────────
   const userId: string | null =
@@ -39,11 +47,6 @@ export async function GET(
     generated_at:     new Date().toISOString(),
   }
 
-  console.log('[report] upserting to reports table:', JSON.stringify({
-    ...reportPayload,
-    report_summary: '[omitted]',
-  }))
-
   const { data: reportRow, error: reportError } = await supabase
     .from('reports')
     .upsert(reportPayload, { onConflict: 'questionnaire_id' })
@@ -52,9 +55,6 @@ export async function GET(
 
   if (reportError) {
     console.error('[report] reports upsert error:', JSON.stringify(reportError))
-    // Non-fatal — still return the diagnostic data
-  } else {
-    console.log('[report] reports upsert success — id:', reportRow?.id)
   }
 
   return NextResponse.json({ report: diagnostic }, { status: 200 })
