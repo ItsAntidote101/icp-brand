@@ -838,7 +838,7 @@ function EnhancedQuickWinsWidget({ diag, user, onStreakUpdate, maxWins = 3 }: { 
   )
 }
 
-function EnhancedFindingsSection({ diag, report, maxFindings }: { diag: DiagnosisData; report: ReportRow; maxFindings?: number }) {
+function EnhancedFindingsSection({ diag, report, maxFindings, onUpgrade }: { diag: DiagnosisData; report: ReportRow; maxFindings?: number; onUpgrade?: () => void }) {
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null)
   const allFindings = getFindings(diag)
   const findings    = maxFindings !== undefined ? allFindings.slice(0, maxFindings) : allFindings
@@ -893,21 +893,22 @@ function EnhancedFindingsSection({ diag, report, maxFindings }: { diag: Diagnosi
               Upgrade to Starter to see every finding in your diagnostic.
             </p>
           </div>
-          <Link href="/#pricing" style={{ fontFamily: fontB, fontSize: 12, fontWeight: 600, background: P, color: '#fff', padding: '9px 16px', borderRadius: 10, textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0 }}>
+          <button onClick={onUpgrade} style={{ fontFamily: fontB, fontSize: 12, fontWeight: 600, background: P, color: '#fff', padding: '9px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' as const, flexShrink: 0 }}>
             Upgrade →
-          </Link>
+          </button>
         </div>
       )}
     </div>
   )
 }
 
-function UpgradeGate({ children, requiredTier, currentTier, feature, description }: {
+function UpgradeGate({ children, requiredTier, currentTier, feature, description, onUpgrade }: {
   children: React.ReactNode
   requiredTier: 'starter' | 'pro' | 'agency'
   currentTier: string
   feature: string
   description?: string
+  onUpgrade?: () => void
 }) {
   const tierOrder = ['free', 'starter', 'pro', 'agency']
   const hasAccess = tierOrder.indexOf(currentTier) >= tierOrder.indexOf(requiredTier)
@@ -925,9 +926,9 @@ function UpgradeGate({ children, requiredTier, currentTier, feature, description
         <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 18px', maxWidth: 240, lineHeight: 1.55 }}>
           {description ?? `Available on ${TIER_LABEL[requiredTier]} and above.`}
         </p>
-        <Link href="/#pricing" style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, background: P, color: '#fff', padding: '10px 22px', borderRadius: 12, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+        <button onClick={onUpgrade} style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, background: P, color: '#fff', padding: '10px 22px', borderRadius: 12, border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
           Upgrade to {TIER_LABEL[requiredTier]} <ArrowRight size={13} />
-        </Link>
+        </button>
       </div>
     </div>
   )
@@ -1071,7 +1072,7 @@ function AchievementModal({ achievement, onDismiss }: {
 
 // ─── Get It Done card ─────────────────────────────────────────────────────────
 
-function GetItDoneCard({ tier, onBook }: { tier: string; onBook: () => void }) {
+function GetItDoneCard({ tier, onBook, onUpgrade }: { tier: string; onBook: () => void; onUpgrade?: () => void }) {
   const isAgency = tier === 'agency'
   const pills = [
     { icon: <CheckCircle size={20} color="#fff" />, text: 'We review your diagnostic before the session — no briefing needed' },
@@ -1110,9 +1111,9 @@ function GetItDoneCard({ tier, onBook }: { tier: string; onBook: () => void }) {
             <p style={{ fontFamily: fontB, fontSize: 14, color: 'rgba(255,255,255,0.55)', margin: '0 0 16px', lineHeight: 1.6 }}>
               Upgrade to Agency to unlock strategy sessions with our media buyers.
             </p>
-            <Link href="/#pricing" style={{ fontFamily: font, fontWeight: 600, fontSize: 14, background: '#fff', color: P, borderRadius: 12, padding: '14px 28px', textDecoration: 'none', display: 'inline-block' }}>
+            <button onClick={onUpgrade} style={{ fontFamily: font, fontWeight: 600, fontSize: 14, background: '#fff', color: P, border: 'none', borderRadius: 12, padding: '14px 28px', cursor: 'pointer', display: 'inline-block' }}>
               See Agency Plan →
-            </Link>
+            </button>
           </div>
         )}
       </div>
@@ -1499,7 +1500,7 @@ type BillingRow = {
   amount_kes: number; status: 'paid' | 'failed' | 'pending'; invoice_url?: string
 }
 
-function CancellationModal({ user, score, reportCount, onClose, onCancelled }: { user: UserData; score: number | null; reportCount: number; onClose: () => void; onCancelled: () => void }) {
+function CancellationModal({ user, score, reportCount, onClose, onCancelled, onUpgrade }: { user: UserData; score: number | null; reportCount: number; onClose: () => void; onCancelled: () => void; onUpgrade?: () => void }) {
   const [reason,   setReason]   = useState('')
   const [feedback, setFeedback] = useState('')
   const [loading,  setLoading]  = useState(false)
@@ -1577,10 +1578,10 @@ function CancellationModal({ user, score, reportCount, onClose, onCancelled }: {
           <div style={{ background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.18)', borderRadius: 14, padding: '16px 18px', marginBottom: 18 }}>
             <p style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: P, margin: '0 0 4px' }}>Before you go — Starter plan is {convertAmount(6500, 'KES', 'KES')} / month</p>
             <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 12px', lineHeight: 1.6 }}>Downgrade to Starter and keep running diagnostics at a fraction of the cost. No data is lost.</p>
-            <Link href="/#pricing" onClick={onClose}
-              style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, color: P, textDecoration: 'underline' }}>
+            <button onClick={() => { onClose(); onUpgrade?.() }}
+              style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, color: P, background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}>
               See Starter plan →
-            </Link>
+            </button>
           </div>
         )}
 
@@ -1717,10 +1718,132 @@ function ChangePlanConfirmModal({ newTier, onClose, onConfirmed }: { newTier: st
   )
 }
 
-function AccountTab({ user, currency, score, reportCount, onSignOut, onCancelled, onUserUpdate, showToast }: {
+// ─── In-dashboard upgrade modal ──────────────────────────────────────────────
+
+function InDashboardUpgradeModal({ user, onClose, onUpgraded }: {
+  user: UserData
+  onClose: () => void
+  onUpgraded: (tier: string) => void
+}) {
+  const [loading, setLoading] = useState<string | null>(null)
+  const [error,   setError]   = useState('')
+  const tierOrder  = ['free', 'starter', 'pro', 'agency']
+  const currentIdx = tierOrder.indexOf(user.subscription_tier)
+
+  async function handleUpgrade(tier: string) {
+    setLoading(tier); setError('')
+    try {
+      const res = await fetch('/api/subscription/change-plan', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userEmail: user.email, newTier: tier, oldTier: user.subscription_tier }),
+      })
+      if (!res.ok) throw new Error('failed')
+      onUpgraded(tier)
+      onClose()
+    } catch {
+      setError('Something went wrong. Please try again.')
+    } finally { setLoading(null) }
+  }
+
+  const plans: { tier: 'starter' | 'pro' | 'agency'; popular?: boolean }[] = [
+    { tier: 'starter' },
+    { tier: 'pro', popular: true },
+    { tier: 'agency' },
+  ]
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(10,10,15,0.8)', zIndex: 1100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px 16px', overflowY: 'auto' }}
+      onClick={onClose}>
+      <div style={{ background: '#fff', borderRadius: 24, padding: '36px 32px', width: '100%', maxWidth: 860, position: 'relative' }}
+        onClick={e => e.stopPropagation()}>
+
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+          <div>
+            <p style={{ fontFamily: font, fontSize: 22, fontWeight: 700, color: P, margin: '0 0 4px', letterSpacing: '-0.02em' }}>Upgrade your plan</p>
+            <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: 0 }}>Unlock more of your dashboard without leaving what you were doing.</p>
+          </div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: Pmuted, padding: 4, flexShrink: 0, marginLeft: 16 }}>
+            <X size={20} />
+          </button>
+        </div>
+
+        {error && <p style={{ fontFamily: fontB, fontSize: 13, color: '#ef4444', margin: '12px 0 0', background: '#fee2e2', border: '1px solid #fecaca', borderRadius: 10, padding: '10px 14px' }}>{error}</p>}
+
+        {/* Plan cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 16, marginTop: 28 }}>
+          {plans.map(({ tier, popular }) => {
+            const idx       = tierOrder.indexOf(tier)
+            const isCurrent = tier === user.subscription_tier
+            const isUpgrade = idx > currentIdx
+            const price     = TIER_PRICE_KES[tier]
+            const features  = PLAN_FEATURES[tier] ?? []
+            const btnLabel  = isCurrent ? 'Current plan' : isUpgrade ? `Upgrade to ${TIER_LABEL[tier]}` : `Switch to ${TIER_LABEL[tier]}`
+
+            return (
+              <div key={tier} style={{
+                borderRadius: 18, padding: '24px 22px',
+                border: isCurrent ? `2px solid ${P}` : popular ? `2px solid #a855f7` : `1.5px solid ${Pborder}`,
+                background: isCurrent ? '#f8f7ff' : '#fff',
+                position: 'relative', display: 'flex', flexDirection: 'column',
+              }}>
+                {popular && !isCurrent && (
+                  <span style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', fontFamily: fontB, fontSize: 11, fontWeight: 700, background: '#a855f7', color: '#fff', padding: '3px 14px', borderRadius: 100, whiteSpace: 'nowrap' }}>
+                    Most popular
+                  </span>
+                )}
+                {isCurrent && (
+                  <span style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', fontFamily: fontB, fontSize: 11, fontWeight: 700, background: P, color: '#fff', padding: '3px 14px', borderRadius: 100, whiteSpace: 'nowrap' }}>
+                    Current plan
+                  </span>
+                )}
+
+                <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: '0 0 4px' }}>{TIER_LABEL[tier]}</p>
+                <p style={{ fontFamily: font, fontSize: 28, fontWeight: 800, color: P, margin: '0 0 2px', lineHeight: 1 }}>
+                  KES {price.toLocaleString()}
+                </p>
+                <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '0 0 18px' }}>per month</p>
+
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 22 }}>
+                  {features.map(f => (
+                    <div key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                      <Check size={14} color="#22c55e" style={{ flexShrink: 0, marginTop: 2 }} />
+                      <span style={{ fontFamily: fontB, fontSize: 13, color: P, lineHeight: 1.4 }}>{f}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => !isCurrent && handleUpgrade(tier)}
+                  disabled={isCurrent || loading !== null}
+                  style={{
+                    width: '100%', padding: '13px 0', borderRadius: 12, border: 'none',
+                    fontFamily: fontB, fontSize: 13, fontWeight: 600, cursor: isCurrent || loading !== null ? 'default' : 'pointer',
+                    background: isCurrent ? Pborder : isUpgrade ? P : BgAlt,
+                    color: isCurrent ? Pmuted : isUpgrade ? '#fff' : P,
+                    opacity: loading === tier ? 0.7 : 1,
+                    transition: 'opacity 0.15s',
+                  }}>
+                  {loading === tier ? 'Switching…' : btnLabel}
+                </button>
+              </div>
+            )
+          })}
+        </div>
+
+        <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, textAlign: 'center', margin: '20px 0 0', lineHeight: 1.6 }}>
+          Changes take effect immediately. You can downgrade or cancel anytime from the Account tab.
+        </p>
+      </div>
+    </div>
+  )
+}
+
+function AccountTab({ user, currency, score, reportCount, onSignOut, onCancelled, onUserUpdate, showToast, onUpgrade }: {
   user: UserData; currency: string; score: number | null; reportCount: number
   onSignOut: () => void; onCancelled: () => void
   onUserUpdate: (u: Partial<UserData>) => void; showToast: (msg: string) => void
+  onUpgrade?: () => void
 }) {
   const [showChangePlan,       setShowChangePlan]       = useState(false)
   const [showPauseModal,       setShowPauseModal]       = useState(false)
@@ -1821,9 +1944,9 @@ function AccountTab({ user, currency, score, reportCount, onSignOut, onCancelled
           {/* Right: actions */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 190 }}>
             {isCancelled ? (
-              <Link href="/#pricing" style={{ display: 'block', textAlign: 'center', textDecoration: 'none', background: P, color: '#fff', fontFamily: fontB, fontWeight: 600, fontSize: 14, padding: '10px 20px', borderRadius: 10 }}>
+              <button onClick={onUpgrade} style={{ display: 'block', width: '100%', textAlign: 'center', background: P, color: '#fff', fontFamily: fontB, fontWeight: 600, fontSize: 14, padding: '10px 20px', borderRadius: 10, border: 'none', cursor: 'pointer' }}>
                 Resubscribe →
-              </Link>
+              </button>
             ) : (
               <>
                 <button onClick={() => setShowChangePlan(v => !v)}
@@ -1990,6 +2113,7 @@ function AccountTab({ user, currency, score, reportCount, onSignOut, onCancelled
         <CancellationModal user={user} score={score} reportCount={reportCount}
           onClose={() => setShowCancelModal(false)}
           onCancelled={() => { setShowCancelModal(false); onCancelled() }}
+          onUpgrade={onUpgrade}
         />
       )}
       {confirmPlan && (
@@ -2162,7 +2286,7 @@ function CompetitiveRadar({ userPos, competitors }: { userPos: { x: number; y: n
   )
 }
 
-function IntelligenceTab({ user, score, hasNewIntelligence }: { user: UserData; score: number | null; hasNewIntelligence: boolean }) {
+function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user: UserData; score: number | null; hasNewIntelligence: boolean; onUpgrade?: () => void }) {
   const [briefing,        setBriefing]        = useState<IntelligenceBriefing | null>(null)
   const [loading,         setLoading]         = useState(true)
   const [refreshing,      setRefreshing]      = useState(false)
@@ -2354,10 +2478,10 @@ function IntelligenceTab({ user, score, hasNewIntelligence }: { user: UserData; 
                   Next available: {new Date(rateLimitModal.nextAt).toLocaleString('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit' })}
                 </p>
                 <div style={{ display: 'flex', gap: 10 }}>
-                  <Link href="/#pricing" onClick={() => setRateLimitModal(null)}
-                    style={{ flex: 1, background: P, color: '#fff', borderRadius: 12, padding: '12px 0', fontFamily: fontB, fontSize: 13, fontWeight: 600, textDecoration: 'none', textAlign: 'center' }}>
+                  <button onClick={() => { setRateLimitModal(null); onUpgrade?.() }}
+                    style={{ flex: 1, background: P, color: '#fff', borderRadius: 12, padding: '12px 0', fontFamily: fontB, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', textAlign: 'center' as const }}>
                     Upgrade to Agency
-                  </Link>
+                  </button>
                   <button onClick={() => setRateLimitModal(null)}
                     style={{ flex: 1, background: 'none', color: P, border: `1px solid ${Pborder}`, borderRadius: 12, padding: '12px 0', fontFamily: fontB, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
                     I will wait
@@ -2435,7 +2559,7 @@ function IntelligenceTab({ user, score, hasNewIntelligence }: { user: UserData; 
               {tier !== 'agency' && (
                 <p style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: 0 }}>
                   Agency subscribers get 3 refreshes per day.{' '}
-                  <Link href="/#pricing" style={{ color: '#a855f7', textDecoration: 'none', fontWeight: 600 }}>Upgrade</Link>
+                  <button onClick={onUpgrade} style={{ color: '#a855f7', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: fontB, fontSize: 12 }}>Upgrade</button>
                 </p>
               )}
             </div>
@@ -2862,7 +2986,8 @@ export default function DashboardPage() {
   const [dataLoading, setDataLoading] = useState(true)
   const [activeTab,   setActiveTab]   = useState<Tab>('overview')
   const [currency,    setCurrency]    = useState('KES')
-  const [showModal,   setShowModal]   = useState(false)
+  const [showModal,         setShowModal]         = useState(false)
+  const [showUpgradeModal,  setShowUpgradeModal]  = useState(false)
   const [cancelToast, setCancelToast] = useState('')
   const [milestones,      setMilestones]      = useState<Milestone[]>([])
   const [streak,          setStreak]          = useState(0)
@@ -3185,7 +3310,7 @@ export default function DashboardPage() {
                 {/* Score + Streak */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <ICPScoreCard diag={diag} reports={reports} />
-                  <UpgradeGate requiredTier="starter" currentTier={t} feature="Fix Streak" description="Track your weekly implementation streak. Available on Starter and above.">
+                  <UpgradeGate requiredTier="starter" currentTier={t} feature="Fix Streak" description="Track your weekly implementation streak. Available on Starter and above." onUpgrade={() => setShowUpgradeModal(true)}>
                     <FixStreakWidget streak={streak} />
                   </UpgradeGate>
                 </div>
@@ -3198,7 +3323,7 @@ export default function DashboardPage() {
                   <PerformanceBreakdownWidget diag={diag} score={score} delay={200} />
                 )}
                 {!isPro && score !== null && (
-                  <UpgradeGate requiredTier="pro" currentTier={t} feature="Performance Breakdown" description="6-dimension score breakdown across targeting, landing page, budget allocation, and more.">
+                  <UpgradeGate requiredTier="pro" currentTier={t} feature="Performance Breakdown" description="6-dimension score breakdown across targeting, landing page, budget allocation, and more." onUpgrade={() => setShowUpgradeModal(true)}>
                     <PerformanceBreakdownWidget diag={diag} score={score} delay={0} />
                   </UpgradeGate>
                 )}
@@ -3213,7 +3338,7 @@ export default function DashboardPage() {
                       <div style={{ marginTop: 10, background: BgAlt, border: `1.5px dashed ${Pborder}`, borderRadius: 12, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
                         <Lock size={13} color={Pmuted} />
                         <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: 0 }}>
-                          2 more quick wins on <Link href="/#pricing" style={{ color: P, fontWeight: 600, textDecoration: 'none' }}>Starter</Link>
+                          2 more quick wins on <button onClick={() => setShowUpgradeModal(true)} style={{ color: P, fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: fontB, fontSize: 12 }}>Starter</button>
                         </p>
                       </div>
                     )}
@@ -3221,32 +3346,32 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Findings — Free sees max 2 */}
-                <EnhancedFindingsSection diag={diag} report={latestReport} maxFindings={isStarter ? undefined : 2} />
+                <EnhancedFindingsSection diag={diag} report={latestReport} maxFindings={isStarter ? undefined : 2} onUpgrade={() => setShowUpgradeModal(true)} />
 
                 {/* Milestones — Starter+ */}
-                <UpgradeGate requiredTier="starter" currentTier={t} feature="Achievements" description="Unlock badges as you implement fixes, improve your score, and use the platform consistently.">
+                <UpgradeGate requiredTier="starter" currentTier={t} feature="Achievements" description="Unlock badges as you implement fixes, improve your score, and use the platform consistently." onUpgrade={() => setShowUpgradeModal(true)}>
                   <MilestonesSection milestones={milestones} />
                 </UpgradeGate>
 
                 {/* Score History — Starter+ */}
-                <UpgradeGate requiredTier="starter" currentTier={t} feature="Score History" description="Track your ICP score trend across every diagnosis you run.">
+                <UpgradeGate requiredTier="starter" currentTier={t} feature="Score History" description="Track your ICP score trend across every diagnosis you run." onUpgrade={() => setShowUpgradeModal(true)}>
                   <ScoreHistoryWidget reports={reports} latestReport={latestReport} renewalDate={user.renewal_date ?? null} delay={0} />
                 </UpgradeGate>
 
                 {/* Campaign CSV — Pro+ */}
-                <UpgradeGate requiredTier="pro" currentTier={t} feature="Campaign Data Analysis" description="Upload your Google Ads or Meta export for a media buyer breakdown of your actual spend.">
+                <UpgradeGate requiredTier="pro" currentTier={t} feature="Campaign Data Analysis" description="Upload your Google Ads or Meta export for a media buyer breakdown of your actual spend." onUpgrade={() => setShowUpgradeModal(true)}>
                   <CampaignInsightsWidget delay={0} />
                 </UpgradeGate>
 
                 {/* Get It Done */}
-                <GetItDoneCard tier={t} onBook={() => setShowModal(true)} />
+                <GetItDoneCard tier={t} onBook={() => setShowModal(true)} onUpgrade={() => setShowUpgradeModal(true)} />
               </div>
               )
             })()}
           </>
         )}
 
-        {activeTab === 'intelligence' && user && <IntelligenceTab user={user} score={score} hasNewIntelligence={hasNewIntelligence} />}
+        {activeTab === 'intelligence' && user && <IntelligenceTab user={user} score={score} hasNewIntelligence={hasNewIntelligence} onUpgrade={() => setShowUpgradeModal(true)} />}
         {activeTab === 'reports' && <ReportsTab reports={reports} dataLoading={dataLoading} />}
         {activeTab === 'account' && user && (
           <AccountTab
@@ -3263,6 +3388,7 @@ export default function DashboardPage() {
             }}
             onUserUpdate={update => setUser(prev => prev ? { ...prev, ...update } : prev)}
             showToast={msg => { setCancelToast(msg); setTimeout(() => setCancelToast(''), 5000) }}
+            onUpgrade={() => setShowUpgradeModal(true)}
           />
         )}
         </div>{/* end inner padding div */}
@@ -3271,6 +3397,18 @@ export default function DashboardPage() {
       {/* ── Booking modal ─────────────────────────────────────────────────── */}
       {showModal && user && (
         <BookingModal user={user} diag={diag} score={score} onClose={() => setShowModal(false)} />
+      )}
+
+      {/* ── Upgrade modal ─────────────────────────────────────────────────── */}
+      {showUpgradeModal && user && (
+        <InDashboardUpgradeModal
+          user={user}
+          onClose={() => setShowUpgradeModal(false)}
+          onUpgraded={tier => {
+            setUser(prev => prev ? { ...prev, subscription_tier: tier } : prev)
+            setShowUpgradeModal(false)
+          }}
+        />
       )}
 
       {/* ── Achievement unlock modal ───────────────────────────────────────── */}
