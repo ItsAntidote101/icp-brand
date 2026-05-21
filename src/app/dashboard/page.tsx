@@ -1752,87 +1752,108 @@ function InDashboardUpgradeModal({ user, onClose, onUpgraded }: {
   ]
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(10,10,15,0.8)', zIndex: 1100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px 16px', overflowY: 'auto' }}
-      onClick={onClose}>
-      <div style={{ background: '#fff', borderRadius: 24, padding: '36px 32px', width: '100%', maxWidth: 860, position: 'relative' }}
-        onClick={e => e.stopPropagation()}>
+    <div
+      style={{ position: 'fixed', inset: 0, background: 'rgba(10,10,15,0.55)', zIndex: 1100, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
+      onClick={onClose}
+    >
+      <div
+        style={{ background: '#fff', borderRadius: '20px 20px 0 0', width: '100%', maxWidth: 560, maxHeight: '92dvh', overflowY: 'auto', paddingBottom: 'env(safe-area-inset-bottom, 16px)' }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Drag handle */}
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 4px' }}>
+          <div style={{ width: 36, height: 4, borderRadius: 2, background: Pborder }} />
+        </div>
 
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 24px 20px' }}>
           <div>
-            <p style={{ fontFamily: font, fontSize: 22, fontWeight: 700, color: P, margin: '0 0 4px', letterSpacing: '-0.02em' }}>Upgrade your plan</p>
-            <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: 0 }}>Unlock more of your dashboard without leaving what you were doing.</p>
+            <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: '0 0 2px', letterSpacing: '-0.02em' }}>Choose a plan</p>
+            <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: 0 }}>Changes take effect immediately.</p>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: Pmuted, padding: 4, flexShrink: 0, marginLeft: 16 }}>
-            <X size={20} />
+          <button onClick={onClose} style={{ background: BgAlt, border: 'none', cursor: 'pointer', color: Pmuted, padding: 8, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <X size={16} />
           </button>
         </div>
 
-        {error && <p style={{ fontFamily: fontB, fontSize: 13, color: '#ef4444', margin: '12px 0 0', background: '#fee2e2', border: '1px solid #fecaca', borderRadius: 10, padding: '10px 14px' }}>{error}</p>}
+        {error && (
+          <div style={{ margin: '0 24px 16px', fontFamily: fontB, fontSize: 13, color: '#ef4444', background: '#fee2e2', borderRadius: 10, padding: '10px 14px' }}>{error}</div>
+        )}
 
-        {/* Plan cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 16, marginTop: 28 }}>
+        {/* Plan rows */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 0, padding: '0 16px 24px' }}>
           {plans.map(({ tier, popular }) => {
             const idx       = tierOrder.indexOf(tier)
             const isCurrent = tier === user.subscription_tier
             const isUpgrade = idx > currentIdx
             const price     = TIER_PRICE_KES[tier]
             const features  = PLAN_FEATURES[tier] ?? []
-            const btnLabel  = isCurrent ? 'Current plan' : isUpgrade ? `Upgrade to ${TIER_LABEL[tier]}` : `Switch to ${TIER_LABEL[tier]}`
 
             return (
               <div key={tier} style={{
-                borderRadius: 18, padding: '24px 22px',
-                border: isCurrent ? `2px solid ${P}` : popular ? `2px solid #a855f7` : `1.5px solid ${Pborder}`,
-                background: isCurrent ? '#f8f7ff' : '#fff',
-                position: 'relative', display: 'flex', flexDirection: 'column',
+                borderRadius: 14, padding: '16px 18px', marginBottom: 8,
+                background: isCurrent ? BgAlt : '#fff',
+                border: `1.5px solid ${isCurrent ? P + '30' : Pborder}`,
+                display: 'flex', gap: 16, alignItems: 'center',
               }}>
-                {popular && !isCurrent && (
-                  <span style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', fontFamily: fontB, fontSize: 11, fontWeight: 700, background: '#a855f7', color: '#fff', padding: '3px 14px', borderRadius: 100, whiteSpace: 'nowrap' }}>
-                    Most popular
-                  </span>
-                )}
-                {isCurrent && (
-                  <span style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', fontFamily: fontB, fontSize: 11, fontWeight: 700, background: P, color: '#fff', padding: '3px 14px', borderRadius: 100, whiteSpace: 'nowrap' }}>
-                    Current plan
-                  </span>
-                )}
-
-                <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: '0 0 4px' }}>{TIER_LABEL[tier]}</p>
-                <p style={{ fontFamily: font, fontSize: 28, fontWeight: 800, color: P, margin: '0 0 2px', lineHeight: 1 }}>
-                  KES {price.toLocaleString()}
-                </p>
-                <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '0 0 18px' }}>per month</p>
-
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 22 }}>
-                  {features.map(f => (
-                    <div key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                      <Check size={14} color="#22c55e" style={{ flexShrink: 0, marginTop: 2 }} />
-                      <span style={{ fontFamily: fontB, fontSize: 13, color: P, lineHeight: 1.4 }}>{f}</span>
-                    </div>
-                  ))}
+                {/* Left: info */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+                    <span style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P }}>{TIER_LABEL[tier]}</span>
+                    {popular && !isCurrent && (
+                      <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, color: '#7c3aed', background: '#ede9fe', padding: '2px 8px', borderRadius: 100 }}>Popular</span>
+                    )}
+                    {isCurrent && (
+                      <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, color: P, background: P + '15', padding: '2px 8px', borderRadius: 100 }}>Current</span>
+                    )}
+                  </div>
+                  <p style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: P, margin: '0 0 8px', letterSpacing: '-0.01em' }}>
+                    KES {price.toLocaleString()} <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 400, color: Pmuted }}>/ mo</span>
+                  </p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    {features.slice(0, 3).map(f => (
+                      <div key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
+                        <Check size={12} color="#22c55e" style={{ flexShrink: 0, marginTop: 2 }} />
+                        <span style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, lineHeight: 1.35 }}>{f}</span>
+                      </div>
+                    ))}
+                    {features.length > 3 && (
+                      <span style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, marginTop: 2 }}>+{features.length - 3} more</span>
+                    )}
+                  </div>
                 </div>
 
-                <button
-                  onClick={() => !isCurrent && handleUpgrade(tier)}
-                  disabled={isCurrent || loading !== null}
-                  style={{
-                    width: '100%', padding: '13px 0', borderRadius: 12, border: 'none',
-                    fontFamily: fontB, fontSize: 13, fontWeight: 600, cursor: isCurrent || loading !== null ? 'default' : 'pointer',
-                    background: isCurrent ? Pborder : isUpgrade ? P : BgAlt,
-                    color: isCurrent ? Pmuted : isUpgrade ? '#fff' : P,
-                    opacity: loading === tier ? 0.7 : 1,
-                    transition: 'opacity 0.15s',
-                  }}>
-                  {loading === tier ? 'Switching…' : btnLabel}
-                </button>
+                {/* Right: action */}
+                <div style={{ flexShrink: 0 }}>
+                  {isCurrent ? (
+                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: P + '12', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Check size={15} color={P} />
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => handleUpgrade(tier)}
+                      disabled={loading !== null}
+                      style={{
+                        background: isUpgrade ? P : BgAlt, color: isUpgrade ? '#fff' : P,
+                        border: 'none', borderRadius: 10, padding: '9px 16px',
+                        fontFamily: fontB, fontSize: 12, fontWeight: 600,
+                        cursor: loading !== null ? 'default' : 'pointer',
+                        opacity: loading === tier ? 0.7 : 1,
+                        whiteSpace: 'nowrap' as const,
+                        transition: 'opacity 0.15s',
+                      }}
+                    >
+                      {loading === tier ? '…' : isUpgrade ? 'Upgrade' : 'Switch'}
+                    </button>
+                  )}
+                </div>
               </div>
             )
           })}
         </div>
 
-        <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, textAlign: 'center', margin: '20px 0 0', lineHeight: 1.6 }}>
-          Changes take effect immediately. You can downgrade or cancel anytime from the Account tab.
+        <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, textAlign: 'center', margin: '0 24px 16px', lineHeight: 1.6 }}>
+          Downgrade or cancel anytime from the Account tab.
         </p>
       </div>
     </div>
