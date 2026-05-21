@@ -1308,47 +1308,93 @@ function FindingsSection({ diag }: { diag: DiagnosisData }) {
   )
 }
 
-function EmptyState() {
-  const previews = [
-    { icon: <Zap size={15} color={P} />, label: 'ICP Health Score' },
-    { icon: <AlertCircle size={15} color={P} />, label: 'Monthly Waste' },
-    { icon: <Check size={15} color={P} />, label: 'Quick Wins' },
-    { icon: <BarChart2 size={15} color={P} />, label: 'Breakdown' },
+function FirstRunDashboard({ user }: { user: UserData }) {
+  const firstName  = user.full_name?.split(' ')[0] ?? null
+  const isNewUser  = daysBetween(user.created_at) <= 1
+  const reveals = [
+    { icon: <Zap size={18} color={P} />,         title: 'ICP Health Score',    body: 'A 0–100 score showing how well your targeting matches your best buyers.' },
+    { icon: <AlertCircle size={18} color={P} />, title: 'Monthly Waste Estimate', body: 'How much budget is leaking to audiences that will never convert.' },
+    { icon: <Check size={18} color={P} />,       title: '3 Quick Wins',         body: 'Specific, ranked actions you can implement this week to improve your score.' },
+    { icon: <Target size={18} color={P} />,      title: 'Landing Page Review',  body: 'AI assessment of your page against your ICP and what to fix first.' },
   ]
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 60, paddingBottom: 80 }}>
-      <div style={{ width: 80, height: 80, borderRadius: 24, background: '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
-        <FileSearch size={36} color={P} />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, animation: 'fadeUp 0.4s ease both' }}>
+
+      {/* Hero CTA — full-width, impossible to miss */}
+      <div style={{
+        background: 'linear-gradient(135deg,#302161 0%,#4c1d95 100%)',
+        borderRadius: 20, padding: 'clamp(28px,5vw,48px) clamp(24px,5vw,52px)',
+      }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 28 }}>
+          <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.45)' }}>
+            {isNewUser ? 'Welcome to ICP Brand' : 'Step 1 of 3'}
+          </span>
+          <h2 style={{ fontFamily: font, fontSize: 'clamp(22px,4vw,32px)', fontWeight: 700, color: '#fff', margin: 0, letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+            {firstName ? `${firstName}, where is your ad budget actually going?` : 'Where is your ad budget actually going?'}
+          </h2>
+          <p style={{ fontFamily: fontB, fontSize: 15, color: 'rgba(255,255,255,0.65)', margin: 0, lineHeight: 1.65, maxWidth: 520 }}>
+            Most B2B teams waste 30–60% of their budget targeting people who will never buy. Your ICP diagnostic finds the leak, scores your targeting, and gives you a ranked fix list. Takes 5 minutes.
+          </p>
+        </div>
+
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center' }}>
+          <Link href="/questionnaire"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#fff', color: P, textDecoration: 'none', fontFamily: font, fontWeight: 700, fontSize: 15, padding: '15px 28px', borderRadius: 12, letterSpacing: '-0.2px' }}>
+            Run My First Diagnosis <ArrowRight size={15} />
+          </Link>
+          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+            {[['3 layers', '20 questions'], ['5 minutes', 'Instant results']].map(([a, b]) => (
+              <div key={a} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                <Check size={13} color="rgba(255,255,255,0.5)" />
+                <span style={{ fontFamily: fontB, fontSize: 13, color: 'rgba(255,255,255,0.55)' }}>{a}</span>
+                <span style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>·</span>
+                <span style={{ fontFamily: fontB, fontSize: 13, color: 'rgba(255,255,255,0.55)' }}>{b}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
-      <h2 style={{ fontFamily: font, fontSize: 28, fontWeight: 700, color: P, margin: '0 0 12px', letterSpacing: '-0.02em', textAlign: 'center' }}>
-        Your cockpit is ready.
-      </h2>
-      <p style={{ fontFamily: fontB, fontSize: 15, color: Pmuted, margin: '0 0 32px', maxWidth: 340, textAlign: 'center', lineHeight: 1.7 }}>
-        Run your first ICP diagnostic to unlock your performance dashboard. Takes 5 minutes.
-      </p>
-      <Link href="/questionnaire"
-        style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: P, color: '#fff', textDecoration: 'none', fontFamily: font, fontWeight: 600, fontSize: 15, padding: '16px 32px', borderRadius: 14, marginBottom: 60 }}>
-        Run My First Diagnosis <ArrowRight size={16} />
-      </Link>
-      <div style={{ width: '100%', maxWidth: 720 }}>
-        <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, textAlign: 'center', marginBottom: 18, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-          Unlocks after first diagnosis
+
+      {/* What your dashboard reveals after the diagnostic */}
+      <div>
+        <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 14px' }}>
+          Unlocks after your first diagnosis
         </p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {previews.map((p, i) => (
-            <div key={i} style={{ borderRadius: 16, overflow: 'hidden', border: `1px solid ${Pborder}` }}>
-              <div style={{ filter: 'blur(4px)', pointerEvents: 'none', background: '#fff', padding: 20, height: 108 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 12 }}>
-                  {p.icon}
-                  <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 600, color: P }}>{p.label}</span>
-                </div>
-                <div style={{ height: 28, background: BgAlt, borderRadius: 8, marginBottom: 8 }} />
-                <div style={{ height: 14, background: BgAlt, borderRadius: 6, width: '70%' }} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {reveals.map((r, i) => (
+            <div key={i} style={{ background: '#fff', borderRadius: 16, padding: '20px 22px', border: `1.5px solid ${Pborder}`, display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+              <div style={{ width: 40, height: 40, borderRadius: 12, background: BgAlt, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                {r.icon}
+              </div>
+              <div>
+                <p style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: P, margin: '0 0 4px' }}>{r.title}</p>
+                <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: 0, lineHeight: 1.55 }}>{r.body}</p>
               </div>
             </div>
           ))}
         </div>
       </div>
+
+      {/* Progress rail — shows where they are in the 3-step journey */}
+      <div style={{ background: '#fff', borderRadius: 16, padding: '20px 24px', border: `1.5px solid ${Pborder}` }}>
+        <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 16px' }}>Your journey</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {[
+            { step: 1, label: 'Run your first ICP diagnostic', done: false, active: true },
+            { step: 2, label: 'Review findings and implement quick wins', done: false, active: false },
+            { step: 3, label: 'Track your score improving over time', done: false, active: false },
+          ].map(({ step, label, done, active }) => (
+            <div key={step} style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+              <div style={{ width: 28, height: 28, borderRadius: '50%', background: done ? '#22c55e' : active ? P : Pborder, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                {done ? <Check size={13} color="#fff" /> : <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, color: active ? '#fff' : Pmuted }}>{step}</span>}
+              </div>
+              <p style={{ fontFamily: fontB, fontSize: 13, fontWeight: active ? 600 : 400, color: active ? P : Pmuted, margin: 0 }}>{label}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
     </div>
   )
 }
@@ -3220,11 +3266,27 @@ export default function DashboardPage() {
     }
   }, [router, loadReports])
 
+  // Fallback for OAuth users: no localStorage key, but session cookie exists
+  const verifySession = useCallback(async () => {
+    try {
+      const res  = await fetch('/api/auth/me')
+      const json = await res.json() as { status?: string; user?: UserData }
+      if (json.status === 'active' && json.user) {
+        localStorage.setItem('dashboard_email', json.user.email)
+        setUser(json.user); setAuthStep('dashboard'); loadReports(json.user.email)
+      } else {
+        router.replace('/auth?tab=login')
+      }
+    } catch {
+      router.replace('/auth?tab=login')
+    }
+  }, [router, loadReports])
+
   useEffect(() => {
     const stored = localStorage.getItem('dashboard_email')
     if (stored) verifyEmail(stored)
-    else router.replace('/auth?tab=login')
-  }, [verifyEmail, router])
+    else verifySession()
+  }, [verifyEmail, verifySession, router])
 
   useEffect(() => {
     if (!user?.email) return
@@ -3485,7 +3547,7 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {!dataLoading && !hasReports && <EmptyState />}
+            {!dataLoading && !hasReports && user && <FirstRunDashboard user={user} />}
 
             {!dataLoading && hasReports && user && (() => {
               const t         = user.subscription_tier
@@ -3493,9 +3555,33 @@ export default function DashboardPage() {
               const tierIdx   = tierOrder.indexOf(t)
               const isStarter = tierIdx >= 1
               const isPro     = tierIdx >= 2
+              const daysSinceDiag = latestReport ? daysBetween(latestReport.generated_at) : 999
 
               return (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+
+                {/* Re-diagnosis nudge: score may have drifted if > 30 days */}
+                {daysSinceDiag > 30 && (
+                  <div style={{ background: 'linear-gradient(135deg,#302161 0%,#4c1d95 100%)', borderRadius: 16, padding: '18px 24px', display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                      <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <RefreshCw size={16} color="#fff" />
+                      </div>
+                      <div>
+                        <p style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: '#fff', margin: '0 0 2px' }}>
+                          Your last diagnosis was {daysSinceDiag} days ago.
+                        </p>
+                        <p style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.55)', margin: 0 }}>
+                          Markets shift. A fresh diagnostic will show whether your ICP score has drifted.
+                        </p>
+                      </div>
+                    </div>
+                    <Link href="/questionnaire"
+                      style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, background: '#fff', color: P, padding: '10px 20px', borderRadius: 10, textDecoration: 'none', whiteSpace: 'nowrap' as const, flexShrink: 0 }}>
+                      Run New Diagnosis →
+                    </Link>
+                  </div>
+                )}
 
                 {/* Real-time waste ticker */}
                 <WasteTicker diag={diag} report={latestReport} currency={currency} />
