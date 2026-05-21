@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { createSessionToken, sessionCookieOptions } from '@/lib/session'
 
 export async function POST(req: NextRequest) {
   try {
@@ -37,7 +38,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ status: 'inactive' }, { status: 200 })
     }
 
-    return NextResponse.json({ status: 'active', user }, { status: 200 })
+    const token = createSessionToken(user.email, user.id)
+    const res = NextResponse.json({ status: 'active', user }, { status: 200 })
+    res.cookies.set(sessionCookieOptions(token))
+    return res
   } catch {
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })
   }
