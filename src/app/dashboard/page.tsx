@@ -747,8 +747,8 @@ function ScoreJourneyWidget({ score, reports }: { score: number; reports: Report
   )
 }
 
-function EnhancedQuickWinsWidget({ diag, user, onStreakUpdate }: { diag: DiagnosisData; user: UserData; onStreakUpdate: (s: number) => void }) {
-  const wins    = (diag.quick_wins ?? []).slice(0, 3)
+function EnhancedQuickWinsWidget({ diag, user, onStreakUpdate, maxWins = 3 }: { diag: DiagnosisData; user: UserData; onStreakUpdate: (s: number) => void; maxWins?: number }) {
+  const wins    = (diag.quick_wins ?? []).slice(0, maxWins)
   const [checked,    setChecked]    = useState<boolean[]>(() => wins.map(() => false))
   const [confirming, setConfirming] = useState<number | null>(null)
   const [saving,     setSaving]     = useState<number | null>(null)
@@ -838,11 +838,13 @@ function EnhancedQuickWinsWidget({ diag, user, onStreakUpdate }: { diag: Diagnos
   )
 }
 
-function EnhancedFindingsSection({ diag, report }: { diag: DiagnosisData; report: ReportRow }) {
+function EnhancedFindingsSection({ diag, report, maxFindings }: { diag: DiagnosisData; report: ReportRow; maxFindings?: number }) {
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null)
-  const findings = getFindings(diag)
-  const days     = daysBetween(report.generated_at)
-  if (findings.length === 0) return null
+  const allFindings = getFindings(diag)
+  const findings    = maxFindings !== undefined ? allFindings.slice(0, maxFindings) : allFindings
+  const lockedCount = maxFindings !== undefined ? Math.max(0, allFindings.length - maxFindings) : 0
+  const days        = daysBetween(report.generated_at)
+  if (allFindings.length === 0) return null
   return (
     <div id="findings" style={{ animation: 'fadeUp 0.4s ease both', animationDelay: '350ms' }}>
       <p style={{ fontFamily: font, fontSize: 20, fontWeight: 700, color: P, margin: '0 0 14px', letterSpacing: '-0.02em' }}>All Findings</p>
@@ -877,6 +879,55 @@ function EnhancedFindingsSection({ diag, report }: { diag: DiagnosisData; report
             </div>
           </div>
         ))}
+      </div>
+      {lockedCount > 0 && (
+        <div style={{ marginTop: 10, background: BgAlt, border: `1.5px dashed ${Pborder}`, borderRadius: 14, padding: '18px 22px', display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Lock size={16} color={P} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <p style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: P, margin: '0 0 3px' }}>
+              {lockedCount} more {lockedCount === 1 ? 'finding' : 'findings'} locked
+            </p>
+            <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: 0 }}>
+              Upgrade to Starter to see every finding in your diagnostic.
+            </p>
+          </div>
+          <Link href="/#pricing" style={{ fontFamily: fontB, fontSize: 12, fontWeight: 600, background: P, color: '#fff', padding: '9px 16px', borderRadius: 10, textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0 }}>
+            Upgrade →
+          </Link>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function UpgradeGate({ children, requiredTier, currentTier, feature, description }: {
+  children: React.ReactNode
+  requiredTier: 'starter' | 'pro' | 'agency'
+  currentTier: string
+  feature: string
+  description?: string
+}) {
+  const tierOrder = ['free', 'starter', 'pro', 'agency']
+  const hasAccess = tierOrder.indexOf(currentTier) >= tierOrder.indexOf(requiredTier)
+  if (hasAccess) return <>{children}</>
+  return (
+    <div style={{ position: 'relative', borderRadius: 20, overflow: 'hidden' }}>
+      <div style={{ filter: 'blur(3px)', pointerEvents: 'none', userSelect: 'none', opacity: 0.35 }} aria-hidden>
+        {children}
+      </div>
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.88)', backdropFilter: 'blur(2px)', borderRadius: 20, padding: 28, textAlign: 'center' }}>
+        <div style={{ width: 44, height: 44, borderRadius: '50%', background: '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+          <Lock size={20} color={P} />
+        </div>
+        <p style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: P, margin: '0 0 6px', letterSpacing: '-0.01em' }}>{feature}</p>
+        <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 18px', maxWidth: 240, lineHeight: 1.55 }}>
+          {description ?? `Available on ${TIER_LABEL[requiredTier]} and above.`}
+        </p>
+        <Link href="/#pricing" style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, background: P, color: '#fff', padding: '10px 22px', borderRadius: 12, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          Upgrade to {TIER_LABEL[requiredTier]} <ArrowRight size={13} />
+        </Link>
       </div>
     </div>
   )
@@ -3118,7 +3169,14 @@ export default function DashboardPage() {
 
             {!dataLoading && !hasReports && <EmptyState />}
 
-            {!dataLoading && hasReports && user && (
+            {!dataLoading && hasReports && user && (() => {
+              const t         = user.subscription_tier
+              const tierOrder = ['free', 'starter', 'pro', 'agency']
+              const tierIdx   = tierOrder.indexOf(t)
+              const isStarter = tierIdx >= 1
+              const isPro     = tierIdx >= 2
+
+              return (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
                 {/* Real-time waste ticker */}
@@ -3127,31 +3185,64 @@ export default function DashboardPage() {
                 {/* Score + Streak */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <ICPScoreCard diag={diag} reports={reports} />
-                  <FixStreakWidget streak={streak} />
+                  <UpgradeGate requiredTier="starter" currentTier={t} feature="Fix Streak" description="Track your weekly implementation streak. Available on Starter and above.">
+                    <FixStreakWidget streak={streak} />
+                  </UpgradeGate>
                 </div>
 
                 {/* Score Journey */}
                 {score !== null && <ScoreJourneyWidget score={score} reports={reports} />}
+
+                {/* Performance Breakdown — Pro+ */}
+                {isPro && score !== null && (
+                  <PerformanceBreakdownWidget diag={diag} score={score} delay={200} />
+                )}
+                {!isPro && score !== null && (
+                  <UpgradeGate requiredTier="pro" currentTier={t} feature="Performance Breakdown" description="6-dimension score breakdown across targeting, landing page, budget allocation, and more.">
+                    <PerformanceBreakdownWidget diag={diag} score={score} delay={0} />
+                  </UpgradeGate>
+                )}
 
                 {/* Priority action + Quick Wins checklist */}
                 <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
                   <TodaysPriorityCard diag={diag} report={latestReport} user={user} onComplete={setStreak} />
                   <div>
                     <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 14px' }}>THIS WEEK</p>
-                    <EnhancedQuickWinsWidget diag={diag} user={user} onStreakUpdate={setStreak} />
+                    <EnhancedQuickWinsWidget diag={diag} user={user} onStreakUpdate={setStreak} maxWins={isStarter ? 3 : 1} />
+                    {!isStarter && (
+                      <div style={{ marginTop: 10, background: BgAlt, border: `1.5px dashed ${Pborder}`, borderRadius: 12, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <Lock size={13} color={Pmuted} />
+                        <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: 0 }}>
+                          2 more quick wins on <Link href="/#pricing" style={{ color: P, fontWeight: 600, textDecoration: 'none' }}>Starter</Link>
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                {/* Findings */}
-                <EnhancedFindingsSection diag={diag} report={latestReport} />
+                {/* Findings — Free sees max 2 */}
+                <EnhancedFindingsSection diag={diag} report={latestReport} maxFindings={isStarter ? undefined : 2} />
 
-                {/* Milestones */}
-                <MilestonesSection milestones={milestones} />
+                {/* Milestones — Starter+ */}
+                <UpgradeGate requiredTier="starter" currentTier={t} feature="Achievements" description="Unlock badges as you implement fixes, improve your score, and use the platform consistently.">
+                  <MilestonesSection milestones={milestones} />
+                </UpgradeGate>
+
+                {/* Score History — Starter+ */}
+                <UpgradeGate requiredTier="starter" currentTier={t} feature="Score History" description="Track your ICP score trend across every diagnosis you run.">
+                  <ScoreHistoryWidget reports={reports} latestReport={latestReport} renewalDate={user.renewal_date ?? null} delay={0} />
+                </UpgradeGate>
+
+                {/* Campaign CSV — Pro+ */}
+                <UpgradeGate requiredTier="pro" currentTier={t} feature="Campaign Data Analysis" description="Upload your Google Ads or Meta export for a media buyer breakdown of your actual spend.">
+                  <CampaignInsightsWidget delay={0} />
+                </UpgradeGate>
 
                 {/* Get It Done */}
-                <GetItDoneCard tier={user.subscription_tier} onBook={() => setShowModal(true)} />
+                <GetItDoneCard tier={t} onBook={() => setShowModal(true)} />
               </div>
-            )}
+              )
+            })()}
           </>
         )}
 
