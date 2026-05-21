@@ -44,6 +44,8 @@ type UserData = {
   total_fixes_completed?: number
   last_seen_intelligence_at?: string | null
   last_seen_overview_at?: string | null
+  scheduled_tier?: string | null
+  scheduled_tier_date?: string | null
 }
 
 type ReportRow = {
@@ -1674,11 +1676,28 @@ function PauseModal({ user, onClose, onPaused }: { user: UserData; onClose: () =
   )
 }
 
-function ChangePlanConfirmModal({ newTier, onClose, onConfirmed }: { newTier: string; onClose: () => void; onConfirmed: () => Promise<void> }) {
+function ChangePlanConfirmModal({ newTier, currentTier, renewalDate, onClose, onConfirmed }: {
+  newTier: string; currentTier: string; renewalDate: string | null
+  onClose: () => void; onConfirmed: () => Promise<void>
+}) {
   const [loading, setLoading] = useState(false)
   const [error,   setError]   = useState('')
-  const label    = TIER_LABEL[newTier] ?? newTier
-  const priceKES = TIER_PRICE_KES[newTier] ?? 0
+  const label     = TIER_LABEL[newTier] ?? newTier
+  const priceKES  = TIER_PRICE_KES[newTier] ?? 0
+  const tierOrder = ['free', 'starter', 'pro', 'agency']
+  const isUpgrade = tierOrder.indexOf(newTier) > tierOrder.indexOf(currentTier)
+
+  const days = (() => {
+    if (!renewalDate) return 0
+    return Math.max(0, Math.ceil((new Date(renewalDate).getTime() - Date.now()) / 86_400_000))
+  })()
+  const topUpKes = (() => {
+    const diff = priceKES - (TIER_PRICE_KES[currentTier] ?? 0)
+    return Math.round((diff / 30) * days / 100) * 100
+  })()
+  const renewalLabel = renewalDate
+    ? new Date(renewalDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+    : '—'
 
   async function handleConfirm() {
     setLoading(true); setError('')
@@ -1689,24 +1708,55 @@ function ChangePlanConfirmModal({ newTier, onClose, onConfirmed }: { newTier: st
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(10,10,15,0.72)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }} onClick={onClose}>
       <div style={{ background: '#fff', borderRadius: 20, padding: '32px 28px', maxWidth: 420, width: '100%' }} onClick={e => e.stopPropagation()}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-          <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: 0, letterSpacing: '-0.02em' }}>Switch to {label}?</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+          <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: 0, letterSpacing: '-0.02em' }}>
+            {isUpgrade ? `Upgrade to ${label}?` : `Downgrade to ${label}?`}
+          </p>
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: Pmuted, padding: 4 }}><X size={18} /></button>
         </div>
-        <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 16px', lineHeight: 1.7 }}>
-          Your new plan starts immediately. Your billing will be adjusted on your next renewal date.
-        </p>
-        {priceKES > 0 && (
-          <div style={{ background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 12, padding: '12px 16px', marginBottom: 20 }}>
-            <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '0 0 2px' }}>New monthly price</p>
-            <p style={{ fontFamily: font, fontSize: 20, fontWeight: 700, color: P, margin: 0 }}>KES {priceKES.toLocaleString()} / month</p>
-          </div>
-        )}
+
+        <div style={{ background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 12, padding: '14px 16px', marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {isUpgrade ? (
+            <>
+              <div>
+                <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '0 0 2px', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>New monthly rate</p>
+                <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: 0 }}>KES {priceKES.toLocaleString()} / month</p>
+              </div>
+              <div>
+                <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '0 0 2px', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>Prorated top-up due now</p>
+                <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: 0 }}>
+                  {topUpKes > 0 ? `KES ${topUpKes.toLocaleString()}` : 'None'}
+                </p>
+                {topUpKes > 0 && (
+                  <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '3px 0 0', lineHeight: 1.4 }}>
+                    Covers {days} remaining days. Full rate from {renewalLabel}.
+                  </p>
+                )}
+              </div>
+            </>
+          ) : (
+            <>
+              <div>
+                <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '0 0 2px', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>Charge today</p>
+                <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: '#15803d', margin: 0 }}>None</p>
+              </div>
+              <div>
+                <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '0 0 2px', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>Current features stay active until</p>
+                <p style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: 0 }}>{renewalLabel}</p>
+              </div>
+              <div>
+                <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '0 0 2px', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>{label} billing starts</p>
+                <p style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: 0 }}>{renewalLabel}</p>
+              </div>
+            </>
+          )}
+        </div>
+
         {error && <p style={{ fontFamily: fontB, fontSize: 12, color: '#ef4444', margin: '0 0 12px' }}>{error}</p>}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <button onClick={handleConfirm} disabled={loading}
             style={{ background: P, border: 'none', borderRadius: 12, padding: '13px 0', fontSize: 14, fontFamily: font, fontWeight: 600, color: '#fff', cursor: loading ? 'default' : 'pointer', opacity: loading ? 0.7 : 1 }}>
-            {loading ? 'Switching…' : 'Confirm Switch'}
+            {loading ? 'Confirming…' : isUpgrade ? 'Confirm Upgrade' : 'Confirm Downgrade'}
           </button>
           <button onClick={onClose}
             style={{ background: 'none', border: `1px solid ${Pborder}`, borderRadius: 12, padding: '12px 0', fontSize: 13, fontFamily: fontB, color: P, cursor: 'pointer' }}>
@@ -1725,23 +1775,42 @@ function InDashboardUpgradeModal({ user, onClose, onUpgraded }: {
   onClose: () => void
   onUpgraded: (tier: string) => void
 }) {
-  const [loading, setLoading] = useState<string | null>(null)
-  const [error,   setError]   = useState('')
+  const [loading,  setLoading]  = useState<string | null>(null)
+  const [error,    setError]    = useState('')
+  const [done,     setDone]     = useState<{ direction: string; tier: string; topUpKes?: number; effectiveDate?: string } | null>(null)
+
   const tierOrder  = ['free', 'starter', 'pro', 'agency']
   const currentIdx = tierOrder.indexOf(user.subscription_tier)
 
-  async function handleUpgrade(tier: string) {
+  // Proration helpers (mirrors server logic, for display only)
+  function daysLeft(): number {
+    if (!user.renewal_date) return 0
+    const ms = new Date(user.renewal_date).getTime() - Date.now()
+    return Math.max(0, Math.ceil(ms / 86_400_000))
+  }
+  function topUpFor(tier: string): number {
+    const days = daysLeft()
+    const diff = (TIER_PRICE_KES[tier] ?? 0) - (TIER_PRICE_KES[user.subscription_tier] ?? 0)
+    return Math.round((diff / 30) * days / 100) * 100
+  }
+  function renewalLabel(): string {
+    if (!user.renewal_date) return ''
+    return new Date(user.renewal_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+  }
+
+  async function handleChange(tier: string) {
     setLoading(tier); setError('')
     try {
       const res = await fetch('/api/subscription/change-plan', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userEmail: user.email, newTier: tier, oldTier: user.subscription_tier }),
       })
-      if (!res.ok) throw new Error('failed')
-      onUpgraded(tier)
-      onClose()
-    } catch {
-      setError('Something went wrong. Please try again.')
+      const json = await res.json() as { direction?: string; topUpKes?: number; effectiveDate?: string; error?: string }
+      if (!res.ok) throw new Error(json.error ?? 'failed')
+      setDone({ direction: json.direction ?? 'upgrade', tier, topUpKes: json.topUpKes, effectiveDate: json.effectiveDate })
+      onUpgraded(json.direction === 'upgrade' ? tier : user.subscription_tier)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Something went wrong. Please try again.')
     } finally { setLoading(null) }
   }
 
@@ -1766,94 +1835,147 @@ function InDashboardUpgradeModal({ user, onClose, onUpgraded }: {
         </div>
 
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 24px 20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 24px 16px' }}>
           <div>
             <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: '0 0 2px', letterSpacing: '-0.02em' }}>Choose a plan</p>
-            <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: 0 }}>Changes take effect immediately.</p>
+            {user.renewal_date && (
+              <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: 0 }}>
+                Current period ends {renewalLabel()} ({daysLeft()} days left)
+              </p>
+            )}
           </div>
           <button onClick={onClose} style={{ background: BgAlt, border: 'none', cursor: 'pointer', color: Pmuted, padding: 8, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <X size={16} />
           </button>
         </div>
 
+        {/* Success confirmation */}
+        {done && (
+          <div style={{ margin: '0 16px 16px', background: '#f0fdf4', border: '1.5px solid #bbf7d0', borderRadius: 12, padding: '14px 16px' }}>
+            {done.direction === 'upgrade' ? (
+              <>
+                <p style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: '#15803d', margin: '0 0 4px' }}>
+                  Upgraded to {TIER_LABEL[done.tier]}. Features active now.
+                </p>
+                {(done.topUpKes ?? 0) > 0 && (
+                  <p style={{ fontFamily: fontB, fontSize: 12, color: '#166534', margin: 0, lineHeight: 1.5 }}>
+                    A prorated invoice of KES {done.topUpKes?.toLocaleString()} for the remaining {daysLeft()} days will be sent to you shortly.
+                  </p>
+                )}
+              </>
+            ) : (
+              <>
+                <p style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: '#15803d', margin: '0 0 4px' }}>
+                  Downgrade scheduled for {done.effectiveDate ? new Date(done.effectiveDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : renewalLabel()}.
+                </p>
+                <p style={{ fontFamily: fontB, fontSize: 12, color: '#166534', margin: 0, lineHeight: 1.5 }}>
+                  You keep your current {TIER_LABEL[user.subscription_tier]} features until then. No charge today.
+                </p>
+              </>
+            )}
+          </div>
+        )}
+
         {error && (
-          <div style={{ margin: '0 24px 16px', fontFamily: fontB, fontSize: 13, color: '#ef4444', background: '#fee2e2', borderRadius: 10, padding: '10px 14px' }}>{error}</div>
+          <div style={{ margin: '0 16px 12px', fontFamily: fontB, fontSize: 13, color: '#ef4444', background: '#fee2e2', borderRadius: 10, padding: '10px 14px' }}>{error}</div>
         )}
 
         {/* Plan rows */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 0, padding: '0 16px 24px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', padding: '0 16px 20px' }}>
           {plans.map(({ tier, popular }) => {
-            const idx       = tierOrder.indexOf(tier)
-            const isCurrent = tier === user.subscription_tier
-            const isUpgrade = idx > currentIdx
-            const price     = TIER_PRICE_KES[tier]
-            const features  = PLAN_FEATURES[tier] ?? []
+            const idx        = tierOrder.indexOf(tier)
+            const isCurrent  = tier === user.subscription_tier
+            const isUpgrade  = idx > currentIdx
+            const isDowngrade = idx < currentIdx
+            const price      = TIER_PRICE_KES[tier]
+            const features   = PLAN_FEATURES[tier] ?? []
+            const topUp      = isUpgrade ? topUpFor(tier) : 0
+            const days       = daysLeft()
 
             return (
               <div key={tier} style={{
-                borderRadius: 14, padding: '16px 18px', marginBottom: 8,
+                borderRadius: 14, padding: '14px 16px', marginBottom: 8,
                 background: isCurrent ? BgAlt : '#fff',
                 border: `1.5px solid ${isCurrent ? P + '30' : Pborder}`,
-                display: 'flex', gap: 16, alignItems: 'center',
               }}>
-                {/* Left: info */}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
-                    <span style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P }}>{TIER_LABEL[tier]}</span>
-                    {popular && !isCurrent && (
-                      <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, color: '#7c3aed', background: '#ede9fe', padding: '2px 8px', borderRadius: 100 }}>Popular</span>
-                    )}
-                    {isCurrent && (
-                      <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, color: P, background: P + '15', padding: '2px 8px', borderRadius: 100 }}>Current</span>
-                    )}
+                <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                  {/* Left: plan info */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 2 }}>
+                      <span style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: P }}>{TIER_LABEL[tier]}</span>
+                      {popular && !isCurrent && (
+                        <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, color: '#7c3aed', background: '#ede9fe', padding: '2px 7px', borderRadius: 100 }}>Popular</span>
+                      )}
+                      {isCurrent && (
+                        <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, color: P, background: P + '15', padding: '2px 7px', borderRadius: 100 }}>Current</span>
+                      )}
+                    </div>
+                    <p style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: '0 0 6px', letterSpacing: '-0.01em' }}>
+                      KES {price.toLocaleString()} <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 400, color: Pmuted }}>/ mo</span>
+                    </p>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                      {features.slice(0, 3).map(f => (
+                        <div key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
+                          <Check size={11} color="#22c55e" style={{ flexShrink: 0, marginTop: 2 }} />
+                          <span style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, lineHeight: 1.35 }}>{f}</span>
+                        </div>
+                      ))}
+                      {features.length > 3 && (
+                        <span style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, marginTop: 1 }}>+{features.length - 3} more</span>
+                      )}
+                    </div>
                   </div>
-                  <p style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: P, margin: '0 0 8px', letterSpacing: '-0.01em' }}>
-                    KES {price.toLocaleString()} <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 400, color: Pmuted }}>/ mo</span>
-                  </p>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    {features.slice(0, 3).map(f => (
-                      <div key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
-                        <Check size={12} color="#22c55e" style={{ flexShrink: 0, marginTop: 2 }} />
-                        <span style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, lineHeight: 1.35 }}>{f}</span>
+
+                  {/* Right: action */}
+                  <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, paddingTop: 2 }}>
+                    {isCurrent ? (
+                      <div style={{ width: 30, height: 30, borderRadius: '50%', background: P + '12', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Check size={14} color={P} />
                       </div>
-                    ))}
-                    {features.length > 3 && (
-                      <span style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, marginTop: 2 }}>+{features.length - 3} more</span>
+                    ) : (
+                      <button
+                        onClick={() => !done && handleChange(tier)}
+                        disabled={loading !== null || !!done}
+                        style={{
+                          background: isUpgrade ? P : BgAlt, color: isUpgrade ? '#fff' : P,
+                          border: 'none', borderRadius: 10, padding: '8px 14px',
+                          fontFamily: fontB, fontSize: 12, fontWeight: 600,
+                          cursor: (loading !== null || !!done) ? 'default' : 'pointer',
+                          opacity: loading === tier ? 0.6 : 1,
+                          whiteSpace: 'nowrap' as const,
+                          transition: 'opacity 0.15s',
+                        }}
+                      >
+                        {loading === tier ? '…' : isUpgrade ? 'Upgrade' : 'Downgrade'}
+                      </button>
                     )}
                   </div>
                 </div>
 
-                {/* Right: action */}
-                <div style={{ flexShrink: 0 }}>
-                  {isCurrent ? (
-                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: P + '12', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Check size={15} color={P} />
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => handleUpgrade(tier)}
-                      disabled={loading !== null}
-                      style={{
-                        background: isUpgrade ? P : BgAlt, color: isUpgrade ? '#fff' : P,
-                        border: 'none', borderRadius: 10, padding: '9px 16px',
-                        fontFamily: fontB, fontSize: 12, fontWeight: 600,
-                        cursor: loading !== null ? 'default' : 'pointer',
-                        opacity: loading === tier ? 0.7 : 1,
-                        whiteSpace: 'nowrap' as const,
-                        transition: 'opacity 0.15s',
-                      }}
-                    >
-                      {loading === tier ? '…' : isUpgrade ? 'Upgrade' : 'Switch'}
-                    </button>
-                  )}
-                </div>
+                {/* Billing note under each non-current row */}
+                {!isCurrent && (
+                  <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1px solid ${Pborder}` }}>
+                    {isUpgrade ? (
+                      <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: 0, lineHeight: 1.5 }}>
+                        {topUp > 0
+                          ? `KES ${topUp.toLocaleString()} due now (prorated for ${days} remaining days), then KES ${price.toLocaleString()} / month from ${renewalLabel()}.`
+                          : `Activates immediately. Next charge: KES ${price.toLocaleString()} on ${renewalLabel()}.`}
+                      </p>
+                    ) : isDowngrade ? (
+                      <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: 0, lineHeight: 1.5 }}>
+                        {TIER_LABEL[user.subscription_tier]} features stay active until {renewalLabel()}.{' '}
+                        {TIER_LABEL[tier]} billing starts after that. No charge today.
+                      </p>
+                    ) : null}
+                  </div>
+                )}
               </div>
             )
           })}
         </div>
 
-        <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, textAlign: 'center', margin: '0 24px 16px', lineHeight: 1.6 }}>
-          Downgrade or cancel anytime from the Account tab.
+        <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, textAlign: 'center', margin: '0 24px 20px', lineHeight: 1.6 }}>
+          Manage or cancel anytime from the Account tab.
         </p>
       </div>
     </div>
@@ -1892,11 +2014,25 @@ function AccountTab({ user, currency, score, reportCount, onSignOut, onCancelled
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userEmail: user.email, newTier, oldTier: user.subscription_tier }),
     })
-    if (!res.ok) throw new Error('failed')
-    onUserUpdate({ subscription_tier: newTier })
+    const json = await res.json() as { direction?: string; topUpKes?: number; effectiveDate?: string; error?: string }
+    if (!res.ok) throw new Error(json.error ?? 'failed')
+
+    if (json.direction === 'upgrade') {
+      onUserUpdate({ subscription_tier: newTier })
+      const topUpMsg = (json.topUpKes ?? 0) > 0
+        ? ` A prorated invoice of KES ${json.topUpKes?.toLocaleString()} will follow.`
+        : ''
+      showToast(`Upgraded to ${TIER_LABEL[newTier]}.${topUpMsg}`)
+    } else {
+      const switchDate = json.effectiveDate
+        ? new Date(json.effectiveDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+        : '—'
+      onUserUpdate({ scheduled_tier: newTier, scheduled_tier_date: json.effectiveDate })
+      showToast(`Downgrade to ${TIER_LABEL[newTier]} scheduled for ${switchDate}.`)
+    }
+
     setConfirmPlan(null)
     setShowChangePlan(false)
-    showToast(`Plan updated to ${TIER_LABEL[newTier]}. Changes take effect immediately.`)
   }
 
   async function handleResume() {
@@ -2138,7 +2274,10 @@ function AccountTab({ user, currency, score, reportCount, onSignOut, onCancelled
         />
       )}
       {confirmPlan && (
-        <ChangePlanConfirmModal newTier={confirmPlan}
+        <ChangePlanConfirmModal
+          newTier={confirmPlan}
+          currentTier={user.subscription_tier}
+          renewalDate={user.renewal_date}
           onClose={() => setConfirmPlan(null)}
           onConfirmed={() => handleChangePlan(confirmPlan)}
         />
