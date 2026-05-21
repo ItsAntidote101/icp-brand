@@ -4,6 +4,7 @@ import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle, Globe } from 'lucide-react'
+import { createBrowserClient } from '@supabase/ssr'
 
 const P       = '#302161'
 const Pmuted  = 'rgba(48,33,97,0.45)'
@@ -48,6 +49,22 @@ function AuthInner() {
   const showToast = (msg: string) => {
     setToast(msg)
     setTimeout(() => setToast(''), 3000)
+  }
+
+  const handleGoogleAuth = async () => {
+    try {
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      )
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: `${window.location.origin}/api/auth/callback` },
+      })
+      if (error) showToast('Google sign-in failed. Please try again.')
+    } catch {
+      showToast('Google sign-in failed. Please try again.')
+    }
   }
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -190,7 +207,7 @@ function AuthInner() {
 
               <button
                 className="auth-btn-google"
-                onClick={() => showToast('Google sign-in coming soon')}
+                onClick={handleGoogleAuth}
                 style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '12px 16px', border: `1.5px solid ${Pborder}`, borderRadius: 12, background: '#fff', cursor: 'pointer', fontFamily: fontB, fontSize: 14, fontWeight: 600, color: P, marginBottom: 20, transition: 'background 0.15s' }}>
                 <Globe size={17} color={P} />
                 Continue with Google
@@ -243,7 +260,7 @@ function AuthInner() {
 
               <button
                 className="auth-btn-google"
-                onClick={() => showToast('Google sign-in coming soon')}
+                onClick={handleGoogleAuth}
                 style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '12px 16px', border: `1.5px solid ${Pborder}`, borderRadius: 12, background: '#fff', cursor: 'pointer', fontFamily: fontB, fontSize: 14, fontWeight: 600, color: P, marginBottom: 20, transition: 'background 0.15s' }}>
                 <Globe size={17} color={P} />
                 Continue with Google
