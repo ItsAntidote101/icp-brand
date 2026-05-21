@@ -21,17 +21,20 @@ export async function POST(req: NextRequest) {
 
   console.log('[webhook] signature verified')
 
-  const event = JSON.parse(rawBody) as {
-    event: string
-    data: Record<string, unknown>
+  let event: { event: string; data: Record<string, unknown> }
+  try {
+    event = JSON.parse(rawBody) as { event: string; data: Record<string, unknown> }
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
   console.log('[webhook] event type:', event.event)
-  console.log('[webhook] event data:', JSON.stringify(event.data, null, 2))
 
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!serviceKey) throw new Error('SUPABASE_SERVICE_ROLE_KEY is required')
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
+    serviceKey
   )
 
   if (event.event === 'charge.success') {

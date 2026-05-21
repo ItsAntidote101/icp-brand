@@ -25,10 +25,8 @@ export async function POST(req: NextRequest) {
 
   const amount = PRICES[tier]
 
-  // Build absolute callback URL from request host
-  const proto = req.headers.get('x-forwarded-proto') ?? 'https'
-  const host  = req.headers.get('x-forwarded-host') ?? req.headers.get('host') ?? 'localhost:3000'
-  const callbackUrl = `${proto}://${host}/api/paystack/verify`
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://icpbrand.co'
+  const callbackUrl = `${appUrl}/api/paystack/verify`
 
   const paystackRes = await fetch('https://api.paystack.co/transaction/initialize', {
     method: 'POST',

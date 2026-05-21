@@ -5,9 +5,7 @@ import { sendSubscriptionEmail } from '@/lib/email'
 export async function GET(req: NextRequest) {
   const reference = req.nextUrl.searchParams.get('reference') ?? req.nextUrl.searchParams.get('trxref')
 
-  const proto = req.headers.get('x-forwarded-proto') ?? 'https'
-  const host  = req.headers.get('x-forwarded-host') ?? req.headers.get('host') ?? 'localhost:3000'
-  const base  = `${proto}://${host}`
+  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://icpbrand.co'
 
   console.log('[verify] received reference:', reference)
 
@@ -50,9 +48,11 @@ export async function GET(req: NextRequest) {
   console.log('[verify] payment confirmed — email:', email, '| tier:', tier)
 
   // Update Supabase
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!serviceKey) throw new Error('SUPABASE_SERVICE_ROLE_KEY is required')
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
+    serviceKey
   )
 
   // Fetch existing user to preserve name and get id

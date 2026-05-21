@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { sendAdminReplyToUser } from '@/lib/email'
+import { timingSafeEqual } from 'crypto'
 
 export const dynamic = 'force-dynamic'
 
@@ -11,17 +12,18 @@ const supabase = createClient(
 
 export async function POST(req: NextRequest) {
   try {
+    // 1. Validate admin key via header (timing-safe)
+    const provided = Buffer.from(req.headers.get('x-admin-key') ?? '')
+    const expected = Buffer.from(process.env.ADMIN_SECRET ?? '')
+    if (!expected.length || provided.length !== expected.length || !timingSafeEqual(provided, expected)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const body = await req.json() as {
       escalationId: string
       reply: string
-      adminKey: string
     }
-    const { escalationId, reply, adminKey } = body
-
-    // 1. Validate admin key
-    if (adminKey !== process.env.ADMIN_SECRET) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const { escalationId, reply } = body
 
     // 2. Fetch escalation
     const { data: escalation, error: escalationError } = await supabase

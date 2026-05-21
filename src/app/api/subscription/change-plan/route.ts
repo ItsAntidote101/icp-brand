@@ -19,6 +19,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
+    const VALID_TIERS = ['starter', 'pro', 'agency', 'free'] as const
+    if (!VALID_TIERS.includes(newTier as typeof VALID_TIERS[number])) {
+      return NextResponse.json({ error: 'Invalid tier' }, { status: 400 })
+    }
+
     const { data: userData } = await supabase
       .from('users')
       .select('id, full_name, company_name, renewal_date')

@@ -4,18 +4,19 @@ import { sendReminderEmail } from '@/lib/email'
 
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization')
-  if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const cronSecret = process.env.CRON_SECRET
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!serviceKey) throw new Error('SUPABASE_SERVICE_ROLE_KEY is required')
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
+    serviceKey
   )
 
-  const proto   = req.headers.get('x-forwarded-proto') ?? 'https'
-  const host    = req.headers.get('x-forwarded-host') ?? req.headers.get('host') ?? 'icpbrand.co'
-  const baseUrl = `${proto}://${host}`
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://icpbrand.co'
 
   const now            = new Date()
   const sevenDaysLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
