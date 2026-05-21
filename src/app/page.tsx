@@ -186,7 +186,7 @@ export default function Page() {
           </div>
           <div className="hidden md:flex" style={{ gap: 12, alignItems: 'center' }}>
             <Link href="/auth?tab=login" style={{ fontFamily: fontB, fontSize: 13, color: 'rgba(255,255,255,0.65)', textDecoration: 'none', fontWeight: 500 }}>Log in</Link>
-            <Link href="/questionnaire" style={{ fontFamily: fontB, fontSize: 13, fontWeight: 700, color: Dark, background: '#fff', padding: '9px 20px', borderRadius: 100, textDecoration: 'none' }}>Sign up</Link>
+            <Link href="/questionnaire" style={{ fontFamily: fontB, fontSize: 13, fontWeight: 700, color: Dark, background: '#fff', padding: '9px 20px', borderRadius: 100, textDecoration: 'none' }}>Get free diagnostic</Link>
           </div>
           <button className="md:hidden" onClick={() => setMobileOpen(o => !o)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center' }}>
             {mobileOpen ? <X size={22} color="#fff" /> : <Menu size={22} color="#fff" />}
@@ -201,7 +201,7 @@ export default function Page() {
               style={{ fontFamily: font, fontSize: 22, color: '#fff', textDecoration: 'none', fontWeight: 700, padding: '18px 0', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>{label}</a>
           ))}
           <div style={{ marginTop: 32, display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <Link href="/questionnaire" onClick={() => setMobileOpen(false)} style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: Dark, background: '#fff', padding: '16px 28px', borderRadius: 100, textDecoration: 'none', textAlign: 'center' }}>Sign up free</Link>
+            <Link href="/questionnaire" onClick={() => setMobileOpen(false)} style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: Dark, background: '#fff', padding: '16px 28px', borderRadius: 100, textDecoration: 'none', textAlign: 'center' }}>Get free diagnostic</Link>
             <Link href="/auth?tab=login" onClick={() => setMobileOpen(false)} style={{ fontFamily: fontB, fontSize: 15, fontWeight: 500, color: 'rgba(255,255,255,0.55)', textDecoration: 'none', textAlign: 'center' }}>Log in</Link>
           </div>
         </div>
