@@ -23,9 +23,11 @@ export async function POST(req: NextRequest) {
 
   // Save to Supabase (non-fatal if table doesn't exist yet)
   try {
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+    if (!serviceKey) throw new Error('SUPABASE_SERVICE_ROLE_KEY is required')
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
-      process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
+      serviceKey
     )
     const { error } = await supabase.from('session_requests').insert({
       user_email: userEmail,

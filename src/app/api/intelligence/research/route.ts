@@ -278,6 +278,29 @@ export async function POST(req: NextRequest) {
             upgradeAvailable: false,
           }, { status: 429 })
         }
+
+        // Atomic optimistic-concurrency increment for agency tier
+        const today2     = new Date().toISOString().split('T')[0]
+        const { data: updatedRows } = await supabase
+          .from('users')
+          .update({ refresh_count_today: countToday + 1, refresh_count_reset_date: today2 })
+          .eq('id', userData.id)
+          .eq('refresh_count_today', countToday) // only update if count hasn't changed
+          .select('id')
+
+        if (!updatedRows || updatedRows.length === 0) {
+          // Another request already incremented — treat as limit reached
+          const midnight = new Date(); midnight.setUTCHours(24, 0, 0, 0)
+          return NextResponse.json({
+            error:            'rate_limited',
+            message:          'Refresh limit reached.',
+            nextRefreshAt:    midnight.toISOString(),
+            hoursRemaining:   Math.ceil((midnight.getTime() - Date.now()) / 3_600_000),
+            minutesRemaining: Math.ceil((midnight.getTime() - Date.now()) / 60_000),
+            tier,
+            upgradeAvailable: false,
+          }, { status: 429 })
+        }
       }
 
       // Fetch questionnaire context
@@ -326,15 +349,14 @@ export async function POST(req: NextRequest) {
         briefing_type: 'on_demand',
       })
 
-      // Update refresh tracking
+      // Update refresh tracking (agency count was already atomically incremented above)
       const today      = now.split('T')[0]
       const resetDate  = userData.refresh_count_reset_date
       const countToday = resetDate === today ? (userData.refresh_count_today ?? 0) : 0
-      await supabase.from('users').update({
-        last_refresh_at:          now,
-        refresh_count_today:      countToday + 1,
-        refresh_count_reset_date: today,
-      }).eq('id', userData.id)
+      const refreshCountUpdate = tier === 'agency'
+        ? { last_refresh_at: now }
+        : { last_refresh_at: now, refresh_count_today: countToday + 1, refresh_count_reset_date: today }
+      await supabase.from('users').update(refreshCountUpdate).eq('id', userData.id)
 
       const nextAt = new Date(Date.now() + intervalHours * 3_600_000).toISOString()
       return NextResponse.json({ briefing: { ...data, updatedAt: now }, nextRefreshAvailable: nextAt, tier })

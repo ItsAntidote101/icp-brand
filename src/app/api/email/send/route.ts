@@ -1,18 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { timingSafeEqual } from 'crypto'
 import { sendWelcomeEmail, sendSubscriptionEmail, sendReminderEmail } from '@/lib/email'
 
 export async function POST(req: NextRequest) {
-  const proto = req.headers.get('x-forwarded-proto') ?? 'https'
-  const host  = req.headers.get('x-forwarded-host') ?? req.headers.get('host') ?? 'icpbrand.co'
-  const baseUrl = `${proto}://${host}`
+  const provided = Buffer.from(req.headers.get('x-admin-key') ?? '')
+  const expected = Buffer.from(process.env.ADMIN_SECRET ?? '')
+  if (!expected.length || provided.length !== expected.length || !timingSafeEqual(provided, expected)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://icpbrand.co'
+  const baseUrl = appUrl
 
   const body = await req.json()
   const { type, to, name, reportId, tier, renewalDate, lastScore } = body as {
     type: string; to: string; name?: string; reportId?: string
     tier?: string; renewalDate?: string; lastScore?: number
   }
-
-  console.log('[email/send] type:', type, '| to:', to)
 
   if (!type || !to) {
     return NextResponse.json({ error: 'type and to are required' }, { status: 400 })

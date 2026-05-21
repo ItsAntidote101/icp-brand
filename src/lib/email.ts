@@ -2,6 +2,10 @@ import { Resend } from 'resend'
 
 const FROM = 'ICP Brand <noreply@icpbrand.co>'
 
+function escapeHtml(s: string): string {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;')
+}
+
 function getResend() {
   return new Resend(process.env.RESEND_API_KEY ?? '')
 }
@@ -191,11 +195,11 @@ export async function sendSessionRequestToFounder({
   <tr><td style="padding:20px 24px;">
     <p style="margin:0 0 6px;color:#a5b4fc;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;">Client</p>
     ${[
-      ['Name', userName],
-      ['Email', userEmail],
-      ['Company', companyName],
-      ['Format', sessionFormat],
-      ['Preferred Time', preferredTime || 'Not specified'],
+      ['Name', escapeHtml(userName)],
+      ['Email', escapeHtml(userEmail)],
+      ['Company', escapeHtml(companyName)],
+      ['Format', escapeHtml(sessionFormat)],
+      ['Preferred Time', escapeHtml(preferredTime || 'Not specified')],
     ].map(([k, v]) => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:8px;"><tr>
       <td style="color:#6b7280;font-size:13px;width:140px;">${k}</td>
       <td style="color:#e5e7eb;font-size:13px;font-weight:600;">${v}</td>
@@ -207,15 +211,15 @@ export async function sendSessionRequestToFounder({
     <p style="margin:0 0 12px;color:#a5b4fc;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;">Diagnostic Summary</p>
     ${[
       ['ICP Health Score', diagnostic.score !== null ? `${diagnostic.score}/100` : '—'],
-      ['Estimated Waste', diagnostic.waste || '—'],
-      ['Top Finding', diagnostic.topFinding || '—'],
+      ['Estimated Waste', escapeHtml(diagnostic.waste || '—')],
+      ['Top Finding', escapeHtml(diagnostic.topFinding || '—')],
     ].map(([k, v]) => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:8px;"><tr>
       <td style="color:#6b7280;font-size:13px;width:160px;">${k}</td>
       <td style="color:#e5e7eb;font-size:13px;font-weight:600;">${v}</td>
     </tr></table>`).join('')}
   </td></tr>
 </table>
-${notes ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;margin-bottom:16px;"><tr><td style="padding:16px 20px;"><p style="margin:0 0 8px;color:#6b7280;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Notes from client</p><p style="margin:0;color:#e5e7eb;font-size:14px;line-height:1.6;">${notes}</p></td></tr></table>` : ''}
+${notes ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;margin-bottom:16px;"><tr><td style="padding:16px 20px;"><p style="margin:0 0 8px;color:#6b7280;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Notes from client</p><p style="margin:0;color:#e5e7eb;font-size:14px;line-height:1.6;">${escapeHtml(notes)}</p></td></tr></table>` : ''}
 <p style="margin:16px 0 0;color:#6b7280;font-size:13px;">Reply to this email to reach the client directly.</p>`
 
   const { data, error } = await getResend().emails.send({
@@ -326,10 +330,10 @@ export async function sendCancellationToFounder({
   <tr><td style="padding:20px 24px;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
       ${[
-        ['Name', userName],
-        ['Email', userEmail],
-        ['Company', companyName || '—'],
-        ['Reason', reason || 'Not provided'],
+        ['Name', escapeHtml(userName)],
+        ['Email', escapeHtml(userEmail)],
+        ['Company', escapeHtml(companyName || '—')],
+        ['Reason', escapeHtml(reason || 'Not provided')],
         ['Access until', accessUntil],
       ].map(([label, val]) => `<tr><td style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
         <p style="margin:0;color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:0.06em;">${label}</p>
@@ -599,24 +603,24 @@ export async function sendEscalationToFounder({
   <tr><td style="padding:20px 24px;">
     <p style="margin:0 0 12px;color:#a5b4fc;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;">Client</p>
     ${[
-      ['Name', userName],
-      ['Email', userEmail],
-      ['Company', companyName || '—'],
-      ['Tier', tier.charAt(0).toUpperCase() + tier.slice(1)],
+      ['Name', escapeHtml(userName)],
+      ['Email', escapeHtml(userEmail)],
+      ['Company', escapeHtml(companyName || '—')],
+      ['Tier', escapeHtml(tier.charAt(0).toUpperCase() + tier.slice(1))],
       ['ICP Health Score', score !== null ? `${score}/100` : '—'],
-      ['Est. Waste', wasteEstimate || '—'],
-      ['Urgency', urgency],
+      ['Est. Waste', escapeHtml(wasteEstimate || '—')],
+      ['Urgency', escapeHtml(urgency)],
     ].map(([k, v]) => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:8px;"><tr>
       <td style="color:#6b7280;font-size:13px;width:160px;">${k}</td>
       <td style="color:#e5e7eb;font-size:13px;font-weight:600;">${v}</td>
     </tr></table>`).join('')}
   </td></tr>
 </table>
-${note ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;margin-bottom:20px;"><tr><td style="padding:16px 20px;"><p style="margin:0 0 8px;color:#6b7280;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Note from client</p><p style="margin:0;color:#e5e7eb;font-size:14px;line-height:1.6;">${note}</p></td></tr></table>` : ''}
+${note ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;margin-bottom:20px;"><tr><td style="padding:16px 20px;"><p style="margin:0 0 8px;color:#6b7280;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Note from client</p><p style="margin:0;color:#e5e7eb;font-size:14px;line-height:1.6;">${escapeHtml(note)}</p></td></tr></table>` : ''}
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(10,10,15,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:12px;margin-bottom:20px;">
   <tr><td style="padding:16px 20px;">
     <p style="margin:0 0 10px;color:#6b7280;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Conversation transcript</p>
-    <pre style="margin:0;color:#e5e7eb;font-size:12px;line-height:1.7;white-space:pre-wrap;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',monospace;">${conversationTranscript}</pre>
+    <pre style="margin:0;color:#e5e7eb;font-size:12px;line-height:1.7;white-space:pre-wrap;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',monospace;">${escapeHtml(conversationTranscript)}</pre>
   </td></tr>
 </table>
 <p style="margin:0;color:#6b7280;font-size:13px;">Reply via email to respond directly.</p>`
@@ -687,7 +691,7 @@ export async function sendAdminReplyToUser({
 }: {
   to: string; name: string; reply: string; dashboardUrl?: string
 }) {
-  const first = name?.split(' ')[0] ?? 'there'
+  const first = escapeHtml(name?.split(' ')[0] ?? 'there')
   const url = dashboardUrl ?? 'https://icpbrand.co/dashboard'
 
   const content = `
@@ -696,7 +700,7 @@ export async function sendAdminReplyToUser({
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.3);border-radius:14px;margin-bottom:20px;">
   <tr><td style="padding:20px 24px;">
     <p style="margin:0 0 10px;color:#a5b4fc;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;">Reply from Eugene</p>
-    <p style="margin:0;color:#e5e7eb;font-size:15px;line-height:1.7;">${reply}</p>
+    <p style="margin:0;color:#e5e7eb;font-size:15px;line-height:1.7;">${escapeHtml(reply)}</p>
   </td></tr>
 </table>
 ${cta('View in Dashboard', url)}`

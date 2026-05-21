@@ -5,9 +5,11 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!serviceKey) throw new Error('SUPABASE_SERVICE_ROLE_KEY is required')
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
+    serviceKey
   )
 
   console.log('[report] fetching diagnostic id:', params.id)

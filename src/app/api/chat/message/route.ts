@@ -117,14 +117,22 @@ If the user seems frustrated after multiple messages, if they ask about somethin
 
 TONE: Direct, confident, specific. Like a senior colleague not a chatbot. Never say "Great question!" or "I'd be happy to help!" Just answer.`
 
-    // 5. Call Claude
+    // 5. Sanitize conversation history
+    const safeHistory = (Array.isArray(conversationHistory) ? conversationHistory : [])
+      .filter((m): m is { role: 'user' | 'assistant'; content: string } =>
+        (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string'
+      )
+      .slice(-10)
+      .map(m => ({ role: m.role, content: m.content.slice(0, 2000) }))
+
+    // 6. Call Claude
     const stream = anthropic.messages.stream({
       model: 'claude-sonnet-4-6',
       max_tokens: 1000,
       thinking: { type: 'adaptive' },
       system: systemPrompt,
       messages: [
-        ...conversationHistory.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content })),
+        ...safeHistory,
         { role: 'user', content: message },
       ],
     })
@@ -134,22 +142,22 @@ TONE: Direct, confident, specific. Like a senior colleague not a chatbot. Never 
       .map(b => b.text)
       .join('')
 
-    // 6. Save messages to chat_messages
+    // 7. Save messages to chat_messages
     await supabase.from('chat_messages').insert([
       { user_id: user.id, role: 'user', content: message },
       { user_id: user.id, role: 'assistant', content: reply },
     ])
 
-    // 7. Check escalation signals
+    // 8. Check escalation signals
     const needsEscalation =
       reply.toLowerCase().includes('human review') ||
       reply.toLowerCase().includes('eugene') ||
-      conversationHistory.length >= 8
+      safeHistory.length >= 8
 
-    // 8. Suggested follow-ups — keeping simple
+    // 9. Suggested follow-ups — keeping simple
     const suggestedQuestions: string[] = []
 
-    // 9. Return
+    // 10. Return
     return NextResponse.json({ reply, needsEscalation, suggestedQuestions })
   } catch (err) {
     console.error('[chat/message] error:', err)

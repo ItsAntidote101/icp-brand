@@ -2,19 +2,23 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 
-const BLOCKED_PATTERNS = [
-  /^localhost$/i,
-  /^127\./,
-  /^10\./,
-  /^192\.168\./,
-  /^172\.(1[6-9]|2\d|3[01])\./,
-  /^::1$/,
-  /^0\./,
-  /^169\.254\./,
+const BLOCKED = [
+  'localhost', '127.0.0.1', '0.0.0.0', '::1', '[::1]', '[::]',
+  '169.254.169.254', // AWS metadata
 ]
 
 function isBlockedHost(hostname: string): boolean {
-  return BLOCKED_PATTERNS.some(p => p.test(hostname))
+  const h = hostname.toLowerCase()
+  if (BLOCKED.includes(h)) return true
+  if (h.startsWith('192.168.')) return true
+  if (h.startsWith('10.')) return true
+  if (h.startsWith('172.16.') || /^172\.(1[6-9]|2\d|3[01])\./.test(h)) return true
+  if (h.startsWith('::ffff:127.')) return true
+  if (h.startsWith('::ffff:192.168.')) return true
+  if (h.startsWith('::ffff:10.')) return true
+  if (h.startsWith('0.')) return true
+  if (h.startsWith('169.254.')) return true
+  return false
 }
 
 function extractMeta(html: string, name: string): string {

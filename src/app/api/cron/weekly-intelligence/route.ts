@@ -91,7 +91,7 @@ export async function GET(req: NextRequest) {
         .limit(1)
         .single()
 
-      if (existing) { console.log('[weekly-intel] already done for', user.email); continue }
+      if (existing) { continue }
 
       // Fetch questionnaire context
       const { data: qData } = await supabase
@@ -159,10 +159,9 @@ export async function GET(req: NextRequest) {
         recommendation,
       })
 
-      console.log('[weekly-intel] done for', user.email)
       processed++
     } catch (err) {
-      console.error('[weekly-intel] error for', user.email, err)
+      console.error('[weekly-intel] error processing user:', err)
       failed++
     }
   }

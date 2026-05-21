@@ -12,9 +12,11 @@ type CsvAnalysis = {
 }
 
 export async function POST(req: NextRequest) {
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!serviceKey) throw new Error('SUPABASE_SERVICE_ROLE_KEY is required')
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
+    serviceKey
   )
 
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY ?? '' })
@@ -26,10 +28,11 @@ export async function POST(req: NextRequest) {
     userEmail?: string
   }
 
-  console.log('[csv-analysis] file:', fileName, '| chars:', csvText?.length, '| user:', userEmail)
-
-  if (!csvText) {
+  if (typeof csvText !== 'string') {
     return NextResponse.json({ error: 'csvText is required' }, { status: 400 })
+  }
+  if (csvText.length > 500_000) {
+    return NextResponse.json({ error: 'File too large. Maximum 500KB.' }, { status: 413 })
   }
 
   const message = await anthropic.messages.create({
@@ -117,7 +120,7 @@ Rules:
       .eq('email', userEmail)
       .single()
     userId = user?.id ?? null
-    console.log('[csv-analysis] resolved user_id:', userId)
+    // user resolved
   }
 
   // ── Save to diagnostics table ─────────────────────────────────────────────

@@ -5,8 +5,6 @@ import crypto from 'crypto'
 export async function POST(req: NextRequest) {
   const rawBody = await req.text()
 
-  console.log('[webhook] received event — body length:', rawBody.length)
-
   // Verify Paystack HMAC signature
   const signature = req.headers.get('x-paystack-signature') ?? ''
   const expected  = crypto
@@ -15,11 +13,8 @@ export async function POST(req: NextRequest) {
     .digest('hex')
 
   if (signature !== expected) {
-    console.warn('[webhook] invalid signature — received:', signature, '| expected:', expected)
     return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
   }
-
-  console.log('[webhook] signature verified')
 
   let event: { event: string; data: Record<string, unknown> }
   try {
@@ -27,8 +22,6 @@ export async function POST(req: NextRequest) {
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
-
-  console.log('[webhook] event type:', event.event)
 
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
   if (!serviceKey) throw new Error('SUPABASE_SERVICE_ROLE_KEY is required')
@@ -57,17 +50,13 @@ export async function POST(req: NextRequest) {
       updated_at:         new Date().toISOString(),
     }
 
-    console.log('[webhook] charge.success — upserting users table:', JSON.stringify(upsertPayload, null, 2))
-
-    const { data: upsertData, error: upsertError } = await supabase
+    const { error: upsertError } = await supabase
       .from('users')
       .upsert(upsertPayload, { onConflict: 'email' })
       .select()
 
     if (upsertError) {
       console.error('[webhook] charge.success Supabase upsert error:', upsertError)
-    } else {
-      console.log('[webhook] charge.success Supabase upsert success:', JSON.stringify(upsertData, null, 2))
     }
   }
 
@@ -77,9 +66,8 @@ export async function POST(req: NextRequest) {
     }
 
     const email = data.customer.email
-    console.log('[webhook] subscription.disable — setting billing_status=inactive for:', email)
 
-    const { data: updateData, error: updateError } = await supabase
+    const { error: updateError } = await supabase
       .from('users')
       .update({ billing_status: 'inactive', updated_at: new Date().toISOString() })
       .eq('email', email)
@@ -87,11 +75,8 @@ export async function POST(req: NextRequest) {
 
     if (updateError) {
       console.error('[webhook] subscription.disable Supabase update error:', updateError)
-    } else {
-      console.log('[webhook] subscription.disable Supabase update success:', JSON.stringify(updateData, null, 2))
     }
   }
 
-  console.log('[webhook] done — returning 200')
   return NextResponse.json({ received: true })
 }

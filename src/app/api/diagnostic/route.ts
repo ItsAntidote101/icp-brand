@@ -167,9 +167,12 @@ REGIONAL CONTEXT — Global/Multiple Regions:
 }
 
 export async function POST(req: NextRequest) {
+  try {
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!serviceKey) throw new Error('SUPABASE_SERVICE_ROLE_KEY is required')
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
+    serviceKey
   )
 
   const anthropic = new Anthropic({
@@ -194,7 +197,7 @@ export async function POST(req: NextRequest) {
       userRecord.subscription_tier !== 'free'
     )
   }
-  console.log(`[diagnostic] email=${email} isSubscriber=${isSubscriber}`)
+  console.log(`[diagnostic] isSubscriber=${isSubscriber}`)
 
   const landingPageUrl: string = (responses[16] as string) ?? ''
   const geographicRegion: string = (responses[17] as string) ?? 'Global/Multiple Regions'
@@ -493,8 +496,7 @@ Rules:
 
   // ── Fire welcome email (non-blocking) ─────────────────────────────────────
   if (questionnaire?.user_id) {
-    const proto   = req.headers.get('x-forwarded-proto') ?? 'https'
-    const host    = req.headers.get('x-forwarded-host') ?? req.headers.get('host') ?? 'icpbrand.co'
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://icpbrand.co'
 
     supabase
       .from('users')
@@ -507,11 +509,16 @@ Rules:
             to: u.email,
             name: u.full_name ?? undefined,
             reportId: data.id,
-            baseUrl: `${proto}://${host}`,
+            baseUrl: appUrl,
           }).catch(e => console.error('[diagnostic] welcome email failed:', e))
         }
       })
   }
 
   return NextResponse.json({ id: data.id, diagnosis }, { status: 201 })
+  } catch (err) {
+    if (err instanceof Response) return err
+    console.error('[diagnostic] unhandled error:', err)
+    return NextResponse.json({ error: 'Internal error' }, { status: 500 })
+  }
 }

@@ -7,15 +7,11 @@ export async function GET(req: NextRequest) {
 
   const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://icpbrand.co'
 
-  console.log('[verify] received reference:', reference)
-
   if (!reference) {
-    console.log('[verify] no reference found in query params — redirecting to /cancel')
     return NextResponse.redirect(`${base}/cancel?reason=missing_reference`)
   }
 
   // Verify with Paystack
-  console.log('[verify] calling Paystack verify API for reference:', reference)
   let verifyData: Record<string, unknown>
   try {
     const verifyRes = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
@@ -24,14 +20,11 @@ export async function GET(req: NextRequest) {
       },
     })
     verifyData = await verifyRes.json()
-    console.log('[verify] Paystack response status:', verifyRes.status)
-    console.log('[verify] Paystack response body:', JSON.stringify(verifyData, null, 2))
 
     if (!verifyRes.ok || (verifyData.data as Record<string, unknown>)?.status !== 'success') {
       const reason = encodeURIComponent(
         ((verifyData.data as Record<string, unknown>)?.gateway_response as string) ?? 'payment_failed'
       )
-      console.log('[verify] payment not successful — gateway_response:', reason)
       return NextResponse.redirect(`${base}/cancel?reason=${reason}`)
     }
   } catch (err) {
@@ -44,8 +37,6 @@ export async function GET(req: NextRequest) {
   const metadata = data.metadata as Record<string, string> | undefined
   const email = customer.email
   const tier  = metadata?.tier ?? 'Starter'
-
-  console.log('[verify] payment confirmed — email:', email, '| tier:', tier)
 
   // Update Supabase
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -64,8 +55,6 @@ export async function GET(req: NextRequest) {
 
   if (lookupError && lookupError.code !== 'PGRST116') {
     console.warn('[verify] users lookup error:', lookupError)
-  } else {
-    console.log('[verify] existing user id:', existingUser?.id ?? '(none)', '| full_name:', existingUser?.full_name ?? '(none)')
   }
 
   const renewalDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
@@ -79,8 +68,6 @@ export async function GET(req: NextRequest) {
     updated_at:         new Date().toISOString(),
   }
 
-  console.log('[verify] upserting to users table:', JSON.stringify(upsertPayload, null, 2))
-
   const { data: upsertData, error: upsertError } = await supabase
     .from('users')
     .upsert(upsertPayload, { onConflict: 'email' })
@@ -89,8 +76,6 @@ export async function GET(req: NextRequest) {
 
   if (upsertError) {
     console.error('[verify] users upsert error:', JSON.stringify(upsertError))
-  } else {
-    console.log('[verify] users upsert success — id:', upsertData?.id)
   }
 
   // ── Write to subscriptions table ───────────────────────────────────────
@@ -105,9 +90,7 @@ export async function GET(req: NextRequest) {
       created_at:     new Date().toISOString(),
     }
 
-    console.log('[verify] inserting to subscriptions table:', JSON.stringify(subscriptionPayload, null, 2))
-
-    const { data: subData, error: subError } = await supabase
+    const { error: subError } = await supabase
       .from('subscriptions')
       .insert([subscriptionPayload])
       .select('id')
@@ -115,11 +98,7 @@ export async function GET(req: NextRequest) {
 
     if (subError) {
       console.error('[verify] subscriptions insert error:', JSON.stringify(subError))
-    } else {
-      console.log('[verify] subscriptions insert success — id:', subData?.id)
     }
-  } else {
-    console.warn('[verify] no user_id available — skipping subscriptions insert')
   }
 
   // ── Fire subscription confirmation email (non-blocking) ──────────────────
@@ -135,6 +114,5 @@ export async function GET(req: NextRequest) {
 
   const tierParam  = encodeURIComponent(tier)
   const emailParam = encodeURIComponent(email)
-  console.log('[verify] redirecting to /success — tier:', tier, '| ref:', reference, '| email:', email)
   return NextResponse.redirect(`${base}/success?email=${emailParam}&tier=${tierParam}&ref=${reference}`)
 }
