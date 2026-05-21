@@ -384,7 +384,7 @@ function ScoreHistoryWidget({ reports, latestReport, renewalDate, delay }: {
   )
 }
 
-function LandingPageWidget({ diag, delay }: { diag: DiagnosisData; delay: number }) {
+function LandingPageWidget({ diag, delay, onUpgrade }: { diag: DiagnosisData; delay: number; onUpgrade?: () => void }) {
   const [expanded, setExpanded] = useState(false)
 
   if (!diag.is_deep_research) {
@@ -394,10 +394,10 @@ function LandingPageWidget({ diag, delay }: { diag: DiagnosisData; delay: number
         <p style={{ fontFamily: fontB, fontSize: 14, color: 'rgba(48,33,97,0.75)', lineHeight: 1.75, margin: '0 0 20px' }}>
           Your landing page assessment will appear in your next report. Pro subscribers get a live AI review of their actual page — competitors, friction points, and conversion fixes.
         </p>
-        <Link href="/#pricing"
-          style={{ fontFamily: font, fontWeight: 600, fontSize: 13, color: P, textDecoration: 'none', opacity: 0.75 }}>
+        <button onClick={onUpgrade}
+          style={{ fontFamily: font, fontWeight: 600, fontSize: 13, color: P, background: 'none', border: 'none', cursor: 'pointer', padding: 0, opacity: 0.75 }}>
           See what Pro includes →
-        </Link>
+        </button>
       </Card>
     )
   }
@@ -1372,6 +1372,14 @@ function WelcomeBanner({ user }: { user: UserData }) {
         <p style={{ fontFamily: fontB, fontSize: 14, color: 'rgba(255,255,255,0.45)', margin: 0 }}>
           Here is where your marketing stands today.
         </p>
+        {user.scheduled_tier && user.scheduled_tier_date && (
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, marginTop: 8, background: 'rgba(255,255,255,0.12)', borderRadius: 100, padding: '4px 12px' }}>
+            <AlertTriangle size={11} color="#fbbf24" />
+            <span style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.75)' }}>
+              Downgrade to {TIER_LABEL[user.scheduled_tier] ?? user.scheduled_tier} on {formatDate(user.scheduled_tier_date)}
+            </span>
+          </div>
+        )}
       </div>
       <Link href="/questionnaire"
         style={{ fontFamily: font, fontWeight: 600, fontSize: 13, background: '#fff', color: P, padding: '12px 22px', borderRadius: 12, textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0 }}>
@@ -1722,17 +1730,24 @@ function ChangePlanConfirmModal({ newTier, currentTier, renewalDate, onClose, on
                 <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '0 0 2px', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>New monthly rate</p>
                 <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: 0 }}>KES {priceKES.toLocaleString()} / month</p>
               </div>
-              <div>
-                <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '0 0 2px', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>Prorated top-up due now</p>
-                <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: 0 }}>
-                  {topUpKes > 0 ? `KES ${topUpKes.toLocaleString()}` : 'None'}
-                </p>
-                {topUpKes > 0 && (
-                  <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '3px 0 0', lineHeight: 1.4 }}>
-                    Covers {days} remaining days. Full rate from {renewalLabel}.
+              {!renewalDate ? (
+                <div>
+                  <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '0 0 2px', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>Billing starts</p>
+                  <p style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: 0 }}>Today, then monthly</p>
+                </div>
+              ) : (
+                <div>
+                  <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '0 0 2px', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>Prorated top-up due now</p>
+                  <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: 0 }}>
+                    {topUpKes > 0 ? `KES ${topUpKes.toLocaleString()}` : 'None'}
                   </p>
-                )}
-              </div>
+                  {topUpKes > 0 && (
+                    <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '3px 0 0', lineHeight: 1.4 }}>
+                      Covers {days} remaining days. Full rate from {renewalLabel}.
+                    </p>
+                  )}
+                </div>
+              )}
             </>
           ) : (
             <>
@@ -1742,11 +1757,11 @@ function ChangePlanConfirmModal({ newTier, currentTier, renewalDate, onClose, on
               </div>
               <div>
                 <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '0 0 2px', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>Current features stay active until</p>
-                <p style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: 0 }}>{renewalLabel}</p>
+                <p style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: 0 }}>{renewalLabel || '—'}</p>
               </div>
               <div>
                 <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '0 0 2px', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>{label} billing starts</p>
-                <p style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: 0 }}>{renewalLabel}</p>
+                <p style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: 0 }}>{renewalLabel || '—'}</p>
               </div>
             </>
           )}
@@ -1957,13 +1972,15 @@ function InDashboardUpgradeModal({ user, onClose, onUpgraded }: {
                   <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1px solid ${Pborder}` }}>
                     {isUpgrade ? (
                       <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: 0, lineHeight: 1.5 }}>
-                        {topUp > 0
-                          ? `KES ${topUp.toLocaleString()} due now (prorated for ${days} remaining days), then KES ${price.toLocaleString()} / month from ${renewalLabel()}.`
-                          : `Activates immediately. Next charge: KES ${price.toLocaleString()} on ${renewalLabel()}.`}
+                        {!user.renewal_date
+                          ? `Activates immediately. KES ${price.toLocaleString()} / month billed from today.`
+                          : topUp > 0
+                            ? `KES ${topUp.toLocaleString()} due now (prorated for ${days} days remaining), then KES ${price.toLocaleString()} / month from ${renewalLabel()}.`
+                            : `Activates immediately. Next charge: KES ${price.toLocaleString()} on ${renewalLabel()}.`}
                       </p>
                     ) : isDowngrade ? (
                       <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: 0, lineHeight: 1.5 }}>
-                        {TIER_LABEL[user.subscription_tier]} features stay active until {renewalLabel()}.{' '}
+                        {TIER_LABEL[user.subscription_tier]} features stay active until {renewalLabel() || 'your renewal date'}.{' '}
                         {TIER_LABEL[tier]} billing starts after that. No charge today.
                       </p>
                     ) : null}
@@ -2132,6 +2149,22 @@ function AccountTab({ user, currency, score, reportCount, onSignOut, onCancelled
           </div>
         </div>
       </div>
+
+      {/* Pending downgrade notice */}
+      {user.scheduled_tier && user.scheduled_tier_date && (
+        <div style={{ background: '#fffbeb', border: '1.5px solid #fcd34d', borderRadius: 14, padding: '14px 18px', display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+          <AlertTriangle size={16} color="#d97706" style={{ flexShrink: 0, marginTop: 2 }} />
+          <div style={{ flex: 1 }}>
+            <p style={{ fontFamily: font, fontSize: 13, fontWeight: 700, color: '#92400e', margin: '0 0 2px' }}>
+              Downgrade to {TIER_LABEL[user.scheduled_tier] ?? user.scheduled_tier} scheduled
+            </p>
+            <p style={{ fontFamily: fontB, fontSize: 12, color: '#b45309', margin: 0, lineHeight: 1.5 }}>
+              Your current {TIER_LABEL[user.subscription_tier]} features stay active until{' '}
+              {formatDate(user.scheduled_tier_date)}. After that, {TIER_LABEL[user.scheduled_tier] ?? user.scheduled_tier} billing begins.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Change Plan Panel — slides open */}
       <div style={{ overflow: 'hidden', maxHeight: showChangePlan ? 900 : 0, opacity: showChangePlan ? 1 : 0, transition: 'max-height 0.35s ease, opacity 0.25s ease' }}>
