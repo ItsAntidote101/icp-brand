@@ -1,6 +1,6 @@
 import { Resend } from 'resend'
 
-const FROM = 'ICP Brand <noreply@icpbrand.co>'
+const FROM = 'ICP Brand <noreply@idealicp.com>'
 
 function escapeHtml(s: string): string {
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;')
@@ -33,7 +33,7 @@ function base(content: string): string {
           <td style="padding:18px 36px 26px;border-top:1px solid rgba(255,255,255,0.06);">
             <p style="margin:0;color:#374151;font-size:12px;line-height:1.6;">
               You're receiving this because you have an account with ICP Brand.
-              Questions? <a href="mailto:support@icpbrand.co" style="color:#6366f1;text-decoration:none;">support@icpbrand.co</a>
+              Questions? <a href="mailto:support@idealicp.com" style="color:#6366f1;text-decoration:none;">support@idealicp.com</a>
             </p>
           </td>
         </tr>
@@ -57,7 +57,7 @@ function cta(label: string, href: string): string {
 export async function sendWelcomeEmail({
   to, name, reportId, baseUrl,
 }: { to: string; name?: string; reportId: string; baseUrl?: string }) {
-  const url = `${baseUrl ?? 'https://icpbrand.co'}/report/${reportId}`
+  const url = `${baseUrl ?? 'https://idealicp.com'}/report/${reportId}`
   const first = name?.split(' ')[0] ?? 'there'
 
   const rows = [
@@ -98,7 +98,7 @@ ${cta('View Your Report', url)}
 export async function sendSubscriptionEmail({
   to, name, tier, renewalDate, baseUrl,
 }: { to: string; name?: string; tier: string; renewalDate: string; baseUrl?: string }) {
-  const url = `${baseUrl ?? 'https://icpbrand.co'}/dashboard`
+  const url = `${baseUrl ?? 'https://idealicp.com'}/dashboard`
   const first = name?.split(' ')[0] ?? 'there'
   const tierLabel = tier.charAt(0).toUpperCase() + tier.slice(1)
   const renewal = new Date(renewalDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -147,7 +147,7 @@ ${cta('Go to Your Dashboard', url)}`
 export async function sendReminderEmail({
   to, name, lastScore, baseUrl,
 }: { to: string; name?: string; lastScore?: number; baseUrl?: string }) {
-  const url = `${baseUrl ?? 'https://icpbrand.co'}/questionnaire`
+  const url = `${baseUrl ?? 'https://idealicp.com'}/questionnaire`
   const first = name?.split(' ')[0] ?? 'there'
 
   const scoreHtml = lastScore !== undefined
@@ -259,7 +259,7 @@ export async function sendSessionConfirmationToUser({
     </tr></table>`).join('')}
   </td></tr>
 </table>
-<p style="margin:0 0 0;color:#6b7280;font-size:13px;">Questions? Reply to this email or reach us at <a href="mailto:support@icpbrand.co" style="color:#6366f1;text-decoration:none;">support@icpbrand.co</a></p>`
+<p style="margin:0 0 0;color:#6b7280;font-size:13px;">Questions? Reply to this email or reach us at <a href="mailto:support@idealicp.com" style="color:#6366f1;text-decoration:none;">support@idealicp.com</a></p>`
 
   const { data, error } = await getResend().emails.send({
     from: FROM, to,
@@ -302,7 +302,7 @@ export async function sendCancellationToUser({
     </table>
   </td></tr>
 </table>
-<p style="margin:0 0 0;color:#6b7280;font-size:13px;">Changed your mind? Reply to this email and we will sort it out. Or reach us at <a href="mailto:support@icpbrand.co" style="color:#6366f1;text-decoration:none;">support@icpbrand.co</a></p>`
+<p style="margin:0 0 0;color:#6b7280;font-size:13px;">Changed your mind? Reply to this email and we will sort it out. Or reach us at <a href="mailto:support@idealicp.com" style="color:#6366f1;text-decoration:none;">support@idealicp.com</a></p>`
 
   const { data, error } = await getResend().emails.send({
     from: FROM, to,
@@ -389,7 +389,7 @@ export async function sendPlanChangedToUser({
     </table>
   </td></tr>
 </table>
-${cta('Go to Dashboard', 'https://icpbrand.co/dashboard')}`
+${cta('Go to Dashboard', 'https://idealicp.com/dashboard')}`
 
   const { data, error } = await getResend().emails.send({
     from: FROM, to,
@@ -458,7 +458,7 @@ export async function sendPausedToUser({
     </table>
   </td></tr>
 </table>
-${cta('Resume Early', 'https://icpbrand.co/dashboard')}`
+${cta('Resume Early', 'https://idealicp.com/dashboard')}`
 
   const { data, error } = await getResend().emails.send({
     from: FROM, to,
@@ -574,7 +574,7 @@ export async function sendWeeklyIntelligenceEmail({
   </td></tr>
 </table>
 
-${cta('View Full Briefing', 'https://icpbrand.co/dashboard')}`
+${cta('View Full Briefing', 'https://idealicp.com/dashboard')}`
 
   const { data, error } = await getResend().emails.send({
     from: FROM, to,
@@ -672,7 +672,7 @@ export async function sendEscalationConfirmationToUser({
     </table>
   </td></tr>
 </table>
-${cta('Go to Dashboard', 'https://icpbrand.co/dashboard')}`
+${cta('Go to Dashboard', 'https://idealicp.com/dashboard')}`
 
   const { data, error } = await getResend().emails.send({
     from: FROM, to,
@@ -692,7 +692,7 @@ export async function sendAdminReplyToUser({
   to: string; name: string; reply: string; dashboardUrl?: string
 }) {
   const first = escapeHtml(name?.split(' ')[0] ?? 'there')
-  const url = dashboardUrl ?? 'https://icpbrand.co/dashboard'
+  const url = dashboardUrl ?? 'https://idealicp.com/dashboard'
 
   const content = `
 <h1 style="margin:0 0 10px;color:#ffffff;font-size:24px;font-weight:800;line-height:1.2;letter-spacing:-0.5px;">Eugene replied to your question.</h1>
@@ -721,7 +721,7 @@ export async function sendAccountCreatedEmail({
   to, name,
 }: { to: string; name?: string }) {
   const first = name?.split(' ')[0] ?? 'there'
-  const url = 'https://icpbrand.co/questionnaire'
+  const url = 'https://idealicp.com/questionnaire'
 
   const content = `
 <h1 style="margin:0 0 10px;color:#ffffff;font-size:26px;font-weight:800;line-height:1.2;letter-spacing:-0.5px;">Welcome to ICP Brand</h1>

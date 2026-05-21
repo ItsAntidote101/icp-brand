@@ -5,7 +5,7 @@ import { sendSubscriptionEmail } from '@/lib/email'
 export async function GET(req: NextRequest) {
   const reference = req.nextUrl.searchParams.get('reference') ?? req.nextUrl.searchParams.get('trxref')
 
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://icpbrand.co'
+  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://idealicp.com'
 
   if (!reference) {
     return NextResponse.redirect(`${base}/cancel?reason=missing_reference`)

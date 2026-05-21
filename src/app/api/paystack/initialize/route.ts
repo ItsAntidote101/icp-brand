@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
 
   const amount = PRICES[tier]
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://icpbrand.co'
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://idealicp.com'
   const callbackUrl = `${appUrl}/api/paystack/verify`
 
   const paystackRes = await fetch('https://api.paystack.co/transaction/initialize', {

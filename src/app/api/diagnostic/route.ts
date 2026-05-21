@@ -496,7 +496,7 @@ Rules:
 
   // ── Fire welcome email (non-blocking) ─────────────────────────────────────
   if (questionnaire?.user_id) {
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://icpbrand.co'
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://idealicp.com'
 
     supabase
       .from('users')

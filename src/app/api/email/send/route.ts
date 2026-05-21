@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://icpbrand.co'
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://idealicp.com'
   const baseUrl = appUrl
 
   const body = await req.json()

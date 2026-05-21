@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     serviceKey
   )
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://icpbrand.co'
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://idealicp.com'
 
   const now            = new Date()
   const sevenDaysLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)

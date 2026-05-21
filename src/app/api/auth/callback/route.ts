@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const code  = searchParams.get('code')
   const next  = searchParams.get('next') ?? '/dashboard'
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://icpbrand.co'
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://idealicp.com'
 
   if (!code) {
     return NextResponse.redirect(`${appUrl}/auth?error=no_code`)

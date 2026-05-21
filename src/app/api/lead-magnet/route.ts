@@ -9,8 +9,8 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
 )
 const resend = new Resend(process.env.RESEND_API_KEY ?? '')
-const FROM   = 'ICP Brand <noreply@icpbrand.co>'
-const BASE   = 'https://icpbrand.co'
+const FROM   = 'ICP Brand <noreply@idealicp.com>'
+const BASE   = 'https://idealicp.com'
 
 function base(content: string): string {
   return `<!DOCTYPE html>
