@@ -3438,6 +3438,24 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
   )
 }
 
+function HelpFAQItem({ question, answer, font, fontB, P, Pmuted, Pborder }: {
+  question: string; answer: string; font: string; fontB: string; P: string; Pmuted: string; Pborder: string
+}) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div style={{ borderBottom: `1px solid ${Pborder}`, marginBottom: 0 }}>
+      <button onClick={() => setOpen(v => !v)}
+        style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '14px 0', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
+        <span style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, color: P, lineHeight: 1.4 }}>{question}</span>
+        {open ? <ChevronUp size={16} color={Pmuted} /> : <ChevronDown size={16} color={Pmuted} />}
+      </button>
+      {open && (
+        <p style={{ fontFamily: font, fontSize: 13, color: 'rgba(48,33,97,0.75)', lineHeight: 1.65, margin: '0 0 14px', paddingRight: 8 }}>{answer}</p>
+      )}
+    </div>
+  )
+}
+
 export default function DashboardPage() {
   const router = useRouter()
 
@@ -3455,6 +3473,8 @@ export default function DashboardPage() {
   const [newAchievement,  setNewAchievement]  = useState<{ name: string; description: string; color: string; iconName: string } | null>(null)
   const [intelligenceSeenThisSession, setIntelligenceSeenThisSession] = useState(false)
   const [reportsError,    setReportsError]    = useState(false)
+  const [showNotifications, setShowNotifications] = useState(false)
+  const [showHelp,          setShowHelp]          = useState(false)
 
   // Load currency preference on mount
   useEffect(() => {
@@ -3595,6 +3615,23 @@ export default function DashboardPage() {
     (Date.now() - new Date(user.last_seen_intelligence_at).getTime()) > 7 * 86_400_000
   ) : false
 
+  const prevScore = reports.length >= 2 ? getScore(parseDiagnosis(reports[1].report_summary)) : null
+  const scoreDeltaMain = score !== null && prevScore !== null ? score - prevScore : null
+
+  const notifications = useMemo(() => {
+    const ns: { id: string; icon: React.ReactNode; text: string; sub: string; color: string; action?: () => void }[] = []
+    if (hasNewIntelligence)
+      ns.push({ id: 'intel', icon: <Brain size={15} />, text: 'New intelligence briefing ready', sub: 'This week', color: '#22c55e', action: () => { setShowNotifications(false); setActiveTab('intelligence') } })
+    if (user?.has_unread_reply)
+      ns.push({ id: 'reply', icon: <MessageCircle size={15} />, text: 'New reply from your advisor', sub: 'Unread', color: '#a855f7' })
+    if (scoreDeltaMain !== null && scoreDeltaMain !== 0)
+      ns.push({ id: 'score', icon: <TrendingUp size={15} />, text: `ICP score ${scoreDeltaMain > 0 ? 'improved' : 'dropped'} ${Math.abs(scoreDeltaMain)} points`, sub: 'Since last report', color: scoreDeltaMain > 0 ? '#22c55e' : '#ef4444', action: () => { setShowNotifications(false); setActiveTab('reports') } })
+    if (!hasReports)
+      ns.push({ id: 'start', icon: <Zap size={15} />, text: 'Run your first diagnosis to unlock your dashboard', sub: 'Action needed', color: '#f59e0b' })
+    return ns
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasNewIntelligence, user?.has_unread_reply, scoreDeltaMain, hasReports])
+
   const TAB_ICONS: Record<Tab, React.ReactNode> = {
     overview:     <LayoutDashboard size={20} />,
     intelligence: <Brain size={20} />,
@@ -3651,17 +3688,20 @@ export default function DashboardPage() {
             </div>
           </div>
           {/* Milestone badge row */}
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            {MILESTONE_DEFS.map(def => {
-              const earned = milestones.find(m => m.key === def.key)?.earned ?? false
-              return (
-                <div key={def.key} title={earned ? def.name : def.unlock_hint}
-                  style={{ width: 28, height: 28, borderRadius: '50%', background: earned ? def.color + '20' : '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: earned ? 1 : 0.4, transition: 'opacity 0.2s', flexShrink: 0 }}>
-                  <def.Icon size={14} color={earned ? def.color : '#9ca3af'} />
-                </div>
-              )
-            })}
-          </div>
+          <button onClick={() => setActiveTab('account')} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left', width: '100%' }}>
+            <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: Pmuted, margin: '0 0 6px' }}>Achievements</p>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {MILESTONE_DEFS.map(def => {
+                const earned = milestones.find(m => m.key === def.key)?.earned ?? false
+                return (
+                  <div key={def.key} title={earned ? def.name : def.unlock_hint}
+                    style={{ width: 28, height: 28, borderRadius: '50%', background: earned ? def.color + '20' : '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: earned ? 1 : 0.4, transition: 'opacity 0.2s', flexShrink: 0 }}>
+                    <def.Icon size={14} color={earned ? def.color : '#9ca3af'} />
+                  </div>
+                )
+              })}
+            </div>
+          </button>
         </div>
 
         {/* Nav items */}
@@ -3699,11 +3739,11 @@ export default function DashboardPage() {
 
           <div style={{ margin: '12px 0', borderTop: `1px solid ${Pborder}` }} />
 
-          <a href="mailto:support@idealicp.com"
-            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', textAlign: 'left', background: 'transparent', color: 'rgba(48,33,97,0.6)', fontFamily: fontB, fontSize: 13, fontWeight: 500, textDecoration: 'none' }}>
+          <button onClick={() => setShowHelp(true)} className="sidebar-nav-item"
+            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', textAlign: 'left', background: 'transparent', color: 'rgba(48,33,97,0.6)', fontFamily: fontB, fontSize: 13, fontWeight: 500 }}>
             <HelpCircle size={18} />
             Help & Support
-          </a>
+          </button>
           <button onClick={handleSignOut} className="sidebar-nav-item"
             style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', marginTop: 2, textAlign: 'left', background: 'transparent', color: 'rgba(48,33,97,0.6)', fontFamily: fontB, fontSize: 13, fontWeight: 500 }}>
             <LogOut size={18} />
@@ -3752,12 +3792,48 @@ export default function DashboardPage() {
         <div className="hidden lg:flex" style={{ alignItems: 'center', justifyContent: 'space-between', padding: '28px 40px 0', gap: 16 }}>
           <h1 style={{ fontFamily: font, fontSize: 22, fontWeight: 700, color: P, margin: 0, letterSpacing: '-0.02em' }}>{TAB_LABELS[activeTab]}</h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <button onClick={() => setActiveTab('overview')} style={{ display: 'flex', alignItems: 'center', gap: 7, background: P, color: '#fff', border: 'none', borderRadius: 10, padding: '9px 18px', fontFamily: fontB, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+            <Link href="/questionnaire" style={{ display: 'flex', alignItems: 'center', gap: 7, background: P, color: '#fff', border: 'none', borderRadius: 10, padding: '9px 18px', fontFamily: fontB, fontSize: 13, fontWeight: 600, cursor: 'pointer', textDecoration: 'none' }}>
               <Zap size={14} /> Run New Diagnosis
-            </button>
-            <button style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 10, width: 38, height: 38, cursor: 'pointer' }}>
-              <Bell size={16} color={Pmuted} />
-            </button>
+            </Link>
+            {/* Bell notification button */}
+            <div style={{ position: 'relative' }}>
+              <button onClick={() => setShowNotifications(v => !v)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 10, width: 38, height: 38, cursor: 'pointer', position: 'relative' }}>
+                <Bell size={16} color={notifications.length > 0 ? P : Pmuted} />
+                {notifications.length > 0 && (
+                  <span style={{ position: 'absolute', top: 7, right: 7, width: 7, height: 7, borderRadius: '50%', background: '#ef4444', border: '1.5px solid #fff' }} />
+                )}
+              </button>
+              {showNotifications && (
+                <>
+                  <div onClick={() => setShowNotifications(false)} style={{ position: 'fixed', inset: 0, zIndex: 90 }} />
+                  <div style={{ position: 'absolute', top: 46, right: 0, zIndex: 100, width: 320, background: '#fff', borderRadius: 16, boxShadow: '0 8px 32px rgba(48,33,97,0.14)', border: `1px solid ${Pborder}`, overflow: 'hidden' }}>
+                    <div style={{ padding: '16px 20px 12px', borderBottom: `1px solid ${Pborder}` }}>
+                      <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: Pmuted, margin: 0 }}>Notifications</p>
+                    </div>
+                    {notifications.length === 0 ? (
+                      <div style={{ padding: '28px 20px', textAlign: 'center' }}>
+                        <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: 0 }}>No new notifications</p>
+                      </div>
+                    ) : (
+                      <div style={{ padding: '8px 0' }}>
+                        {notifications.map(n => (
+                          <button key={n.id} onClick={n.action ?? (() => setShowNotifications(false))}
+                            style={{ width: '100%', display: 'flex', alignItems: 'flex-start', gap: 12, padding: '12px 20px', background: 'transparent', border: 'none', cursor: n.action ? 'pointer' : 'default', textAlign: 'left' }}>
+                            <div style={{ width: 30, height: 30, borderRadius: '50%', background: n.color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
+                              <span style={{ color: n.color }}>{n.icon}</span>
+                            </div>
+                            <div>
+                              <p style={{ fontFamily: fontB, fontSize: 13, color: P, margin: '0 0 2px', lineHeight: 1.4 }}>{n.text}</p>
+                              <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: 0 }}>{n.sub}</p>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
@@ -4008,6 +4084,50 @@ export default function DashboardPage() {
         <div style={{ position: 'fixed', bottom: 80, left: '50%', transform: 'translateX(-50%)', zIndex: 200, background: P, color: '#fff', fontFamily: fontB, fontSize: 13, fontWeight: 500, padding: '12px 22px', borderRadius: 100, boxShadow: '0 8px 32px rgba(48,33,97,0.25)', whiteSpace: 'nowrap', animation: 'slideUp 0.25s ease both' }}>
           {cancelToast}
         </div>
+      )}
+
+      {/* ── Help & Support slide-over ─────────────────────────────────────── */}
+      {showHelp && (
+        <>
+          <div onClick={() => setShowHelp(false)} style={{ position: 'fixed', inset: 0, zIndex: 1090, background: 'rgba(0,0,0,0.25)' }} />
+          <div style={{ position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 1095, width: 'min(440px, 100vw)', background: '#fff', boxShadow: '-8px 0 48px rgba(48,33,97,0.12)', display: 'flex', flexDirection: 'column', animation: 'slideUp 0.2s ease both' }}>
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '24px 28px 20px', borderBottom: `1px solid ${Pborder}` }}>
+              <div>
+                <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: '0 0 2px' }}>Help & Support</p>
+                <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: 0 }}>Common questions and how to get help</p>
+              </div>
+              <button onClick={() => setShowHelp(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: Pmuted, display: 'flex' }}>
+                <X size={20} />
+              </button>
+            </div>
+            {/* Body */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '20px 28px' }}>
+              {/* Quick actions */}
+              <div style={{ display: 'flex', gap: 10, marginBottom: 24 }}>
+                <button onClick={() => { setShowHelp(false) }} style={{ flex: 1, background: P, color: '#fff', border: 'none', borderRadius: 12, padding: '12px 16px', fontFamily: fontB, fontSize: 13, fontWeight: 600, cursor: 'pointer', textAlign: 'center' }}>
+                  Chat with AI Advisor
+                </button>
+              </div>
+              {/* FAQ */}
+              {[
+                { q: 'What is my ICP health score?', a: 'Your ICP (Ideal Customer Profile) health score is a 0-100 score that measures how precisely your ad targeting, messaging, and budget allocation match your actual best buyers. A score below 50 means significant budget is being wasted on audiences unlikely to convert.' },
+                { q: 'How is my monthly waste estimate calculated?', a: 'It is derived from your ICP score, budget size, industry benchmarks, and the specific misalignments found in your diagnostic. It represents the estimated portion of your monthly ad spend reaching audiences with a low probability of converting.' },
+                { q: 'How do I improve my score?', a: 'Start with the quick wins on your Overview tab. Each one is ranked by impact and includes a specific action. After implementing fixes, run a new diagnosis to see your updated score. Most users see a 10-20 point improvement after addressing their top finding.' },
+                { q: 'What is the Intelligence tab?', a: 'The Intelligence tab gives you weekly competitive research for your specific market and region. It shows benchmark CPAs, ad spend trends from competitors, and audience shifts. Starter plan and above gets this automatically each Monday.' },
+                { q: 'How does the AI chat work?', a: 'The chat is powered by Claude and has read access to your full diagnostic, findings, quick wins, score history, and market intelligence. It acts as a senior media buyer who knows your account. Use it to write ad copy, get tactical advice, or work through a specific finding.' },
+                { q: 'How do I upgrade or cancel my plan?', a: 'Go to the Account tab and scroll to the Subscription section. You can upgrade, downgrade, or cancel from there. Refunds are not available per our terms, but you retain access until the end of your billing period.' },
+                { q: 'Is my data secure?', a: 'Yes. Your data is stored on Supabase (EU region) with row-level security. Questionnaire answers and reports are tied to your account only. See the Security and Data section in Account settings for export and deletion options.' },
+              ].map(({ q, a }) => (
+                <HelpFAQItem key={q} question={q} answer={a} font={font} fontB={fontB} P={P} Pmuted={Pmuted} Pborder={Pborder} />
+              ))}
+            </div>
+            {/* Footer */}
+            <div style={{ padding: '16px 28px 28px', borderTop: `1px solid ${Pborder}` }}>
+              <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '0 0 4px' }}>Still stuck? Use the AI chat or escalate to a human advisor from the chat panel.</p>
+            </div>
+          </div>
+        </>
       )}
 
       {/* ── Chat Widget ───────────────────────────────────────────────────── */}
