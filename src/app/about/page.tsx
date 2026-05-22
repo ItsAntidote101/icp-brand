@@ -590,10 +590,12 @@ export default function AboutPage() {
           {/* Nav links */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24 }}>
             {[
-              { label: 'Home',          href: '/' },
+              { label: 'Home',           href: '/' },
               { label: 'Questionnaire', href: '/questionnaire' },
               { label: 'Dashboard',     href: '/dashboard' },
               { label: 'About',         href: '/about' },
+              { label: 'Privacy',       href: '/privacy' },
+              { label: 'Terms',         href: '/terms' },
             ].map((link) => (
               <Link key={link.href} href={link.href} style={{
                 fontFamily: fontB,

@@ -811,6 +811,14 @@ export default function QuestionnairePage() {
           {apiError && (
             <p className="mt-4 text-sm text-red-400 bg-red-900/20 border border-red-800/40 rounded-lg px-4 py-3">{apiError}</p>
           )}
+          {isLast && (
+            <p className="mt-4 text-xs text-slate-600 text-center">
+              By submitting you agree to our{' '}
+              <a href="/terms" className="underline hover:text-slate-400 transition-colors">Terms</a>
+              {' '}and{' '}
+              <a href="/privacy" className="underline hover:text-slate-400 transition-colors">Privacy Policy</a>.
+            </p>
+          )}
           {!isLast && !canProceed() && (
             <p className="mt-3 text-xs text-slate-600">Answer to continue — all questions help improve your diagnosis.</p>
           )}
