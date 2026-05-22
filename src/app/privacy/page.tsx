@@ -74,7 +74,7 @@ export default function PrivacyPage() {
       <div style={{ maxWidth: 760, margin: '0 auto', padding: '72px 24px 120px' }}>
 
         <Section title="1. Who We Are">
-          <Para>ICP Diagnostic operates the website idealicp.com and the ICP Diagnostic platform. We are based in Nairobi, Kenya. For any privacy-related questions, contact us at <a href="mailto:eugene@idealicp.com" style={{ color: P, fontWeight: 600 }}>eugene@idealicp.com</a>.</Para>
+          <Para>ICP Diagnostic operates the website idealicp.com and the ICP Diagnostic platform. We are based in Nairobi, Kenya. For any privacy-related questions, contact us at <a href="mailto:support@idealicp.com" style={{ color: P, fontWeight: 600 }}>support@idealicp.com</a>.</Para>
         </Section>
 
         <Section title="2. Information We Collect">
@@ -171,7 +171,7 @@ export default function PrivacyPage() {
             <li><strong>Objection:</strong> Object to processing based on legitimate interest</li>
             <li><strong>Withdrawal of consent:</strong> Where processing is based on consent, withdraw it at any time</li>
           </ul>
-          <Para>To exercise any of these rights, email us at <a href="mailto:eugene@idealicp.com" style={{ color: P, fontWeight: 600 }}>eugene@idealicp.com</a>. We will respond within 30 days.</Para>
+          <Para>To exercise any of these rights, email us at <a href="mailto:support@idealicp.com" style={{ color: P, fontWeight: 600 }}>support@idealicp.com</a>. We will respond within 30 days.</Para>
         </Section>
 
         <Section title="10. Children's Privacy">
@@ -204,7 +204,7 @@ export default function PrivacyPage() {
           }}>
             <strong style={{ color: P, display: 'block', marginBottom: 4 }}>ICP Diagnostic</strong>
             Nairobi, Kenya<br />
-            <a href="mailto:eugene@idealicp.com" style={{ color: P, fontWeight: 600 }}>eugene@idealicp.com</a><br />
+            <a href="mailto:support@idealicp.com" style={{ color: P, fontWeight: 600 }}>support@idealicp.com</a><br />
             <a href="https://idealicp.com" style={{ color: P }}>idealicp.com</a>
           </div>
         </Section>

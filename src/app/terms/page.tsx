@@ -80,7 +80,7 @@ export default function TermsPage() {
 
         <Section title="2. About ICP Diagnostic">
           <Para>ICP Diagnostic is a software-as-a-service platform that helps marketing teams identify their ideal customer profile, audit their targeting, and reduce wasted ad spend. The platform is operated by ICP Diagnostic, based in Nairobi, Kenya.</Para>
-          <Para>You can reach us at <a href="mailto:eugene@idealicp.com" style={{ color: P, fontWeight: 600 }}>eugene@idealicp.com</a>.</Para>
+          <Para>You can reach us at <a href="mailto:info@idealicp.com" style={{ color: P, fontWeight: 600 }}>info@idealicp.com</a>.</Para>
         </Section>
 
         <Section title="3. Eligibility">
@@ -100,7 +100,7 @@ export default function TermsPage() {
         </Section>
 
         <Section title="6. Refunds">
-          <Para>All payments are non-refundable except where required by applicable law. If you believe a charge was made in error, contact us within 7 days of the charge at <a href="mailto:eugene@idealicp.com" style={{ color: P, fontWeight: 600 }}>eugene@idealicp.com</a> and we will investigate promptly.</Para>
+          <Para>All payments are non-refundable except where required by applicable law. If you believe a charge was made in error, contact us within 7 days of the charge at <a href="mailto:finance@idealicp.com" style={{ color: P, fontWeight: 600 }}>finance@idealicp.com</a> and we will investigate promptly.</Para>
           <Para>Cancelling a subscription does not entitle you to a refund for any unused portion of the current billing period.</Para>
         </Section>
 
@@ -176,7 +176,7 @@ export default function TermsPage() {
           }}>
             <strong style={{ color: P, display: 'block', marginBottom: 4 }}>ICP Diagnostic</strong>
             Nairobi, Kenya<br />
-            <a href="mailto:eugene@idealicp.com" style={{ color: P, fontWeight: 600 }}>eugene@idealicp.com</a><br />
+            <a href="mailto:info@idealicp.com" style={{ color: P, fontWeight: 600 }}>info@idealicp.com</a><br />
             <a href="https://idealicp.com" style={{ color: P }}>idealicp.com</a>
           </div>
         </Section>
