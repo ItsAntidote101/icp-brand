@@ -583,7 +583,7 @@ export default function Page() {
               <span style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: '#fff' }}>ICP Diagnostic</span>
             </Link>
             <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'center' }}>
-              {[['About', '/about'], ['Privacy', '/privacy'], ['Terms', '/terms'], ['Contact', 'mailto:hello@idealicp.com']].map(([label, href]) => (
+              {[['About', '/about'], ['Privacy', '/privacy'], ['Terms', '/terms'], ['Contact', 'mailto:eugene@idealicp.com']].map(([label, href]) => (
                 <Link key={label} href={href} style={{ fontFamily: fontB, fontSize: 13, color: 'rgba(255,255,255,0.4)', textDecoration: 'none' }}>{label}</Link>
               ))}
             </div>
