@@ -630,9 +630,13 @@ export default function ReportPage({ params }: { params: { id: string } }) {
         <footer className="border-t border-white/10 pt-8 pb-4 text-center text-slate-600 text-xs">
           <span>ICP<span className="text-indigo-400/50">Diagnostic</span></span>
           <span className="mx-2">·</span>
-          <Link href="/" className="hover:text-slate-400 transition-colors">← Back to Home</Link>
+          <Link href="/" className="hover:text-slate-400 transition-colors">Back to Home</Link>
           <span className="mx-2">·</span>
           <Link href="/questionnaire" className="hover:text-slate-400 transition-colors">Retake Diagnostic</Link>
+          <span className="mx-2">·</span>
+          <Link href="/privacy" className="hover:text-slate-400 transition-colors">Privacy</Link>
+          <span className="mx-2">·</span>
+          <Link href="/terms" className="hover:text-slate-400 transition-colors">Terms</Link>
         </footer>
       </div>
     </div>
