@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -484,20 +484,72 @@ function CampaignInsightsWidget({ delay }: { delay: number }) {
 
 // ─── New Overview Components ──────────────────────────────────────────────────
 
-function DailyBriefCard({ diag, reports, score, hasIntelligence, onTabChange }: {
+function DailyBriefCard({ diag, reports, score, hasIntelligence, onTabChange, user }: {
   diag: DiagnosisData; reports: ReportRow[]; score: number | null
-  hasIntelligence: boolean; onTabChange: (tab: Tab) => void
+  hasIntelligence: boolean; onTabChange: (tab: Tab) => void; user: UserData
 }) {
   const findings   = getFindings(diag)
   const topFinding = findings[0]
   const secondF    = findings[1]
   const waste      = parseWaste(diag.monthly_waste_estimate)
   const daysSince  = reports[0] ? daysBetween(reports[0].generated_at) : 0
-  const dailyWaste = Math.round(waste.amount / 30)
-  const costAccum  = dailyWaste * daysSince
-
   const prevScore  = reports.length >= 2 ? getScore(parseDiagnosis(reports[1].report_summary)) : null
   const delta      = score !== null && prevScore !== null ? score - prevScore : null
+
+  const [briefText, setBriefText] = useState<string>('')
+  const [briefLoading, setBriefLoading] = useState(true)
+
+  useEffect(() => {
+    const todayKey = `daily_brief_${user.email}_${new Date().toISOString().slice(0, 10)}`
+    const cached = localStorage.getItem(todayKey)
+    if (cached) {
+      setBriefText(cached)
+      setBriefLoading(false)
+      return
+    }
+    setBriefLoading(true)
+    fetch('/api/daily-brief', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        score,
+        prevScore,
+        topFinding: topFinding?.title ?? null,
+        secondFinding: secondF?.title ?? null,
+        daysSinceDiagnosis: daysSince,
+        monthlyWasteKES: waste.amount,
+        fixesCompleted: user.total_fixes_completed ?? 0,
+        streak: user.current_streak ?? 0,
+        hasNewIntelligence: hasIntelligence,
+        companyName: user.company_name ?? null,
+      }),
+    })
+      .then(r => r.json())
+      .then((d: { brief?: string }) => {
+        if (d.brief) {
+          setBriefText(d.brief)
+          localStorage.setItem(todayKey, d.brief)
+        }
+      })
+      .catch(() => {/* fall through to fallback */})
+      .finally(() => setBriefLoading(false))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user.email])
+
+  // Fallback text if API fails
+  const fallbackText = useMemo(() => {
+    const dailyWaste = Math.round(waste.amount / 30)
+    const costAccum  = dailyWaste * daysSince
+    if (daysSince >= 14 && score !== null && score < 50)
+      return `Your ICP score has not changed in ${daysSince} days. Your top finding is still unresolved and has cost you an estimated KES ${costAccum.toLocaleString()} since your last diagnosis.`
+    if (delta !== null && delta > 0 && secondF)
+      return `Your ICP score improved ${delta} points since your last report. Your next priority is ${secondF.title}, which is still costing you KES ${dailyWaste.toLocaleString()} per day.`
+    if (hasIntelligence)
+      return `New competitive intelligence is available for your market this week. Check the Intelligence tab for your full briefing.`
+    return `Your baseline ICP score is ${score ?? '?'}/100. You are estimated to be losing KES ${waste.amount.toLocaleString()} per month on misaligned targeting.`
+  }, [waste, daysSince, score, delta, secondF, hasIntelligence])
+
+  const displayText = briefText || (!briefLoading ? fallbackText : '')
 
   // Since last visit feed items
   const feedItems = [
@@ -509,17 +561,6 @@ function DailyBriefCard({ diag, reports, score, hasIntelligence, onTabChange }: 
       : null,
     topFinding ? { color: '#ef4444', text: `${topFinding.title.slice(0, 32)}${topFinding.title.length > 32 ? '…' : ''} unresolved`, time: daysSince > 0 ? `${daysSince} days` : 'Today' } : null,
   ].filter(Boolean).slice(0, 3) as { color: string; text: string; time: string }[]
-
-  let briefText: string
-  if (daysSince >= 14 && score !== null && score < 50) {
-    briefText = `Your ICP score has not changed in ${daysSince} days. Your top finding is still unresolved and has cost you an estimated KES ${costAccum.toLocaleString()} since your last diagnosis. One quick win below takes 10 minutes to fix today.`
-  } else if (delta !== null && delta > 0 && secondF) {
-    briefText = `Your ICP score improved ${delta} points since last month. Good progress on your funnel friction. Your next priority is ${secondF.title}, which is still costing you KES ${dailyWaste.toLocaleString()} per day.`
-  } else if (hasIntelligence) {
-    briefText = `New competitive intelligence is available for your market this week. Your industry is seeing increased ad competition. Check the Intelligence tab for your full briefing.`
-  } else {
-    briefText = `Welcome to your ICP Diagnostic cockpit. Your baseline score is ${score ?? '—'}/100. You are losing an estimated KES ${waste.amount.toLocaleString()} per month on misaligned targeting. Start with the quick win below.`
-  }
 
   const statusColor = score === null ? '#f59e0b'
     : score < 41 && daysSince >= 14 ? '#ef4444'
@@ -546,8 +587,15 @@ function DailyBriefCard({ diag, reports, score, hasIntelligence, onTabChange }: 
               {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
             </span>
           </div>
-          <p style={{ fontFamily: font, fontSize: 15, color: 'rgba(48,33,97,0.8)', lineHeight: 1.7, margin: '0 0 16px', fontWeight: 400 }}>{briefText}</p>
-          {hasIntelligence && !topFinding ? (
+          {briefLoading ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+              <div style={{ height: 14, borderRadius: 6, background: 'rgba(48,33,97,0.07)', width: '92%', animation: 'pulse 1.4s ease-in-out infinite' }} />
+              <div style={{ height: 14, borderRadius: 6, background: 'rgba(48,33,97,0.07)', width: '78%', animation: 'pulse 1.4s ease-in-out infinite' }} />
+            </div>
+          ) : (
+            <p style={{ fontFamily: font, fontSize: 15, color: 'rgba(48,33,97,0.8)', lineHeight: 1.7, margin: '0 0 16px', fontWeight: 400 }}>{displayText}</p>
+          )}
+          {!briefLoading && (hasIntelligence && !topFinding ? (
             <button onClick={() => onTabChange('intelligence')} style={ctaStyle}>
               Read This Week&apos;s Intelligence <ArrowRight size={14} />
             </button>
@@ -559,7 +607,7 @@ function DailyBriefCard({ diag, reports, score, hasIntelligence, onTabChange }: 
             <Link href="/questionnaire" style={ctaStyle}>
               Run New Diagnosis <ArrowRight size={14} />
             </Link>
-          )}
+          ))}
         </div>
         {/* Right: since last visit */}
         {feedItems.length > 0 && (
@@ -3715,6 +3763,7 @@ export default function DashboardPage() {
               score={score}
               hasIntelligence={hasNewIntelligence}
               onTabChange={setActiveTab}
+              user={user}
             />
           </div>
         )}
