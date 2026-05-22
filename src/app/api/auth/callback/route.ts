@@ -62,6 +62,7 @@ export async function GET(req: NextRequest) {
   let isNewUser = false
 
   if (existing) {
+    // Existing account: check it's still active
     if (existing.billing_status === 'cancelled') {
       return NextResponse.redirect(`${baseUrl}/auth?error=account_cancelled`)
     }
@@ -72,6 +73,7 @@ export async function GET(req: NextRequest) {
       updated_at: new Date().toISOString(),
     }).eq('id', userId)
   } else {
+    // Brand new user: create account
     const { data: inserted, error: insertErr } = await db
       .from('users')
       .insert({
@@ -92,6 +94,7 @@ export async function GET(req: NextRequest) {
     userId    = inserted.id
     isNewUser = true
 
+    // Send welcome email and notify founder — fire and forget
     void Promise.allSettled([
       sendAccountCreatedEmail({ to: email, name: fullName }),
       sendNewSignupToFounder({ userEmail: email, userName: fullName, source: 'google' }),
@@ -100,6 +103,7 @@ export async function GET(req: NextRequest) {
 
   response.cookies.set(sessionCookieOptions(createSessionToken(email, userId)))
 
+  // New users go to dashboard (FirstRunDashboard handles the onboarding)
   if (isNewUser) {
     return NextResponse.redirect(`${baseUrl}/dashboard`)
   }

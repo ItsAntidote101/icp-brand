@@ -356,62 +356,79 @@ export async function sendCancellationToFounder({
   return { data, error }
 }
 
-// ─── Email 8: Plan changed — user ─────────────────────────────────────────────
+// ─── Email 8a: Upgrade — user ─────────────────────────────────────────────────
 
-export async function sendPlanChangedToUser({
-  to, name, newTier, newPriceKES, renewalDate,
-}: { to: string; name: string; newTier: string; newPriceKES: number; renewalDate?: string }) {
+export async function sendUpgradeToUser({
+  to, name, oldTier, newTier, topUpKes, renewalDate,
+}: { to: string; name: string; oldTier: string; newTier: string; topUpKes: number; renewalDate: string | null }) {
+  const tierNames: Record<string, string> = { free: 'Free', starter: 'Starter', pro: 'Pro', agency: 'Agency' }
   const first      = name?.split(' ')[0] ?? 'there'
-  const tierNames: Record<string, string> = { starter: 'Starter', pro: 'Pro', agency: 'Agency' }
-  const tierLabel  = tierNames[newTier] ?? newTier
-  const accessDate = renewalDate
+  const newLabel   = tierNames[newTier] ?? newTier
+  const oldLabel   = tierNames[oldTier] ?? oldTier
+  const nextDate   = renewalDate
     ? new Date(renewalDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
     : '—'
+  const priceKES: Record<string, number> = { starter: 6500, pro: 13000, agency: 26000, free: 0 }
+
+  const rows = [
+    ['Upgraded from', oldLabel],
+    ['New plan', newLabel],
+    ['Monthly rate going forward', `KES ${(priceKES[newTier] ?? 0).toLocaleString()} / month`],
+    ['Prorated top-up due now', topUpKes > 0 ? `KES ${topUpKes.toLocaleString()}` : 'None'],
+    ['Next renewal date', nextDate],
+  ]
 
   const content = `
-<h1 style="margin:0 0 10px;color:#ffffff;font-size:24px;font-weight:800;line-height:1.2;letter-spacing:-0.5px;">Your plan has been updated.</h1>
-<p style="margin:0 0 24px;color:#9ca3af;font-size:15px;line-height:1.7;">Hi ${first}, your subscription has been switched to <strong style="color:#ffffff;">${tierLabel}</strong>. Your new plan is active immediately.</p>
+<h1 style="margin:0 0 10px;color:#ffffff;font-size:24px;font-weight:800;line-height:1.2;letter-spacing:-0.5px;">You've upgraded to ${newLabel}.</h1>
+<p style="margin:0 0 24px;color:#9ca3af;font-size:15px;line-height:1.7;">Hi ${first}, your ${newLabel} features are active right now.${topUpKes > 0 ? ` We will send you a separate invoice for the prorated top-up of <strong style="color:#ffffff;">KES ${topUpKes.toLocaleString()}</strong> covering the rest of your current billing period.` : ''}</p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:14px;margin-bottom:20px;">
   <tr><td style="padding:20px 24px;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-      <tr><td style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
-        <p style="margin:0;color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:0.06em;">New plan</p>
-        <p style="margin:2px 0 0;color:#ffffff;font-size:15px;font-weight:700;">${tierLabel}</p>
-      </td></tr>
-      <tr><td style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
-        <p style="margin:0;color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:0.06em;">New monthly price</p>
-        <p style="margin:2px 0 0;color:#ffffff;font-size:15px;font-weight:700;">KES ${newPriceKES.toLocaleString()} / month</p>
-      </td></tr>
-      <tr><td style="padding:8px 0;">
-        <p style="margin:0;color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:0.06em;">Next billing date</p>
-        <p style="margin:2px 0 0;color:#ffffff;font-size:15px;font-weight:700;">${accessDate}</p>
-      </td></tr>
-    </table>
+    ${rows.map(([l, v], i) => `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="${i < rows.length - 1 ? 'border-bottom:1px solid rgba(255,255,255,0.05);' : ''}padding-bottom:10px;margin-bottom:10px;"><tr>
+      <td><p style="margin:0;color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:0.06em;">${l}</p>
+      <p style="margin:2px 0 0;color:#ffffff;font-size:14px;font-weight:600;">${v}</p></td>
+    </tr></table>`).join('')}
   </td></tr>
 </table>
 ${cta('Go to Dashboard', 'https://idealicp.com/dashboard')}`
 
   const { data, error } = await getResend().emails.send({
     from: FROM, to,
-    subject: `Your plan has been updated to ${tierLabel}`,
+    subject: `You're now on ${newLabel}`,
     html: base(content),
   })
-  if (error) console.error('[email] plan changed user error:', JSON.stringify(error))
-  else console.log('[email] plan changed user sent id:', data?.id)
+  if (error) console.error('[email] upgrade user error:', JSON.stringify(error))
+  else console.log('[email] upgrade user sent id:', data?.id)
   return { data, error }
 }
 
-// ─── Email 9: Plan changed — founder ─────────────────────────────────────────
+// ─── Email 8b: Upgrade — founder ─────────────────────────────────────────────
 
-export async function sendPlanChangedToFounder({
-  userName, userEmail, companyName, oldTier, newTier,
-}: { userName: string; userEmail: string; companyName?: string; oldTier: string; newTier: string }) {
-  const tierNames: Record<string, string> = { starter: 'Starter', pro: 'Pro', agency: 'Agency', free: 'Free' }
+export async function sendUpgradeToFounder({
+  userName, userEmail, companyName, oldTier, newTier, topUpKes, daysRemaining, renewalDate,
+}: { userName: string; userEmail: string; companyName?: string; oldTier: string; newTier: string; topUpKes: number; daysRemaining: number; renewalDate: string | null }) {
+  const tierNames: Record<string, string> = { free: 'Free', starter: 'Starter', pro: 'Pro', agency: 'Agency' }
+  const nextDate = renewalDate
+    ? new Date(renewalDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+    : '—'
+
+  const rows = [
+    ['Name', userName],
+    ['Email', userEmail],
+    ['Company', companyName || '—'],
+    ['Upgraded from', tierNames[oldTier] ?? oldTier],
+    ['Upgraded to', tierNames[newTier] ?? newTier],
+    ['Days remaining in period', String(daysRemaining)],
+    ['Prorated top-up to collect', topUpKes > 0 ? `KES ${topUpKes.toLocaleString()}` : 'None (period nearly over)'],
+    ['Their next renewal', nextDate],
+  ]
+
   const content = `
-<h1 style="margin:0 0 10px;color:#ffffff;font-size:22px;font-weight:800;line-height:1.2;letter-spacing:-0.5px;">Plan change</h1>
+<h1 style="margin:0 0 10px;color:#ffffff;font-size:22px;font-weight:800;line-height:1.2;letter-spacing:-0.5px;">Upgrade: ${tierNames[oldTier] ?? oldTier} to ${tierNames[newTier] ?? newTier}</h1>
+${topUpKes > 0 ? `<p style="margin:0 0 16px;color:#f59e0b;font-size:14px;font-weight:600;">Action required: send an invoice for KES ${topUpKes.toLocaleString()} to cover ${daysRemaining} remaining days.</p>` : ''}
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:14px;margin-bottom:16px;">
   <tr><td style="padding:20px 24px;">
-    ${[['Name', userName], ['Email', userEmail], ['Company', companyName || '—'], ['From', tierNames[oldTier] ?? oldTier], ['To', tierNames[newTier] ?? newTier]].map(([l, v]) => `
+    ${rows.map(([l, v]) => `
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px;"><tr>
       <td><p style="margin:0;color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:0.06em;">${l}</p>
       <p style="margin:2px 0 0;color:#ffffff;font-size:14px;font-weight:600;">${v}</p></td>
@@ -421,11 +438,94 @@ export async function sendPlanChangedToFounder({
 
   const { data, error } = await getResend().emails.send({
     from: FROM, to: 'eugene@idealicp.com', replyTo: userEmail,
-    subject: `Plan change: ${tierNames[oldTier] ?? oldTier} → ${tierNames[newTier] ?? newTier} — ${companyName || userName}`,
+    subject: `Upgrade: ${tierNames[oldTier] ?? oldTier} → ${tierNames[newTier] ?? newTier}${topUpKes > 0 ? ` — KES ${topUpKes.toLocaleString()} to collect` : ''} — ${companyName || userName}`,
     html: base(content),
   })
-  if (error) console.error('[email] plan changed founder error:', JSON.stringify(error))
-  else console.log('[email] plan changed founder sent id:', data?.id)
+  if (error) console.error('[email] upgrade founder error:', JSON.stringify(error))
+  else console.log('[email] upgrade founder sent id:', data?.id)
+  return { data, error }
+}
+
+// ─── Email 8c: Downgrade scheduled — user ────────────────────────────────────
+
+export async function sendDowngradeScheduledToUser({
+  to, name, currentTier, newTier, effectiveDate,
+}: { to: string; name: string; currentTier: string; newTier: string; effectiveDate: string }) {
+  const tierNames: Record<string, string> = { free: 'Free', starter: 'Starter', pro: 'Pro', agency: 'Agency' }
+  const first       = name?.split(' ')[0] ?? 'there'
+  const currentLabel = tierNames[currentTier] ?? currentTier
+  const newLabel     = tierNames[newTier] ?? newTier
+  const switchDate   = new Date(effectiveDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+  const priceKES: Record<string, number> = { starter: 6500, pro: 13000, agency: 26000, free: 0 }
+
+  const rows = [
+    ['Current plan (stays active until)', `${currentLabel} until ${switchDate}`],
+    ['Switching to', newLabel],
+    ['New monthly rate', `KES ${(priceKES[newTier] ?? 0).toLocaleString()} / month`],
+    ['Effective date', switchDate],
+  ]
+
+  const content = `
+<h1 style="margin:0 0 10px;color:#ffffff;font-size:24px;font-weight:800;line-height:1.2;letter-spacing:-0.5px;">Downgrade scheduled.</h1>
+<p style="margin:0 0 24px;color:#9ca3af;font-size:15px;line-height:1.7;">Hi ${first}, your plan will switch from ${currentLabel} to ${newLabel} on <strong style="color:#ffffff;">${switchDate}</strong>. You keep all your current ${currentLabel} features until then. No charge today.</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:14px;margin-bottom:20px;">
+  <tr><td style="padding:20px 24px;">
+    ${rows.map(([l, v], i) => `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="${i < rows.length - 1 ? 'border-bottom:1px solid rgba(255,255,255,0.05);' : ''}padding-bottom:10px;margin-bottom:10px;"><tr>
+      <td><p style="margin:0;color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:0.06em;">${l}</p>
+      <p style="margin:2px 0 0;color:#ffffff;font-size:14px;font-weight:600;">${v}</p></td>
+    </tr></table>`).join('')}
+  </td></tr>
+</table>
+${cta('Go to Dashboard', 'https://idealicp.com/dashboard')}`
+
+  const { data, error } = await getResend().emails.send({
+    from: FROM, to,
+    subject: `Downgrade to ${newLabel} scheduled for ${switchDate}`,
+    html: base(content),
+  })
+  if (error) console.error('[email] downgrade user error:', JSON.stringify(error))
+  else console.log('[email] downgrade user sent id:', data?.id)
+  return { data, error }
+}
+
+// ─── Email 8d: Downgrade scheduled — founder ─────────────────────────────────
+
+export async function sendDowngradeScheduledToFounder({
+  userName, userEmail, companyName, currentTier, newTier, effectiveDate,
+}: { userName: string; userEmail: string; companyName?: string; currentTier: string; newTier: string; effectiveDate: string }) {
+  const tierNames: Record<string, string> = { free: 'Free', starter: 'Starter', pro: 'Pro', agency: 'Agency' }
+  const switchDate = new Date(effectiveDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+
+  const rows = [
+    ['Name', userName],
+    ['Email', userEmail],
+    ['Company', companyName || '—'],
+    ['Downgrading from', tierNames[currentTier] ?? currentTier],
+    ['Downgrading to', tierNames[newTier] ?? newTier],
+    ['Effective date', switchDate],
+  ]
+
+  const content = `
+<h1 style="margin:0 0 10px;color:#ffffff;font-size:22px;font-weight:800;line-height:1.2;letter-spacing:-0.5px;">Downgrade scheduled: ${tierNames[currentTier] ?? currentTier} to ${tierNames[newTier] ?? newTier}</h1>
+<p style="margin:0 0 16px;color:#9ca3af;font-size:14px;line-height:1.6;">No action needed. The switch applies automatically on ${switchDate}. Their current plan stays active until then.</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:14px;margin-bottom:16px;">
+  <tr><td style="padding:20px 24px;">
+    ${rows.map(([l, v]) => `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px;"><tr>
+      <td><p style="margin:0;color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:0.06em;">${l}</p>
+      <p style="margin:2px 0 0;color:#ffffff;font-size:14px;font-weight:600;">${v}</p></td>
+    </tr></table>`).join('')}
+  </td></tr>
+</table>`
+
+  const { data, error } = await getResend().emails.send({
+    from: FROM, to: 'eugene@idealicp.com', replyTo: userEmail,
+    subject: `Downgrade scheduled: ${tierNames[currentTier] ?? currentTier} → ${tierNames[newTier] ?? newTier} on ${switchDate} — ${companyName || userName}`,
+    html: base(content),
+  })
+  if (error) console.error('[email] downgrade founder error:', JSON.stringify(error))
+  else console.log('[email] downgrade founder sent id:', data?.id)
   return { data, error }
 }
 
@@ -715,40 +815,6 @@ ${cta('View in Dashboard', url)}`
   return { data, error }
 }
 
-// ─── Email: New signup — founder notification ─────────────────────────────────
-
-export async function sendNewSignupToFounder({
-  userEmail, userName, source,
-}: { userEmail: string; userName?: string; source?: string }) {
-  const when  = new Date().toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })
-  const label = userName ? `${userName} (${userEmail})` : userEmail
-  const via   = source === 'google' ? 'Google OAuth' : 'Email'
-
-  const content = `
-<h1 style="margin:0 0 10px;color:#ffffff;font-size:22px;font-weight:800;line-height:1.2;letter-spacing:-0.5px;">New signup</h1>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:14px;">
-  <tr><td style="padding:20px 24px;">
-    ${[['User', label], ['Method', via], ['Time', when]].map(([k, v]) =>
-      `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px;"><tr>
-        <td style="color:#6b7280;font-size:13px;width:80px;">${k}</td>
-        <td style="color:#e5e7eb;font-size:14px;font-weight:600;">${v}</td>
-      </tr></table>`
-    ).join('')}
-  </td></tr>
-</table>`
-
-  const { data, error } = await getResend().emails.send({
-    from: FROM,
-    to: 'eugene@idealicp.com',
-    replyTo: userEmail,
-    subject: `New signup: ${label}`,
-    html: base(content),
-  })
-  if (error) console.error('[email] new-signup founder error:', JSON.stringify(error))
-  else console.log('[email] new-signup founder sent id:', data?.id)
-  return { data, error }
-}
-
 // ─── Email: Account created (signup) ─────────────────────────────────────────
 
 export async function sendAccountCreatedEmail({
@@ -784,5 +850,38 @@ ${cta('Run your free diagnostic', url)}`
   })
   if (error) console.error('[email] account-created error:', JSON.stringify(error))
   else console.log('[email] account-created sent id:', data?.id, 'to:', to)
+  return { data, error }
+}
+
+// ─── New signup notification — founder ───────────────────────────────────────
+
+export async function sendNewSignupToFounder({
+  userEmail, userName, source,
+}: { userEmail: string; userName?: string; source?: string }) {
+  const rows = [
+    ['Email', userEmail],
+    ['Name', userName || '—'],
+    ['Signup method', source === 'google' ? 'Google OAuth' : source ?? 'Email'],
+    ['Time', new Date().toLocaleString('en-GB', { timeZone: 'Africa/Nairobi', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })],
+  ]
+  const content = `
+<h1 style="margin:0 0 10px;color:#ffffff;font-size:22px;font-weight:800;line-height:1.2;letter-spacing:-0.5px;">New signup</h1>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:14px;margin-bottom:16px;">
+  <tr><td style="padding:20px 24px;">
+    ${rows.map(([l, v]) => `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px;"><tr>
+      <td><p style="margin:0;color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:0.06em;">${l}</p>
+      <p style="margin:2px 0 0;color:#ffffff;font-size:14px;font-weight:600;">${v}</p></td>
+    </tr></table>`).join('')}
+  </td></tr>
+</table>`
+
+  const { data, error } = await getResend().emails.send({
+    from: FROM, to: 'eugene@idealicp.com', replyTo: userEmail,
+    subject: `New signup: ${userName || userEmail}${source === 'google' ? ' (Google)' : ''}`,
+    html: base(content),
+  })
+  if (error) console.error('[email] new-signup founder error:', JSON.stringify(error))
+  else console.log('[email] new-signup founder sent id:', data?.id)
   return { data, error }
 }
