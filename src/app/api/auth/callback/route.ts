@@ -120,6 +120,6 @@ export async function GET(req: NextRequest) {
 
   // Always return the original response object — it already redirects to /dashboard
   // (next defaults to '/dashboard') and carries all auth cookies (Supabase + icp_session).
-  // Previously a new NextResponse was created for new users, which lost all cookies.
+  // Previously a new NextResponse was created for new users, which silently discarded cookies.
   return response
 }
