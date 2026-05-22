@@ -11,14 +11,14 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: 'ICP Diagnostic | Free ICP Audit Tool for Marketing Teams in Africa and Beyond',
   description: 'Get a free AI-powered ICP diagnostic report in 5 minutes. Identify targeting gaps, funnel friction, and budget waste. Used by marketing teams across Kenya, Nigeria, South Africa, UK and US.',
-  metadataBase: new URL('https://www.idealicp.com'),
+  metadataBase: new URL('https://idealicp.com'),
   alternates: {
     canonical: '/',
   },
   openGraph: {
     title: 'ICP Diagnostic | Free ICP Audit Tool for Marketing Teams',
     description: 'Get a free AI-powered ICP diagnostic in 5 minutes. Used by marketing teams across Africa, UK and US.',
-    url: 'https://www.idealicp.com',
+    url: 'https://idealicp.com',
     type: 'website',
     images: [{ url: '/images/og-image.png', width: 1200, height: 630 }],
   },
@@ -35,7 +35,7 @@ const softwareSchema = {
   '@type': 'SoftwareApplication',
   name: 'ICP Diagnostic',
   description: 'AI-powered ICP diagnostic tool for marketing teams. Get a free audit of your targeting, funnel, and ad spend in 5 minutes.',
-  url: 'https://www.idealicp.com',
+  url: 'https://idealicp.com',
   applicationCategory: 'BusinessApplication',
   operatingSystem: 'Web',
   offers: {
@@ -47,7 +47,7 @@ const softwareSchema = {
   provider: {
     '@type': 'Organization',
     name: 'ICP Diagnostic',
-    url: 'https://www.idealicp.com',
+    url: 'https://idealicp.com',
   },
 }
 

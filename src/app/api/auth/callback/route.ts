@@ -5,16 +5,19 @@ import { createSessionToken, sessionCookieOptions } from '@/lib/session'
 import { sendAccountCreatedEmail, sendNewSignupToFounder } from '@/lib/email'
 
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url)
-  const code   = searchParams.get('code')
-  const next   = searchParams.get('next') ?? '/dashboard'
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://idealicp.com'
+  const reqUrl = new URL(req.url)
+  const { searchParams } = reqUrl
+  const code    = searchParams.get('code')
+  const next    = searchParams.get('next') ?? '/dashboard'
+  // Always use the origin of the incoming request so this works on any
+  // deployment (localhost, Vercel preview, production) without configuration.
+  const baseUrl = reqUrl.origin
 
   if (!code) {
-    return NextResponse.redirect(`${appUrl}/auth?error=no_code`)
+    return NextResponse.redirect(`${baseUrl}/auth?error=no_code`)
   }
 
-  const response = NextResponse.redirect(`${appUrl}${next}`)
+  const response = NextResponse.redirect(`${baseUrl}${next}`)
 
   const supabaseAuth = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -35,12 +38,12 @@ export async function GET(req: NextRequest) {
 
   if (error || !user?.email) {
     console.error('[auth/callback] exchange error:', error?.message)
-    return NextResponse.redirect(`${appUrl}/auth?error=oauth_failed`)
+    return NextResponse.redirect(`${baseUrl}/auth?error=oauth_failed`)
   }
 
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
   if (!serviceKey) {
-    return NextResponse.redirect(`${appUrl}/auth?error=server_error`)
+    return NextResponse.redirect(`${baseUrl}/auth?error=server_error`)
   }
 
   const db = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, serviceKey)
@@ -61,9 +64,8 @@ export async function GET(req: NextRequest) {
   if (existing) {
     // Existing account: check it's still active
     if (existing.billing_status === 'cancelled') {
-      return NextResponse.redirect(`${appUrl}/auth?error=account_cancelled`)
+      return NextResponse.redirect(`${baseUrl}/auth?error=account_cancelled`)
     }
-
     userId = existing.id
     await db.from('users').update({
       full_name:  fullName ?? undefined,
@@ -86,7 +88,7 @@ export async function GET(req: NextRequest) {
 
     if (insertErr || !inserted) {
       console.error('[auth/callback] insert error:', insertErr)
-      return NextResponse.redirect(`${appUrl}/auth?error=server_error`)
+      return NextResponse.redirect(`${baseUrl}/auth?error=server_error`)
     }
 
     userId    = inserted.id
@@ -103,7 +105,7 @@ export async function GET(req: NextRequest) {
 
   // New users go to dashboard (FirstRunDashboard handles the onboarding)
   if (isNewUser) {
-    return NextResponse.redirect(`${appUrl}/dashboard`)
+    return NextResponse.redirect(`${baseUrl}/dashboard`)
   }
 
   return response
