@@ -55,6 +55,18 @@ function CancelContent() {
           ))}
         </div>
 
+        {/* Payment logos */}
+        <div className="flex items-center justify-center gap-4 mb-8 flex-wrap">
+          {[
+            { src: '/images/logos/paystack-logo_1.png',                alt: 'Paystack',    h: 16 },
+            { src: '/images/logos/Visa_Inc._logo_(2014–2021).svg.png', alt: 'Visa',        h: 14 },
+            { src: '/images/logos/MasterCard_early_1990s_logo.svg.png', alt: 'Mastercard', h: 20 },
+            { src: '/images/logos/M-PESA_LOGO-01.svg.png',             alt: 'M-Pesa',      h: 16 },
+          ].map(({ src, alt, h }) => (
+            <img key={alt} src={src} alt={alt} style={{ height: h, objectFit: 'contain', opacity: 0.3, filter: 'brightness(10)' }} />
+          ))}
+        </div>
+
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
             onClick={() => window.history.back()}

@@ -516,6 +516,21 @@ export default function Page() {
               </div>
             ))}
           </div>
+
+          {/* Payment trust strip */}
+          <div style={{ marginTop: 36, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+            <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: PMuted }}>Secure checkout via</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
+              {[
+                { src: '/images/logos/paystack-logo_1.png',               alt: 'Paystack',    h: 22 },
+                { src: '/images/logos/Visa_Inc._logo_(2014–2021).svg.png', alt: 'Visa',        h: 20 },
+                { src: '/images/logos/MasterCard_early_1990s_logo.svg.png', alt: 'Mastercard', h: 28 },
+                { src: '/images/logos/M-PESA_LOGO-01.svg.png',            alt: 'M-Pesa',      h: 22 },
+              ].map(({ src, alt, h }) => (
+                <img key={alt} src={src} alt={alt} style={{ height: h, objectFit: 'contain', opacity: 0.7, filter: 'grayscale(20%)' }} />
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
@@ -588,9 +603,18 @@ export default function Page() {
               ))}
             </div>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, alignItems: 'center' }}>
             <span style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.22)' }}>2026 ICP Diagnostic. All rights reserved.</span>
-            <span style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.22)' }}>info@idealicp.com</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              {[
+                { src: '/images/logos/paystack-logo_1.png',                alt: 'Paystack',    h: 16 },
+                { src: '/images/logos/Visa_Inc._logo_(2014–2021).svg.png', alt: 'Visa',        h: 14 },
+                { src: '/images/logos/MasterCard_early_1990s_logo.svg.png', alt: 'Mastercard', h: 20 },
+                { src: '/images/logos/M-PESA_LOGO-01.svg.png',             alt: 'M-Pesa',      h: 16 },
+              ].map(({ src, alt, h }) => (
+                <img key={alt} src={src} alt={alt} style={{ height: h, objectFit: 'contain', opacity: 0.35, filter: 'brightness(10)' }} />
+              ))}
+            </div>
           </div>
         </div>
       </footer>
