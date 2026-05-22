@@ -32,7 +32,7 @@ function base(content: string): string {
         <tr>
           <td style="padding:18px 36px 26px;border-top:1px solid rgba(255,255,255,0.06);">
             <p style="margin:0;color:#374151;font-size:12px;line-height:1.6;">
-              You requested this resource from ICP Brand. Questions? <a href="mailto:hello@idealicp.com" style="color:#6366f1;text-decoration:none;">hello@idealicp.com</a>
+              You requested this resource from ICP Brand. Questions? <a href="mailto:info@idealicp.com" style="color:#6366f1;text-decoration:none;">info@idealicp.com</a>
             </p>
           </td>
         </tr>

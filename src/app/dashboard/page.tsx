@@ -3517,7 +3517,7 @@ export default function DashboardPage() {
 
           <div style={{ margin: '12px 0', borderTop: `1px solid ${Pborder}` }} />
 
-          <a href="mailto:hello@idealicp.com"
+          <a href="mailto:support@idealicp.com"
             style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', textAlign: 'left', background: 'transparent', color: 'rgba(48,33,97,0.6)', fontFamily: fontB, fontSize: 13, fontWeight: 500, textDecoration: 'none' }}>
             <HelpCircle size={18} />
             Help & Support

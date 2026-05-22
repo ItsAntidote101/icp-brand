@@ -413,7 +413,7 @@ export default function AboutPage() {
               <p style={{ fontFamily: fontB, fontSize: 14, color: Pmuted, lineHeight: 1.7, margin: '12px 0 20px' }}>
                 We are onboarding specialist media buyers for East Africa, West Africa, South Africa, and UK markets. Each advisor brings deep regional expertise to support Agency tier subscribers.
               </p>
-              <a href="mailto:hello@idealicp.com" style={{ fontFamily: fontB, fontSize: 14, color: P, textDecoration: 'underline' }}>
+              <a href="mailto:info@idealicp.com" style={{ fontFamily: fontB, fontSize: 14, color: P, textDecoration: 'underline' }}>
                 Join as an Advisor →
               </a>
             </div>
