@@ -3094,16 +3094,17 @@ type ChatMsg = {
   timestamp: Date
 }
 
-function ChatWidget({ user, score, diag }: { user: UserData; score: number | null; diag: DiagnosisData }) {
-  const [isOpen,          setIsOpen]          = useState(false)
-  const [messages,        setMessages]        = useState<ChatMsg[]>([])
-  const [input,           setInput]           = useState('')
-  const [loading,         setLoading]         = useState(false)
-  const [hasUnread,       setHasUnread]       = useState(!!(user.has_unread_reply))
-  const [initialized,     setInitialized]     = useState(false)
-  const [needsEscalation, setNeedsEscalation] = useState(false)
-  const [showEscalation,  setShowEscalation]  = useState(false)
-  const [urgency,         setUrgency]         = useState('')
+function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: number | null; diag: DiagnosisData; activeTab: Tab }) {
+  const [isOpen,            setIsOpen]            = useState(false)
+  const [messages,          setMessages]          = useState<ChatMsg[]>([])
+  const [input,             setInput]             = useState('')
+  const [loading,           setLoading]           = useState(false)
+  const [hasUnread,         setHasUnread]         = useState(!!(user.has_unread_reply))
+  const [initialized,       setInitialized]       = useState(false)
+  const [needsEscalation,   setNeedsEscalation]   = useState(false)
+  const [showEscalation,    setShowEscalation]    = useState(false)
+  const [urgency,           setUrgency]           = useState('')
+  const [lastSuggestions,   setLastSuggestions]   = useState<string[]>([])
   const [escalationNote,  setEscalationNote]  = useState('')
   const [escalating,      setEscalating]      = useState(false)
   const [escalated,       setEscalated]       = useState(false)
@@ -3116,23 +3117,30 @@ function ChatWidget({ user, score, diag }: { user: UserData; score: number | nul
   const waste = diag?.monthly_waste_estimate ?? '—'
   const firstName = user.full_name?.split(' ')[0] ?? 'there'
   const findings  = getFindings(diag)
+  const topFinding = findings[0]
 
-  const SUGGESTED = [
-    `Why is my score ${score ?? '—'}?`,
-    'How do I fix my top finding?',
-    'Write ad copy for my ICP',
-    'What should I do this week?',
-  ]
+  // Context-aware welcome suggestions
+  const welcomeSuggestions = useMemo(() => {
+    const s: string[] = []
+    if (topFinding) s.push(`How do I fix "${topFinding.title}"?`)
+    if (score !== null) s.push(`Why is my score ${score}/100?`)
+    if (user.current_streak && user.current_streak > 0) s.push(`What should I tackle next to keep my streak?`)
+    else s.push(`What should I prioritise this week?`)
+    s.push('Write ad copy for my ICP')
+    return s.slice(0, 4)
+  }, [topFinding, score, user.current_streak])
 
   useEffect(() => {
     if (isOpen && !initialized) {
+      const staleNote = topFinding ? ` Your top unresolved finding is "${topFinding.title}".` : ''
       const welcome: ChatMsg = {
         id: 'welcome',
         role: 'assistant',
-        content: `Hi ${firstName}. I'm your ICP media buyer AI.\n\nI've read your full diagnostic — your score is ${score ?? '?'}/100 and you're losing an estimated ${waste} per month.\n\nWhat would you like to work on today?`,
+        content: `${firstName}, I have read your full diagnostic. Your ICP score is ${score ?? '?'}/100 and you are losing an estimated ${waste} per month on misaligned targeting.${staleNote}\n\nWhat do you want to work on?`,
         timestamp: new Date(),
       }
       setMessages([welcome])
+      setLastSuggestions(welcomeSuggestions)
       setInitialized(true)
       setHasUnread(false)
     }
@@ -3170,12 +3178,13 @@ function ChatWidget({ user, score, diag }: { user: UserData; score: number | nul
     try {
       const res = await fetch('/api/chat/message', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user.email, message: text.trim(), conversationHistory: history }),
+        body: JSON.stringify({ email: user.email, message: text.trim(), conversationHistory: history, activeTab }),
       })
-      const data = await res.json()
+      const data = await res.json() as { reply?: string; needsEscalation?: boolean; suggestedQuestions?: string[] }
       const reply = data.reply ?? 'Something went wrong. Please try again.'
       setMessages(prev => prev.filter(m => m.id !== 'typing').concat([{ id: Date.now() + 'a', role: 'assistant', content: reply, timestamp: new Date() }]))
       if (data.needsEscalation) setNeedsEscalation(true)
+      if (data.suggestedQuestions?.length) setLastSuggestions(data.suggestedQuestions)
     } catch {
       setMessages(prev => prev.filter(m => m.id !== 'typing').concat([{ id: Date.now() + 'e', role: 'assistant', content: 'Connection error. Please try again.', timestamp: new Date() }]))
     } finally {
@@ -3316,11 +3325,11 @@ function ChatWidget({ user, score, diag }: { user: UserData; score: number | nul
               )
             })}
 
-            {/* Suggested pills — show after welcome message only */}
-            {messages.length === 1 && messages[0].id === 'welcome' && (
+            {/* Suggested pills — shown after the last AI message, hidden while loading */}
+            {!loading && lastSuggestions.length > 0 && (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 4 }}>
-                {SUGGESTED.map(q => (
-                  <button key={q} onClick={() => sendMessage(q)}
+                {lastSuggestions.map(q => (
+                  <button key={q} onClick={() => { setLastSuggestions([]); sendMessage(q) }}
                     style={{ background: '#fff', border: `1px solid rgba(48,33,97,0.15)`, borderRadius: 100, padding: '8px 16px', fontFamily: fontB, fontSize: 13, color: P, cursor: 'pointer' }}>
                     {q}
                   </button>
@@ -4002,7 +4011,7 @@ export default function DashboardPage() {
       )}
 
       {/* ── Chat Widget ───────────────────────────────────────────────────── */}
-      {user && <ChatWidget user={user} score={score} diag={diag} />}
+      {user && <ChatWidget user={user} score={score} diag={diag} activeTab={activeTab} />}
 
       {/* ── Mobile bottom tab bar (lg:hidden) ─────────────────────────────── */}
       <div className="lg:hidden" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'rgba(255,255,255,0.96)', backdropFilter: 'blur(20px)', borderTop: `1px solid ${Pborder}`, display: 'flex', zIndex: 50 }}>
