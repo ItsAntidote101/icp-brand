@@ -3149,7 +3149,7 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
       // Fire-and-forget mark-read
       void fetch('/api/chat/mark-read', { method: 'POST' })
     }
-  }, [isOpen, initialized, firstName, score, waste])
+  }, [isOpen, initialized, firstName, score, waste, topFinding, welcomeSuggestions])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -3618,19 +3618,15 @@ export default function DashboardPage() {
   const prevScore = reports.length >= 2 ? getScore(parseDiagnosis(reports[1].report_summary)) : null
   const scoreDeltaMain = score !== null && prevScore !== null ? score - prevScore : null
 
-  const notifications = useMemo(() => {
-    const ns: { id: string; icon: React.ReactNode; text: string; sub: string; color: string; action?: () => void }[] = []
-    if (hasNewIntelligence)
-      ns.push({ id: 'intel', icon: <Brain size={15} />, text: 'New intelligence briefing ready', sub: 'This week', color: '#22c55e', action: () => { setShowNotifications(false); setActiveTab('intelligence') } })
-    if (user?.has_unread_reply)
-      ns.push({ id: 'reply', icon: <MessageCircle size={15} />, text: 'New reply from your advisor', sub: 'Unread', color: '#a855f7' })
-    if (scoreDeltaMain !== null && scoreDeltaMain !== 0)
-      ns.push({ id: 'score', icon: <TrendingUp size={15} />, text: `ICP score ${scoreDeltaMain > 0 ? 'improved' : 'dropped'} ${Math.abs(scoreDeltaMain)} points`, sub: 'Since last report', color: scoreDeltaMain > 0 ? '#22c55e' : '#ef4444', action: () => { setShowNotifications(false); setActiveTab('reports') } })
-    if (!hasReports)
-      ns.push({ id: 'start', icon: <Zap size={15} />, text: 'Run your first diagnosis to unlock your dashboard', sub: 'Action needed', color: '#f59e0b' })
-    return ns
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasNewIntelligence, user?.has_unread_reply, scoreDeltaMain, hasReports])
+  const notifications: { id: string; icon: React.ReactNode; text: string; sub: string; color: string; action?: () => void }[] = []
+  if (hasNewIntelligence)
+    notifications.push({ id: 'intel', icon: <Brain size={15} />, text: 'New intelligence briefing ready', sub: 'This week', color: '#22c55e', action: () => { setShowNotifications(false); setActiveTab('intelligence') } })
+  if (user?.has_unread_reply)
+    notifications.push({ id: 'reply', icon: <MessageCircle size={15} />, text: 'New reply from your advisor', sub: 'Unread', color: '#a855f7' })
+  if (scoreDeltaMain !== null && scoreDeltaMain !== 0)
+    notifications.push({ id: 'score', icon: <TrendingUp size={15} />, text: `ICP score ${scoreDeltaMain > 0 ? 'improved' : 'dropped'} ${Math.abs(scoreDeltaMain)} points`, sub: 'Since last report', color: scoreDeltaMain > 0 ? '#22c55e' : '#ef4444', action: () => { setShowNotifications(false); setActiveTab('reports') } })
+  if (!hasReports)
+    notifications.push({ id: 'start', icon: <Zap size={15} />, text: 'Run your first diagnosis to unlock your dashboard', sub: 'Action needed', color: '#f59e0b' })
 
   const TAB_ICONS: Record<Tab, React.ReactNode> = {
     overview:     <LayoutDashboard size={20} />,
