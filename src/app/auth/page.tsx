@@ -42,8 +42,18 @@ function AuthInner() {
   const searchParams = useSearchParams()
   const defaultTab   = searchParams.get('tab') === 'login' ? 'login' : 'signup'
 
+  const OAUTH_ERRORS: Record<string, string> = {
+    no_code:          'Google sign-in was cancelled. Please try again.',
+    oauth_failed:     'Google sign-in failed. Please try again.',
+    account_cancelled:'Your account has been cancelled. Contact support to reactivate.',
+    server_error:     'A server error occurred. Please try again in a moment.',
+  }
+
   const [tab,    setTab]    = useState<'signup' | 'login'>(defaultTab)
-  const [toast,  setToast]  = useState('')
+  const [toast,  setToast]  = useState(() => {
+    const err = searchParams.get('error')
+    return err ? (OAUTH_ERRORS[err] ?? 'Sign-in error. Please try again.') : ''
+  })
 
   // Sign Up state
   const [firstName,     setFirstName]     = useState('')

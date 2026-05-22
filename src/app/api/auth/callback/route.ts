@@ -2,19 +2,22 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
 import { createSessionToken, sessionCookieOptions } from '@/lib/session'
+import { sendAccountCreatedEmail, sendNewSignupToFounder } from '@/lib/email'
 
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url)
-  const code  = searchParams.get('code')
-  const next  = searchParams.get('next') ?? '/dashboard'
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://idealicp.com'
+  const reqUrl = new URL(req.url)
+  const { searchParams } = reqUrl
+  const code    = searchParams.get('code')
+  const next    = searchParams.get('next') ?? '/dashboard'
+  // Always use the origin of the incoming request so this works on any
+  // deployment (localhost, Vercel preview, production) without configuration.
+  const baseUrl = reqUrl.origin
 
   if (!code) {
-    return NextResponse.redirect(`${appUrl}/auth?error=no_code`)
+    return NextResponse.redirect(`${baseUrl}/auth?error=no_code`)
   }
 
-  // Exchange the OAuth code for a Supabase session
-  const response = NextResponse.redirect(`${appUrl}${next}`)
+  const response = NextResponse.redirect(`${baseUrl}${next}`)
 
   const supabaseAuth = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -35,13 +38,12 @@ export async function GET(req: NextRequest) {
 
   if (error || !user?.email) {
     console.error('[auth/callback] exchange error:', error?.message)
-    return NextResponse.redirect(`${appUrl}/auth?error=oauth_failed`)
+    return NextResponse.redirect(`${baseUrl}/auth?error=oauth_failed`)
   }
 
-  // Upsert the Google user into our own users table
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
   if (!serviceKey) {
-    return NextResponse.redirect(`${appUrl}/auth?error=server_error`)
+    return NextResponse.redirect(`${baseUrl}/auth?error=server_error`)
   }
 
   const db = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, serviceKey)
@@ -57,14 +59,17 @@ export async function GET(req: NextRequest) {
     .single()
 
   let userId: string
+  let isNewUser = false
 
   if (existing) {
+    if (existing.billing_status === 'cancelled') {
+      return NextResponse.redirect(`${baseUrl}/auth?error=account_cancelled`)
+    }
     userId = existing.id
-    // Update name/avatar from Google if we don't have them yet
     await db.from('users').update({
-      full_name:   fullName ?? undefined,
-      avatar_url:  avatar   ?? undefined,
-      updated_at:  new Date().toISOString(),
+      full_name:  fullName ?? undefined,
+      avatar_url: avatar   ?? undefined,
+      updated_at: new Date().toISOString(),
     }).eq('id', userId)
   } else {
     const { data: inserted, error: insertErr } = await db
@@ -81,14 +86,23 @@ export async function GET(req: NextRequest) {
 
     if (insertErr || !inserted) {
       console.error('[auth/callback] insert error:', insertErr)
-      return NextResponse.redirect(`${appUrl}/auth?error=server_error`)
+      return NextResponse.redirect(`${baseUrl}/auth?error=server_error`)
     }
 
-    userId = inserted.id
+    userId    = inserted.id
+    isNewUser = true
+
+    void Promise.allSettled([
+      sendAccountCreatedEmail({ to: email, name: fullName }),
+      sendNewSignupToFounder({ userEmail: email, userName: fullName, source: 'google' }),
+    ])
   }
 
-  // Set our custom icp_session cookie so all protected routes work
   response.cookies.set(sessionCookieOptions(createSessionToken(email, userId)))
+
+  if (isNewUser) {
+    return NextResponse.redirect(`${baseUrl}/dashboard`)
+  }
 
   return response
 }

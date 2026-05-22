@@ -715,6 +715,40 @@ ${cta('View in Dashboard', url)}`
   return { data, error }
 }
 
+// ─── Email: New signup — founder notification ─────────────────────────────────
+
+export async function sendNewSignupToFounder({
+  userEmail, userName, source,
+}: { userEmail: string; userName?: string; source?: string }) {
+  const when  = new Date().toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })
+  const label = userName ? `${userName} (${userEmail})` : userEmail
+  const via   = source === 'google' ? 'Google OAuth' : 'Email'
+
+  const content = `
+<h1 style="margin:0 0 10px;color:#ffffff;font-size:22px;font-weight:800;line-height:1.2;letter-spacing:-0.5px;">New signup</h1>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:14px;">
+  <tr><td style="padding:20px 24px;">
+    ${[['User', label], ['Method', via], ['Time', when]].map(([k, v]) =>
+      `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px;"><tr>
+        <td style="color:#6b7280;font-size:13px;width:80px;">${k}</td>
+        <td style="color:#e5e7eb;font-size:14px;font-weight:600;">${v}</td>
+      </tr></table>`
+    ).join('')}
+  </td></tr>
+</table>`
+
+  const { data, error } = await getResend().emails.send({
+    from: FROM,
+    to: 'eugene@idealicp.com',
+    replyTo: userEmail,
+    subject: `New signup: ${label}`,
+    html: base(content),
+  })
+  if (error) console.error('[email] new-signup founder error:', JSON.stringify(error))
+  else console.log('[email] new-signup founder sent id:', data?.id)
+  return { data, error }
+}
+
 // ─── Email: Account created (signup) ─────────────────────────────────────────
 
 export async function sendAccountCreatedEmail({
