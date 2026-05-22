@@ -273,12 +273,44 @@ Return this exact JSON structure:
       "explanation": "<specific, region-aware finding with revenue impact>"
     }
   ],
-  "icp_alignment_score": <integer 0-100>,
-  "targeting_accuracy_score": <integer 0-100>,
-  "channel_efficiency_score": <integer 0-100>,
-  "funnel_friction_score": <integer 0-100>,
-  "message_fit_score": <integer 0-100>,
-  "budget_allocation_score": <integer 0-100>,
+  "breakdown": [
+    {
+      "label": "ICP Alignment",
+      "score": <integer 0-100>,
+      "found": "<1 sentence: what you found specific to their responses>",
+      "why": "<1 sentence: why this costs them revenue>"
+    },
+    {
+      "label": "Targeting Accuracy",
+      "score": <integer 0-100>,
+      "found": "<1 sentence: what you found specific to their responses>",
+      "why": "<1 sentence: why this costs them revenue>"
+    },
+    {
+      "label": "Channel Efficiency",
+      "score": <integer 0-100>,
+      "found": "<1 sentence: what you found specific to their responses>",
+      "why": "<1 sentence: why this costs them revenue>"
+    },
+    {
+      "label": "Funnel Friction",
+      "score": <integer 0-100>,
+      "found": "<1 sentence: what you found specific to their responses>",
+      "why": "<1 sentence: why this costs them revenue>"
+    },
+    {
+      "label": "Message to Market Fit",
+      "score": <integer 0-100>,
+      "found": "<1 sentence: what you found specific to their responses>",
+      "why": "<1 sentence: why this costs them revenue>"
+    },
+    {
+      "label": "Budget Allocation",
+      "score": <integer 0-100>,
+      "found": "<1 sentence: what you found specific to their responses>",
+      "why": "<1 sentence: why this costs them revenue>"
+    }
+  ],
   "quick_wins": [
     {
       "action": "<specific, actionable step — reference regional platforms/tools where relevant>",
@@ -294,6 +326,7 @@ Return this exact JSON structure:
 
 Rules:
 - critical_findings: exactly 3 items, ranked by revenue impact
+- breakdown: exactly 6 items in the order listed, scores based on actual responses
 - quick_wins: exactly 3 items
 - All scores must reflect the actual responses — do not return generic numbers
 - Reference ${geographicRegion} explicitly in at least 2 findings or quick_wins
@@ -376,12 +409,44 @@ Return this exact JSON structure:
       "explanation": "<specific finding with revenue impact>"
     }
   ],
-  "icp_alignment_score": <integer 0-100>,
-  "targeting_accuracy_score": <integer 0-100>,
-  "channel_efficiency_score": <integer 0-100>,
-  "funnel_friction_score": <integer 0-100>,
-  "message_fit_score": <integer 0-100>,
-  "budget_allocation_score": <integer 0-100>,
+  "breakdown": [
+    {
+      "label": "ICP Alignment",
+      "score": <integer 0-100>,
+      "found": "<1 sentence: what you found specific to their responses>",
+      "why": "<1 sentence: why this costs them revenue>"
+    },
+    {
+      "label": "Targeting Accuracy",
+      "score": <integer 0-100>,
+      "found": "<1 sentence: what you found specific to their responses>",
+      "why": "<1 sentence: why this costs them revenue>"
+    },
+    {
+      "label": "Channel Efficiency",
+      "score": <integer 0-100>,
+      "found": "<1 sentence: what you found specific to their responses>",
+      "why": "<1 sentence: why this costs them revenue>"
+    },
+    {
+      "label": "Funnel Friction",
+      "score": <integer 0-100>,
+      "found": "<1 sentence: what you found specific to their responses>",
+      "why": "<1 sentence: why this costs them revenue>"
+    },
+    {
+      "label": "Message to Market Fit",
+      "score": <integer 0-100>,
+      "found": "<1 sentence: what you found specific to their responses>",
+      "why": "<1 sentence: why this costs them revenue>"
+    },
+    {
+      "label": "Budget Allocation",
+      "score": <integer 0-100>,
+      "found": "<1 sentence: what you found specific to their responses>",
+      "why": "<1 sentence: why this costs them revenue>"
+    }
+  ],
   "quick_wins": [
     {
       "action": "<specific, actionable step>",
@@ -394,6 +459,7 @@ Return this exact JSON structure:
 
 Rules:
 - critical_findings: exactly 3 items, ranked by revenue impact
+- breakdown: exactly 6 items in the order listed, scores based on actual responses
 - quick_wins: exactly 3 items
 - All scores must reflect the actual responses — do not return generic numbers`
 

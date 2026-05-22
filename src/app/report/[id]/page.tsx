@@ -244,12 +244,14 @@ export default function ReportPage({ params }: { params: { id: string } }) {
         if (res.ok) {
           const data = await res.json()
           const d = data.report?.diagnosis ?? {}
-          // Try to map Claude's JSON response; fall back to demo fields where absent
+          // Map Claude's field names to the frontend model
+          // overall_score is the canonical name; health_score is legacy
+          // critical_findings is the canonical name; findings is legacy
           setReport({
             company: DEMO.company,
             date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-            health_score: d.health_score ?? DEMO.health_score,
-            findings: d.findings ?? DEMO.findings,
+            health_score: d.overall_score ?? d.health_score ?? DEMO.health_score,
+            findings: d.critical_findings ?? d.findings ?? DEMO.findings,
             breakdown: d.breakdown ?? DEMO.breakdown,
             quick_wins: d.quick_wins ?? DEMO.quick_wins,
           })
