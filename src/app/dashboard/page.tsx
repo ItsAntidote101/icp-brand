@@ -39,6 +39,7 @@ type UserData = {
   company_name: string | null; subscription_tier: string
   billing_status: string; renewal_date: string | null
   created_at: string; paused_until?: string | null
+  avatar_url?: string | null
   has_unread_reply?: boolean | null
   current_streak?: number; longest_streak?: number
   total_fixes_completed?: number
@@ -2084,6 +2085,10 @@ function AccountTab({ user, currency, score, reportCount, onSignOut, onCancelled
   const [billingHistory,       setBillingHistory]       = useState<BillingRow[]>([])
   const [billingLoading,       setBillingLoading]       = useState(true)
   const [showPaymentInfo,      setShowPaymentInfo]      = useState(false)
+  const [exporting,            setExporting]            = useState(false)
+  const [showDeleteConfirm,    setShowDeleteConfirm]    = useState(false)
+  const [deleteConfirmText,    setDeleteConfirmText]    = useState('')
+  const [deleting,             setDeleting]             = useState(false)
 
   const isCancelled = user.billing_status === 'cancelled'
   const isPaused    = user.billing_status === 'paused'
@@ -2353,13 +2358,133 @@ function AccountTab({ user, currency, score, reportCount, onSignOut, onCancelled
         {showPaymentInfo && (
           <div style={{ background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 12, padding: '14px 16px', marginTop: 14 }}>
             <p style={{ fontFamily: fontB, fontSize: 13, color: P, margin: 0, lineHeight: 1.6 }}>
-              To update your payment method, your next payment will prompt you to enter new card details. Alternatively reach us at <strong>hello@idealicp.com</strong>
+              To update your payment method, your next payment will prompt you to enter new card details. Alternatively reach us at <strong>finance@idealicp.com</strong>
             </p>
           </div>
         )}
       </div>
 
       </div>{/* end right column */}
+
+      {/* ── FULL WIDTH: Security and Data ──────────────────────────────── */}
+      <div className="lg:col-span-2" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <p style={{ fontFamily: font, fontSize: 20, fontWeight: 700, color: P, margin: 0, letterSpacing: '-0.02em' }}>Security and Data</p>
+        <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '-8px 0 4px' }}>Manage your sign-in method and control your account data.</p>
+
+        {/* Security */}
+        <Card style={{ padding: '24px 28px' }}>
+          <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: Pmuted, margin: '0 0 4px' }}>Security</p>
+          <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 16px' }}>How you sign in to your account.</p>
+
+          {/* Sign-in method */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 0', borderBottom: `1px solid ${Pborder}` }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <span style={{ fontFamily: fontB, fontSize: 14, fontWeight: 600, color: P }}>Sign-in method</span>
+              <span style={{ fontFamily: fontB, fontSize: 13, color: Pmuted }}>
+                {user.avatar_url?.includes('googleusercontent') ? 'Google account' : 'Email magic link'}
+              </span>
+            </div>
+            <span style={{ fontFamily: fontB, fontSize: 12, fontWeight: 600, background: '#f0fdf4', color: '#15803d', border: '1px solid #bbf7d0', borderRadius: 100, padding: '4px 12px' }}>Active</span>
+          </div>
+
+          {/* Account created */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 0' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <span style={{ fontFamily: fontB, fontSize: 14, fontWeight: 600, color: P }}>Account created</span>
+              <span style={{ fontFamily: fontB, fontSize: 13, color: Pmuted }}>
+                {user.created_at
+                  ? new Date(user.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+                  : 'Unknown'}
+              </span>
+            </div>
+          </div>
+        </Card>
+
+        {/* Data management */}
+        <Card style={{ padding: '24px 28px' }}>
+          <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: Pmuted, margin: '0 0 4px' }}>Data Management</p>
+          <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 16px' }}>Download or permanently delete your account data.</p>
+
+          {/* Export */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 0', borderBottom: `1px solid ${Pborder}` }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <span style={{ fontFamily: fontB, fontSize: 14, fontWeight: 600, color: P }}>Download my data</span>
+              <span style={{ fontFamily: fontB, fontSize: 13, color: Pmuted }}>Export your account details and all reports as a JSON file.</span>
+            </div>
+            <button
+              onClick={async () => {
+                setExporting(true)
+                try {
+                  const res = await fetch('/api/account/export')
+                  if (!res.ok) throw new Error('export failed')
+                  const blob = await res.blob()
+                  const url  = URL.createObjectURL(blob)
+                  const a    = document.createElement('a')
+                  a.href = url; a.download = `icp-data-${user.email}.json`; a.click()
+                  URL.revokeObjectURL(url)
+                } catch { showToast('Export failed. Please try again.') }
+                finally { setExporting(false) }
+              }}
+              disabled={exporting}
+              style={{ flexShrink: 0, background: BgAlt, color: P, border: `1px solid ${Pborder}`, borderRadius: 10, padding: '9px 18px', fontFamily: fontB, fontSize: 13, fontWeight: 600, cursor: exporting ? 'not-allowed' : 'pointer', opacity: exporting ? 0.6 : 1, whiteSpace: 'nowrap' }}>
+              {exporting ? 'Exporting...' : 'Export'}
+            </button>
+          </div>
+
+          {/* Delete account */}
+          <div style={{ padding: '14px 0' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <span style={{ fontFamily: fontB, fontSize: 14, fontWeight: 600, color: '#dc2626' }}>Delete my account</span>
+                <span style={{ fontFamily: fontB, fontSize: 13, color: Pmuted }}>Permanently delete your account, reports, and all associated data. This cannot be undone.</span>
+              </div>
+              <button
+                onClick={() => { setShowDeleteConfirm(true); setDeleteConfirmText('') }}
+                style={{ flexShrink: 0, background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', borderRadius: 10, padding: '9px 18px', fontFamily: fontB, fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                Delete account
+              </button>
+            </div>
+
+            {showDeleteConfirm && (
+              <div style={{ marginTop: 20, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 14, padding: '20px 22px' }}>
+                <p style={{ fontFamily: fontB, fontSize: 14, fontWeight: 700, color: '#dc2626', margin: '0 0 6px' }}>Are you sure?</p>
+                <p style={{ fontFamily: fontB, fontSize: 13, color: '#7f1d1d', margin: '0 0 16px', lineHeight: 1.6 }}>
+                  This will permanently delete your account, all diagnostic reports, and all saved data. Type <strong>DELETE</strong> below to confirm.
+                </p>
+                <input
+                  type="text"
+                  value={deleteConfirmText}
+                  onChange={e => setDeleteConfirmText(e.target.value.toUpperCase())}
+                  placeholder="Type DELETE to confirm"
+                  style={{ width: '100%', padding: '10px 14px', borderRadius: 10, border: '1px solid #fca5a5', fontFamily: fontB, fontSize: 14, color: '#dc2626', background: '#fff', outline: 'none', marginBottom: 14 }}
+                />
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <button
+                    onClick={async () => {
+                      if (deleteConfirmText !== 'DELETE') return
+                      setDeleting(true)
+                      try {
+                        const res = await fetch('/api/account/delete', { method: 'DELETE' })
+                        if (!res.ok) { showToast('Could not delete account. Contact support@idealicp.com.'); setDeleting(false); return }
+                        localStorage.clear()
+                        window.location.href = '/'
+                      } catch { showToast('Something went wrong. Please try again.'); setDeleting(false) }
+                    }}
+                    disabled={deleteConfirmText !== 'DELETE' || deleting}
+                    style={{ flex: 1, background: deleteConfirmText === 'DELETE' ? '#dc2626' : '#fca5a5', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 0', fontFamily: fontB, fontSize: 14, fontWeight: 700, cursor: deleteConfirmText === 'DELETE' && !deleting ? 'pointer' : 'not-allowed' }}>
+                    {deleting ? 'Deleting...' : 'Permanently delete'}
+                  </button>
+                  <button
+                    onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText('') }}
+                    style={{ background: '#fff', color: P, border: `1px solid ${Pborder}`, borderRadius: 10, padding: '10px 20px', fontFamily: fontB, fontSize: 14, fontWeight: 500, cursor: 'pointer' }}>
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </Card>
+      </div>
 
       {/* Modals (outside columns so they overlay everything) */}
       {showPauseModal && (

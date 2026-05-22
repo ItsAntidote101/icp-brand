@@ -17,7 +17,7 @@ export async function GET() {
     .from('users')
     .select(`
       id, email, full_name, company_name, subscription_tier, billing_status,
-      renewal_date, created_at, paused_until, has_unread_reply,
+      renewal_date, created_at, paused_until, has_unread_reply, avatar_url,
       current_streak, longest_streak, total_fixes_completed,
       last_seen_intelligence_at, last_seen_overview_at,
       scheduled_tier, scheduled_tier_date
