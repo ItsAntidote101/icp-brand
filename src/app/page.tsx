@@ -19,9 +19,9 @@ const Border     = 'rgba(24,17,10,0.12)'
 const DarkMuted  = 'rgba(255,255,255,0.5)'
 const DarkBorder = 'rgba(255,255,255,0.12)'
 
-const fontSerif = 'Georgia, "Times New Roman", Times, serif'
 const font  = "'PolySans Median', -apple-system, system-ui, sans-serif"
 const fontB = "'PolySans Neutral', -apple-system, system-ui, sans-serif"
+const fontSerif = font
 
 // ── Data ─────────────────────────────────────────────────────────────────────
 const TIERS = [
