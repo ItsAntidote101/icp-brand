@@ -18,6 +18,7 @@ const P       = '#302161'
 const Pmuted  = 'rgba(48,33,97,0.45)'
 const Pborder = 'rgba(48,33,97,0.08)'
 const BgAlt   = '#f8f7ff'
+const Accent  = '#7c3aed'
 const font    = "'PolySans Median', -apple-system, system-ui, sans-serif"
 const fontB   = "'PolySans Neutral', -apple-system, system-ui, sans-serif"
 
@@ -65,6 +66,14 @@ type DiagnosisData = {
   landing_page_assessment?: string
   monthly_waste_estimate?: string
   is_deep_research?: boolean
+  breakdown?: Array<{ label: string; score: number; found: string; why: string }>
+  business_outcomes?: {
+    cac_current?: string
+    cac_projected?: string
+    ltv_cac_current?: string
+    ltv_cac_projected?: string
+    monthly_revenue_opportunity?: string
+  }
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -622,6 +631,57 @@ function DailyBriefCard({ diag, reports, score, hasIntelligence, onTabChange, us
                 </div>
               </div>
             ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function BusinessOutcomesWidget({ diag }: { diag: DiagnosisData }) {
+  const bo = diag.business_outcomes
+  if (!bo || (!bo.cac_current && !bo.ltv_cac_current)) return null
+
+  return (
+    <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 20, padding: 'clamp(20px,3vw,28px)', display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div>
+        <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 4px' }}>Business Outcomes</p>
+        <p style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: P, margin: 0 }}>Projected unit economics after fixing your ICP</p>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
+        {bo.cac_current && (
+          <div style={{ background: BgAlt, borderRadius: 14, padding: '14px 16px' }}>
+            <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.07em', color: Pmuted, margin: '0 0 8px' }}>Customer Acquisition Cost</p>
+            <p style={{ fontFamily: fontB, fontSize: 12, color: '#dc2626', margin: '0 0 2px' }}>Current</p>
+            <p style={{ fontFamily: font, fontSize: 16, fontWeight: 800, color: P, margin: '0 0 8px', lineHeight: 1.2 }}>{bo.cac_current}</p>
+            {bo.cac_projected && (
+              <>
+                <p style={{ fontFamily: fontB, fontSize: 12, color: '#16a34a', margin: '0 0 2px' }}>After fix</p>
+                <p style={{ fontFamily: font, fontSize: 16, fontWeight: 800, color: '#16a34a', margin: 0, lineHeight: 1.2 }}>{bo.cac_projected}</p>
+              </>
+            )}
+          </div>
+        )}
+
+        {bo.ltv_cac_current && (
+          <div style={{ background: BgAlt, borderRadius: 14, padding: '14px 16px' }}>
+            <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.07em', color: Pmuted, margin: '0 0 8px' }}>LTV : CAC Ratio</p>
+            <p style={{ fontFamily: fontB, fontSize: 12, color: '#d97706', margin: '0 0 2px' }}>Current</p>
+            <p style={{ fontFamily: font, fontSize: 16, fontWeight: 800, color: P, margin: '0 0 8px', lineHeight: 1.2 }}>{bo.ltv_cac_current}</p>
+            {bo.ltv_cac_projected && (
+              <>
+                <p style={{ fontFamily: fontB, fontSize: 12, color: '#16a34a', margin: '0 0 2px' }}>After fix</p>
+                <p style={{ fontFamily: font, fontSize: 16, fontWeight: 800, color: '#16a34a', margin: 0, lineHeight: 1.2 }}>{bo.ltv_cac_projected}</p>
+              </>
+            )}
+          </div>
+        )}
+
+        {bo.monthly_revenue_opportunity && (
+          <div style={{ background: 'linear-gradient(135deg,#ede9fe,#f5f3ff)', borderRadius: 14, padding: '14px 16px', border: `1px solid rgba(124,58,237,0.15)` }}>
+            <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.07em', color: Accent, margin: '0 0 8px' }}>Revenue Opportunity</p>
+            <p style={{ fontFamily: fontB, fontSize: 13, color: P, lineHeight: 1.55, margin: 0 }}>{bo.monthly_revenue_opportunity}</p>
           </div>
         )}
       </div>
@@ -3947,6 +4007,9 @@ export default function DashboardPage() {
 
                 {/* Score Journey */}
                 {score !== null && <ScoreJourneyWidget score={score} reports={reports} />}
+
+                {/* Business Outcomes — shown when data exists */}
+                <BusinessOutcomesWidget diag={diag} />
 
                 {/* Performance Breakdown — Pro+ */}
                 {isPro && score !== null && (
