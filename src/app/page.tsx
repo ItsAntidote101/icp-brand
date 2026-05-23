@@ -5,6 +5,7 @@ import Image from 'next/image'
 import {
   ArrowRight, Check, Menu, X, ChevronDown, ChevronUp,
   Shield, Globe, Users, Lock, Zap, BarChart2, Target, FileText,
+  Crosshair, Layout, TrendingDown, Eye, Plus,
 } from 'lucide-react'
 import SocialProofToast from '@/components/SocialProofToast'
 export const dynamic = 'force-static'
@@ -313,78 +314,101 @@ export default function Page() {
       </section>
 
       {/* ── PLATFORM DIAGRAM ───────────────────────────────────────────── */}
-      <section style={{ background: Dark, borderBottom: `1px solid ${DarkBorder}` }}>
-        <div className="container" style={{ paddingTop: 'clamp(56px,8vw,88px)', paddingBottom: 'clamp(56px,8vw,88px)' }}>
-          <p style={{ fontFamily: fontB, fontSize: 12, color: Orange, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 20px', textAlign: 'center' }}>How the platform works</p>
-          <h2 style={{ fontFamily: fontSerif, fontSize: 'clamp(26px,4vw,48px)', fontWeight: 700, color: '#fff', textAlign: 'center', margin: '0 0 56px', lineHeight: 1.1 }}>
-            Answer questions. Get a <span style={{ color: Orange }}>real diagnosis.</span>
+      <section style={{ background: Warm, borderBottom: `1px solid ${Border}` }}>
+        <style>{`
+          @keyframes scanDot {
+            0%   { top: 0%;   opacity: 0; }
+            8%   { opacity: 1; }
+            92%  { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+          }
+          @keyframes pulseRing {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(232,51,10,0.35); }
+            50%       { box-shadow: 0 0 0 9px rgba(232,51,10,0); }
+          }
+          @media (prefers-reduced-motion: reduce) {
+            .plat-scan-dot { animation: none !important; }
+            .plat-pulse    { animation: none !important; }
+          }
+        `}</style>
+        <div className="container" style={{ paddingTop: 'clamp(56px,8vw,96px)', paddingBottom: 'clamp(56px,8vw,96px)' }}>
+          <p style={{ fontFamily: fontB, fontSize: 12, color: Orange, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 16px', textAlign: 'center' }}>How the platform works</p>
+          <h2 style={{ fontFamily: fontSerif, fontSize: 'clamp(28px,4vw,52px)', fontWeight: 700, color: Dark, textAlign: 'center', margin: '0 0 56px', lineHeight: 1.1, maxWidth: 640, marginLeft: 'auto', marginRight: 'auto' }}>
+            22 questions. A complete <span style={{ color: Orange }}>growth diagnosis.</span>
           </h2>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr auto 1fr', gap: 0, alignItems: 'center', maxWidth: 900, margin: '0 auto' }} className="hidden md:grid">
-            {/* Input */}
-            <div style={{ border: `1px solid ${DarkBorder}`, borderRadius: 12, overflow: 'hidden' }}>
-              <div style={{ padding: '12px 16px', borderBottom: `1px solid ${DarkBorder}` }}>
-                <p style={{ fontFamily: fontB, fontSize: 11, color: Orange, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>Your inputs</p>
-              </div>
-              {['ICP Foundation', 'Targeting setup', 'Ad channels', 'Landing page', 'Funnel metrics'].map(item => (
-                <div key={item} style={{ padding: '10px 16px', borderBottom: `1px solid ${DarkBorder}`, display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: DarkMuted, flexShrink: 0 }} />
-                  <span style={{ fontFamily: fontB, fontSize: 13, color: '#fff' }}>{item}</span>
+          {/* 6-column analysis grid */}
+          <div style={{ border: `1px solid ${Border}`, borderRadius: 8, display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', maxWidth: 1100, margin: '0 auto', overflow: 'hidden' }}
+               className="hidden md:grid">
+            {[
+              { Icon: Target,       title: 'ICP Foundation',          sub: 'Who you are targeting and whether it is right' },
+              { Icon: Crosshair,    title: 'Ad Targeting',            sub: 'Channel and audience alignment signals' },
+              { Icon: Layout,       title: 'Landing Page',            sub: 'Copy, CTA, and conversion clarity' },
+              { Icon: BarChart2,    title: 'Regional Benchmarks',     sub: 'How your metrics compare locally' },
+              { Icon: TrendingDown, title: 'CAC Analysis',            sub: 'Cost per customer relative to LTV' },
+              { Icon: Eye,          title: 'Competitive Intel',       sub: 'Market positioning and gap identification' },
+            ].map(({ Icon, title, sub }, i) => (
+              <div key={title} style={{ padding: '28px 18px 28px', borderLeft: i > 0 ? `1px solid ${Border}` : 'none', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <div style={{ width: 36, height: 36, border: `1px solid ${Border}`, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Icon size={17} color={Dark} strokeWidth={1.5} />
                 </div>
-              ))}
-            </div>
-
-            {/* Arrow */}
-            <div style={{ padding: '0 20px', color: DarkMuted }}>
-              <ArrowRight size={20} color="rgba(255,255,255,0.3)" />
-            </div>
-
-            {/* Center */}
-            <div style={{ border: `2px solid ${Orange}`, borderRadius: 12, padding: '24px 20px', textAlign: 'center', background: 'rgba(232,51,10,0.08)' }}>
-              <div style={{ width: 40, height: 40, borderRadius: 8, background: Orange, margin: '0 auto 14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Zap size={20} color="#fff" fill="#fff" />
-              </div>
-              <p style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: '#fff', margin: '0 0 6px' }}>ICP Diagnostic</p>
-              <p style={{ fontFamily: fontB, fontSize: 12, color: DarkMuted, margin: 0 }}>AI analysis + web research</p>
-            </div>
-
-            {/* Arrow */}
-            <div style={{ padding: '0 20px' }}>
-              <ArrowRight size={20} color="rgba(255,255,255,0.3)" />
-            </div>
-
-            {/* Output */}
-            <div style={{ border: `1px solid ${DarkBorder}`, borderRadius: 12, overflow: 'hidden' }}>
-              <div style={{ padding: '12px 16px', borderBottom: `1px solid ${DarkBorder}` }}>
-                <p style={{ fontFamily: fontB, fontSize: 11, color: Orange, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>Your outputs</p>
-              </div>
-              {['ICP health score 0-100', 'Critical findings ranked', 'CAC and LTV analysis', 'Quick wins this week', 'Weekly intelligence'].map(item => (
-                <div key={item} style={{ padding: '10px 16px', borderBottom: `1px solid ${DarkBorder}`, display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <Check size={12} color={Orange} style={{ flexShrink: 0 }} />
-                  <span style={{ fontFamily: fontB, fontSize: 13, color: '#fff' }}>{item}</span>
+                <div>
+                  <p style={{ fontFamily: font, fontSize: 13, fontWeight: 700, color: Dark, margin: '0 0 5px', lineHeight: 1.3 }}>{title}</p>
+                  <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, margin: 0, lineHeight: 1.55 }}>{sub}</p>
                 </div>
-              ))}
+              </div>
+            ))}
+          </div>
+
+          {/* Mobile: 2-col grid */}
+          <div className="md:hidden" style={{ border: `1px solid ${Border}`, borderRadius: 8, display: 'grid', gridTemplateColumns: '1fr 1fr', overflow: 'hidden' }}>
+            {[
+              { Icon: Target,       title: 'ICP Foundation' },
+              { Icon: Crosshair,    title: 'Ad Targeting' },
+              { Icon: Layout,       title: 'Landing Page' },
+              { Icon: BarChart2,    title: 'Benchmarks' },
+              { Icon: TrendingDown, title: 'CAC Analysis' },
+              { Icon: Eye,          title: 'Competitive Intel' },
+            ].map(({ Icon, title }, i) => (
+              <div key={title} style={{ padding: '20px 16px', borderLeft: i % 2 === 1 ? `1px solid ${Border}` : 'none', borderTop: i >= 2 ? `1px solid ${Border}` : 'none', display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ width: 32, height: 32, border: `1px solid ${Border}`, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Icon size={15} color={Dark} strokeWidth={1.5} />
+                </div>
+                <p style={{ fontFamily: font, fontSize: 12, fontWeight: 700, color: Dark, margin: 0 }}>{title}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Animated connector */}
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 72, position: 'relative', maxWidth: 1100, margin: '0 auto' }}>
+            <div style={{ position: 'absolute', top: 0, bottom: 0, left: '50%', width: 1, background: Border, transform: 'translateX(-50%)' }}>
+              <div className="plat-scan-dot" style={{ position: 'absolute', left: -3, width: 7, height: 7, borderRadius: '50%', background: Orange, animation: 'scanDot 1.8s ease-in-out infinite' }} />
+            </div>
+            <div className="plat-pulse" style={{ position: 'relative', zIndex: 2, width: 34, height: 34, borderRadius: '50%', background: Dark, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'pulseRing 1.8s ease-in-out infinite' }}>
+              <Plus size={14} color="#fff" strokeWidth={2.5} />
             </div>
           </div>
 
-          {/* Mobile version */}
-          <div className="md:hidden" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {[
-              { label: 'You answer', items: ['ICP Foundation', 'Ad channels', 'Landing page', 'Funnel metrics'] },
-              { label: 'You get back', items: ['ICP health score', 'Critical findings', 'CAC analysis', 'Quick wins', 'Intelligence briefs'] },
-            ].map(col => (
-              <div key={col.label} style={{ border: `1px solid ${DarkBorder}`, borderRadius: 12, overflow: 'hidden' }}>
-                <div style={{ padding: '12px 16px', borderBottom: `1px solid ${DarkBorder}` }}>
-                  <p style={{ fontFamily: fontB, fontSize: 11, color: Orange, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>{col.label}</p>
-                </div>
-                {col.items.map(item => (
-                  <div key={item} style={{ padding: '10px 16px', borderBottom: `1px solid ${DarkBorder}`, display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: Orange, flexShrink: 0 }} />
-                    <span style={{ fontFamily: fontB, fontSize: 13, color: '#fff' }}>{item}</span>
-                  </div>
-                ))}
-              </div>
-            ))}
+          {/* Output pills panel */}
+          <div style={{ border: `1px solid ${Border}`, borderRadius: 8, padding: '28px 28px 32px', maxWidth: 1100, margin: '0 auto', backgroundImage: `radial-gradient(${Border} 1px, transparent 1px)`, backgroundSize: '22px 22px' }}>
+            <p style={{ fontFamily: fontB, fontSize: 11, color: Orange, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 18px' }}>Your outputs</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+              {[
+                'ICP Health Score',
+                'Critical Findings',
+                'CAC Before / After',
+                'LTV:CAC Ratio',
+                'Quick Wins',
+                'Weekly Intelligence',
+                'Executive Summary',
+                'Improvement Roadmap',
+              ].map(pill => (
+                <span key={pill} style={{ fontFamily: fontB, fontSize: 13, color: Dark, fontWeight: 600, border: `1px solid ${Border}`, borderRadius: 6, padding: '8px 14px', background: '#fff', display: 'inline-flex', alignItems: 'center', gap: 7 }}>
+                  <Check size={12} color={Orange} strokeWidth={2.5} />
+                  {pill}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
       </section>
