@@ -34,6 +34,14 @@ interface QuickWin {
   impact: Impact
 }
 
+interface BusinessOutcomes {
+  cac_current: string
+  cac_projected: string
+  ltv_cac_current: string
+  ltv_cac_projected: string
+  monthly_revenue_opportunity: string
+}
+
 interface ReportData {
   company: string
   date: string
@@ -41,6 +49,9 @@ interface ReportData {
   findings: Finding[]
   breakdown: BreakdownCard[]
   quick_wins: QuickWin[]
+  business_outcomes?: BusinessOutcomes
+  executive_summary?: string
+  monthly_waste_estimate?: string
 }
 
 // ── Demo / fallback data ──────────────────────────────────────────────────────
@@ -254,6 +265,9 @@ export default function ReportPage({ params }: { params: { id: string } }) {
             findings: d.critical_findings ?? d.findings ?? DEMO.findings,
             breakdown: d.breakdown ?? DEMO.breakdown,
             quick_wins: d.quick_wins ?? DEMO.quick_wins,
+            business_outcomes: d.business_outcomes ?? undefined,
+            executive_summary: d.executive_summary ?? undefined,
+            monthly_waste_estimate: d.monthly_waste_estimate ?? undefined,
           })
         } else {
           setReport(DEMO)
@@ -353,6 +367,26 @@ export default function ReportPage({ params }: { params: { id: string } }) {
           </div>
         </section>
 
+        {/* ── AI Executive Summary ────────────────────────────────────────── */}
+        {report.executive_summary && (
+          <section className="bg-white/[0.02] border border-white/10 rounded-xl p-6">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center mt-0.5">
+                <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-indigo-400">
+                  <path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm1 11H9v-2h2v2zm0-4H9V7h2v2z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-indigo-400 mb-2">Diagnosis Summary</p>
+                <p className="text-slate-300 text-sm leading-relaxed">{report.executive_summary}</p>
+                {report.monthly_waste_estimate && (
+                  <p className="text-xs text-slate-500 mt-2 pt-2 border-t border-white/5">Estimated waste: {report.monthly_waste_estimate}</p>
+                )}
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* ── SECTION 2 · Executive Summary ──────────────────────────────── */}
         <section>
           <div className="mb-6">
@@ -446,6 +480,63 @@ export default function ReportPage({ params }: { params: { id: string } }) {
             ))}
           </div>
         </section>
+
+        {/* ── SECTION 4.5 · Business Outcomes ───────────────────────────── */}
+        {report.business_outcomes && (
+          <section>
+            <div className="mb-6">
+              <h2 className="text-xl font-bold text-white mb-1">Business Outcomes</h2>
+              <p className="text-slate-500 text-sm">Projected unit economics before and after fixing your ICP</p>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-4 mb-4">
+              {/* CAC comparison */}
+              <div className="bg-white/[0.03] border border-white/10 rounded-xl p-5">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-3">Customer Acquisition Cost</p>
+                <div className="flex items-end gap-4 mb-3">
+                  <div>
+                    <p className="text-[11px] text-slate-600 mb-0.5">Current</p>
+                    <p className="text-lg font-black text-red-400">{report.business_outcomes.cac_current}</p>
+                  </div>
+                  <div className="text-slate-700 mb-1">to</div>
+                  <div>
+                    <p className="text-[11px] text-slate-600 mb-0.5">Projected</p>
+                    <p className="text-lg font-black text-emerald-400">{report.business_outcomes.cac_projected}</p>
+                  </div>
+                </div>
+                <p className="text-xs text-slate-500 leading-relaxed">Lower CAC means more customers from the same budget after ICP alignment.</p>
+              </div>
+
+              {/* LTV:CAC comparison */}
+              <div className="bg-white/[0.03] border border-white/10 rounded-xl p-5">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-3">LTV : CAC Ratio</p>
+                <div className="flex items-end gap-4 mb-3">
+                  <div>
+                    <p className="text-[11px] text-slate-600 mb-0.5">Current</p>
+                    <p className="text-lg font-black text-amber-400">{report.business_outcomes.ltv_cac_current}</p>
+                  </div>
+                  <div className="text-slate-700 mb-1">to</div>
+                  <div>
+                    <p className="text-[11px] text-slate-600 mb-0.5">Projected</p>
+                    <p className="text-lg font-black text-emerald-400">{report.business_outcomes.ltv_cac_projected}</p>
+                  </div>
+                </div>
+                <p className="text-xs text-slate-500 leading-relaxed">Healthy B2B benchmark is 3:1 or above. Below 2:1 means your acquisition model is unsustainable.</p>
+              </div>
+            </div>
+
+            {/* Revenue opportunity */}
+            {report.business_outcomes.monthly_revenue_opportunity && (
+              <div className="bg-indigo-950/30 border border-indigo-500/20 rounded-xl p-5">
+                <div className="flex items-start gap-4">
+                  <div className="flex-1">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-indigo-400 mb-1">Monthly Revenue Opportunity</p>
+                    <p className="text-slate-300 text-sm leading-relaxed">{report.business_outcomes.monthly_revenue_opportunity}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </section>
+        )}
 
         {/* ── SECTION 5 · Paywall ────────────────────────────────────────── */}
         <section className="relative">

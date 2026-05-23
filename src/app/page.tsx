@@ -29,7 +29,7 @@ const PERSONA_COPY: Record<string, string> = {
   'Marketing Head': 'Show your CEO exactly where budget is leaking and what to fix first.',
   'Founder': 'See what is broken before you spend another shilling on ads.',
   'Agency': 'Diagnose your clients before you touch their campaigns.',
-  default: 'Answer 20 questions. See exactly where your ad budget is going.',
+  default: 'Answer 22 questions. See exactly where your ad budget is going.',
 }
 
 const TIERS = [
@@ -100,8 +100,16 @@ export default function Page() {
   const [billingAnnual,   setBillingAnnual]   = useState(false)
   const [openFaq,         setOpenFaq]         = useState<number | null>(null)
   const [calcBudget,      setCalcBudget]      = useState('')
-  const [calcConvRate,    setCalcConvRate]    = useState('')
-  const [calcResult,      setCalcResult]      = useState<number | null>(null)
+  const [calcLeads,       setCalcLeads]       = useState('')
+  const [calcCloseRate,   setCalcCloseRate]   = useState('')
+  const [calcLTV,         setCalcLTV]         = useState('')
+  const [calcChurn,       setCalcChurn]       = useState('')
+  const [calcMetrics,     setCalcMetrics]     = useState<{
+    cacCurrent: number; cacProjected: number
+    ltvCacCurrent: number; ltvCacProjected: number
+    monthlyCustomers: number; monthlyCustomersProjected: number
+    monthlyRevenueOpportunity: number; paybackMonths: number
+  } | null>(null)
   const [showStickyBar,   setShowStickyBar]   = useState(false)
   const [stickyDismissed, setStickyDismissed] = useState(false)
   const [liveCount,       setLiveCount]       = useState(480)
@@ -156,10 +164,35 @@ export default function Page() {
   }, [])
 
   const handleCalc = () => {
-    const budget = parseFloat(calcBudget.replace(/,/g, ''))
-    const rate   = parseFloat(calcConvRate)
-    if (isNaN(budget) || isNaN(rate) || budget <= 0 || rate < 0) return
-    setCalcResult(rate < 3.5 ? Math.round(budget * (1 - rate / 3.5)) : Math.round(budget * 0.1))
+    const budget    = parseFloat(calcBudget.replace(/,/g, ''))
+    const leads     = parseFloat(calcLeads.replace(/,/g, ''))
+    const closeRate = parseFloat(calcCloseRate) / 100
+    const ltv       = parseFloat(calcLTV.replace(/,/g, ''))
+    const churn     = calcChurn ? parseFloat(calcChurn) / 100 : null
+    if ([budget, leads, closeRate, ltv].some(v => isNaN(v) || v <= 0)) return
+
+    const monthlyCustomers           = leads * closeRate
+    const cacCurrent                 = budget / monthlyCustomers
+    const improvementFactor          = 1.35 * 1.30
+    const monthlyCustomersProjected  = monthlyCustomers * improvementFactor
+    const cacProjected               = budget / monthlyCustomersProjected
+    const ltvCacCurrent              = ltv / cacCurrent
+    const ltvCacProjected            = ltv / cacProjected
+    const additionalCustomers        = monthlyCustomersProjected - monthlyCustomers
+    const monthlyRevenueOpportunity  = additionalCustomers * ltv
+    const mrr                        = churn && churn > 0 ? ltv * churn : ltv / 24
+    const paybackMonths              = cacProjected / mrr
+
+    setCalcMetrics({
+      cacCurrent:                 Math.round(cacCurrent),
+      cacProjected:               Math.round(cacProjected),
+      ltvCacCurrent:              Math.round(ltvCacCurrent * 10) / 10,
+      ltvCacProjected:            Math.round(ltvCacProjected * 10) / 10,
+      monthlyCustomers:           Math.round(monthlyCustomers * 10) / 10,
+      monthlyCustomersProjected:  Math.round(monthlyCustomersProjected * 10) / 10,
+      monthlyRevenueOpportunity:  Math.round(monthlyRevenueOpportunity),
+      paybackMonths:              Math.round(paybackMonths * 10) / 10,
+    })
   }
 
   return (
@@ -330,33 +363,115 @@ export default function Page() {
             </div>
           ))}
 
-          {/* Calculator */}
-          <div style={{ marginTop: 56, background: 'rgba(255,255,255,0.04)', borderRadius: 20, padding: 'clamp(24px,4vw,36px)', border: '1px solid rgba(255,255,255,0.09)', maxWidth: 520 }}>
-            <h3 style={{ fontFamily: font, fontSize: 18, color: '#fff', fontWeight: 700, margin: '0 0 20px' }}>Calculate your estimated waste</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
+          {/* Business Outcomes Calculator */}
+          <div style={{ marginTop: 56, background: 'rgba(255,255,255,0.04)', borderRadius: 20, padding: 'clamp(24px,4vw,36px)', border: '1px solid rgba(255,255,255,0.09)', maxWidth: 680 }}>
+            <p style={{ fontFamily: fontB, fontSize: 11, color: Accent, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 8px' }}>Business Outcomes Calculator</p>
+            <h3 style={{ fontFamily: font, fontSize: 20, color: '#fff', fontWeight: 700, margin: '0 0 6px' }}>Model your unit economics</h3>
+            <p style={{ fontFamily: fontB, fontSize: 13, color: 'rgba(255,255,255,0.45)', margin: '0 0 24px', lineHeight: 1.55 }}>See your CAC, LTV:CAC ratio, and revenue upside before and after fixing your ICP targeting.</p>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+              {/* Monthly budget */}
               <div style={{ position: 'relative' }}>
-                <span style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>KES</span>
-                <input type="number" placeholder="Monthly budget" value={calcBudget} onChange={e => setCalcBudget(e.target.value)}
-                  style={{ width: '100%', padding: '12px 12px 12px 48px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)', fontFamily: fontB, fontSize: 14, color: '#fff', outline: 'none', background: 'rgba(255,255,255,0.05)' }} />
+                <span style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.3)', pointerEvents: 'none' }}>KES</span>
+                <input type="number" placeholder="Monthly ad budget" value={calcBudget} onChange={e => setCalcBudget(e.target.value)}
+                  style={{ width: '100%', padding: '12px 12px 12px 46px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)', fontFamily: fontB, fontSize: 14, color: '#fff', outline: 'none', background: 'rgba(255,255,255,0.05)' }} />
               </div>
+              {/* Monthly leads */}
+              <div>
+                <input type="number" placeholder="Monthly leads generated" value={calcLeads} onChange={e => setCalcLeads(e.target.value)}
+                  style={{ width: '100%', padding: '12px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)', fontFamily: fontB, fontSize: 14, color: '#fff', outline: 'none', background: 'rgba(255,255,255,0.05)' }} />
+              </div>
+              {/* Close rate */}
               <div style={{ position: 'relative' }}>
-                <input type="number" placeholder="Conversion rate" value={calcConvRate} onChange={e => setCalcConvRate(e.target.value)}
+                <input type="number" placeholder="Lead-to-close rate" value={calcCloseRate} onChange={e => setCalcCloseRate(e.target.value)}
                   style={{ width: '100%', padding: '12px 36px 12px 12px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)', fontFamily: fontB, fontSize: 14, color: '#fff', outline: 'none', background: 'rgba(255,255,255,0.05)' }} />
-                <span style={{ position: 'absolute', right: 13, top: '50%', transform: 'translateY(-50%)', fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>%</span>
+                <span style={{ position: 'absolute', right: 13, top: '50%', transform: 'translateY(-50%)', fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>%</span>
+              </div>
+              {/* LTV */}
+              <div style={{ position: 'relative' }}>
+                <span style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.3)', pointerEvents: 'none' }}>KES</span>
+                <input type="number" placeholder="Avg customer LTV" value={calcLTV} onChange={e => setCalcLTV(e.target.value)}
+                  style={{ width: '100%', padding: '12px 12px 12px 46px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)', fontFamily: fontB, fontSize: 14, color: '#fff', outline: 'none', background: 'rgba(255,255,255,0.05)' }} />
               </div>
             </div>
-            <button onClick={handleCalc} style={{ width: '100%', background: '#fff', color: Dark, fontFamily: font, fontSize: 14, fontWeight: 700, borderRadius: 100, padding: '13px 0', border: 'none', cursor: 'pointer' }}>
-              Calculate My Waste
+            {/* Optional churn */}
+            <div style={{ position: 'relative', marginBottom: 16 }}>
+              <input type="number" placeholder="Monthly churn rate (optional)" value={calcChurn} onChange={e => setCalcChurn(e.target.value)}
+                style={{ width: '100%', padding: '12px 36px 12px 12px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.07)', fontFamily: fontB, fontSize: 14, color: '#fff', outline: 'none', background: 'rgba(255,255,255,0.03)' }} />
+              <span style={{ position: 'absolute', right: 13, top: '50%', transform: 'translateY(-50%)', fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.25)' }}>% churn</span>
+            </div>
+
+            <button onClick={handleCalc} style={{ width: '100%', background: '#fff', color: Dark, fontFamily: font, fontSize: 14, fontWeight: 700, borderRadius: 100, padding: '14px 0', border: 'none', cursor: 'pointer' }}>
+              Calculate My Business Outcomes
             </button>
-            {calcResult !== null && (
-              <div style={{ marginTop: 24, textAlign: 'center' }}>
-                <p style={{ fontFamily: font, fontSize: 28, color: '#ef4444', margin: '0 0 6px' }}>
-                  KES {calcResult.toLocaleString()} wasted per month.
-                </p>
-                <p style={{ fontFamily: fontB, fontSize: 13, color: 'rgba(255,255,255,0.45)', margin: '0 0 16px' }}>Get your free diagnosis to find out exactly where.</p>
-                <Link href="/questionnaire" style={{ display: 'block', background: '#fff', color: Dark, fontFamily: font, fontSize: 14, fontWeight: 700, borderRadius: 100, padding: '12px 0', textDecoration: 'none', textAlign: 'center' }}>
-                  Get My Free Diagnosis
+
+            {calcMetrics !== null && (
+              <div style={{ marginTop: 28 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+                  {/* CAC */}
+                  <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 14, padding: '16px 18px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <p style={{ fontFamily: fontB, fontSize: 10, color: 'rgba(255,255,255,0.4)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 10px' }}>Customer Acquisition Cost</p>
+                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10 }}>
+                      <div>
+                        <p style={{ fontFamily: fontB, fontSize: 10, color: '#ef4444', margin: '0 0 2px' }}>Current</p>
+                        <p style={{ fontFamily: font, fontSize: 20, fontWeight: 800, color: '#ef4444', margin: 0 }}>KES {calcMetrics.cacCurrent.toLocaleString()}</p>
+                      </div>
+                      <p style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.25)', marginBottom: 3 }}>to</p>
+                      <div>
+                        <p style={{ fontFamily: fontB, fontSize: 10, color: '#22c55e', margin: '0 0 2px' }}>After fix</p>
+                        <p style={{ fontFamily: font, fontSize: 20, fontWeight: 800, color: '#22c55e', margin: 0 }}>KES {calcMetrics.cacProjected.toLocaleString()}</p>
+                      </div>
+                    </div>
+                    <p style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.35)', margin: '8px 0 0' }}>
+                      {Math.round((1 - calcMetrics.cacProjected / calcMetrics.cacCurrent) * 100)}% reduction in cost to acquire
+                    </p>
+                  </div>
+                  {/* LTV:CAC */}
+                  <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 14, padding: '16px 18px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <p style={{ fontFamily: fontB, fontSize: 10, color: 'rgba(255,255,255,0.4)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 10px' }}>LTV : CAC Ratio</p>
+                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10 }}>
+                      <div>
+                        <p style={{ fontFamily: fontB, fontSize: 10, color: calcMetrics.ltvCacCurrent < 3 ? '#f59e0b' : '#22c55e', margin: '0 0 2px' }}>Current</p>
+                        <p style={{ fontFamily: font, fontSize: 20, fontWeight: 800, color: calcMetrics.ltvCacCurrent < 3 ? '#f59e0b' : '#22c55e', margin: 0 }}>{calcMetrics.ltvCacCurrent}:1</p>
+                      </div>
+                      <p style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.25)', marginBottom: 3 }}>to</p>
+                      <div>
+                        <p style={{ fontFamily: fontB, fontSize: 10, color: '#22c55e', margin: '0 0 2px' }}>After fix</p>
+                        <p style={{ fontFamily: font, fontSize: 20, fontWeight: 800, color: '#22c55e', margin: 0 }}>{calcMetrics.ltvCacProjected}:1</p>
+                      </div>
+                    </div>
+                    <p style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.35)', margin: '8px 0 0' }}>
+                      {calcMetrics.ltvCacCurrent < 3 ? 'Below 3:1 benchmark. Fixing ICP is urgent.' : 'Above 3:1 benchmark. Fixing ICP compounds gains.'}
+                    </p>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+                  {/* New customers */}
+                  <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 14, padding: '14px 18px', border: '1px solid rgba(255,255,255,0.07)' }}>
+                    <p style={{ fontFamily: fontB, fontSize: 10, color: 'rgba(255,255,255,0.4)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>New Customers / Month</p>
+                    <p style={{ fontFamily: font, fontSize: 18, fontWeight: 800, color: '#fff', margin: 0 }}>{calcMetrics.monthlyCustomers} <span style={{ color: '#22c55e', fontSize: 14 }}>to {calcMetrics.monthlyCustomersProjected}</span></p>
+                    <p style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.35)', margin: '6px 0 0' }}>+{Math.round((calcMetrics.monthlyCustomersProjected - calcMetrics.monthlyCustomers) * 10) / 10} additional per month</p>
+                  </div>
+                  {/* Payback */}
+                  <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 14, padding: '14px 18px', border: '1px solid rgba(255,255,255,0.07)' }}>
+                    <p style={{ fontFamily: fontB, fontSize: 10, color: 'rgba(255,255,255,0.4)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>CAC Payback Period</p>
+                    <p style={{ fontFamily: font, fontSize: 18, fontWeight: 800, color: '#fff', margin: 0 }}>{calcMetrics.paybackMonths} months</p>
+                    <p style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.35)', margin: '6px 0 0' }}>After ICP is fixed</p>
+                  </div>
+                </div>
+
+                {/* Revenue opportunity highlight */}
+                <div style={{ background: 'rgba(124,58,237,0.12)', borderRadius: 14, padding: '18px 20px', border: '1px solid rgba(124,58,237,0.25)', marginBottom: 16 }}>
+                  <p style={{ fontFamily: fontB, fontSize: 10, color: Accent, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>Monthly Revenue Opportunity</p>
+                  <p style={{ fontFamily: font, fontSize: 28, fontWeight: 800, color: '#fff', margin: '0 0 4px' }}>KES {calcMetrics.monthlyRevenueOpportunity.toLocaleString()}</p>
+                  <p style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.45)', margin: 0 }}>LTV recovered per month from additional customers. Subscription ROI: {Math.round(calcMetrics.monthlyRevenueOpportunity / 6500)}x on KES 6,500/mo plan.</p>
+                </div>
+
+                <Link href="/questionnaire" style={{ display: 'block', background: '#fff', color: Dark, fontFamily: font, fontSize: 14, fontWeight: 700, borderRadius: 100, padding: '14px 0', textDecoration: 'none', textAlign: 'center' }}>
+                  Get My Free ICP Diagnosis
                 </Link>
+                <p style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.3)', textAlign: 'center', margin: '8px 0 0' }}>Estimates based on typical 35% lead efficiency gain and 30% close rate lift from ICP alignment.</p>
               </div>
             )}
           </div>
@@ -371,7 +486,7 @@ export default function Page() {
             Three steps to clarity.
           </h2>
           {[
-            { num: '01', title: 'Answer 20 questions', body: 'Tell us about your targeting and funnel. No ad account access needed.', chip: '5 minutes' },
+            { num: '01', title: 'Answer 22 questions', body: 'Tell us about your targeting and funnel. No ad account access needed.', chip: '5 minutes' },
             { num: '02', title: 'Get your report', body: 'Your ICP health score, monthly waste estimate, and top findings ranked by revenue impact.', chip: 'Instant' },
             { num: '03', title: 'Fix what is broken', body: 'Follow the prioritized action plan. Subscribe for ongoing monitoring and weekly intelligence.', chip: 'Start today' },
           ].map((step, i) => (

@@ -248,6 +248,8 @@ LAYER 2 — Targeting Mismatch:
 - Conversions (last 3 months): ${responses[22] ?? ''}
 - Current CPA: ${responses[23] ?? ''}
 - Leads match best customer profile: ${responses[24] ?? ''}
+- Lead-to-customer close rate: ${responses[21] ?? ''}%
+- Average customer lifetime value: ${responses[22] ?? ''}
 
 LAYER 3 — Funnel Friction:
 - Primary CTA on landing page: ${responses[25] ?? ''}
@@ -321,7 +323,14 @@ Return this exact JSON structure:
   "landing_page_assessment": "<assessment of the landing page URL if provided, otherwise note that no URL was given>",
   "competitor_insights": "<brief note on competitive landscape in this region/industry based on web research>",
   "regional_benchmarks": "<current CPC/CPA benchmarks for ${geographicRegion} in this category based on web research>",
-  "monthly_waste_estimate": "<estimated monthly budget being wasted based on the diagnosis, with reasoning>"
+  "monthly_waste_estimate": "<estimated monthly budget being wasted based on the diagnosis, with reasoning>",
+  "business_outcomes": {
+    "cac_current": "<estimated current CAC — calculate from their monthly budget divided by (leads x close rate) — show the number in KES with brief working>",
+    "cac_projected": "<projected CAC after implementing top 3 fixes — show expected percentage reduction and resulting figure in KES>",
+    "ltv_cac_current": "<current LTV:CAC ratio based on their stated LTV — e.g. 1.8:1. Flag if below 3:1 benchmark>",
+    "ltv_cac_projected": "<projected LTV:CAC after fixes — target at least 3:1 for healthy B2B unit economics>",
+    "monthly_revenue_opportunity": "<additional monthly revenue opportunity from fixing ICP — quantify in KES with brief reasoning>"
+  }
 }
 
 Rules:
@@ -387,6 +396,8 @@ LAYER 2 — Targeting Mismatch:
 - Conversions (last 3 months): ${responses[22] ?? ''}
 - Current CPA: ${responses[23] ?? ''}
 - Leads match best customer profile: ${responses[24] ?? ''}
+- Lead-to-customer close rate: ${responses[21] ?? ''}%
+- Average customer lifetime value: ${responses[22] ?? ''}
 
 LAYER 3 — Funnel Friction:
 - Primary CTA on landing page: ${responses[25] ?? ''}
@@ -454,7 +465,14 @@ Return this exact JSON structure:
       "timeline": "<This week|This month|Next quarter>"
     }
   ],
-  "monthly_waste_estimate": "<estimated monthly budget being wasted based on the diagnosis, with reasoning>"
+  "monthly_waste_estimate": "<estimated monthly budget being wasted based on the diagnosis, with reasoning>",
+  "business_outcomes": {
+    "cac_current": "<estimated current CAC — calculate from their monthly budget divided by (leads x close rate) — show the number in KES with brief working>",
+    "cac_projected": "<projected CAC after implementing top 3 fixes — show expected percentage reduction and resulting figure in KES>",
+    "ltv_cac_current": "<current LTV:CAC ratio based on their stated LTV — e.g. 1.8:1. Flag if below 3:1 benchmark>",
+    "ltv_cac_projected": "<projected LTV:CAC after fixes — target at least 3:1 for healthy B2B unit economics>",
+    "monthly_revenue_opportunity": "<additional monthly revenue opportunity from fixing ICP — quantify in KES with brief reasoning>"
+  }
 }
 
 Rules:
@@ -465,7 +483,7 @@ Rules:
 
     const res = await anthropic.messages.create({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 2000,
+      max_tokens: 2500,
       system: freeSystemPrompt,
       messages: [{ role: 'user', content: freePrompt }],
     })

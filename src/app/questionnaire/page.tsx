@@ -151,10 +151,22 @@ const QUESTIONS: Question[] = [
     question: 'How clearly does your landing page communicate why you are different from every alternative?',
     type: 'slider',
   },
+  {
+    id: 21, layer: 2, layerName: 'Targeting Mismatch',
+    question: 'What percentage of your qualified leads convert into paying customers?',
+    type: 'number',
+    placeholder: 'e.g. 12 (for 12%)',
+  },
+  {
+    id: 22, layer: 2, layerName: 'Targeting Mismatch',
+    question: 'What is the average lifetime value of a paying customer to your business?',
+    type: 'radio',
+    options: ['Under KES 10,000', 'KES 10,000–50,000', 'KES 50,000–200,000', 'KES 200,000–1,000,000', 'Over KES 1,000,000'],
+  },
 ]
 
-const LAYER_STARTS  = [0, 7, 15]
-const LAYER_LENGTHS = [7, 8, 5]
+const LAYER_STARTS  = [0, 7, 17]
+const LAYER_LENGTHS = [7, 10, 5]
 
 const XP_PER_Q = 10
 
@@ -591,7 +603,7 @@ export default function QuestionnairePage() {
             Let&apos;s get started — tell us about yourself
           </h2>
           <div className="flex flex-wrap gap-2 mb-6">
-            {['3 layers', '20 questions', '5 minutes', 'Instant results'].map(chip => (
+            {['3 layers', '22 questions', '5 minutes', 'Instant results'].map(chip => (
               <span key={chip} className="inline-block text-xs font-semibold text-indigo-300 bg-white/[0.06] border border-white/10 rounded-full px-3 py-1">{chip}</span>
             ))}
           </div>

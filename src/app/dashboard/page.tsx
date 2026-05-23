@@ -1419,7 +1419,7 @@ function FirstRunDashboard({ user }: { user: UserData }) {
             Run My First Diagnosis <ArrowRight size={15} />
           </Link>
           <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-            {[['3 layers', '20 questions'], ['5 minutes', 'Instant results']].map(([a, b]) => (
+            {[['3 layers', '22 questions'], ['5 minutes', 'Instant results']].map(([a, b]) => (
               <div key={a} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                 <Check size={13} color="rgba(255,255,255,0.5)" />
                 <span style={{ fontFamily: fontB, fontSize: 13, color: 'rgba(255,255,255,0.55)' }}>{a}</span>
