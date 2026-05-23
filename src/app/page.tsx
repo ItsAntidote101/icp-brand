@@ -481,29 +481,66 @@ export default function Page() {
 
       {/* ── HOW IT WORKS ────────────────────────────────────────────────── */}
       <section id="how-it-works" style={{ background: Warm, borderBottom: `1px solid ${Border}` }}>
-        <div className="container" style={{ paddingTop: 'clamp(56px,8vw,88px)', paddingBottom: 'clamp(56px,8vw,88px)' }}>
-          <p style={{ fontFamily: fontB, fontSize: 12, color: Orange, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 16px' }}>How It Works</p>
-          <h2 style={{ fontFamily: fontSerif, fontSize: 'clamp(28px,4.5vw,52px)', color: Text, fontWeight: 700, margin: '0 0 48px', lineHeight: 1.08 }}>
-            Three steps to clarity.
-          </h2>
-          {[
-            { num: '01', title: 'Answer 22 questions', body: 'Tell us about your targeting and funnel. No ad account access needed. Takes 5 minutes.', chip: '5 minutes' },
-            { num: '02', title: 'Get your report', body: 'Your ICP health score, monthly waste estimate, CAC analysis, and top findings ranked by revenue impact.', chip: 'Instant' },
-            { num: '03', title: 'Fix what is broken', body: 'Follow the prioritised action plan. Subscribe for ongoing monitoring, weekly intelligence, and CAC tracking.', chip: 'Start today' },
-          ].map((step, i) => (
-            <div key={i} style={{ display: 'flex', gap: 'clamp(16px,3vw,40px)', alignItems: 'flex-start', padding: 'clamp(28px,4vw,40px) 0', borderTop: `1px solid ${Border}` }}>
-              <span style={{ fontFamily: fontSerif, fontSize: 'clamp(32px,5vw,56px)', fontWeight: 700, color: Orange, opacity: 0.35, flexShrink: 0, lineHeight: 1, minWidth: 56 }}>{step.num}</span>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: 12, marginBottom: 10 }}>
-                  <h3 style={{ fontFamily: font, fontSize: 'clamp(18px,2.5vw,24px)', fontWeight: 700, color: Text, margin: 0 }}>{step.title}</h3>
-                  <span style={{ display: 'inline-block', background: 'rgba(232,51,10,0.1)', color: Orange, fontFamily: fontB, fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 4 }}>{step.chip}</span>
-                </div>
-                <p style={{ fontFamily: fontB, fontSize: 15, color: Muted, lineHeight: 1.65, margin: 0, maxWidth: 520 }}>{step.body}</p>
-              </div>
-            </div>
-          ))}
+        <div className="container" style={{ paddingTop: 'clamp(56px,8vw,96px)', paddingBottom: 'clamp(56px,8vw,96px)' }}>
+          <p style={{ fontFamily: fontB, fontSize: 12, color: Orange, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 14px' }}>How It Works</p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, marginBottom: 48 }}>
+            <h2 style={{ fontFamily: fontSerif, fontSize: 'clamp(28px,4.5vw,52px)', color: Text, fontWeight: 700, margin: 0, lineHeight: 1.08 }}>
+              Three steps to clarity.
+            </h2>
+            <p style={{ fontFamily: fontB, fontSize: 14, color: Muted, margin: 0, maxWidth: 360, lineHeight: 1.65 }}>
+              No ad account access. No agency required. Just answers, then a ranked action plan.
+            </p>
+          </div>
 
-          <div style={{ borderTop: `1px solid ${Border}`, paddingTop: 40, display: 'flex', flexWrap: 'wrap', gap: 28, alignItems: 'center', justifyContent: 'space-between' }}>
+          {/* 3-card grid */}
+          <div style={{ border: `1px solid ${Border}`, borderRadius: 8, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', overflow: 'hidden', marginBottom: 0 }}
+               className="hidden md:grid">
+            {[
+              { num: '01', Icon: FileText, title: 'Answer 22 questions', body: 'Tell us about your targeting and funnel. No ad account access needed. Takes around 5 minutes.', chip: '5 minutes', chipBg: 'rgba(232,51,10,0.1)' },
+              { num: '02', Icon: Zap,      title: 'Get your report',      body: 'Your ICP health score, monthly waste estimate, CAC analysis, and top findings ranked by revenue impact.', chip: 'Instant',   chipBg: 'rgba(232,51,10,0.1)' },
+              { num: '03', Icon: ArrowRight, title: 'Fix what is broken', body: 'Follow the prioritised action plan. Subscribe for ongoing monitoring, weekly intelligence, and CAC tracking.', chip: 'Start today', chipBg: 'rgba(232,51,10,0.1)' },
+            ].map(({ num, Icon, title, body, chip, chipBg }, i) => (
+              <div key={i} style={{ borderLeft: i > 0 ? `1px solid ${Border}` : 'none', padding: '36px 28px 36px', display: 'flex', flexDirection: 'column', gap: 0, position: 'relative', overflow: 'hidden' }}>
+                {/* Ghost number watermark */}
+                <span style={{ position: 'absolute', top: 12, right: 20, fontFamily: fontSerif, fontSize: 72, fontWeight: 700, color: Orange, opacity: 0.07, lineHeight: 1, userSelect: 'none', pointerEvents: 'none' }}>{num}</span>
+                {/* Icon */}
+                <div style={{ width: 40, height: 40, borderRadius: 8, border: `1.5px solid ${Border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24, flexShrink: 0 }}>
+                  <Icon size={18} color={Dark} strokeWidth={1.5} />
+                </div>
+                {/* Step number label */}
+                <p style={{ fontFamily: fontB, fontSize: 11, color: Orange, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 8px' }}>Step {num}</p>
+                <h3 style={{ fontFamily: font, fontSize: 'clamp(16px,2vw,20px)', fontWeight: 700, color: Text, margin: '0 0 12px', lineHeight: 1.25 }}>{title}</h3>
+                <p style={{ fontFamily: fontB, fontSize: 14, color: Muted, lineHeight: 1.65, margin: '0 0 20px', flex: 1 }}>{body}</p>
+                <span style={{ alignSelf: 'flex-start', background: chipBg, color: Orange, fontFamily: fontB, fontSize: 12, fontWeight: 700, padding: '4px 11px', borderRadius: 4 }}>{chip}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Mobile: stacked with border separator */}
+          <div className="md:hidden" style={{ border: `1px solid ${Border}`, borderRadius: 8, overflow: 'hidden' }}>
+            {[
+              { num: '01', Icon: FileText,  title: 'Answer 22 questions', body: 'No ad account needed. Takes 5 minutes.', chip: '5 minutes' },
+              { num: '02', Icon: Zap,       title: 'Get your report',      body: 'Health score, CAC analysis, and ranked findings instantly.', chip: 'Instant' },
+              { num: '03', Icon: ArrowRight, title: 'Fix what is broken',  body: 'Follow the action plan and track your progress.', chip: 'Start today' },
+            ].map(({ num, Icon, title, body, chip }, i) => (
+              <div key={i} style={{ borderTop: i > 0 ? `1px solid ${Border}` : 'none', padding: '24px 20px', display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+                <div style={{ width: 36, height: 36, borderRadius: 7, border: `1.5px solid ${Border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Icon size={16} color={Dark} strokeWidth={1.5} />
+                </div>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                    <span style={{ fontFamily: fontB, fontSize: 10, color: Orange, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Step {num}</span>
+                    <span style={{ background: 'rgba(232,51,10,0.1)', color: Orange, fontFamily: fontB, fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 4 }}>{chip}</span>
+                  </div>
+                  <h3 style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: Text, margin: '0 0 6px' }}>{title}</h3>
+                  <p style={{ fontFamily: fontB, fontSize: 13, color: Muted, lineHeight: 1.6, margin: 0 }}>{body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Free report includes bar */}
+          <div style={{ borderTop: `1px solid ${Border}`, marginTop: 48, paddingTop: 40, display: 'flex', flexWrap: 'wrap', gap: 28, alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
               <p style={{ fontFamily: fontB, fontSize: 11, color: Muted, fontWeight: 700, margin: '0 0 14px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Your free report includes</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 24px' }}>
@@ -592,152 +629,130 @@ export default function Page() {
 
       {/* ── BUSINESS OUTCOMES CALCULATOR ────────────────────────────────── */}
       <section id="calculator" style={{ background: Dark, borderBottom: `1px solid ${DarkBorder}` }}>
-        <div className="container" style={{ paddingTop: 'clamp(56px,8vw,88px)', paddingBottom: 'clamp(56px,8vw,88px)' }}>
+        <div className="container" style={{ paddingTop: 'clamp(56px,8vw,96px)', paddingBottom: 'clamp(56px,8vw,96px)' }}>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0, borderBottom: `1px solid ${DarkBorder}`, marginBottom: 48 }} className="block md:grid">
-            <div style={{ paddingBottom: 32, borderRight: `1px solid ${DarkBorder}`, paddingRight: 'clamp(0px,4vw,48px)' }}>
-              <p style={{ fontFamily: fontB, fontSize: 12, color: Orange, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 16px' }}>Business Outcomes Calculator</p>
-              <h2 style={{ fontFamily: fontSerif, fontSize: 'clamp(26px,4vw,44px)', color: '#fff', fontWeight: 700, margin: '0 0 16px', lineHeight: 1.1 }}>
+          {/* Section header */}
+          <div style={{ marginBottom: 56 }}>
+            <p style={{ fontFamily: fontB, fontSize: 12, color: Orange, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 14px' }}>Business Outcomes Calculator</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', gap: 24, justifyContent: 'space-between' }}>
+              <h2 style={{ fontFamily: fontSerif, fontSize: 'clamp(28px,4vw,48px)', color: '#fff', fontWeight: 700, margin: 0, lineHeight: 1.08 }}>
                 Model your <span style={{ color: Orange }}>unit economics.</span>
               </h2>
-              <p style={{ fontFamily: fontB, fontSize: 15, color: DarkMuted, lineHeight: 1.7, margin: 0 }}>
-                See your CAC, LTV:CAC ratio, and revenue upside before and after fixing your ICP targeting.
-              </p>
-            </div>
-            <div style={{ paddingBottom: 32, paddingLeft: 'clamp(0px,4vw,48px)' }}>
-              <p style={{ fontFamily: fontB, fontSize: 13, color: DarkMuted, lineHeight: 1.75, margin: 0, paddingTop: 8 }}>
-                Enter your current numbers below. We calculate what your CAC and LTV:CAC look like today, and what they look like after a typical ICP fix. Based on our observation across 9,000+ diagnoses: fixing ICP alignment improves lead quality by 35 percent and close rate by 30 percent on average.
+              <p style={{ fontFamily: fontB, fontSize: 14, color: DarkMuted, lineHeight: 1.7, margin: 0, maxWidth: 400 }}>
+                Based on 9,000+ diagnoses: fixing ICP alignment improves lead quality by 35 percent and close rate by 30 percent on average.
               </p>
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48, alignItems: 'start' }} className="block md:grid">
-            {/* Inputs */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              <div>
-                <label style={{ fontFamily: fontB, fontSize: 12, color: DarkMuted, display: 'block', marginBottom: 6, fontWeight: 600 }}>Monthly ad budget (KES)</label>
-                <div style={{ position: 'relative' }}>
-                  <span style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.3)', pointerEvents: 'none' }}>KES</span>
-                  <input type="number" placeholder="e.g. 150,000" value={calcBudget} onChange={e => setCalcBudget(e.target.value)}
-                    style={{ ...inputStyle, paddingLeft: 46 }} />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0, border: `1px solid ${DarkBorder}`, borderRadius: 8, overflow: 'hidden' }} className="block md:grid">
+            {/* Left: Inputs */}
+            <div style={{ padding: 'clamp(24px,4vw,40px)', borderRight: `1px solid ${DarkBorder}` }}>
+              <p style={{ fontFamily: fontB, fontSize: 11, color: DarkMuted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 20px' }}>Your current numbers</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div>
+                  <label style={{ fontFamily: fontB, fontSize: 12, color: DarkMuted, display: 'block', marginBottom: 7, fontWeight: 600 }}>Monthly ad budget</label>
+                  <div style={{ position: 'relative' }}>
+                    <span style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.3)', pointerEvents: 'none' }}>KES</span>
+                    <input type="number" placeholder="e.g. 150,000" value={calcBudget} onChange={e => setCalcBudget(e.target.value)} style={{ ...inputStyle, paddingLeft: 46 }} />
+                  </div>
                 </div>
-              </div>
-              <div>
-                <label style={{ fontFamily: fontB, fontSize: 12, color: DarkMuted, display: 'block', marginBottom: 6, fontWeight: 600 }}>Monthly leads generated</label>
-                <input type="number" placeholder="e.g. 80" value={calcLeads} onChange={e => setCalcLeads(e.target.value)} style={inputStyle} />
-              </div>
-              <div>
-                <label style={{ fontFamily: fontB, fontSize: 12, color: DarkMuted, display: 'block', marginBottom: 6, fontWeight: 600 }}>Lead-to-close rate (%)</label>
-                <div style={{ position: 'relative' }}>
-                  <input type="number" placeholder="e.g. 12" value={calcCloseRate} onChange={e => setCalcCloseRate(e.target.value)}
-                    style={{ ...inputStyle, paddingRight: 42 }} />
-                  <span style={{ position: 'absolute', right: 13, top: '50%', transform: 'translateY(-50%)', fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>%</span>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                  <div>
+                    <label style={{ fontFamily: fontB, fontSize: 12, color: DarkMuted, display: 'block', marginBottom: 7, fontWeight: 600 }}>Monthly leads</label>
+                    <input type="number" placeholder="e.g. 80" value={calcLeads} onChange={e => setCalcLeads(e.target.value)} style={inputStyle} />
+                  </div>
+                  <div>
+                    <label style={{ fontFamily: fontB, fontSize: 12, color: DarkMuted, display: 'block', marginBottom: 7, fontWeight: 600 }}>Close rate</label>
+                    <div style={{ position: 'relative' }}>
+                      <input type="number" placeholder="e.g. 12" value={calcCloseRate} onChange={e => setCalcCloseRate(e.target.value)} style={{ ...inputStyle, paddingRight: 36 }} />
+                      <span style={{ position: 'absolute', right: 13, top: '50%', transform: 'translateY(-50%)', fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>%</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div>
-                <label style={{ fontFamily: fontB, fontSize: 12, color: DarkMuted, display: 'block', marginBottom: 6, fontWeight: 600 }}>Average customer LTV (KES)</label>
-                <div style={{ position: 'relative' }}>
-                  <span style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.3)', pointerEvents: 'none' }}>KES</span>
-                  <input type="number" placeholder="e.g. 250,000" value={calcLTV} onChange={e => setCalcLTV(e.target.value)}
-                    style={{ ...inputStyle, paddingLeft: 46 }} />
+
+                <div>
+                  <label style={{ fontFamily: fontB, fontSize: 12, color: DarkMuted, display: 'block', marginBottom: 7, fontWeight: 600 }}>Average customer LTV</label>
+                  <div style={{ position: 'relative' }}>
+                    <span style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.3)', pointerEvents: 'none' }}>KES</span>
+                    <input type="number" placeholder="e.g. 250,000" value={calcLTV} onChange={e => setCalcLTV(e.target.value)} style={{ ...inputStyle, paddingLeft: 46 }} />
+                  </div>
                 </div>
-              </div>
-              <div>
-                <label style={{ fontFamily: fontB, fontSize: 12, color: DarkMuted, display: 'block', marginBottom: 6, fontWeight: 600 }}>Monthly churn rate — optional (%)</label>
-                <div style={{ position: 'relative' }}>
-                  <input type="number" placeholder="e.g. 4" value={calcChurn} onChange={e => setCalcChurn(e.target.value)}
-                    style={{ ...inputStyle, paddingRight: 42, background: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.07)' }} />
-                  <span style={{ position: 'absolute', right: 13, top: '50%', transform: 'translateY(-50%)', fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.25)' }}>%</span>
+
+                <div>
+                  <label style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.25)', display: 'block', marginBottom: 7, fontWeight: 600 }}>Monthly churn rate <span style={{ fontWeight: 400 }}>(optional)</span></label>
+                  <div style={{ position: 'relative' }}>
+                    <input type="number" placeholder="e.g. 4" value={calcChurn} onChange={e => setCalcChurn(e.target.value)} style={{ ...inputStyle, paddingRight: 36, background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.07)' }} />
+                    <span style={{ position: 'absolute', right: 13, top: '50%', transform: 'translateY(-50%)', fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.2)' }}>%</span>
+                  </div>
                 </div>
+
+                <button onClick={handleCalc} className="btn-primary" style={{ ...btnPrimary, width: '100%', justifyContent: 'center', marginTop: 4, padding: '15px 22px', fontSize: 14 }}>
+                  Calculate My Business Outcomes <ArrowRight size={15} />
+                </button>
               </div>
-              <button onClick={handleCalc} className="btn-primary" style={{ ...btnPrimary, width: '100%', justifyContent: 'center', marginTop: 4 }}>
-                Calculate My Business Outcomes
-              </button>
             </div>
 
-            {/* Results */}
-            <div>
+            {/* Right: Results */}
+            <div style={{ padding: 'clamp(24px,4vw,40px)' }}>
               {calcMetrics === null ? (
-                <div style={{ border: `1px solid ${DarkBorder}`, borderRadius: 8, padding: 'clamp(24px,4vw,40px)', textAlign: 'center', opacity: 0.4 }}>
-                  <BarChart2 size={32} color={DarkMuted} style={{ marginBottom: 12 }} />
-                  <p style={{ fontFamily: fontB, fontSize: 14, color: DarkMuted, margin: 0 }}>Fill in your numbers to see your projected outcomes.</p>
+                <div style={{ height: '100%', minHeight: 280, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, opacity: 0.35 }}>
+                  <BarChart2 size={40} color="#fff" strokeWidth={1} />
+                  <p style={{ fontFamily: fontB, fontSize: 14, color: '#fff', margin: 0, textAlign: 'center', lineHeight: 1.6 }}>
+                    Fill in your numbers on the left<br />to see your projected outcomes.
+                  </p>
                 </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {/* CAC */}
-                  <div style={{ border: `1px solid ${DarkBorder}`, borderRadius: 8, overflow: 'hidden' }}>
-                    <div style={{ padding: '12px 16px', borderBottom: `1px solid ${DarkBorder}` }}>
-                      <p style={{ fontFamily: fontB, fontSize: 11, color: Orange, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Customer Acquisition Cost</p>
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderBottom: `1px solid ${DarkBorder}` }}>
-                      <div style={{ padding: '16px', borderRight: `1px solid ${DarkBorder}` }}>
-                        <p style={{ fontFamily: fontB, fontSize: 11, color: '#ef4444', margin: '0 0 4px' }}>Current</p>
-                        <p style={{ fontFamily: fontSerif, fontSize: 22, fontWeight: 700, color: '#fff', margin: 0 }}>KES {calcMetrics.cacCurrent.toLocaleString()}</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 0, height: '100%' }}>
+                  <p style={{ fontFamily: fontB, fontSize: 11, color: DarkMuted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 20px' }}>Your projected outcomes</p>
+
+                  {/* 4 metric cells in a 2x2 grid */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', border: `1px solid ${DarkBorder}`, borderRadius: 6, overflow: 'hidden', marginBottom: 12 }}>
+                    {[
+                      { label: 'CAC today', value: `KES ${calcMetrics.cacCurrent.toLocaleString()}`, accent: false },
+                      { label: 'CAC after fix', value: `KES ${calcMetrics.cacProjected.toLocaleString()}`, accent: true, sub: `${Math.round((1 - calcMetrics.cacProjected / calcMetrics.cacCurrent) * 100)}% lower` },
+                      { label: 'LTV:CAC now', value: `${calcMetrics.ltvCacCurrent}:1`, accent: false, warn: calcMetrics.ltvCacCurrent < 3 },
+                      { label: 'LTV:CAC after', value: `${calcMetrics.ltvCacProjected}:1`, accent: true, sub: calcMetrics.ltvCacCurrent < 3 ? 'Toward 3:1 benchmark' : 'Compounding gains' },
+                    ].map(({ label, value, accent, sub, warn }, i) => (
+                      <div key={i} style={{ padding: '18px 16px', borderLeft: i % 2 === 1 ? `1px solid ${DarkBorder}` : 'none', borderTop: i >= 2 ? `1px solid ${DarkBorder}` : 'none' }}>
+                        <p style={{ fontFamily: fontB, fontSize: 11, color: warn ? '#f59e0b' : accent ? '#22c55e' : DarkMuted, fontWeight: 700, margin: '0 0 6px', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{label}</p>
+                        <p style={{ fontFamily: fontSerif, fontSize: 20, fontWeight: 700, color: accent ? '#22c55e' : '#fff', margin: '0 0 3px' }}>{value}</p>
+                        {sub && <p style={{ fontFamily: fontB, fontSize: 11, color: DarkMuted, margin: 0 }}>{sub}</p>}
                       </div>
-                      <div style={{ padding: '16px' }}>
-                        <p style={{ fontFamily: fontB, fontSize: 11, color: '#22c55e', margin: '0 0 4px' }}>After ICP fix</p>
-                        <p style={{ fontFamily: fontSerif, fontSize: 22, fontWeight: 700, color: '#22c55e', margin: 0 }}>KES {calcMetrics.cacProjected.toLocaleString()}</p>
-                      </div>
-                    </div>
-                    <div style={{ padding: '10px 16px' }}>
-                      <p style={{ fontFamily: fontB, fontSize: 12, color: DarkMuted, margin: 0 }}>
-                        {Math.round((1 - calcMetrics.cacProjected / calcMetrics.cacCurrent) * 100)}% reduction in cost to acquire
+                    ))}
+                  </div>
+
+                  {/* Customers row */}
+                  <div style={{ border: `1px solid ${DarkBorder}`, borderRadius: 6, padding: '16px', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                    <div>
+                      <p style={{ fontFamily: fontB, fontSize: 11, color: DarkMuted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', margin: '0 0 5px' }}>New customers per month</p>
+                      <p style={{ fontFamily: fontSerif, fontSize: 20, fontWeight: 700, color: '#fff', margin: 0 }}>
+                        {calcMetrics.monthlyCustomers}
+                        <span style={{ color: '#22c55e', fontSize: 15, marginLeft: 10 }}>to {calcMetrics.monthlyCustomersProjected}</span>
                       </p>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <p style={{ fontFamily: fontB, fontSize: 11, color: DarkMuted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', margin: '0 0 5px' }}>CAC payback</p>
+                      <p style={{ fontFamily: fontSerif, fontSize: 20, fontWeight: 700, color: '#fff', margin: 0 }}>{calcMetrics.paybackMonths} mo.</p>
                     </div>
                   </div>
 
-                  {/* LTV:CAC */}
-                  <div style={{ border: `1px solid ${DarkBorder}`, borderRadius: 8, overflow: 'hidden' }}>
-                    <div style={{ padding: '12px 16px', borderBottom: `1px solid ${DarkBorder}` }}>
-                      <p style={{ fontFamily: fontB, fontSize: 11, color: Orange, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>LTV : CAC Ratio</p>
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderBottom: `1px solid ${DarkBorder}` }}>
-                      <div style={{ padding: '16px', borderRight: `1px solid ${DarkBorder}` }}>
-                        <p style={{ fontFamily: fontB, fontSize: 11, color: calcMetrics.ltvCacCurrent < 3 ? '#f59e0b' : '#22c55e', margin: '0 0 4px' }}>Current</p>
-                        <p style={{ fontFamily: fontSerif, fontSize: 22, fontWeight: 700, color: '#fff', margin: 0 }}>{calcMetrics.ltvCacCurrent}:1</p>
-                      </div>
-                      <div style={{ padding: '16px' }}>
-                        <p style={{ fontFamily: fontB, fontSize: 11, color: '#22c55e', margin: '0 0 4px' }}>After fix</p>
-                        <p style={{ fontFamily: fontSerif, fontSize: 22, fontWeight: 700, color: '#22c55e', margin: 0 }}>{calcMetrics.ltvCacProjected}:1</p>
-                      </div>
-                    </div>
-                    <div style={{ padding: '10px 16px' }}>
-                      <p style={{ fontFamily: fontB, fontSize: 12, color: DarkMuted, margin: 0 }}>
-                        {calcMetrics.ltvCacCurrent < 3 ? 'Below the 3:1 B2B benchmark. Fixing ICP is urgent.' : 'Above 3:1. Fixing ICP compounds your existing gains.'}
+                  {/* Revenue opportunity: highlighted */}
+                  <div style={{ borderRadius: 6, padding: '20px 20px 20px', background: Orange, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 16 }}>
+                    <div>
+                      <p style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.7)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>Monthly revenue opportunity</p>
+                      <p style={{ fontFamily: fontSerif, fontSize: 'clamp(24px,3vw,36px)', fontWeight: 700, color: '#fff', margin: '0 0 6px', lineHeight: 1 }}>KES {calcMetrics.monthlyRevenueOpportunity.toLocaleString()}</p>
+                      <p style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.75)', margin: 0, lineHeight: 1.6 }}>
+                        {Math.round(calcMetrics.monthlyRevenueOpportunity / 6500)}x ROI on the KES 6,500/mo plan. From additional customers at your current LTV.
                       </p>
                     </div>
-                  </div>
-
-                  {/* Customers + Payback */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                    <div style={{ border: `1px solid ${DarkBorder}`, borderRadius: 8, padding: '16px' }}>
-                      <p style={{ fontFamily: fontB, fontSize: 11, color: Orange, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px' }}>New Customers / Mo</p>
-                      <p style={{ fontFamily: fontSerif, fontSize: 20, fontWeight: 700, color: '#fff', margin: '0 0 4px' }}>
-                        {calcMetrics.monthlyCustomers} <span style={{ color: '#22c55e', fontSize: 16 }}>to {calcMetrics.monthlyCustomersProjected}</span>
-                      </p>
-                      <p style={{ fontFamily: fontB, fontSize: 11, color: DarkMuted, margin: 0 }}>+{Math.round((calcMetrics.monthlyCustomersProjected - calcMetrics.monthlyCustomers) * 10) / 10} additional</p>
-                    </div>
-                    <div style={{ border: `1px solid ${DarkBorder}`, borderRadius: 8, padding: '16px' }}>
-                      <p style={{ fontFamily: fontB, fontSize: 11, color: Orange, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px' }}>CAC Payback</p>
-                      <p style={{ fontFamily: fontSerif, fontSize: 20, fontWeight: 700, color: '#fff', margin: '0 0 4px' }}>{calcMetrics.paybackMonths} months</p>
-                      <p style={{ fontFamily: fontB, fontSize: 11, color: DarkMuted, margin: 0 }}>After ICP is fixed</p>
-                    </div>
-                  </div>
-
-                  {/* Revenue opportunity */}
-                  <div style={{ border: `2px solid ${Orange}`, borderRadius: 8, padding: '20px', background: 'rgba(232,51,10,0.08)' }}>
-                    <p style={{ fontFamily: fontB, fontSize: 11, color: Orange, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px' }}>Monthly Revenue Opportunity</p>
-                    <p style={{ fontFamily: fontSerif, fontSize: 'clamp(22px,3vw,32px)', fontWeight: 700, color: '#fff', margin: '0 0 6px' }}>KES {calcMetrics.monthlyRevenueOpportunity.toLocaleString()}</p>
-                    <p style={{ fontFamily: fontB, fontSize: 12, color: DarkMuted, margin: '0 0 16px' }}>
-                      LTV recovered per month from additional customers. Subscription ROI: {Math.round(calcMetrics.monthlyRevenueOpportunity / 6500)}x on KES 6,500/mo plan.
-                    </p>
-                    <Link href="/questionnaire" className="btn-primary" style={{ ...btnPrimary, width: '100%', justifyContent: 'center' }}>
-                      Get My Free ICP Diagnosis
+                    <Link href="/questionnaire" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#fff', color: Dark, borderRadius: 6, padding: '12px 18px', fontFamily: font, fontSize: 14, fontWeight: 700, textDecoration: 'none', alignSelf: 'flex-start' }}>
+                      Get my free diagnosis <ArrowRight size={14} />
                     </Link>
                   </div>
 
-                  <p style={{ fontFamily: fontB, fontSize: 11, color: DarkMuted, margin: 0, textAlign: 'center' }}>
-                    Based on 35% lead efficiency gain and 30% close rate lift from typical ICP alignment fixes.
+                  <p style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.2)', margin: '12px 0 0', textAlign: 'center' }}>
+                    35% lead efficiency gain and 30% close rate lift based on observed ICP alignment improvements.
                   </p>
                 </div>
               )}
