@@ -1676,13 +1676,14 @@ const PLAN_FEATURES: Record<string, string[]> = {
   ],
   agency: [
     'Everything in Pro',
-    'Monthly strategy session',
-    'Media buyer implementation',
-    '30-day follow-up report',
-    'Multi-client reporting',
-    'White label reports',
+    'Team of B2B media buyers on your account',
+    'Monthly strategy sessions (full team)',
+    'White-label reports produced by account team',
+    'Multi-client account coordination',
+    'Dedicated account manager (founder-led)',
+    'Onboarding call with your dedicated media buyer',
+    'Custom billing and invoicing',
     'Priority support',
-    'Custom diagnostic frameworks',
   ],
 }
 
@@ -2180,8 +2181,8 @@ function InDashboardUpgradeModal({ user, onClose, onUpgraded }: {
   )
 }
 
-function AccountTab({ user, currency, score, reportCount, onSignOut, onCancelled, onUserUpdate, showToast, onUpgrade }: {
-  user: UserData; currency: string; score: number | null; reportCount: number
+function AccountTab({ user, currency, score, reportCount, reports, onSignOut, onCancelled, onUserUpdate, showToast, onUpgrade }: {
+  user: UserData; currency: string; score: number | null; reportCount: number; reports: ReportRow[]
   onSignOut: () => void; onCancelled: () => void
   onUserUpdate: (u: Partial<UserData>) => void; showToast: (msg: string) => void
   onUpgrade?: () => void
@@ -2513,7 +2514,7 @@ function AccountTab({ user, currency, score, reportCount, onSignOut, onCancelled
           <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: Pmuted, margin: '0 0 4px' }}>Data Management</p>
           <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 16px' }}>Download or permanently delete your account data.</p>
 
-          {/* Export */}
+          {/* Export — JSON */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 0', borderBottom: `1px solid ${Pborder}` }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               <span style={{ fontFamily: fontB, fontSize: 14, fontWeight: 600, color: P }}>Download my data</span>
@@ -2536,6 +2537,55 @@ function AccountTab({ user, currency, score, reportCount, onSignOut, onCancelled
               disabled={exporting}
               style={{ flexShrink: 0, background: BgAlt, color: P, border: `1px solid ${Pborder}`, borderRadius: 10, padding: '9px 18px', fontFamily: fontB, fontSize: 13, fontWeight: 600, cursor: exporting ? 'not-allowed' : 'pointer', opacity: exporting ? 0.6 : 1, whiteSpace: 'nowrap' }}>
               {exporting ? 'Exporting...' : 'Export'}
+            </button>
+          </div>
+
+          {/* Export — CSV diagnostic data */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 0', borderBottom: `1px solid ${Pborder}` }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <span style={{ fontFamily: fontB, fontSize: 14, fontWeight: 600, color: P }}>Download diagnostic data (CSV)</span>
+              <span style={{ fontFamily: fontB, fontSize: 13, color: Pmuted }}>Export all your ICP diagnostic results as a spreadsheet.</span>
+            </div>
+            <button
+              onClick={() => {
+                if (!reports.length) { showToast('No diagnostic data to export yet.'); return }
+                const rows: string[][] = [
+                  ['Date', 'Overall Score', 'Monthly Waste Estimate', 'CAC Current', 'CAC Projected', 'LTV:CAC Current', 'LTV:CAC Projected', 'ICP Alignment', 'Targeting Accuracy', 'Channel Efficiency', 'Funnel Friction', 'Message to Market Fit', 'Budget Allocation', 'Finding 1', 'Finding 2', 'Finding 3'],
+                ]
+                reports.forEach(r => {
+                  const d = parseDiagnosis(r.report_summary)
+                  const bo = d.business_outcomes ?? {}
+                  const bd = (d.breakdown ?? []) as Array<{ label: string; score: number }>
+                  const score = (label: string) => String(bd.find(b => b.label === label)?.score ?? '')
+                  const findings = (d.critical_findings ?? d.findings ?? []) as Array<{ title: string }>
+                  rows.push([
+                    r.generated_at.slice(0, 10),
+                    String(d.overall_score ?? d.health_score ?? ''),
+                    String(d.monthly_waste_estimate ?? ''),
+                    String((bo as Record<string, unknown>).cac_current ?? ''),
+                    String((bo as Record<string, unknown>).cac_projected ?? ''),
+                    String((bo as Record<string, unknown>).ltv_cac_current ?? ''),
+                    String((bo as Record<string, unknown>).ltv_cac_projected ?? ''),
+                    score('ICP Alignment'),
+                    score('Targeting Accuracy'),
+                    score('Channel Efficiency'),
+                    score('Funnel Friction'),
+                    score('Message to Market Fit'),
+                    score('Budget Allocation'),
+                    findings[0]?.title ?? '',
+                    findings[1]?.title ?? '',
+                    findings[2]?.title ?? '',
+                  ])
+                })
+                const csv = rows.map(r => r.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n')
+                const blob = new Blob([csv], { type: 'text/csv' })
+                const url  = URL.createObjectURL(blob)
+                const a    = document.createElement('a')
+                a.href = url; a.download = `icp-diagnostics-${user.email}.csv`; a.click()
+                URL.revokeObjectURL(url)
+              }}
+              style={{ flexShrink: 0, background: BgAlt, color: P, border: `1px solid ${Pborder}`, borderRadius: 10, padding: '9px 18px', fontFamily: fontB, fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              Export CSV
             </button>
           </div>
 
@@ -4100,6 +4150,7 @@ export default function DashboardPage() {
             user={user}
             currency={currency}
             score={score}
+            reports={reports}
             reportCount={reports.length}
             onSignOut={handleSignOut}
             onCancelled={() => {

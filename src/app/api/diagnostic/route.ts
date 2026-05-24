@@ -183,19 +183,63 @@ export async function POST(req: NextRequest) {
   const { questionnaireId, responses, profile } = body
   const email: string = (profile?.email as string) ?? ''
 
-  // ── Subscription check ────────────────────────────────────────────────────
+  // ── Subscription check + monthly diagnosis limit ─────────────────────────
+  const MONTHLY_LIMITS: Record<string, number> = { free: 1, starter: 2, pro: 5, agency: Infinity }
+
   let isSubscriber = false
   if (email) {
     const { data: userRecord } = await supabase
       .from('users')
-      .select('subscription_tier, billing_status')
+      .select('id, subscription_tier, billing_status')
       .eq('email', email)
       .single()
+
     isSubscriber = !!(
       userRecord &&
       userRecord.billing_status === 'active' &&
       userRecord.subscription_tier !== 'free'
     )
+
+    const tier = (userRecord?.subscription_tier ?? 'free') as string
+    const limit = MONTHLY_LIMITS[tier] ?? 1
+
+    if (limit !== Infinity) {
+      const monthStart = new Date()
+      monthStart.setUTCDate(1)
+      monthStart.setUTCHours(0, 0, 0, 0)
+
+      const { count: usedThisMonth } = await supabase
+        .from('diagnostics')
+        .select('id', { count: 'exact', head: true })
+        .eq('questionnaire_id', questionnaireId)
+        .gte('created_at', monthStart.toISOString())
+
+      // Count all diagnostics this month for this user via their questionnaires
+      const { data: userQuestionnaires } = await supabase
+        .from('questionnaires')
+        .select('id')
+        .eq('user_id', userRecord?.id ?? '')
+
+      const qIds = (userQuestionnaires ?? []).map((q: { id: string }) => q.id)
+
+      const { count: monthCount } = qIds.length > 0
+        ? await supabase
+            .from('diagnostics')
+            .select('id', { count: 'exact', head: true })
+            .in('questionnaire_id', qIds)
+            .gte('created_at', monthStart.toISOString())
+        : { count: 0 }
+
+      if ((monthCount ?? 0) >= limit) {
+        return NextResponse.json({
+          error: 'diagnosis_limit_reached',
+          message: `You have used all ${limit} diagnosis${limit === 1 ? '' : 'es'} included in your ${tier} plan this month. Upgrade to run more.`,
+          limit,
+          used: monthCount,
+          upgradeUrl: '/pricing',
+        }, { status: 402 })
+      }
+    }
   }
   console.log(`[diagnostic] isSubscriber=${isSubscriber}`)
 
