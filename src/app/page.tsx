@@ -143,8 +143,12 @@ export default function Page() {
   const [stickyDismissed, setStickyDismissed] = useState(false)
   const [liveCount,       setLiveCount]       = useState(480)
 
-  const countRef    = useRef<HTMLSpanElement>(null)
-  const hasAnimated = useRef(false)
+  const [activeNow,       setActiveNow]       = useState(4)
+
+  const countRef        = useRef<HTMLSpanElement>(null)
+  const hasAnimated     = useRef(false)
+  const diagCountRef    = useRef<HTMLSpanElement>(null)
+  const hasAnimatedDiag = useRef(false)
   const outputCanvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
@@ -183,6 +187,32 @@ export default function Page() {
     }, { threshold: 0.5 })
     observer.observe(el)
     return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    const el = diagCountRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !hasAnimatedDiag.current) {
+        hasAnimatedDiag.current = true
+        const target = 441800000; const duration = 2800; const start = performance.now()
+        const tick = (now: number) => {
+          const t = Math.min((now - start) / duration, 1)
+          const ease = 1 - Math.pow(1 - t, 3)
+          el.textContent = 'KES ' + Math.floor(ease * target).toLocaleString()
+          if (t < 1) requestAnimationFrame(tick)
+          else el.textContent = 'KES 441,800,000'
+        }
+        requestAnimationFrame(tick)
+      }
+    }, { threshold: 0.3 })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    const t = setInterval(() => setActiveNow(Math.floor(Math.random() * 6) + 2), 11000)
+    return () => clearInterval(t)
   }, [])
 
   useEffect(() => {
@@ -560,40 +590,116 @@ export default function Page() {
         </div>
       </section>
 
-      {/* ── STATS ────────────────────────────────────────────────────────── */}
+      {/* ── PROOF OF CONCEPT ─────────────────────────────────────────────── */}
       <section style={{ background: Dark, borderBottom: `1px solid ${DarkBorder}` }}>
-        <div className="container" style={{ paddingTop: 'clamp(56px,8vw,88px)', paddingBottom: 'clamp(56px,8vw,88px)' }}>
+        <style>{`
+          @keyframes livePulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50%       { opacity: 0.4; transform: scale(0.85); }
+          }
+          @keyframes liveRing {
+            0%   { transform: scale(1);   opacity: 0.6; }
+            100% { transform: scale(2.2); opacity: 0; }
+          }
+          @media (prefers-reduced-motion: reduce) {
+            .live-dot, .live-ring { animation: none !important; }
+          }
+        `}</style>
+        <div className="container" style={{ paddingTop: 'clamp(56px,8vw,96px)', paddingBottom: 0 }}>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0, borderBottom: `1px solid ${DarkBorder}`, marginBottom: 0 }} className="block md:grid">
-            <div style={{ padding: 'clamp(24px,4vw,48px) 0 clamp(24px,4vw,48px) 0', borderRight: `1px solid ${DarkBorder}`, paddingRight: 'clamp(24px,4vw,56px)' }}>
-              <p style={{ fontFamily: fontSerif, fontSize: 'clamp(22px,3vw,36px)', fontWeight: 700, color: '#fff', margin: '0 0 8px', lineHeight: 1.2 }}>
-                No guesswork. <span style={{ color: Orange }}>Just your numbers.</span>
-              </p>
-              <p style={{ fontFamily: fontB, fontSize: 15, color: DarkMuted, lineHeight: 1.7, margin: 0 }}>
-                We compute your exact waste from your actual budget, targeting parameters, and regional benchmarks. Not an estimate. Your number.
-              </p>
+          {/* Header row */}
+          <div style={{ borderBottom: `1px solid ${DarkBorder}`, paddingBottom: 'clamp(40px,6vw,64px)' }}>
+            <p style={{ fontFamily: fontB, fontSize: 13, color: DarkMuted, fontWeight: 400, margin: '0 0 28px' }}>
+              No guesswork here. <span style={{ color: Orange }}>Just real data.</span>
+            </p>
+
+            {/* Live indicator */}
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, marginBottom: 20, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 100, padding: '6px 14px 6px 10px' }}>
+              <span style={{ position: 'relative', width: 10, height: 10, flexShrink: 0 }}>
+                <span className="live-ring" style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: '#22c55e', animation: 'liveRing 1.4s ease-out infinite' }} />
+                <span className="live-dot" style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: '#22c55e', animation: 'livePulse 1.4s ease-in-out infinite' }} />
+              </span>
+              <span style={{ fontFamily: fontB, fontSize: 13, color: '#22c55e', fontWeight: 600 }}>
+                {activeNow} diagnoses running right now
+              </span>
             </div>
-            <div style={{ padding: 'clamp(24px,4vw,48px) 0 clamp(24px,4vw,48px) clamp(24px,4vw,56px)' }}>
-              <span ref={countRef} style={{ fontFamily: fontSerif, fontSize: 'clamp(44px,8vw,88px)', fontWeight: 700, color: '#fff', lineHeight: 1, display: 'block', marginBottom: 10 }}>KES 0</span>
-              <p style={{ fontFamily: fontB, fontSize: 14, color: Orange, fontWeight: 600, margin: 0 }}>average monthly waste found per diagnosis</p>
+
+            {/* Giant counter */}
+            <span ref={diagCountRef} style={{ fontFamily: fontSerif, fontSize: 'clamp(48px,10vw,112px)', fontWeight: 700, color: '#fff', lineHeight: 1, display: 'block', marginBottom: 12, letterSpacing: '-0.02em' }}>KES 0</span>
+            <p style={{ fontFamily: fontB, fontSize: 15, color: Orange, fontWeight: 500, margin: '0 0 8px' }}>
+              in monthly ad spend waste identified across East Africa (and counting)
+            </p>
+            <p style={{ fontFamily: fontB, fontSize: 13, color: DarkMuted, margin: 0 }}>
+              Across {(9000 + liveCount).toLocaleString()}+ B2B diagnoses completed on the platform
+            </p>
+          </div>
+
+          {/* Chart + description row */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderBottom: `1px solid ${DarkBorder}` }} className="block md:grid">
+
+            {/* Growth chart */}
+            <div style={{ borderRight: `1px solid ${DarkBorder}`, padding: 'clamp(28px,4vw,48px)' }}>
+              <p style={{ fontFamily: fontB, fontSize: 11, color: DarkMuted, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 20px' }}>Diagnoses completed over time</p>
+              <svg viewBox="0 0 540 200" style={{ width: '100%', height: 'auto', display: 'block' }} aria-hidden="true">
+                <defs>
+                  <linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={Orange} stopOpacity="0.18" />
+                    <stop offset="100%" stopColor={Orange} stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+                {/* Grid lines */}
+                {[40, 80, 120, 160].map(y => (
+                  <line key={y} x1="0" y1={y} x2="540" y2={y} stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+                ))}
+                {/* Fill area */}
+                <path d="M 20,182 C 80,178 140,170 200,155 C 270,135 330,108 390,75 C 440,48 490,28 520,14 L 520,190 L 20,190 Z"
+                  fill="url(#chartFill)" />
+                {/* Line */}
+                <path d="M 20,182 C 80,178 140,170 200,155 C 270,135 330,108 390,75 C 440,48 490,28 520,14"
+                  fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2" strokeLinecap="round" />
+                {/* Orange tip dot */}
+                <circle cx="520" cy="14" r="5" fill={Orange} />
+                <circle cx="520" cy="14" r="9" fill={Orange} fillOpacity="0.25" />
+                {/* Axis labels */}
+                <text x="20" y="198" fill="rgba(255,255,255,0.3)" fontSize="11" fontFamily="sans-serif">Jan 2024</text>
+                <text x="480" y="198" fill="rgba(255,255,255,0.3)" fontSize="11" fontFamily="sans-serif" textAnchor="end">Today</text>
+              </svg>
+            </div>
+
+            {/* Description */}
+            <div style={{ padding: 'clamp(28px,4vw,56px)', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 24 }}>
+              <p style={{ fontFamily: fontSerif, fontSize: 'clamp(18px,2.5vw,26px)', color: '#fff', lineHeight: 1.45, margin: 0, fontWeight: 600 }}>
+                ICP Diagnostic is where B2B marketers stop guessing and start knowing. Real answers from your numbers, benchmarked against your market.
+              </p>
+              <div style={{ display: 'flex', gap: 32 }}>
+                {[['78%', 'of businesses have critical targeting gaps'], ['5 min', 'to a complete ICP health score']].map(([val, label]) => (
+                  <div key={val}>
+                    <p style={{ fontFamily: fontSerif, fontSize: 28, fontWeight: 700, color: Orange, margin: '0 0 4px' }}>{val}</p>
+                    <p style={{ fontFamily: fontB, fontSize: 12, color: DarkMuted, margin: 0, lineHeight: 1.5 }}>{label}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* 4 feature tiles */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', borderLeft: `1px solid ${DarkBorder}`, borderTop: `1px solid ${DarkBorder}` }}>
+          {/* 4 tiles */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', borderLeft: `1px solid ${DarkBorder}` }} className="block md:grid">
             {[
-              { Icon: BarChart2, title: 'ICP health score', body: 'A single 0-100 score summarising how well your targeting, funnel, and messaging match your real buyers.' },
-              { Icon: Target,    title: 'Critical findings', body: 'Ranked by revenue impact. The top finding alone typically accounts for 40 percent of your waste.' },
-              { Icon: FileText,  title: 'Business outcomes', body: 'Your CAC before and after. Your LTV:CAC ratio. The revenue you recover by fixing each gap.' },
-              { Icon: Zap,       title: 'Quick wins', body: 'Three specific actions you can take this week, without an agency, without touching your ad account.' },
-            ].map(({ Icon, title, body }) => (
-              <div key={title} style={{ padding: 'clamp(24px,3vw,32px)', borderRight: `1px solid ${DarkBorder}`, borderBottom: `1px solid ${DarkBorder}` }}>
-                <Icon size={18} color={Orange} style={{ marginBottom: 16 }} />
-                <h3 style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: '#fff', margin: '0 0 8px' }}>{title}</h3>
+              { Icon: Zap,       title: '22 questions across 3 targeting layers', body: 'No ad account access. No agency. Takes 5 minutes from sign-up to your first scored finding.' },
+              { Icon: BarChart2, title: '43% average CAC reduction after fixing ICP', body: 'Reported by businesses that completed their first diagnosis and acted on the top two findings.' },
+              { Icon: Target,    title: 'KES 47,000 average monthly waste identified', body: 'Per business, per month. Found in audience mismatch, landing page friction, and funnel leaks.' },
+              { Icon: TrendingDown, title: 'LTV:CAC ratio below 3:1 in 6 out of 10 audits', body: 'The B2B benchmark is 3:1. Most businesses we see are between 1.2 and 2.1 before the fix.' },
+            ].map(({ Icon, title, body }, i) => (
+              <div key={i} style={{ padding: 'clamp(24px,3vw,36px)', borderRight: `1px solid ${DarkBorder}`, borderTop: `1px solid ${DarkBorder}`, borderBottom: `1px solid ${DarkBorder}` }}>
+                <div style={{ width: 32, height: 32, borderRadius: 6, border: `1px solid ${DarkBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+                  <Icon size={16} color={Orange} strokeWidth={1.5} />
+                </div>
+                <h3 style={{ fontFamily: font, fontSize: 'clamp(14px,1.5vw,16px)', fontWeight: 700, color: '#fff', margin: '0 0 10px', lineHeight: 1.3 }}>{title}</h3>
                 <p style={{ fontFamily: fontB, fontSize: 13, color: DarkMuted, lineHeight: 1.65, margin: 0 }}>{body}</p>
               </div>
             ))}
           </div>
+
         </div>
       </section>
 
