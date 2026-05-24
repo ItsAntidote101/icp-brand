@@ -31,7 +31,7 @@ export default function PrivacyPage() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '16px 40px',
+        padding: '14px clamp(16px,4vw,40px)',
         background: 'rgba(24,17,10,0.92)',
         backdropFilter: 'blur(16px)',
         WebkitBackdropFilter: 'blur(16px)',
@@ -50,7 +50,7 @@ export default function PrivacyPage() {
       {/* Hero */}
       <section style={{
         background: '#18110a',
-        padding: '140px 24px 80px',
+        padding: 'clamp(88px,12vw,140px) clamp(16px,4vw,24px) clamp(48px,6vw,80px)',
         textAlign: 'center',
       }}>
         <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', marginBottom: 16 }}>
@@ -65,7 +65,7 @@ export default function PrivacyPage() {
       </section>
 
       {/* Content */}
-      <div style={{ maxWidth: 760, margin: '0 auto', padding: '72px 24px 120px' }}>
+      <div style={{ maxWidth: 760, margin: '0 auto', padding: 'clamp(40px,6vw,72px) clamp(16px,4vw,24px) clamp(64px,8vw,120px)' }}>
 
         <Section title="1. Who We Are">
           <Para>ICP Diagnostic operates the website idealicp.com and the ICP Diagnostic platform. We are based in Nairobi, Kenya. For any privacy-related questions, contact us at <a href="mailto:support@idealicp.com" style={{ color: P, fontWeight: 600 }}>support@idealicp.com</a>.</Para>

@@ -196,28 +196,28 @@ type Answers = Record<number, string | string[] | number>
 function TextInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
   return (
     <input type="text" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} autoFocus
-      className="w-full bg-[rgba(24,17,10,0.04)] border border-[rgba(24,17,10,0.1)] focus:border-[#e8330a] rounded-xl px-4 py-3.5 text-[#18110a] placeholder-slate-500 text-base outline-none transition-colors" />
+      className="w-full bg-[rgba(24,17,10,0.04)] border border-[rgba(24,17,10,0.1)] focus:border-[#e8330a] rounded px-4 py-3.5 text-[#18110a] placeholder-slate-500 text-base outline-none transition-colors" />
   )
 }
 
 function UrlInput({ value, onChange, onBlur, placeholder }: { value: string; onChange: (v: string) => void; onBlur?: () => void; placeholder?: string }) {
   return (
     <input type="url" value={value} onChange={e => onChange(e.target.value)} onBlur={onBlur} placeholder={placeholder} autoFocus
-      className="w-full bg-[rgba(24,17,10,0.04)] border border-[rgba(24,17,10,0.1)] focus:border-[#e8330a] rounded-xl px-4 py-3.5 text-[#18110a] placeholder-slate-500 text-base outline-none transition-colors" />
+      className="w-full bg-[rgba(24,17,10,0.04)] border border-[rgba(24,17,10,0.1)] focus:border-[#e8330a] rounded px-4 py-3.5 text-[#18110a] placeholder-slate-500 text-base outline-none transition-colors" />
   )
 }
 
 function TextareaInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
   return (
     <textarea value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} rows={4} autoFocus
-      className="w-full bg-[rgba(24,17,10,0.04)] border border-[rgba(24,17,10,0.1)] focus:border-[#e8330a] rounded-xl px-4 py-3.5 text-[#18110a] placeholder-slate-500 text-base outline-none resize-none transition-colors leading-relaxed" />
+      className="w-full bg-[rgba(24,17,10,0.04)] border border-[rgba(24,17,10,0.1)] focus:border-[#e8330a] rounded px-4 py-3.5 text-[#18110a] placeholder-slate-500 text-base outline-none resize-none transition-colors leading-relaxed" />
   )
 }
 
 function SelectInput({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: string[] }) {
   return (
     <select value={value} onChange={e => onChange(e.target.value)}
-      className="w-full bg-[#fff] border border-[rgba(24,17,10,0.1)] focus:border-[#e8330a] rounded-xl px-4 py-3.5 text-[#18110a] text-base outline-none transition-colors cursor-pointer appearance-none">
+      className="w-full bg-[#fff] border border-[rgba(24,17,10,0.1)] focus:border-[#e8330a] rounded px-4 py-3.5 text-[#18110a] text-base outline-none transition-colors cursor-pointer appearance-none">
       <option value="" disabled>Select an option…</option>
       {options.map(o => <option key={o} value={o}>{o}</option>)}
     </select>
@@ -229,7 +229,7 @@ function RadioInput({ value, onChange, options }: { value: string; onChange: (v:
     <div className="flex flex-col gap-3">
       {options.map(o => (
         <button key={o} type="button" onClick={() => onChange(o)}
-          className={`flex items-center gap-3 w-full px-5 py-3.5 rounded-xl border text-left text-sm font-medium transition-all ${value === o ? 'border-[#e8330a] bg-[#e8330a]/20 text-[#18110a]' : 'border-[rgba(24,17,10,0.1)] bg-white/[0.03] text-[rgba(24,17,10,0.65)] hover:border-white/25 hover:bg-[rgba(24,17,10,0.05)]'}`}>
+          className={`flex items-center gap-3 w-full px-5 py-3.5 rounded border text-left text-sm font-medium transition-all ${value === o ? 'border-[#e8330a] bg-[#e8330a]/20 text-[#18110a]' : 'border-[rgba(24,17,10,0.1)] bg-white text-[rgba(24,17,10,0.65)] hover:border-white/25 hover:bg-[rgba(24,17,10,0.05)]'}`}>
           <span className={`flex-shrink-0 w-4 h-4 rounded-full border-2 flex items-center justify-center ${value === o ? 'border-[#e8330a]' : 'border-slate-600'}`}>
             {value === o && <span className="w-2 h-2 rounded-full bg-[#e8330a] block" />}
           </span>
@@ -246,7 +246,7 @@ function CheckboxInput({ value, onChange, options }: { value: string[]; onChange
     <div className="flex flex-col gap-3">
       {options.map(o => (
         <button key={o} type="button" onClick={() => toggle(o)}
-          className={`flex items-center gap-3 w-full px-5 py-3.5 rounded-xl border text-left text-sm font-medium transition-all ${value.includes(o) ? 'border-[#e8330a] bg-[#e8330a]/20 text-[#18110a]' : 'border-[rgba(24,17,10,0.1)] bg-white/[0.03] text-[rgba(24,17,10,0.65)] hover:border-white/25 hover:bg-[rgba(24,17,10,0.05)]'}`}>
+          className={`flex items-center gap-3 w-full px-5 py-3.5 rounded border text-left text-sm font-medium transition-all ${value.includes(o) ? 'border-[#e8330a] bg-[#e8330a]/20 text-[#18110a]' : 'border-[rgba(24,17,10,0.1)] bg-white text-[rgba(24,17,10,0.65)] hover:border-white/25 hover:bg-[rgba(24,17,10,0.05)]'}`}>
           <span className={`flex-shrink-0 w-4 h-4 rounded border-2 flex items-center justify-center ${value.includes(o) ? 'border-[#e8330a] bg-[#e8330a]' : 'border-slate-600'}`}>
             {value.includes(o) && (
               <svg className="w-2.5 h-2.5 text-[#18110a]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -264,7 +264,7 @@ function CheckboxInput({ value, onChange, options }: { value: string[]; onChange
 function NumberInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
   return (
     <input type="number" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} min={0} autoFocus
-      className="w-full bg-[rgba(24,17,10,0.04)] border border-[rgba(24,17,10,0.1)] focus:border-[#e8330a] rounded-xl px-4 py-3.5 text-[#18110a] placeholder-slate-500 text-base outline-none transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+      className="w-full bg-[rgba(24,17,10,0.04)] border border-[rgba(24,17,10,0.1)] focus:border-[#e8330a] rounded px-4 py-3.5 text-[#18110a] placeholder-slate-500 text-base outline-none transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
   )
 }
 
@@ -296,10 +296,10 @@ function YesNoInput({ value, onChange }: { value: string; onChange: (v: string) 
     <div className="flex gap-4">
       {['Yes', 'No'].map(opt => (
         <button key={opt} type="button" onClick={() => onChange(opt)}
-          className={`flex-1 py-5 rounded-xl border text-base font-semibold transition-all ${
+          className={`flex-1 py-5 rounded border text-base font-semibold transition-all ${
             value === opt
               ? opt === 'Yes' ? 'border-emerald-500 bg-emerald-600/20 text-emerald-300' : 'border-red-500 bg-red-600/20 text-red-300'
-              : 'border-[rgba(24,17,10,0.1)] bg-white/[0.03] text-[rgba(24,17,10,0.65)] hover:border-white/25 hover:bg-[rgba(24,17,10,0.05)]'
+              : 'border-[rgba(24,17,10,0.1)] bg-white text-[rgba(24,17,10,0.65)] hover:border-white/25 hover:bg-[rgba(24,17,10,0.05)]'
           }`}>
           {opt === 'Yes' ? '✓  Yes' : '✕  No'}
         </button>
@@ -316,7 +316,7 @@ function XpBadge({ xp }: { xp: number }) {
       <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
         <polygon points="6,1 7.5,4.5 11,5 8.5,7.5 9,11 6,9.5 3,11 3.5,7.5 1,5 4.5,4.5" fill="#818cf8" />
       </svg>
-      <span className="text-[11px] font-bold text-indigo-300 tabular-nums">{xp} XP</span>
+      <span className="text-[11px] font-bold text-[#e8330a] tabular-nums">{xp} XP</span>
     </div>
   )
 }
@@ -394,7 +394,7 @@ function WelcomePanel({ diagCount }: { diagCount: number }) {
       </div>
 
       {/* Sample report preview (stylised) */}
-      <div className="rounded-xl border border-[rgba(24,17,10,0.1)] bg-white/[0.03] p-4 overflow-hidden relative">
+      <div className="rounded border border-[rgba(24,17,10,0.1)] bg-white p-4 overflow-hidden relative">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(24,17,10,0.35)] mb-3">Sample report</p>
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 rounded-full bg-[#e8330a]/20 border border-[#e8330a]/30 flex items-center justify-center flex-shrink-0">
@@ -496,7 +496,7 @@ function QuestionPanel({
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#e8330a] opacity-60" />
           <span className="relative inline-flex rounded-full h-2 w-2 bg-[#e8330a]" />
         </span>
-        <span className="text-xs font-semibold text-indigo-300">Report in progress</span>
+        <span className="text-xs font-semibold text-[#e8330a]">Report in progress</span>
       </div>
 
       {/* Score arc */}
@@ -604,8 +604,8 @@ function LayerCompleteScreen({
   }, [ready, xpEarned])
 
   const layerColors: Record<number, { ring: string; bg: string; text: string; badge: string }> = {
-    1: { ring: 'border-[#e8330a]/60', bg: 'bg-[#e8330a]/15', text: 'text-indigo-300', badge: 'bg-[#e8330a]/20 border-[#e8330a]/40' },
-    2: { ring: 'border-[#e8330a]/60', bg: 'bg-violet-600/15', text: 'text-violet-300', badge: 'bg-violet-600/20 border-[#e8330a]/40' },
+    1: { ring: 'border-[#e8330a]/60', bg: 'bg-[#e8330a]/15', text: 'text-[#e8330a]', badge: 'bg-[#e8330a]/20 border-[#e8330a]/40' },
+    2: { ring: 'border-[#e8330a]/60', bg: 'bg-[rgba(24,17,10,0.06)]', text: 'text-[rgba(24,17,10,0.6)]', badge: 'bg-violet-600/20 border-[#e8330a]/40' },
   }
   const c = layerColors[layer]
 
@@ -646,14 +646,14 @@ function LayerCompleteScreen({
           </div>
 
           <div style={{ animation: ready ? 'fadeUp 0.4s 0.2s ease both' : 'none' }}
-            className="mt-8 mb-8 inline-flex flex-col items-center gap-1 px-8 py-5 rounded-2xl border border-[rgba(24,17,10,0.1)] bg-white/[0.03]">
+            className="mt-8 mb-8 inline-flex flex-col items-center gap-1 px-8 py-5 rounded border border-[rgba(24,17,10,0.1)] bg-white">
             <span className="text-xs text-[rgba(24,17,10,0.45)] uppercase tracking-widest font-semibold">XP Earned</span>
-            <span className="text-4xl font-black text-indigo-300 tabular-nums">+{countedXp}</span>
+            <span className="text-4xl font-black text-[#e8330a] tabular-nums">+{countedXp}</span>
             <span className="text-xs text-[rgba(24,17,10,0.35)]">Keep going — diagnosis unlocks at 200 XP</span>
           </div>
 
           <div style={{ animation: ready ? 'fadeUp 0.4s 0.3s ease both' : 'none' }}
-            className="mb-8 max-w-sm mx-auto px-5 py-4 rounded-xl border border-[rgba(24,17,10,0.1)] bg-white/[0.03] text-left">
+            className="mb-8 max-w-sm mx-auto px-5 py-4 rounded border border-[rgba(24,17,10,0.1)] bg-white text-left">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(24,17,10,0.45)] mb-1">Unlocking next</p>
             <p className="text-sm font-bold text-[#18110a] mb-1">{info.next}</p>
             <p className="text-xs text-[rgba(24,17,10,0.5)] leading-relaxed">{info.description}</p>
@@ -661,7 +661,7 @@ function LayerCompleteScreen({
 
           <div style={{ animation: ready ? 'fadeUp 0.4s 0.4s ease both' : 'none' }}>
             <button type="button" onClick={onContinue}
-              className="px-10 py-3.5 rounded-xl bg-[#e8330a] hover:bg-[#e8330a] text-[#18110a] font-semibold text-sm transition-all active:scale-95 shadow-lg shadow-[#e8330a]/25">
+              className="px-10 py-3.5 rounded bg-[#e8330a] hover:bg-[#e8330a] text-[#18110a] font-semibold text-sm transition-all active:scale-95 shadow-lg shadow-[#e8330a]/25">
               Unlock Layer {layer + 1} →
             </button>
           </div>
@@ -852,7 +852,7 @@ export default function QuestionnairePage() {
 
           {/* Left: form */}
           <div className="flex-1 flex flex-col justify-start px-6 pt-10 pb-16 lg:max-w-[580px]">
-            <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest mb-4 px-2.5 py-1 rounded-full border border-[#e8330a]/40 text-[#e8330a] bg-white/[0.03] w-fit">
+            <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest mb-4 px-2.5 py-1 rounded-full border border-[#e8330a]/40 text-[#e8330a] bg-white w-fit">
               Welcome
             </span>
             <h2 className="text-xl sm:text-2xl font-bold text-[#18110a] mb-4 leading-snug">
@@ -860,7 +860,7 @@ export default function QuestionnairePage() {
             </h2>
             <div className="flex flex-wrap gap-2 mb-6">
               {['3 layers', '22 questions', '5 minutes', 'Instant results'].map(chip => (
-                <span key={chip} className="inline-block text-xs font-semibold text-indigo-300 bg-[rgba(24,17,10,0.05)] border border-[rgba(24,17,10,0.1)] rounded-full px-3 py-1">{chip}</span>
+                <span key={chip} className="inline-block text-xs font-semibold text-[#e8330a] bg-[rgba(24,17,10,0.05)] border border-[rgba(24,17,10,0.1)] rounded-full px-3 py-1">{chip}</span>
               ))}
             </div>
             <p className="text-[rgba(24,17,10,0.5)] text-sm mb-8">
@@ -872,24 +872,24 @@ export default function QuestionnairePage() {
                 <label className="block text-xs font-semibold uppercase tracking-widest text-[rgba(24,17,10,0.45)] mb-2">Full Name</label>
                 <input type="text" value={profile.name} onChange={e => setProfile(p => ({ ...p, name: e.target.value }))}
                   placeholder="Jane Smith" autoFocus
-                  className="w-full bg-[rgba(24,17,10,0.04)] border border-[rgba(24,17,10,0.1)] focus:border-[#e8330a] rounded-xl px-4 py-3.5 text-[#18110a] placeholder-slate-500 text-base outline-none transition-colors" />
+                  className="w-full bg-[rgba(24,17,10,0.04)] border border-[rgba(24,17,10,0.1)] focus:border-[#e8330a] rounded px-4 py-3.5 text-[#18110a] placeholder-slate-500 text-base outline-none transition-colors" />
               </div>
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-widest text-[rgba(24,17,10,0.45)] mb-2">Email Address</label>
                 <input type="email" value={profile.email} onChange={e => setProfile(p => ({ ...p, email: e.target.value }))}
                   placeholder="jane@company.com"
-                  className="w-full bg-[rgba(24,17,10,0.04)] border border-[rgba(24,17,10,0.1)] focus:border-[#e8330a] rounded-xl px-4 py-3.5 text-[#18110a] placeholder-slate-500 text-base outline-none transition-colors" />
+                  className="w-full bg-[rgba(24,17,10,0.04)] border border-[rgba(24,17,10,0.1)] focus:border-[#e8330a] rounded px-4 py-3.5 text-[#18110a] placeholder-slate-500 text-base outline-none transition-colors" />
               </div>
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-widest text-[rgba(24,17,10,0.45)] mb-2">Company Name</label>
                 <input type="text" value={profile.company} onChange={e => setProfile(p => ({ ...p, company: e.target.value }))}
                   placeholder="Acme Inc." onKeyDown={e => { if (e.key === 'Enter' && welcomeValid) setStep('questions') }}
-                  className="w-full bg-[rgba(24,17,10,0.04)] border border-[rgba(24,17,10,0.1)] focus:border-[#e8330a] rounded-xl px-4 py-3.5 text-[#18110a] placeholder-slate-500 text-base outline-none transition-colors" />
+                  className="w-full bg-[rgba(24,17,10,0.04)] border border-[rgba(24,17,10,0.1)] focus:border-[#e8330a] rounded px-4 py-3.5 text-[#18110a] placeholder-slate-500 text-base outline-none transition-colors" />
               </div>
             </div>
 
             <button type="button" onClick={() => setStep('questions')} disabled={!welcomeValid}
-              className={`sm:w-fit px-8 py-3 rounded-xl text-sm font-semibold transition-all ${welcomeValid ? 'bg-[#e8330a] hover:bg-[#e8330a] text-[#18110a] shadow-lg shadow-[#e8330a]/25 active:scale-95' : 'bg-[rgba(24,17,10,0.04)] text-[rgba(24,17,10,0.35)] cursor-not-allowed border border-[rgba(24,17,10,0.06)]'}`}>
+              className={`sm:w-fit px-8 py-3 rounded text-sm font-semibold transition-all ${welcomeValid ? 'bg-[#e8330a] hover:bg-[#e8330a] text-[#18110a] shadow-lg shadow-[#e8330a]/25 active:scale-95' : 'bg-[rgba(24,17,10,0.04)] text-[rgba(24,17,10,0.35)] cursor-not-allowed border border-[rgba(24,17,10,0.06)]'}`}>
               Get Started →
             </button>
             {!welcomeValid && (profile.name || profile.email || profile.company) && (
@@ -916,7 +916,7 @@ export default function QuestionnairePage() {
         <div className="flex-1 flex flex-col items-center justify-center px-6 pb-16">
           <div className="w-full max-w-md">
             <div className="mb-10 text-center">
-              <div className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-widest mb-5 px-3 py-1.5 rounded-full border border-[#e8330a]/40 text-[#e8330a] bg-white/[0.03]">
+              <div className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-widest mb-5 px-3 py-1.5 rounded-full border border-[#e8330a]/40 text-[#e8330a] bg-white">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#e8330a] opacity-75" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-[#e8330a]" />
@@ -934,7 +934,7 @@ export default function QuestionnairePage() {
                 const isCurrent = loadingStep === num
                 const isPending = loadingStep < num
                 return (
-                  <div key={i} className={`flex items-center gap-4 px-4 py-3.5 rounded-xl border transition-all duration-500 ${isCurrent ? 'border-[#e8330a]/40 bg-[#e8330a]/10' : isDone ? 'border-[rgba(24,17,10,0.1)] bg-white/[0.02]' : 'border-white/[0.04] bg-transparent'}`}>
+                  <div key={i} className={`flex items-center gap-4 px-4 py-3.5 rounded border transition-all duration-500 ${isCurrent ? 'border-[#e8330a]/40 bg-[#e8330a]/10' : isDone ? 'border-[rgba(24,17,10,0.1)] bg-[rgba(24,17,10,0.03)]' : 'border-white/[0.04] bg-transparent'}`}>
                     <div className="flex-shrink-0 w-7 h-7 flex items-center justify-center">
                       {isDone && (
                         <div className="w-6 h-6 rounded-full bg-emerald-500/15 border border-emerald-500/40 flex items-center justify-center">
@@ -949,7 +949,7 @@ export default function QuestionnairePage() {
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                         </svg>
                       )}
-                      {isPending && <div className="w-5 h-5 rounded-full border border-[rgba(24,17,10,0.1)] bg-white/[0.03]" />}
+                      {isPending && <div className="w-5 h-5 rounded-full border border-[rgba(24,17,10,0.1)] bg-white" />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className={`text-sm font-medium leading-tight ${isCurrent ? 'text-[#18110a]' : isDone ? 'text-[rgba(24,17,10,0.45)]' : 'text-slate-700'}`}>{s.label}</p>
@@ -1001,7 +1001,7 @@ export default function QuestionnairePage() {
           <div className="px-6 pt-6">
             <div className="flex gap-2 mb-4">
               {([1, 2, 3] as const).map(l => (
-                <div key={l} className={`flex-1 flex flex-col gap-1.5 px-3 py-2 rounded-lg border transition-all ${l === q.layer ? `border ${layerColors.border[l]} bg-[rgba(24,17,10,0.04)]` : l < q.layer ? 'border-[rgba(24,17,10,0.1)] bg-white/[0.02]' : 'border-[rgba(24,17,10,0.06)] bg-transparent'}`}>
+                <div key={l} className={`flex-1 flex flex-col gap-1.5 px-3 py-2 rounded-lg border transition-all ${l === q.layer ? `border ${layerColors.border[l]} bg-[rgba(24,17,10,0.04)]` : l < q.layer ? 'border-[rgba(24,17,10,0.1)] bg-[rgba(24,17,10,0.03)]' : 'border-[rgba(24,17,10,0.06)] bg-transparent'}`}>
                   <div className="flex items-center justify-between">
                     <span className={`text-[10px] font-semibold uppercase tracking-widest ${l === q.layer ? layerColors.text[l] : l < q.layer ? 'text-[rgba(24,17,10,0.45)]' : 'text-slate-700'}`}>
                       {l < q.layer ? '✓ ' : ''}Layer {l}
@@ -1032,7 +1032,7 @@ export default function QuestionnairePage() {
           <div className="flex-1 px-6 pb-16">
             <div className="transition-all duration-150" style={{ opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(12px)' }}>
 
-              <div className={`inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest mb-4 px-2.5 py-1 rounded-full border ${layerColors.border[q.layer]} ${layerColors.text[q.layer]} bg-white/[0.03]`}>
+              <div className={`inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest mb-4 px-2.5 py-1 rounded-full border ${layerColors.border[q.layer]} ${layerColors.text[q.layer]} bg-white`}>
                 <span>Q{q.id}</span>
                 <span className="text-[#18110a]/20">·</span>
                 <span>{q.layerName}</span>
@@ -1053,12 +1053,12 @@ export default function QuestionnairePage() {
               </div>
 
               {urlPreviewBanner && (
-                <div className="mb-6 flex items-start gap-3 px-4 py-3 rounded-xl border border-[#e8330a]/30 bg-[#e8330a]/10 text-sm text-indigo-300">
+                <div className="mb-6 flex items-start gap-3 px-4 py-3 rounded border border-[#e8330a]/30 bg-[#e8330a]/10 text-sm text-[#e8330a]">
                   <span className="flex-shrink-0 mt-0.5 text-[#e8330a]">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
                   </span>
                   <p className="flex-1 leading-snug">We found your site — some answers have been pre-filled. Review and edit if needed.</p>
-                  <button type="button" onClick={() => setUrlPreviewBanner(false)} className="flex-shrink-0 text-[#e8330a] hover:text-indigo-300 transition-colors text-base leading-none">
+                  <button type="button" onClick={() => setUrlPreviewBanner(false)} className="flex-shrink-0 text-[#e8330a] hover:text-[#e8330a] transition-colors text-base leading-none">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M18 6 6 18M6 6l12 12"/></svg>
                   </button>
                 </div>
@@ -1067,18 +1067,18 @@ export default function QuestionnairePage() {
               <div className="flex items-center gap-3">
                 {current > 0 && (
                   <button type="button" onClick={() => navigate('back')}
-                    className="px-5 py-3 rounded-xl border border-[rgba(24,17,10,0.1)] text-[rgba(24,17,10,0.5)] text-sm font-medium hover:border-white/20 hover:text-[#18110a] transition-all">
+                    className="px-5 py-3 rounded border border-[rgba(24,17,10,0.1)] text-[rgba(24,17,10,0.5)] text-sm font-medium hover:border-white/20 hover:text-[#18110a] transition-all">
                     Back
                   </button>
                 )}
                 {!isLast ? (
                   <button type="button" onClick={() => navigate('next')} disabled={!canProceed()}
-                    className={`flex-1 sm:flex-none sm:min-w-[160px] py-3 px-6 rounded-xl text-sm font-semibold transition-all ${canProceed() ? 'bg-[#e8330a] hover:bg-[#e8330a] text-[#18110a] shadow-lg shadow-[#e8330a]/25 active:scale-95' : 'bg-[rgba(24,17,10,0.04)] text-[rgba(24,17,10,0.35)] cursor-not-allowed border border-[rgba(24,17,10,0.06)]'}`}>
+                    className={`flex-1 sm:flex-none sm:min-w-[160px] py-3 px-6 rounded text-sm font-semibold transition-all ${canProceed() ? 'bg-[#e8330a] hover:bg-[#e8330a] text-[#18110a] shadow-lg shadow-[#e8330a]/25 active:scale-95' : 'bg-[rgba(24,17,10,0.04)] text-[rgba(24,17,10,0.35)] cursor-not-allowed border border-[rgba(24,17,10,0.06)]'}`}>
                     Next →
                   </button>
                 ) : (
                   <button type="button" onClick={handleSubmit} disabled={!canProceed()}
-                    className={`flex-1 sm:flex-none sm:min-w-[200px] py-3 px-8 rounded-xl text-sm font-semibold transition-all ${canProceed() ? 'bg-gradient-to-r from-[#e8330a] to-purple-600 hover:from-[#e8330a] hover:to-purple-500 text-[#18110a] shadow-lg shadow-[#e8330a]/30 active:scale-95' : 'bg-[rgba(24,17,10,0.04)] text-[rgba(24,17,10,0.35)] cursor-not-allowed border border-[rgba(24,17,10,0.06)]'}`}>
+                    className={`flex-1 sm:flex-none sm:min-w-[200px] py-3 px-8 rounded text-sm font-semibold transition-all ${canProceed() ? 'bg-gradient-to-r from-[#e8330a] to-purple-600 hover:from-[#e8330a] hover:to-purple-500 text-[#18110a] shadow-lg shadow-[#e8330a]/30 active:scale-95' : 'bg-[rgba(24,17,10,0.04)] text-[rgba(24,17,10,0.35)] cursor-not-allowed border border-[rgba(24,17,10,0.06)]'}`}>
                     Get My Diagnosis →
                   </button>
                 )}

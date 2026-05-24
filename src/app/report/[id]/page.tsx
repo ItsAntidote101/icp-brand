@@ -208,7 +208,7 @@ function CircleScore({ score, animate }: { score: number; animate: boolean }) {
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className="text-4xl font-black text-[#18110a] leading-none">{score}</span>
-          <span className="text-xs text-slate-500 mt-0.5">/ 100</span>
+          <span className="text-xs text-[rgba(24,17,10,0.45)] mt-0.5">/ 100</span>
         </div>
       </div>
       <span
@@ -319,13 +319,13 @@ export default function ReportPage({ params }: { params: { id: string } }) {
     <div className="min-h-screen bg-[#faf6ef] text-[#18110a]">
 
       {/* Nav */}
-      <nav className="border-b border-white/10 px-6 py-4 flex items-center justify-between max-w-5xl mx-auto">
+      <nav className="border-b border-[rgba(24,17,10,0.1)] px-6 py-4 flex items-center justify-between max-w-5xl mx-auto">
         <Link href="/" className="text-sm font-bold tracking-tight text-[#18110a]">
           ICP<span className="text-indigo-400">Diagnostic</span>
         </Link>
         <div className="flex items-center gap-4">
-          <span className="text-xs text-slate-500">Report ID: {params.id.slice(0, 8)}…</span>
-          <button className="text-xs font-medium border border-white/10 px-3 py-1.5 rounded-lg text-[rgba(24,17,10,0.5)] hover:border-white/20 hover:text-[#18110a] transition-colors">
+          <span className="text-xs text-[rgba(24,17,10,0.45)]">Report ID: {params.id.slice(0, 8)}…</span>
+          <button className="text-xs font-medium border border-[rgba(24,17,10,0.1)] px-3 py-1.5 rounded-lg text-[rgba(24,17,10,0.5)] hover:border-white/20 hover:text-[#18110a] transition-colors">
             Download PDF
           </button>
         </div>
@@ -334,7 +334,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
       <div className="max-w-5xl mx-auto px-6 py-12 space-y-12">
 
         {/* ── SECTION 1 · Header ─────────────────────────────────────────── */}
-        <section className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-8 pb-10 border-b border-white/10">
+        <section className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-8 pb-10 border-b border-[rgba(24,17,10,0.1)]">
           <div className="flex-1">
             <span className="inline-block text-[11px] font-semibold uppercase tracking-widest text-indigo-400 bg-indigo-400/10 border border-indigo-400/20 px-3 py-1 rounded-full mb-4">
               ICP Diagnostic Report
@@ -343,17 +343,17 @@ export default function ReportPage({ params }: { params: { id: string } }) {
               Your ICP Diagnostic Report
             </h1>
             <p className="text-[rgba(24,17,10,0.5)] text-sm mb-1">{report.company}</p>
-            <p className="text-slate-600 text-xs">Generated {report.date}</p>
+            <p className="text-[rgba(24,17,10,0.45)] text-xs">Generated {report.date}</p>
 
-            <div className="mt-6 grid grid-cols-3 gap-4">
+            <div className="mt-6 grid grid-cols-3 sm:grid-cols-3 gap-3 xs:gap-4">
               {[
                 { label: 'Sections Analyzed', value: '6' },
                 { label: 'Questions Answered', value: '30' },
                 { label: 'Actions Identified', value: `${report.quick_wins.length + 9}` },
               ].map(s => (
-                <div key={s.label} className="bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3">
+                <div key={s.label} className="bg-white border border-[rgba(24,17,10,0.1)] rounded px-4 py-3">
                   <p className="text-xl font-bold text-[#18110a]">{s.value}</p>
-                  <p className="text-[11px] text-slate-500 mt-0.5">{s.label}</p>
+                  <p className="text-[11px] text-[rgba(24,17,10,0.45)] mt-0.5">{s.label}</p>
                 </div>
               ))}
             </div>
@@ -361,7 +361,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
 
           <div className="flex-shrink-0">
             <CircleScore score={report.health_score} animate={animate} />
-            <p className="text-center text-xs text-slate-500 mt-3 max-w-[160px]">
+            <p className="text-center text-xs text-[rgba(24,17,10,0.45)] mt-3 max-w-[160px]">
               Overall ICP Health Score
             </p>
           </div>
@@ -369,7 +369,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
 
         {/* ── AI Executive Summary ────────────────────────────────────────── */}
         {report.executive_summary && (
-          <section className="bg-white/[0.02] border border-white/10 rounded-xl p-6">
+          <section className="bg-white/[0.02] border border-[rgba(24,17,10,0.1)] rounded p-6">
             <div className="flex items-start gap-3">
               <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-[#e8330a]/20 border border-[#e8330a]/30 flex items-center justify-center mt-0.5">
                 <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-indigo-400">
@@ -380,7 +380,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                 <p className="text-[11px] font-bold uppercase tracking-wider text-indigo-400 mb-2">Diagnosis Summary</p>
                 <p className="text-[rgba(24,17,10,0.65)] text-sm leading-relaxed">{report.executive_summary}</p>
                 {report.monthly_waste_estimate && (
-                  <p className="text-xs text-slate-500 mt-2 pt-2 border-t border-white/5">Estimated waste: {report.monthly_waste_estimate}</p>
+                  <p className="text-xs text-[rgba(24,17,10,0.45)] mt-2 pt-2 border-t border-[rgba(24,17,10,0.06)]">Estimated waste: {report.monthly_waste_estimate}</p>
                 )}
               </div>
             </div>
@@ -391,15 +391,15 @@ export default function ReportPage({ params }: { params: { id: string } }) {
         <section>
           <div className="mb-6">
             <h2 className="text-xl font-bold text-[#18110a] mb-1">Executive Summary</h2>
-            <p className="text-slate-500 text-sm">3 critical findings ranked by revenue impact</p>
+            <p className="text-[rgba(24,17,10,0.45)] text-sm">3 critical findings ranked by revenue impact</p>
           </div>
           <div className="space-y-4">
             {report.findings.map((f, i) => (
               <div
                 key={i}
-                className="flex gap-4 bg-white/[0.03] border border-white/10 rounded-xl p-5 hover:border-white/20 transition-colors"
+                className="flex gap-4 bg-white border border-[rgba(24,17,10,0.1)] rounded p-5 hover:border-white/20 transition-colors"
               >
-                <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-[rgba(24,17,10,0.5)] text-sm font-bold">
+                <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-white/5 border border-[rgba(24,17,10,0.1)] flex items-center justify-center text-[rgba(24,17,10,0.5)] text-sm font-bold">
                   {i + 1}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -418,7 +418,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
         <section>
           <div className="mb-6">
             <h2 className="text-xl font-bold text-[#18110a] mb-1">Detailed Breakdown</h2>
-            <p className="text-slate-500 text-sm">Score, finding, and revenue implication for each diagnostic dimension</p>
+            <p className="text-[rgba(24,17,10,0.45)] text-sm">Score, finding, and revenue implication for each diagnostic dimension</p>
           </div>
           <div className="grid sm:grid-cols-2 gap-4">
             {report.breakdown.map((card, i) => {
@@ -429,7 +429,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
               return (
                 <div
                   key={i}
-                  className="bg-white/[0.03] border border-white/10 rounded-xl p-5 hover:border-white/20 transition-colors"
+                  className="bg-white border border-[rgba(24,17,10,0.1)] rounded p-5 hover:border-white/20 transition-colors"
                 >
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="text-[#18110a] font-semibold text-sm">{card.label}</h3>
@@ -438,11 +438,11 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                   <ScoreBar score={card.score} animate={animate} />
                   <div className="mt-4 space-y-2.5">
                     <div className="flex gap-2">
-                      <span className="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider text-slate-600 w-16 pt-0.5">Found</span>
+                      <span className="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider text-[rgba(24,17,10,0.45)] w-16 pt-0.5">Found</span>
                       <p className="text-[rgba(24,17,10,0.65)] text-xs leading-relaxed">{card.found}</p>
                     </div>
                     <div className="flex gap-2">
-                      <span className="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider text-slate-600 w-16 pt-0.5">Why it matters</span>
+                      <span className="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider text-[rgba(24,17,10,0.45)] w-16 pt-0.5">Why it matters</span>
                       <p className="text-[rgba(24,17,10,0.5)] text-xs leading-relaxed">{card.why}</p>
                     </div>
                   </div>
@@ -456,13 +456,13 @@ export default function ReportPage({ params }: { params: { id: string } }) {
         <section>
           <div className="mb-6">
             <h2 className="text-xl font-bold text-[#18110a] mb-1">Quick Wins</h2>
-            <p className="text-slate-500 text-sm">3 actions you can implement this week — no agency required</p>
+            <p className="text-[rgba(24,17,10,0.45)] text-sm">3 actions you can implement this week — no agency required</p>
           </div>
           <div className="space-y-4">
             {report.quick_wins.map((w, i) => (
               <div
                 key={i}
-                className="flex gap-4 bg-white/[0.03] border border-white/10 rounded-xl p-5 hover:border-[#e8330a]/20 hover:border-opacity-100 transition-all group"
+                className="flex gap-4 bg-white border border-[rgba(24,17,10,0.1)] rounded p-5 hover:border-[#e8330a]/20 hover:border-opacity-100 transition-all group"
               >
                 <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-[#e8330a]/20 border border-[#e8330a]/30 flex items-center justify-center text-indigo-400 font-bold text-sm">
                   {i + 1}
@@ -486,47 +486,47 @@ export default function ReportPage({ params }: { params: { id: string } }) {
           <section>
             <div className="mb-6">
               <h2 className="text-xl font-bold text-[#18110a] mb-1">Business Outcomes</h2>
-              <p className="text-slate-500 text-sm">Projected unit economics before and after fixing your ICP</p>
+              <p className="text-[rgba(24,17,10,0.45)] text-sm">Projected unit economics before and after fixing your ICP</p>
             </div>
             <div className="grid sm:grid-cols-2 gap-4 mb-4">
               {/* CAC comparison */}
-              <div className="bg-white/[0.03] border border-white/10 rounded-xl p-5">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-3">Customer Acquisition Cost</p>
+              <div className="bg-white border border-[rgba(24,17,10,0.1)] rounded p-5">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-[rgba(24,17,10,0.45)] mb-3">Customer Acquisition Cost</p>
                 <div className="flex items-end gap-4 mb-3">
                   <div>
-                    <p className="text-[11px] text-slate-600 mb-0.5">Current</p>
+                    <p className="text-[11px] text-[rgba(24,17,10,0.45)] mb-0.5">Current</p>
                     <p className="text-lg font-black text-red-400">{report.business_outcomes.cac_current}</p>
                   </div>
                   <div className="text-slate-700 mb-1">to</div>
                   <div>
-                    <p className="text-[11px] text-slate-600 mb-0.5">Projected</p>
+                    <p className="text-[11px] text-[rgba(24,17,10,0.45)] mb-0.5">Projected</p>
                     <p className="text-lg font-black text-emerald-400">{report.business_outcomes.cac_projected}</p>
                   </div>
                 </div>
-                <p className="text-xs text-slate-500 leading-relaxed">Lower CAC means more customers from the same budget after ICP alignment.</p>
+                <p className="text-xs text-[rgba(24,17,10,0.45)] leading-relaxed">Lower CAC means more customers from the same budget after ICP alignment.</p>
               </div>
 
               {/* LTV:CAC comparison */}
-              <div className="bg-white/[0.03] border border-white/10 rounded-xl p-5">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-3">LTV : CAC Ratio</p>
+              <div className="bg-white border border-[rgba(24,17,10,0.1)] rounded p-5">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-[rgba(24,17,10,0.45)] mb-3">LTV : CAC Ratio</p>
                 <div className="flex items-end gap-4 mb-3">
                   <div>
-                    <p className="text-[11px] text-slate-600 mb-0.5">Current</p>
+                    <p className="text-[11px] text-[rgba(24,17,10,0.45)] mb-0.5">Current</p>
                     <p className="text-lg font-black text-amber-400">{report.business_outcomes.ltv_cac_current}</p>
                   </div>
                   <div className="text-slate-700 mb-1">to</div>
                   <div>
-                    <p className="text-[11px] text-slate-600 mb-0.5">Projected</p>
+                    <p className="text-[11px] text-[rgba(24,17,10,0.45)] mb-0.5">Projected</p>
                     <p className="text-lg font-black text-emerald-400">{report.business_outcomes.ltv_cac_projected}</p>
                   </div>
                 </div>
-                <p className="text-xs text-slate-500 leading-relaxed">Healthy B2B benchmark is 3:1 or above. Below 2:1 means your acquisition model is unsustainable.</p>
+                <p className="text-xs text-[rgba(24,17,10,0.45)] leading-relaxed">Healthy B2B benchmark is 3:1 or above. Below 2:1 means your acquisition model is unsustainable.</p>
               </div>
             </div>
 
             {/* Revenue opportunity */}
             {report.business_outcomes.monthly_revenue_opportunity && (
-              <div className="bg-indigo-950/30 border border-[#e8330a]/20 rounded-xl p-5">
+              <div className="bg-indigo-950/30 border border-[#e8330a]/20 rounded p-5">
                 <div className="flex items-start gap-4">
                   <div className="flex-1">
                     <p className="text-[11px] font-bold uppercase tracking-wider text-indigo-400 mb-1">Monthly Revenue Opportunity</p>
@@ -542,7 +542,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
         <section className="relative">
 
           {/* Blurred locked preview */}
-          <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02]">
+          <div className="relative overflow-hidden rounded border border-[rgba(24,17,10,0.1)] bg-white/[0.02]">
             <div className="blur-sm pointer-events-none select-none p-8 space-y-5 opacity-50">
               <h3 className="text-[#18110a] font-bold text-lg">Full Optimization Roadmap — Weeks 1–12</h3>
               {[
@@ -566,7 +566,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
 
           {/* Paywall card */}
           <div className="relative -mt-8 z-10">
-            <div className="bg-gradient-to-br from-[#13131f] to-[#0e0e1a] border border-[#e8330a]/20 rounded-2xl p-8 text-center shadow-2xl shadow-indigo-950/50">
+            <div className="bg-gradient-to-br from-[#13131f] to-[#0e0e1a] border border-[#e8330a]/20 rounded p-8 text-center shadow-2xl shadow-indigo-950/50">
               <span className="inline-block text-[11px] font-semibold uppercase tracking-widest text-indigo-400 bg-indigo-400/10 border border-indigo-400/20 px-3 py-1 rounded-full mb-5">
                 🔒 Unlock Full Access
               </span>
@@ -577,7 +577,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                 Your report identified {report.breakdown.filter(b => b.score < 50).length} critical gaps costing you leads every day.
                 Get the complete week-by-week fix plan, monthly monitoring, and ongoing diagnostic updates.
               </p>
-              <p className="text-xs text-slate-600 mb-6">
+              <p className="text-xs text-[rgba(24,17,10,0.45)] mb-6">
                 Monthly monitoring · Weekly snapshots · Quarterly deep-dive reports
               </p>
 
@@ -604,10 +604,10 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                 ).map(tier => (
                   <div
                     key={tier.name}
-                    className={`relative rounded-xl p-5 text-left border transition-all ${
+                    className={`relative rounded p-5 text-left border transition-all ${
                       tier.highlight
                         ? 'border-[#e8330a] bg-[#e8330a]/10 shadow-lg shadow-indigo-900/30'
-                        : 'border-white/10 bg-white/[0.03]'
+                        : 'border-[rgba(24,17,10,0.1)] bg-white'
                     }`}
                   >
                     {tier.highlight && (
@@ -621,7 +621,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                       <p className="text-[rgba(24,17,10,0.5)] text-xs font-semibold uppercase tracking-wider mb-1">{tier.name}</p>
                       <div className="flex items-baseline gap-0.5 flex-wrap">
                         <span className="text-2xl font-black text-[#18110a]">{PRICES[tier.name]}</span>
-                        <span className="text-slate-500 text-sm">/mo</span>
+                        <span className="text-[rgba(24,17,10,0.45)] text-sm">/mo</span>
                       </div>
                     </div>
                     <ul className="space-y-1.5 mb-5">
@@ -637,7 +637,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                       className={`w-full py-2.5 rounded-lg text-sm font-semibold transition-all active:scale-95 ${
                         tier.highlight
                           ? 'bg-[#e8330a] hover:bg-[#e8330a] text-[#18110a] shadow shadow-[#e8330a]/30'
-                          : 'border border-white/10 bg-white/5 text-[rgba(24,17,10,0.65)] hover:bg-white/10 hover:text-[#18110a]'
+                          : 'border border-[rgba(24,17,10,0.1)] bg-white/5 text-[rgba(24,17,10,0.65)] hover:bg-white/10 hover:text-[#18110a]'
                       }`}
                     >
                       Subscribe
@@ -646,7 +646,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                 ))}
               </div>
 
-              <p className="text-xs text-slate-600">
+              <p className="text-xs text-[rgba(24,17,10,0.45)]">
                 ⚡ Your competitors are already optimizing. Start today.
               </p>
             </div>
@@ -663,10 +663,10 @@ export default function ReportPage({ params }: { params: { id: string } }) {
             <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
 
             {/* Modal */}
-            <div className="relative w-full max-w-md bg-[#fff] border border-[#e8330a]/20 rounded-2xl p-7 shadow-2xl shadow-indigo-950/60">
+            <div className="relative w-full max-w-md bg-[#fff] border border-[#e8330a]/20 rounded p-7 shadow-2xl shadow-indigo-950/60">
               <button
                 onClick={() => setShowModal(false)}
-                className="absolute top-4 right-4 text-slate-500 hover:text-[#18110a] transition-colors text-xl leading-none"
+                className="absolute top-4 right-4 text-[rgba(24,17,10,0.45)] hover:text-[#18110a] transition-colors text-xl leading-none"
               >
                 ✕
               </button>
@@ -687,7 +687,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                 onChange={e => setEmail(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') handleSubscribe() }}
                 placeholder="you@company.com"
-                className="w-full bg-white/5 border border-white/10 focus:border-[#e8330a] rounded-xl px-4 py-3 text-[#18110a] placeholder-slate-500 text-sm outline-none transition-colors mb-3"
+                className="w-full bg-white/5 border border-[rgba(24,17,10,0.1)] focus:border-[#e8330a] rounded px-4 py-3 text-[#18110a] placeholder-slate-500 text-sm outline-none transition-colors mb-3"
               />
 
               {subscribeError && (
@@ -697,7 +697,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
               <button
                 onClick={handleSubscribe}
                 disabled={subscribing}
-                className="w-full py-3 rounded-xl bg-[#e8330a] hover:bg-[#e8330a] disabled:opacity-50 disabled:cursor-not-allowed text-[#18110a] text-sm font-semibold transition-all active:scale-95 flex items-center justify-center gap-2"
+                className="w-full py-3 rounded bg-[#e8330a] hover:bg-[#e8330a] disabled:opacity-50 disabled:cursor-not-allowed text-[#18110a] text-sm font-semibold transition-all active:scale-95 flex items-center justify-center gap-2"
               >
                 {subscribing ? (
                   <>
@@ -712,7 +712,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                 )}
               </button>
 
-              <p className="text-center text-xs text-slate-600 mt-3">
+              <p className="text-center text-xs text-[rgba(24,17,10,0.45)] mt-3">
                 Secured by Paystack · Cancel anytime
               </p>
             </div>
@@ -720,7 +720,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
         )}
 
         {/* Footer */}
-        <footer className="border-t border-white/10 pt-8 pb-4 text-center text-slate-600 text-xs">
+        <footer className="border-t border-[rgba(24,17,10,0.1)] pt-8 pb-4 text-center text-[rgba(24,17,10,0.45)] text-xs">
           <span>ICP<span className="text-indigo-400/50">Diagnostic</span></span>
           <span className="mx-2">·</span>
           <Link href="/" className="hover:text-[rgba(24,17,10,0.5)] transition-colors">Back to Home</Link>

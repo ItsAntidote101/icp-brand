@@ -178,10 +178,10 @@ export default function CsvUploadPage() {
       {/* Nav */}
       <nav className="sticky top-0 z-20 bg-[#faf6ef]/90 backdrop-blur-md border-b border-[rgba(24,17,10,0.08)]">
         <div className="max-w-2xl mx-auto px-4 h-14 flex items-center gap-3">
-          <Link href="/dashboard" className="text-gray-500 hover:text-gray-300 transition-colors text-sm">
+          <Link href="/dashboard" className="text-[rgba(24,17,10,0.45)] hover:text-[rgba(24,17,10,0.65)] transition-colors text-sm">
             ← Dashboard
           </Link>
-          <span className="text-gray-700">/</span>
+          <span className="text-[rgba(24,17,10,0.35)]">/</span>
           <span className="text-[#18110a] text-sm font-medium">CSV Analysis</span>
         </div>
       </nav>
@@ -198,15 +198,15 @@ export default function CsvUploadPage() {
         {/* Format selector */}
         {!parsed && (
           <div className="bg-[rgba(24,17,10,0.04)] border border-[rgba(24,17,10,0.1)] rounded p-5 space-y-4">
-            <p className="text-xs text-gray-500 uppercase tracking-widest font-semibold">CSV Format</p>
-            <div className="grid grid-cols-3 gap-2">
+            <p className="text-xs text-[rgba(24,17,10,0.45)] uppercase tracking-widest font-semibold">CSV Format</p>
+            <div className="grid grid-cols-3 sm:grid-cols-3 gap-1.5">
               {(Object.keys(FORMAT_HINTS) as CsvFormat[]).map(f => (
                 <button
                   key={f}
                   onClick={() => setFormat(f)}
                   className={`py-2.5 px-3 rounded text-sm font-medium transition-colors text-center ${
                     format === f
-                      ? 'bg-indigo-600 text-[#18110a]'
+                      ? 'bg-[#e8330a] text-[#18110a]'
                       : 'bg-[rgba(24,17,10,0.04)] text-[rgba(24,17,10,0.4)] hover:text-[#18110a] hover:bg-[rgba(24,17,10,0.06)]'
                   }`}
                 >
@@ -214,9 +214,9 @@ export default function CsvUploadPage() {
                 </button>
               ))}
             </div>
-            <div className="text-xs text-gray-600 leading-relaxed space-y-1">
+            <div className="text-xs text-[rgba(24,17,10,0.4)] leading-relaxed space-y-1">
               <p><span className="text-[rgba(24,17,10,0.4)]">Expected columns:</span> {FORMAT_HINTS[format].cols}</p>
-              <p className="text-gray-600">{FORMAT_HINTS[format].example}</p>
+              <p className="text-[rgba(24,17,10,0.4)]">{FORMAT_HINTS[format].example}</p>
             </div>
           </div>
         )}
@@ -229,7 +229,7 @@ export default function CsvUploadPage() {
             onDrop={handleDrop}
             onClick={() => fileInputRef.current?.click()}
             className={`
-              border-2 border-dashed rounded-3xl p-14 text-center cursor-pointer transition-all duration-150 select-none
+              border-2 border-dashed rounded p-8 sm:p-14 text-center cursor-pointer transition-all duration-150 select-none
               ${dragOver
                 ? 'border-[#e8330a] bg-[#e8330a]/5 scale-[1.01]'
                 : 'border-[rgba(24,17,10,0.1)] hover:border-white/25 bg-white/[0.02]'
@@ -244,13 +244,13 @@ export default function CsvUploadPage() {
               onChange={handleFileInput}
             />
             <div className="w-14 h-14 rounded bg-[rgba(24,17,10,0.04)] border border-[rgba(24,17,10,0.1)] flex items-center justify-center mx-auto mb-5">
-              <svg className="w-7 h-7 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-7 h-7 text-[rgba(24,17,10,0.45)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
               </svg>
             </div>
             <p className="text-[#18110a] font-semibold text-lg mb-1">Drop your CSV here</p>
-            <p className="text-gray-500 text-sm">or click to browse</p>
-            <p className="text-gray-700 text-xs mt-4">
+            <p className="text-[rgba(24,17,10,0.45)] text-sm">or click to browse</p>
+            <p className="text-[rgba(24,17,10,0.35)] text-xs mt-4">
               {FORMAT_HINTS[format].label} format selected · Max 500 rows analysed
             </p>
           </div>
@@ -266,14 +266,14 @@ export default function CsvUploadPage() {
                 </div>
                 <div className="min-w-0">
                   <p className="text-[#18110a] text-sm font-medium truncate">{fileName}</p>
-                  <p className="text-gray-500 text-xs">
+                  <p className="text-[rgba(24,17,10,0.45)] text-xs">
                     {parsed.rows.length} rows · {parsed.headers.length} columns
                   </p>
                 </div>
               </div>
               <button
                 onClick={reset}
-                className="text-xs text-gray-600 hover:text-gray-300 transition-colors shrink-0"
+                className="text-xs text-[rgba(24,17,10,0.4)] hover:text-[rgba(24,17,10,0.65)] transition-colors shrink-0"
               >
                 Remove
               </button>
@@ -291,7 +291,7 @@ export default function CsvUploadPage() {
         {/* Preview table */}
         {parsed && parsed.headers.length > 0 && !analysis && (
           <div className="bg-[rgba(24,17,10,0.04)] border border-[rgba(24,17,10,0.1)] rounded overflow-hidden">
-            <p className="text-xs text-gray-500 uppercase tracking-widest px-5 pt-4 pb-3 font-semibold border-b border-[rgba(24,17,10,0.08)]">
+            <p className="text-xs text-[rgba(24,17,10,0.45)] uppercase tracking-widest px-5 pt-4 pb-3 font-semibold border-b border-[rgba(24,17,10,0.08)]">
               Preview — first 5 rows
             </p>
             <div className="overflow-x-auto">
@@ -299,12 +299,12 @@ export default function CsvUploadPage() {
                 <thead>
                   <tr className="border-b border-[rgba(24,17,10,0.08)]">
                     {parsed.headers.slice(0, 7).map((h, i) => (
-                      <th key={i} className="text-left px-4 py-2.5 text-gray-500 font-medium whitespace-nowrap">
+                      <th key={i} className="text-left px-4 py-2.5 text-[rgba(24,17,10,0.45)] font-medium whitespace-nowrap">
                         {h}
                       </th>
                     ))}
                     {parsed.headers.length > 7 && (
-                      <th className="px-4 py-2.5 text-gray-700 font-medium text-left">
+                      <th className="px-4 py-2.5 text-[rgba(24,17,10,0.35)] font-medium text-left">
                         +{parsed.headers.length - 7} more
                       </th>
                     )}
@@ -314,7 +314,7 @@ export default function CsvUploadPage() {
                   {parsed.rows.slice(0, 5).map((row, i) => (
                     <tr key={i} className="border-b border-[rgba(24,17,10,0.08)] last:border-0">
                       {row.slice(0, 7).map((cell, j) => (
-                        <td key={j} className="px-4 py-2.5 text-gray-300 whitespace-nowrap max-w-[160px] truncate">
+                        <td key={j} className="px-4 py-2.5 text-[rgba(24,17,10,0.65)] whitespace-nowrap max-w-[160px] truncate">
                           {cell || '—'}
                         </td>
                       ))}
@@ -331,7 +331,7 @@ export default function CsvUploadPage() {
           <button
             onClick={runAnalysis}
             disabled={analysing}
-            className="w-full bg-indigo-600 hover:bg-[#e8330a] disabled:opacity-60 text-[#18110a] font-semibold py-4 rounded transition-colors flex items-center justify-center gap-2.5 text-sm"
+            className="w-full bg-[#e8330a] hover:opacity-90 disabled:opacity-60 text-[#18110a] font-semibold py-4 rounded transition-colors flex items-center justify-center gap-2.5 text-sm"
           >
             {analysing ? (
               <>
@@ -370,7 +370,7 @@ export default function CsvUploadPage() {
 
             {/* Summary */}
             {'summary' in analysis && analysis.summary && (
-              <div className="bg-[#e8330a]/10 border border-[#e8330a]/20 rounded-3xl p-6">
+              <div className="bg-[#e8330a]/10 border border-[#e8330a]/20 rounded p-6">
                 <p className="text-xs text-[#e8330a] uppercase tracking-widest font-semibold mb-3">Overview</p>
                 <p className="text-[#18110a] text-base leading-relaxed">{analysis.summary}</p>
               </div>
@@ -380,7 +380,7 @@ export default function CsvUploadPage() {
             {'top_performers' in analysis && analysis.top_performers && (
               <div className="grid sm:grid-cols-2 gap-4">
                 {/* Winners */}
-                <div className="bg-[rgba(24,17,10,0.04)] border border-[rgba(24,17,10,0.1)] rounded-3xl p-6">
+                <div className="bg-[rgba(24,17,10,0.04)] border border-[rgba(24,17,10,0.1)] rounded p-6">
                   <p className="text-xs text-emerald-400 uppercase tracking-widest font-semibold mb-4">
                     Top Performers
                   </p>
@@ -401,7 +401,7 @@ export default function CsvUploadPage() {
 
                 {/* Losers */}
                 {'underperformers' in analysis && analysis.underperformers && (
-                  <div className="bg-[rgba(24,17,10,0.04)] border border-[rgba(24,17,10,0.1)] rounded-3xl p-6">
+                  <div className="bg-[rgba(24,17,10,0.04)] border border-[rgba(24,17,10,0.1)] rounded p-6">
                     <p className="text-xs text-red-400 uppercase tracking-widest font-semibold mb-4">
                       Underperformers
                     </p>
@@ -425,14 +425,14 @@ export default function CsvUploadPage() {
 
             {/* Budget waste */}
             {'budget_waste' in analysis && analysis.budget_waste && (
-              <div className="bg-amber-500/10 border border-amber-500/20 rounded-3xl p-6">
+              <div className="bg-amber-500/10 border border-amber-500/20 rounded p-6">
                 <div className="flex items-center gap-4 mb-3">
                   <p className="text-xs text-amber-400 uppercase tracking-widest font-semibold">Budget Waste</p>
                   <span className="text-2xl font-black text-amber-400">
                     {analysis.budget_waste.estimated_amount}
                   </span>
                 </div>
-                <p className="text-gray-300 text-sm leading-relaxed">
+                <p className="text-[rgba(24,17,10,0.65)] text-sm leading-relaxed">
                   {analysis.budget_waste.explanation}
                 </p>
               </div>
@@ -440,13 +440,13 @@ export default function CsvUploadPage() {
 
             {/* Audience insights */}
             {'audience_insights' in analysis && analysis.audience_insights && analysis.audience_insights.length > 0 && (
-              <div className="bg-[rgba(24,17,10,0.04)] border border-[rgba(24,17,10,0.1)] rounded-3xl p-6">
+              <div className="bg-[rgba(24,17,10,0.04)] border border-[rgba(24,17,10,0.1)] rounded p-6">
                 <p className="text-xs text-[rgba(24,17,10,0.5)] uppercase tracking-widest font-semibold mb-4">
                   Audience Insights
                 </p>
                 <ul className="space-y-3">
                   {analysis.audience_insights.map((insight, i) => (
-                    <li key={i} className="flex gap-3 text-sm text-gray-300 leading-relaxed">
+                    <li key={i} className="flex gap-3 text-sm text-[rgba(24,17,10,0.65)] leading-relaxed">
                       <span className="text-[rgba(24,17,10,0.5)] shrink-0 mt-0.5">•</span>
                       {insight}
                     </li>
@@ -457,7 +457,7 @@ export default function CsvUploadPage() {
 
             {/* Recommendations */}
             {'recommendations' in analysis && analysis.recommendations && analysis.recommendations.length > 0 && (
-              <div className="bg-[rgba(24,17,10,0.04)] border border-[rgba(24,17,10,0.1)] rounded-3xl p-6">
+              <div className="bg-[rgba(24,17,10,0.04)] border border-[rgba(24,17,10,0.1)] rounded p-6">
                 <p className="text-xs text-[#18110a] uppercase tracking-widest font-semibold mb-5">
                   Recommendations — ranked by revenue impact
                 </p>
@@ -483,8 +483,8 @@ export default function CsvUploadPage() {
             {/* Raw fallback */}
             {'raw' in analysis && analysis.raw && (
               <div className="bg-[rgba(24,17,10,0.04)] border border-[rgba(24,17,10,0.1)] rounded p-5">
-                <p className="text-xs text-gray-500 mb-3">Analysis (raw)</p>
-                <pre className="text-xs text-gray-300 whitespace-pre-wrap leading-relaxed">{analysis.raw}</pre>
+                <p className="text-xs text-[rgba(24,17,10,0.45)] mb-3">Analysis (raw)</p>
+                <pre className="text-xs text-[rgba(24,17,10,0.65)] whitespace-pre-wrap leading-relaxed">{analysis.raw}</pre>
               </div>
             )}
 
@@ -492,7 +492,7 @@ export default function CsvUploadPage() {
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
               <Link
                 href="/dashboard"
-                className="flex-1 text-center bg-indigo-600 hover:bg-[#e8330a] text-[#18110a] font-semibold px-5 py-3 rounded text-sm transition-colors"
+                className="flex-1 text-center bg-[#e8330a] hover:opacity-90 text-[#18110a] font-semibold px-5 py-3 rounded text-sm transition-colors"
               >
                 Back to Dashboard
               </Link>

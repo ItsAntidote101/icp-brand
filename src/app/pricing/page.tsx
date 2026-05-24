@@ -229,6 +229,19 @@ export default function PricingPage() {
 
   return (
     <div style={{ background: Warm, minHeight: '100vh' }}>
+      <style>{`
+        @media (max-width: 640px) {
+          .plans-grid { grid-template-columns: 1fr !important; }
+          .plans-grid > div { border-left: 1.5px solid rgba(24,17,10,0.12); }
+        }
+        @media (min-width: 641px) and (max-width: 900px) {
+          .plans-grid { grid-template-columns: 1fr 1fr !important; }
+        }
+        .comparison-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        @media (prefers-reduced-motion: reduce) {
+          *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+        }
+      `}</style>
 
       {/* ── NAV ───────────────────────────────────────────────────────────── */}
       <nav style={{ borderBottom: `1.5px solid ${Border}`, position: 'sticky', top: 0, zIndex: 50, background: Warm }}>
@@ -272,7 +285,7 @@ export default function PricingPage() {
 
       {/* ── PLAN CARDS ────────────────────────────────────────────────────── */}
       <section style={{ borderBottom: `1.5px solid ${Border}` }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', borderLeft: `1.5px solid ${Border}` }}>
+        <div className="plans-grid" style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', borderLeft: `1.5px solid ${Border}` }}>
           {PLANS.map((plan) => (
             <div key={plan.name} style={{ borderRight: `1.5px solid ${Border}`, borderBottom: `1.5px solid ${Border}`, position: 'relative', background: plan.highlight ? Dark : 'transparent', display: 'flex', flexDirection: 'column' }}>
               {/* Orange top bar for highlight */}
@@ -286,7 +299,7 @@ export default function PricingPage() {
                 </div>
 
                 {/* Price */}
-                <p style={{ fontFamily: font, fontSize: plan.monthly === 0 ? 40 : 34, fontWeight: 700, color: plan.highlight ? '#fff' : Text, margin: '0 0 2px', lineHeight: 1 }}>
+                <p style={{ fontFamily: font, fontSize: 'clamp(26px,4vw,34px)', fontWeight: 700, color: plan.highlight ? '#fff' : Text, margin: '0 0 2px', lineHeight: 1 }}>
                   {displayPrice(plan)}
                 </p>
                 {plan.monthly > 0 && (
@@ -361,11 +374,12 @@ export default function PricingPage() {
       </section>
 
       {/* ── FEATURE COMPARISON TABLE ──────────────────────────────────────── */}
-      <section style={{ borderBottom: `1.5px solid ${Border}`, overflowX: 'auto' }}>
+      <section style={{ borderBottom: `1.5px solid ${Border}` }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: 'clamp(40px,6vw,72px) clamp(16px,4vw,40px)' }}>
           <h2 style={{ fontFamily: font, fontSize: 'clamp(24px,3.5vw,40px)', fontWeight: 700, color: Text, margin: '0 0 40px' }}>Compare all features</h2>
 
-          <div style={{ border: `1.5px solid ${Border}`, minWidth: 700 }}>
+          <div className="comparison-scroll">
+          <div style={{ border: `1.5px solid ${Border}`, minWidth: 680 }}>
 
             {/* Table header */}
             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr', borderBottom: `1.5px solid ${Border}`, background: Warm }}>
@@ -404,6 +418,7 @@ export default function PricingPage() {
                 ))}
               </div>
             ))}
+          </div>
           </div>
         </div>
       </section>

@@ -92,7 +92,7 @@ export default function LPChecklistPage() {
           <span style={{ fontFamily: font, fontWeight: 700, fontSize: 15, color: Dark }}>ICP Diagnostic</span>
         </Link>
         <button onClick={() => window.print()}
-          style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: 'none', border: `1.5px solid ${Border}`, padding: '8px 16px', fontFamily: fontB, fontSize: 13, fontWeight: 600, color: Dark, cursor: 'pointer' }}>
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: 'none', border: `1.5px solid ${Border}`, padding: '11px 18px', minHeight: 44, fontFamily: fontB, fontSize: 13, fontWeight: 600, color: Dark, cursor: 'pointer' }}>
           <Download size={14} /> Save PDF
         </button>
       </div>

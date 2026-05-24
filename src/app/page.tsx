@@ -395,6 +395,11 @@ export default function Page() {
         .btn-dark:hover { background: #2c1e0f !important; }
         .btn-ghost:hover { background: rgba(24,17,10,0.05) !important; }
         .btn-ghost-dark:hover { background: rgba(255,255,255,0.08) !important; }
+        /* Mobile: stack hero image under text */
+        @media (max-width: 767px) {
+          .hero-img-col { display: none !important; }
+          .hero-text-col { max-width: 100% !important; padding: clamp(48px,8vw,72px) clamp(16px,5vw,24px) !important; }
+        }
       `}</style>
 
       {/* ── NAV ─────────────────────────────────────────────────────────── */}
@@ -424,7 +429,7 @@ export default function Page() {
       </nav>
 
       {mobileOpen && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 49, background: Warm, display: 'flex', flexDirection: 'column', padding: '80px 32px 40px' }}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 49, background: Warm, display: 'flex', flexDirection: 'column', padding: 'clamp(64px,12vh,80px) clamp(20px,5vw,32px) 40px' }}>
           {[['How It Works', '#how-it-works'], ['Results', '#results'], ['Pricing', '/pricing'], ['FAQ', '#faq']].map(([label, href]) => (
             href.startsWith('/') ? (
               <Link key={href} href={href} onClick={() => setMobileOpen(false)}
@@ -443,9 +448,9 @@ export default function Page() {
 
       {/* ── HERO ────────────────────────────────────────────────────────── */}
       <section style={{ background: Warm, borderBottom: `1.5px solid ${Border}` }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', minHeight: 420 }} className="block md:grid">
+        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr' }} className="block md:grid">
           {/* Left */}
-          <div style={{ padding: 'clamp(48px,8vw,96px) clamp(20px,5vw,56px)', borderRight: `1.5px solid ${Border}` }}>
+          <div className="hero-text-col" style={{ padding: 'clamp(48px,8vw,96px) clamp(20px,5vw,56px)', borderRight: `1.5px solid ${Border}` }}>
             <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 24px' }}>ICP Diagnostic Tool</p>
             <h1 style={{ fontFamily: fontSerif, fontSize: 'clamp(32px,4.5vw,56px)', fontWeight: 700, color: Text, lineHeight: 1.08, margin: '0 0 32px' }}>
               Your targeting is{' '}
@@ -467,7 +472,7 @@ export default function Page() {
             <p style={{ fontFamily: fontB, fontSize: 'clamp(16px,2vw,20px)', color: Muted, lineHeight: 1.7, margin: 0 }}>
               Most B2B teams waste 30 to 60 percent of their ad budget targeting people who will never buy. The ICP Diagnostic finds the exact misalignment, scores your targeting, and gives you a ranked fix list in 5 minutes.
             </p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 0, borderTop: `1.5px solid ${Border}`, borderLeft: `1.5px solid ${Border}` }}>
+            <div className="grid grid-cols-3" style={{ gap: 0, borderTop: `1.5px solid ${Border}`, borderLeft: `1.5px solid ${Border}` }}>
               {[
                 { stat: '5 min', label: 'To complete' },
                 { stat: 'Instant', label: 'Results' },

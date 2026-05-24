@@ -22,13 +22,13 @@ export default function AboutPage() {
     <div style={{ fontFamily: fontB, color: Dark, backgroundColor: Warm, margin: 0, padding: 0 }}>
 
       {/* ── SECTION ONE: Hero ── */}
-      <section style={{ background: Dark, padding: '120px 0', textAlign: 'center', position: 'relative' }}>
+      <section style={{ background: Dark, padding: 'clamp(52px,10vw,120px) 0', textAlign: 'center', position: 'relative' }}>
 
         {/* Sticky Nav */}
         <nav style={{
           position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '16px 40px',
+          padding: '14px clamp(16px,4vw,40px)',
           background: 'rgba(24,17,10,0.88)',
           backdropFilter: 'blur(16px)',
           WebkitBackdropFilter: 'blur(16px)',
@@ -46,8 +46,8 @@ export default function AboutPage() {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <Link href="/dashboard" style={{ fontFamily: fontB, fontSize: 14, color: 'rgba(255,255,255,0.65)', textDecoration: 'none' }}>Login</Link>
-            <Link href="/questionnaire" style={{ fontFamily: font, fontWeight: 700, fontSize: 14, color: '#fff', background: Orange, padding: '10px 20px', borderRadius: 6, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+            <Link href="/dashboard" className="hidden sm:block" style={{ fontFamily: fontB, fontSize: 14, color: 'rgba(255,255,255,0.65)', textDecoration: 'none' }}>Login</Link>
+            <Link href="/questionnaire" style={{ fontFamily: font, fontWeight: 700, fontSize: 13, color: '#fff', background: Orange, padding: '10px 18px', borderRadius: 6, textDecoration: 'none', whiteSpace: 'nowrap' }}>
               Get Free Diagnosis
             </Link>
           </div>
@@ -84,7 +84,7 @@ export default function AboutPage() {
       </section>
 
       {/* ── SECTION TWO: The Problem We Saw ── */}
-      <section style={{ background: Warm, padding: '120px 0' }}>
+      <section style={{ background: Warm, padding: 'clamp(52px,10vw,120px) 0' }}>
         <div style={{ maxWidth: 1320, margin: '0 auto', padding: '0 24px' }}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
 
@@ -125,7 +125,7 @@ export default function AboutPage() {
       </section>
 
       {/* ── SECTION THREE: The Team ── */}
-      <section style={{ background: '#fff', padding: '120px 0' }}>
+      <section style={{ background: '#fff', padding: 'clamp(52px,10vw,120px) 0' }}>
         <div style={{ maxWidth: 1320, margin: '0 auto', padding: '0 24px' }}>
           <h2 style={{ fontFamily: font, fontWeight: 700, fontSize: 'clamp(28px,3vw,42px)', color: Dark, textAlign: 'center', margin: '0 0 16px', letterSpacing: '-0.02em' }}>
             The minds behind the diagnostic.
@@ -210,7 +210,7 @@ export default function AboutPage() {
       </section>
 
       {/* ── SECTION FOUR: Our Values ── */}
-      <section style={{ background: Warm, padding: '120px 0' }}>
+      <section style={{ background: Warm, padding: 'clamp(52px,10vw,120px) 0' }}>
         <div style={{ maxWidth: 1320, margin: '0 auto', padding: '0 24px' }}>
           <h2 style={{ fontFamily: font, fontWeight: 700, fontSize: 'clamp(28px,3vw,42px)', color: Dark, margin: '0 0 56px', letterSpacing: '-0.02em' }}>
             How we think.
@@ -250,7 +250,7 @@ export default function AboutPage() {
       </section>
 
       {/* ── SECTION FIVE: The Mission ── */}
-      <section style={{ background: Dark, padding: '120px 0', textAlign: 'center' }}>
+      <section style={{ background: Dark, padding: 'clamp(52px,10vw,120px) 0', textAlign: 'center' }}>
         <div style={{ maxWidth: 900, margin: '0 auto', padding: '0 24px' }}>
           <h2 style={{ fontFamily: font, fontWeight: 700, fontSize: 'clamp(32px,4vw,52px)', color: '#fff', margin: '0 0 32px', letterSpacing: '-0.03em' }}>
             Our mission is simple.

@@ -22,28 +22,38 @@
 :root {
   --font-heading: 'PolySans Median', -apple-system, system-ui, sans-serif;
   --font-body:    'PolySans Neutral', -apple-system, system-ui, sans-serif;
-  --color-primary: #302161;
-  --color-body:    rgba(48, 33, 97, 0.88);
-  --color-muted:   rgba(48, 33, 97, 0.55);
-  --color-bg:      #ffffff;
-  --color-bg-soft: #f5f3ff;
+  --color-primary: #18110a;
+  --color-body:    rgba(24, 17, 10, 0.88);
+  --color-muted:   rgba(24, 17, 10, 0.5);
+  --color-bg:      #faf6ef;
+  --color-bg-soft: #fff;
+  --color-accent:  #e8330a;
+  --color-border:  rgba(24, 17, 10, 0.12);
 
   /* kept for backward compat */
-  --brand-primary: #302161;
-  --brand-body:    rgba(48, 33, 97, 0.88);
-  --brand-muted:   rgba(48, 33, 97, 0.48);
-  --brand-bg:      #ffffff;
-  --brand-bg-alt:  #f8f7ff;
-  --brand-border:  rgba(48, 33, 97, 0.1);
+  --brand-primary: #18110a;
+  --brand-body:    rgba(24, 17, 10, 0.88);
+  --brand-muted:   rgba(24, 17, 10, 0.5);
+  --brand-bg:      #faf6ef;
+  --brand-bg-alt:  #fff;
+  --brand-border:  rgba(24, 17, 10, 0.12);
 }
 
 /* ── Base ─────────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { overflow-x: clip; }
+
 body {
   font-family: var(--font-body);
   color: var(--color-body);
   background: var(--color-bg);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: clip;
+  /* safe-area insets for notched phones */
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -133,37 +143,47 @@ h3 { font-size: clamp(20px, 2.5vw, 28px); }
   }
 }
 
-/* ── Slider — dark theme (questionnaire / dashboard) ─────────────────────── */
+/* ── Slider ───────────────────────────────────────────────────────────────── */
 input[type='range'] {
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
   height: 6px;
   border-radius: 9999px;
-  background: #1e1e2e;
+  background: rgba(24, 17, 10, 0.12);
   outline: none;
   cursor: pointer;
 }
 input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
-  background: #6366f1;
-  border: 2px solid #818cf8;
+  background: #e8330a;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(24,17,10,0.2);
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 input[type='range']::-webkit-slider-thumb:hover {
   transform: scale(1.15);
-  box-shadow: 0 0 0 6px rgba(99, 102, 241, 0.2);
+  box-shadow: 0 0 0 6px rgba(232, 51, 10, 0.15);
 }
 input[type='range']::-moz-range-thumb {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
-  background: #6366f1;
-  border: 2px solid #818cf8;
+  background: #e8330a;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(24,17,10,0.2);
   cursor: pointer;
+}
+
+/* ── Mobile utilities ─────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  /* Ensure tap targets are at least 44px */
+  button, a, [role="button"] { min-height: 44px; }
+  /* No massive horizontal padding on small screens */
+  .mob-px { padding-left: clamp(16px, 4vw, 24px) !important; padding-right: clamp(16px, 4vw, 24px) !important; }
 }

@@ -236,7 +236,7 @@ function AuthInner() {
               </div>
 
               <form onSubmit={handleSignup} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   <input className="auth-input" type="text" placeholder="First name" value={firstName}
                     onChange={e => setFirstName(e.target.value)} required style={inputStyle} />
                   <input className="auth-input" type="text" placeholder="Last name" value={lastName}
