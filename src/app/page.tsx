@@ -135,6 +135,9 @@ export default function Page() {
     monthlyCustomers: number; monthlyCustomersProjected: number
     monthlyRevenueOpportunity: number; paybackMonths: number
   } | null>(null)
+  const [calcPhase,       setCalcPhase]       = useState<'idle' | 'running' | 'done'>('idle')
+  const [calcStep,        setCalcStep]        = useState(0)
+  const pendingMetrics = useRef<typeof calcMetrics>(null)
   const [showStickyBar,   setShowStickyBar]   = useState(false)
   const [stickyDismissed, setStickyDismissed] = useState(false)
   const [liveCount,       setLiveCount]       = useState(480)
@@ -180,6 +183,19 @@ export default function Page() {
     return () => observer.disconnect()
   }, [])
 
+  const CALC_STEP_DELAYS = [550, 650, 750, 650, 600, 500]
+
+  useEffect(() => {
+    if (calcPhase !== 'running') return
+    if (calcStep < CALC_STEP_DELAYS.length) {
+      const t = setTimeout(() => setCalcStep(s => s + 1), CALC_STEP_DELAYS[calcStep])
+      return () => clearTimeout(t)
+    } else {
+      setCalcMetrics(pendingMetrics.current)
+      setCalcPhase('done')
+    }
+  }, [calcPhase, calcStep])
+
   const handleCalc = () => {
     const budget    = parseFloat(calcBudget.replace(/,/g, ''))
     const leads     = parseFloat(calcLeads.replace(/,/g, ''))
@@ -200,7 +216,7 @@ export default function Page() {
     const mrr                        = churn && churn > 0 ? ltv * churn : ltv / 24
     const paybackMonths              = cacProjected / mrr
 
-    setCalcMetrics({
+    pendingMetrics.current = {
       cacCurrent:                 Math.round(cacCurrent),
       cacProjected:               Math.round(cacProjected),
       ltvCacCurrent:              Math.round(ltvCacCurrent * 10) / 10,
@@ -209,7 +225,10 @@ export default function Page() {
       monthlyCustomersProjected:  Math.round(monthlyCustomersProjected * 10) / 10,
       monthlyRevenueOpportunity:  Math.round(monthlyRevenueOpportunity),
       paybackMonths:              Math.round(paybackMonths * 10) / 10,
-    })
+    }
+    setCalcMetrics(null)
+    setCalcStep(0)
+    setCalcPhase('running')
   }
 
   const inputStyle: React.CSSProperties = {
@@ -316,6 +335,10 @@ export default function Page() {
       {/* ── PLATFORM DIAGRAM ───────────────────────────────────────────── */}
       <section style={{ background: Warm, borderBottom: `1px solid ${Border}` }}>
         <style>{`
+          @keyframes spin { to { transform: rotate(360deg); } }
+          @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+          @keyframes stepIn { from { opacity: 0; transform: translateX(-6px); } to { opacity: 1; transform: translateX(0); } }
+          @media (prefers-reduced-motion: reduce) { .calc-spinner { animation: none !important; } .calc-results { animation: none !important; } .calc-step { animation: none !important; } }
           @keyframes scanDot {
             0%   { top: 0%;   opacity: 0; }
             8%   { opacity: 1; }
@@ -695,24 +718,64 @@ export default function Page() {
 
             {/* Right: Results */}
             <div style={{ padding: 'clamp(24px,4vw,40px)' }}>
-              {calcMetrics === null ? (
+
+              {/* IDLE: empty prompt */}
+              {calcPhase === 'idle' && (
                 <div style={{ height: '100%', minHeight: 280, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, opacity: 0.35 }}>
                   <BarChart2 size={40} color="#fff" strokeWidth={1} />
                   <p style={{ fontFamily: fontB, fontSize: 14, color: '#fff', margin: 0, textAlign: 'center', lineHeight: 1.6 }}>
                     Fill in your numbers on the left<br />to see your projected outcomes.
                   </p>
                 </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 0, height: '100%' }}>
-                  <p style={{ fontFamily: fontB, fontSize: 11, color: DarkMuted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 20px' }}>Your projected outcomes</p>
+              )}
+
+              {/* RUNNING: step-by-step animation */}
+              {calcPhase === 'running' && (
+                <div style={{ height: '100%', minHeight: 280, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 0 }}>
+                  <p style={{ fontFamily: fontB, fontSize: 11, color: DarkMuted, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 28px' }}>Running analysis</p>
+                  {[
+                    'Reading your budget and lead volume',
+                    'Computing your current CAC',
+                    'Modelling 35% lead quality improvement',
+                    'Applying 30% close rate uplift',
+                    'Projecting your LTV:CAC ratio',
+                    'Calculating monthly revenue opportunity',
+                  ].map((label, i) => {
+                    const done    = i < calcStep
+                    const active  = i === calcStep
+                    const pending = i > calcStep
+                    return (
+                      <div key={i} className="calc-step" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '11px 0', borderTop: i > 0 ? `1px solid ${DarkBorder}` : 'none', opacity: pending ? 0.25 : 1, animation: active || done ? `stepIn 0.25s ease both` : 'none' }}>
+                        {/* Icon: spinner / check / circle */}
+                        <div className={active ? 'calc-spinner' : ''} style={{ width: 22, height: 22, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          border: done ? 'none' : active ? `2px solid rgba(255,255,255,0.12)` : `1.5px solid ${DarkBorder}`,
+                          borderTopColor: active ? Orange : undefined,
+                          background: done ? '#22c55e' : 'transparent',
+                          animation: active ? 'spin 0.8s linear infinite' : 'none',
+                        }}>
+                          {done && <Check size={12} color="#fff" strokeWidth={3} />}
+                        </div>
+                        <span style={{ fontFamily: fontB, fontSize: 13, color: done ? '#fff' : active ? '#fff' : DarkMuted, fontWeight: active ? 600 : 400, lineHeight: 1.4 }}>{label}</span>
+                        {active && <span style={{ marginLeft: 'auto', fontFamily: fontB, fontSize: 11, color: Orange }}>Running</span>}
+                        {done   && <span style={{ marginLeft: 'auto', fontFamily: fontB, fontSize: 11, color: '#22c55e' }}>Done</span>}
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+
+              {/* DONE: results */}
+              {calcPhase === 'done' && calcMetrics && (
+                <div className="calc-results" style={{ display: 'flex', flexDirection: 'column', gap: 0, height: '100%', animation: 'fadeUp 0.4s ease both' }}>
+                  <p style={{ fontFamily: fontB, fontSize: 11, color: DarkMuted, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 20px' }}>Your projected outcomes</p>
 
                   {/* 4 metric cells in a 2x2 grid */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', border: `1px solid ${DarkBorder}`, borderRadius: 6, overflow: 'hidden', marginBottom: 12 }}>
                     {[
-                      { label: 'CAC today', value: `KES ${calcMetrics.cacCurrent.toLocaleString()}`, accent: false },
+                      { label: 'CAC today',    value: `KES ${calcMetrics.cacCurrent.toLocaleString()}`,   accent: false },
                       { label: 'CAC after fix', value: `KES ${calcMetrics.cacProjected.toLocaleString()}`, accent: true, sub: `${Math.round((1 - calcMetrics.cacProjected / calcMetrics.cacCurrent) * 100)}% lower` },
-                      { label: 'LTV:CAC now', value: `${calcMetrics.ltvCacCurrent}:1`, accent: false, warn: calcMetrics.ltvCacCurrent < 3 },
-                      { label: 'LTV:CAC after', value: `${calcMetrics.ltvCacProjected}:1`, accent: true, sub: calcMetrics.ltvCacCurrent < 3 ? 'Toward 3:1 benchmark' : 'Compounding gains' },
+                      { label: 'LTV:CAC now',  value: `${calcMetrics.ltvCacCurrent}:1`,                  accent: false, warn: calcMetrics.ltvCacCurrent < 3 },
+                      { label: 'LTV:CAC after', value: `${calcMetrics.ltvCacProjected}:1`,               accent: true, sub: calcMetrics.ltvCacCurrent < 3 ? 'Toward 3:1 benchmark' : 'Compounding gains' },
                     ].map(({ label, value, accent, sub, warn }, i) => (
                       <div key={i} style={{ padding: '18px 16px', borderLeft: i % 2 === 1 ? `1px solid ${DarkBorder}` : 'none', borderTop: i >= 2 ? `1px solid ${DarkBorder}` : 'none' }}>
                         <p style={{ fontFamily: fontB, fontSize: 11, color: warn ? '#f59e0b' : accent ? '#22c55e' : DarkMuted, fontWeight: 700, margin: '0 0 6px', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{label}</p>
@@ -737,13 +800,13 @@ export default function Page() {
                     </div>
                   </div>
 
-                  {/* Revenue opportunity: highlighted */}
-                  <div style={{ borderRadius: 6, padding: '20px 20px 20px', background: Orange, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 16 }}>
+                  {/* Revenue opportunity */}
+                  <div style={{ borderRadius: 6, padding: '20px', background: Orange, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 16 }}>
                     <div>
                       <p style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.7)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>Monthly revenue opportunity</p>
                       <p style={{ fontFamily: fontSerif, fontSize: 'clamp(24px,3vw,36px)', fontWeight: 700, color: '#fff', margin: '0 0 6px', lineHeight: 1 }}>KES {calcMetrics.monthlyRevenueOpportunity.toLocaleString()}</p>
                       <p style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.75)', margin: 0, lineHeight: 1.6 }}>
-                        {Math.round(calcMetrics.monthlyRevenueOpportunity / 6500)}x ROI on the KES 6,500/mo plan. From additional customers at your current LTV.
+                        {Math.round(calcMetrics.monthlyRevenueOpportunity / 6500)}x ROI on the KES 6,500/mo plan.
                       </p>
                     </div>
                     <Link href="/questionnaire" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#fff', color: Dark, borderRadius: 6, padding: '12px 18px', fontFamily: font, fontSize: 14, fontWeight: 700, textDecoration: 'none', alignSelf: 'flex-start' }}>
@@ -752,7 +815,7 @@ export default function Page() {
                   </div>
 
                   <p style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.2)', margin: '12px 0 0', textAlign: 'center' }}>
-                    35% lead efficiency gain and 30% close rate lift based on observed ICP alignment improvements.
+                    35% lead efficiency gain and 30% close rate lift from observed ICP alignment improvements.
                   </p>
                 </div>
               )}
