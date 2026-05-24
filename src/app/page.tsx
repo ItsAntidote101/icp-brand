@@ -395,10 +395,10 @@ export default function Page() {
         .btn-dark:hover { background: #2c1e0f !important; }
         .btn-ghost:hover { background: rgba(24,17,10,0.05) !important; }
         .btn-ghost-dark:hover { background: rgba(255,255,255,0.08) !important; }
-        /* Mobile: stack hero image under text */
+        /* Mobile responsive fixes */
         @media (max-width: 767px) {
-          .hero-img-col { display: none !important; }
-          .hero-text-col { max-width: 100% !important; padding: clamp(48px,8vw,72px) clamp(16px,5vw,24px) !important; }
+          .testimonial-left { border-right: none !important; }
+          .proof-chart-col { border-right: none !important; border-bottom: 1.5px solid rgba(255,255,255,0.12); }
         }
       `}</style>
 
@@ -448,9 +448,9 @@ export default function Page() {
 
       {/* ── HERO ────────────────────────────────────────────────────────── */}
       <section style={{ background: Warm, borderBottom: `1.5px solid ${Border}` }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr' }} className="block md:grid">
+        <div style={{ maxWidth: 1200, margin: '0 auto', gridTemplateColumns: '1fr 1fr' }} className="block md:grid">
           {/* Left */}
-          <div className="hero-text-col" style={{ padding: 'clamp(48px,8vw,96px) clamp(20px,5vw,56px)', borderRight: `1.5px solid ${Border}` }}>
+          <div style={{ padding: 'clamp(48px,8vw,96px) clamp(20px,5vw,56px)' }}>
             <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 24px' }}>ICP Diagnostic Tool</p>
             <h1 style={{ fontFamily: fontSerif, fontSize: 'clamp(32px,4.5vw,56px)', fontWeight: 700, color: Text, lineHeight: 1.08, margin: '0 0 32px' }}>
               Your targeting is{' '}
@@ -467,8 +467,8 @@ export default function Page() {
               {liveCount.toLocaleString()} marketers diagnosed this month. Free forever, no card needed.
             </p>
           </div>
-          {/* Right */}
-          <div style={{ padding: 'clamp(48px,8vw,96px) clamp(20px,5vw,56px)', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 32 }}>
+          {/* Right — hidden on mobile, visible on md+ */}
+          <div className="hidden md:flex" style={{ padding: 'clamp(48px,8vw,96px) clamp(20px,5vw,56px)', flexDirection: 'column', justifyContent: 'center', gap: 32, borderLeft: `1.5px solid ${Border}` }}>
             <p style={{ fontFamily: fontB, fontSize: 'clamp(16px,2vw,20px)', color: Muted, lineHeight: 1.7, margin: 0 }}>
               Most B2B teams waste 30 to 60 percent of their ad budget targeting people who will never buy. The ICP Diagnostic finds the exact misalignment, scores your targeting, and gives you a ranked fix list in 5 minutes.
             </p>
@@ -484,6 +484,19 @@ export default function Page() {
                 </div>
               ))}
             </div>
+          </div>
+          {/* Mobile stats strip — visible only on mobile */}
+          <div className="md:hidden" style={{ display: 'flex', borderTop: `1.5px solid ${Border}` }}>
+            {[
+              { stat: '5 min', label: 'To complete' },
+              { stat: 'Instant', label: 'Results' },
+              { stat: '0', label: 'Ad access' },
+            ].map(({ stat, label }, i) => (
+              <div key={label} style={{ flex: 1, padding: '16px 12px', borderRight: i < 2 ? `1.5px solid ${Border}` : 'none', textAlign: 'center' }}>
+                <p style={{ fontFamily: fontSerif, fontSize: 20, fontWeight: 700, color: Text, margin: '0 0 3px' }}>{stat}</p>
+                <p style={{ fontFamily: fontB, fontSize: 11, color: Muted, margin: 0 }}>{label}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -676,10 +689,10 @@ export default function Page() {
           </div>
 
           {/* Chart + description row */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderBottom: `1.5px solid ${DarkBorder}` }} className="block md:grid">
+          <div style={{ gridTemplateColumns: '1fr 1fr', borderBottom: `1.5px solid ${DarkBorder}` }} className="block md:grid">
 
             {/* Growth chart */}
-            <div style={{ borderRight: `1.5px solid ${DarkBorder}`, padding: 'clamp(28px,4vw,48px)' }}>
+            <div className="proof-chart-col" style={{ borderRight: `1.5px solid ${DarkBorder}`, padding: 'clamp(28px,4vw,48px)' }}>
               <p style={{ fontFamily: fontB, fontSize: 11, color: DarkMuted, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 20px' }}>Diagnoses completed over time</p>
               <svg viewBox="0 0 540 200" style={{ width: '100%', height: 'auto', display: 'block' }} aria-hidden="true">
                 <defs>
@@ -724,7 +737,7 @@ export default function Page() {
           </div>
 
           {/* 4 tiles */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', borderLeft: `1.5px solid ${DarkBorder}` }} className="block md:grid">
+          <div style={{ gridTemplateColumns: 'repeat(2, 1fr)', borderLeft: `1.5px solid ${DarkBorder}` }} className="block md:grid">
             {[
               { Icon: Zap,       title: '22 questions across 3 targeting layers', body: 'No ad account access. No agency. Takes 5 minutes from sign-up to your first scored finding.' },
               { Icon: BarChart2, title: '43% average CAC reduction after fixing ICP', body: 'Reported by businesses that completed their first diagnosis and acted on the top two findings.' },
@@ -880,10 +893,10 @@ export default function Page() {
               </div>
 
               {/* Testimonial card */}
-              <div style={{ border: `1.5px solid ${Border}`, borderRadius: 0, overflow: 'hidden', display: 'grid', gridTemplateColumns: '1fr 1fr', background: '#fff' }} className="block md:grid">
+              <div style={{ border: `1.5px solid ${Border}`, borderRadius: 0, overflow: 'hidden', gridTemplateColumns: '1fr 1fr', background: '#fff' }} className="block md:grid">
 
                 {/* Left: quote panel */}
-                <div style={{ display: 'flex', flexDirection: 'column', borderRight: `1.5px solid ${Border}` }}>
+                <div className="testimonial-left" style={{ display: 'flex', flexDirection: 'column' }}>
 
                   {/* Company tag */}
                   <div style={{ padding: '28px 36px 24px', borderBottom: `1.5px solid ${Border}` }}>
@@ -922,8 +935,8 @@ export default function Page() {
                   </div>
                 </div>
 
-                {/* Right: image */}
-                <div style={{ position: 'relative', minHeight: 420, background: '#e8e0d8', overflow: 'hidden' }}>
+                {/* Right: image — hidden on mobile */}
+                <div className="hidden md:block" style={{ position: 'relative', minHeight: 420, background: '#e8e0d8', overflow: 'hidden' }}>
                   <Image
                     src={t.image}
                     alt={t.company}
@@ -972,7 +985,7 @@ export default function Page() {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0, border: `1.5px solid ${DarkBorder}`, borderRadius: 0, overflow: 'hidden' }} className="block md:grid">
+          <div style={{ gridTemplateColumns: '1fr 1fr', gap: 0, border: `1.5px solid ${DarkBorder}`, borderRadius: 0, overflow: 'hidden' }} className="block md:grid">
             {/* Left: Inputs */}
             <div style={{ padding: 'clamp(24px,4vw,40px)', borderRight: `1.5px solid ${DarkBorder}` }}>
               <p style={{ fontFamily: fontB, fontSize: 11, color: DarkMuted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 20px' }}>Your current numbers</p>
@@ -1213,8 +1226,8 @@ export default function Page() {
       {/* ── FAQ ─────────────────────────────────────────────────────────── */}
       <section id="faq" style={{ background: '#fff', borderBottom: `1.5px solid ${Border}` }}>
         <div className="container" style={{ paddingTop: 'clamp(56px,8vw,80px)', paddingBottom: 'clamp(56px,8vw,80px)' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 'clamp(24px,6vw,80px)', alignItems: 'start' }} className="block md:grid">
-            <div>
+          <div style={{ gridTemplateColumns: '280px 1fr', gap: 'clamp(24px,6vw,80px)', alignItems: 'start' }} className="block md:grid">
+            <div style={{ marginBottom: 'clamp(28px,0vw,0px)' }} className="mb-7 md:mb-0">
               <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 12px' }}>FAQ</p>
               <h2 style={{ fontFamily: fontSerif, fontSize: 'clamp(24px,3vw,36px)', color: Text, fontWeight: 700, margin: '0 0 12px', lineHeight: 1.15 }}>You ask, we answer.</h2>
               <p style={{ fontFamily: fontB, fontSize: 15, color: Muted, margin: 0 }}>Everything you need before getting started.</p>

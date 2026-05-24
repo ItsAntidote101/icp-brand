@@ -230,12 +230,17 @@ export default function PricingPage() {
   return (
     <div style={{ background: Warm, minHeight: '100vh' }}>
       <style>{`
+        * { box-sizing: border-box; }
         @media (max-width: 640px) {
           .plans-grid { grid-template-columns: 1fr !important; }
           .plans-grid > div { border-left: 1.5px solid rgba(24,17,10,0.12); }
+          .paid-includes-grid { grid-template-columns: 1fr !important; }
+          .paid-includes-inner { grid-template-columns: 1fr !important; }
+          .pricing-faq-grid { grid-template-columns: 1fr !important; gap: 24px !important; }
         }
         @media (min-width: 641px) and (max-width: 900px) {
           .plans-grid { grid-template-columns: 1fr 1fr !important; }
+          .paid-includes-grid { grid-template-columns: 1fr 1fr !important; }
         }
         .comparison-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
         @media (prefers-reduced-motion: reduce) {
@@ -336,7 +341,7 @@ export default function PricingPage() {
       {/* ── ALL PAID PLANS INCLUDE ────────────────────────────────────────── */}
       <section style={{ background: '#fff', borderBottom: `1.5px solid ${Border}` }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: 'clamp(40px,6vw,72px) clamp(16px,4vw,40px)' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr 1fr 1fr', gap: 'clamp(32px,5vw,64px)', alignItems: 'start' }}>
+          <div className="paid-includes-grid" style={{ display: 'grid', gridTemplateColumns: 'auto 1fr 1fr 1fr', gap: 'clamp(32px,5vw,64px)', alignItems: 'start' }}>
             <div>
               <h2 style={{ fontFamily: font, fontSize: 'clamp(18px,2.5vw,26px)', fontWeight: 700, color: Text, margin: 0, lineHeight: 1.2, maxWidth: 200 }}>All paid plans include</h2>
             </div>
@@ -356,7 +361,7 @@ export default function PricingPage() {
           </div>
           {/* 4th column below on same row */}
           <div style={{ marginTop: 40, paddingTop: 40, borderTop: `1.5px solid ${Border}` }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: 'clamp(32px,5vw,64px)', alignItems: 'start' }}>
+            <div className="paid-includes-inner" style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: 'clamp(32px,5vw,64px)', alignItems: 'start' }}>
               <div style={{ maxWidth: 200 }}>
                 <p style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: Text, margin: 0 }}>{PAID_INCLUDES[3].heading}</p>
               </div>
@@ -453,7 +458,7 @@ export default function PricingPage() {
 
       {/* ── FAQ ───────────────────────────────────────────────────────────── */}
       <section style={{ borderBottom: `1.5px solid ${Border}` }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: 'clamp(48px,7vw,88px) clamp(16px,4vw,40px)', display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 'clamp(32px,5vw,80px)', alignItems: 'start' }}>
+        <div className="pricing-faq-grid" style={{ maxWidth: 1200, margin: '0 auto', padding: 'clamp(48px,7vw,88px) clamp(16px,4vw,40px)', display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 'clamp(32px,5vw,80px)', alignItems: 'start' }}>
           <h2 style={{ fontFamily: font, fontSize: 'clamp(22px,3vw,36px)', fontWeight: 700, color: Text, margin: 0, lineHeight: 1.15 }}>Pricing questions</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
             {[
