@@ -144,6 +144,7 @@ export default function Page() {
 
   const countRef    = useRef<HTMLSpanElement>(null)
   const hasAnimated = useRef(false)
+  const outputCanvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -181,6 +182,70 @@ export default function Page() {
     }, { threshold: 0.5 })
     observer.observe(el)
     return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    const canvas = outputCanvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+    let raf: number
+    const PARTICLE_COUNT = 55
+    const CONNECT_DIST   = 110
+    const W = () => canvas.width
+    const H = () => canvas.height
+
+    type P = { x: number; y: number; vx: number; vy: number; r: number }
+    const particles: P[] = Array.from({ length: PARTICLE_COUNT }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      vx: (Math.random() - 0.5) * 0.35,
+      vy: (Math.random() - 0.5) * 0.35,
+      r: Math.random() * 1.5 + 0.8,
+    }))
+
+    const resize = () => {
+      canvas.width  = canvas.offsetWidth
+      canvas.height = canvas.offsetHeight
+    }
+    resize()
+    const ro = new ResizeObserver(resize)
+    ro.observe(canvas)
+
+    const draw = () => {
+      ctx.clearRect(0, 0, W(), H())
+      for (const p of particles) {
+        p.x += p.vx; p.y += p.vy
+        if (p.x < 0 || p.x > W()) p.vx *= -1
+        if (p.y < 0 || p.y > H()) p.vy *= -1
+      }
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x
+          const dy = particles[i].y - particles[j].y
+          const d  = Math.sqrt(dx * dx + dy * dy)
+          if (d < CONNECT_DIST) {
+            ctx.beginPath()
+            ctx.moveTo(particles[i].x, particles[i].y)
+            ctx.lineTo(particles[j].x, particles[j].y)
+            ctx.strokeStyle = `rgba(24,17,10,${0.07 * (1 - d / CONNECT_DIST)})`
+            ctx.lineWidth = 0.8
+            ctx.stroke()
+          }
+        }
+      }
+      for (const p of particles) {
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
+        ctx.fillStyle = 'rgba(24,17,10,0.18)'
+        ctx.fill()
+      }
+      raf = requestAnimationFrame(draw)
+    }
+    draw()
+    return () => { cancelAnimationFrame(raf); ro.disconnect() }
   }, [])
 
   const CALC_STEP_DELAYS = [550, 650, 750, 650, 600, 500]
@@ -349,9 +414,28 @@ export default function Page() {
             0%, 100% { box-shadow: 0 0 0 0 rgba(232,51,10,0.35); }
             50%       { box-shadow: 0 0 0 9px rgba(232,51,10,0); }
           }
+          @keyframes floatA {
+            0%,100% { transform: translate(0px, 0px); }
+            25%      { transform: translate(5px, -7px); }
+            50%      { transform: translate(-4px, -12px); }
+            75%      { transform: translate(7px, -5px); }
+          }
+          @keyframes floatB {
+            0%,100% { transform: translate(0px, 0px); }
+            30%      { transform: translate(-6px, -9px); }
+            60%      { transform: translate(5px, -14px); }
+            80%      { transform: translate(-3px, -6px); }
+          }
+          @keyframes floatC {
+            0%,100% { transform: translate(0px, 0px); }
+            20%      { transform: translate(8px, -6px); }
+            55%      { transform: translate(-5px, -10px); }
+            80%      { transform: translate(4px, -14px); }
+          }
           @media (prefers-reduced-motion: reduce) {
             .plat-scan-dot { animation: none !important; }
             .plat-pulse    { animation: none !important; }
+            .pill-float    { animation: none !important; }
           }
         `}</style>
         <div className="container" style={{ paddingTop: 'clamp(56px,8vw,96px)', paddingBottom: 'clamp(56px,8vw,96px)' }}>
@@ -412,25 +496,38 @@ export default function Page() {
             </div>
           </div>
 
-          {/* Output pills panel */}
-          <div style={{ border: `1px solid ${Border}`, borderRadius: 8, padding: '28px 28px 32px', maxWidth: 1100, margin: '0 auto', backgroundImage: `radial-gradient(${Border} 1px, transparent 1px)`, backgroundSize: '22px 22px' }}>
-            <p style={{ fontFamily: fontB, fontSize: 11, color: Orange, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 18px' }}>Your outputs</p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-              {[
-                'ICP Health Score',
-                'Critical Findings',
-                'CAC Before / After',
-                'LTV:CAC Ratio',
-                'Quick Wins',
-                'Weekly Intelligence',
-                'Executive Summary',
-                'Improvement Roadmap',
-              ].map(pill => (
-                <span key={pill} style={{ fontFamily: fontB, fontSize: 13, color: Dark, fontWeight: 600, border: `1px solid ${Border}`, borderRadius: 6, padding: '8px 14px', background: '#fff', display: 'inline-flex', alignItems: 'center', gap: 7 }}>
-                  <Check size={12} color={Orange} strokeWidth={2.5} />
-                  {pill}
-                </span>
-              ))}
+          {/* Output pills panel — particle canvas background + floating pills */}
+          <div style={{ border: `1px solid ${Border}`, borderRadius: 8, maxWidth: 1100, margin: '0 auto', position: 'relative', overflow: 'hidden', minHeight: 180 }}>
+            {/* Particle canvas */}
+            <canvas ref={outputCanvasRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', borderRadius: 8 }} />
+            {/* Content over canvas */}
+            <div style={{ position: 'relative', zIndex: 1, padding: '28px 28px 36px' }}>
+              <p style={{ fontFamily: fontB, fontSize: 11, color: Orange, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 28px' }}>Your outputs</p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'flex-start' }}>
+                {([
+                  ['ICP Health Score',    'floatA', '0s',    '6s'],
+                  ['Critical Findings',   'floatB', '0.7s',  '7s'],
+                  ['CAC Before / After',  'floatC', '1.3s',  '5.5s'],
+                  ['LTV:CAC Ratio',       'floatA', '0.4s',  '6.5s'],
+                  ['Quick Wins',          'floatB', '1.1s',  '7.5s'],
+                  ['Weekly Intelligence', 'floatC', '0.2s',  '6s'],
+                  ['Executive Summary',   'floatA', '0.9s',  '5.8s'],
+                  ['Improvement Roadmap', 'floatB', '1.6s',  '7.2s'],
+                ] as [string, string, string, string][]).map(([pill, anim, delay, duration]) => (
+                  <span key={pill} className="pill-float" style={{
+                    fontFamily: fontB, fontSize: 13, color: Dark, fontWeight: 600,
+                    border: `1px solid ${Border}`, borderRadius: 6, padding: '9px 15px',
+                    background: 'rgba(255,255,255,0.92)',
+                    backdropFilter: 'blur(4px)',
+                    display: 'inline-flex', alignItems: 'center', gap: 8,
+                    animation: `${anim} ${duration} ease-in-out ${delay} infinite`,
+                    boxShadow: '0 2px 8px rgba(24,17,10,0.07)',
+                  }}>
+                    <Check size={12} color={Orange} strokeWidth={2.5} />
+                    {pill}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
         </div>
