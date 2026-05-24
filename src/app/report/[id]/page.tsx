@@ -588,17 +588,17 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                     {
                       name: 'Starter' as Tier,
                       highlight: false,
-                      features: ['Full 12-week roadmap', 'Monthly diagnostic refresh', 'Email report delivery', '1 business'],
+                      features: ['Full roadmap and all critical findings', 'Weekly ICP intelligence briefings', 'Monthly health score refresh', 'AI chat in dashboard'],
                     },
                     {
                       name: 'Pro' as Tier,
                       highlight: true,
-                      features: ['Everything in Starter', 'Weekly performance snapshots', 'Priority support', 'Up to 3 businesses'],
+                      features: ['Everything in Starter', 'Live landing page audit', 'Competitor and regional benchmarks', 'Monthly session with a media buyer'],
                     },
                     {
                       name: 'Agency' as Tier,
                       highlight: false,
-                      features: ['Everything in Pro', 'Quarterly deep-dive reports', 'White-label PDF export', 'Unlimited businesses'],
+                      features: ['Everything in Pro', 'Team of B2B media buyers on your account', 'White-label reports by account team', 'Dedicated account manager'],
                     },
                   ]
                 ).map(tier => (

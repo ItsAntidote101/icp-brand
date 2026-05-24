@@ -246,7 +246,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({
           error: 'upgrade_required',
           message: 'On-demand intelligence refresh requires a paid subscription.',
-          upgradeUrl: '/#pricing',
+          upgradeUrl: '/pricing',
         }, { status: 403 })
       }
 

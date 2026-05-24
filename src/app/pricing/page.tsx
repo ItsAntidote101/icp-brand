@@ -66,9 +66,8 @@ const PLANS = [
       'Weekly ICP intelligence briefing',
       'Monthly ICP health refresh',
       'AI chat in the dashboard',
-      'PDF and CSV report export',
+      'Print-ready report and diagnostic CSV export',
       '2 diagnoses per month',
-      '12-month data retention',
     ],
   },
   {
@@ -91,7 +90,6 @@ const PLANS = [
       'Priority in-dashboard support',
       'Monthly strategy session (media buyer)',
       '5 diagnoses per month',
-      '24-month data retention',
     ],
   },
   {
@@ -204,7 +202,7 @@ const PAID_INCLUDES = [
   },
   {
     heading: 'Reports and data',
-    items: ['PDF report download', 'CSV data export', 'Executive summary', '12+ months data retention'],
+    items: ['Print-ready report (save as PDF)', 'Diagnostic data export (CSV)', 'Executive summary', 'Data retained while account is active'],
   },
   {
     heading: 'Platform access',

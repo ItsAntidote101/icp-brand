@@ -6,22 +6,22 @@ import Link from 'next/link'
 
 const TIER_FEATURES: Record<string, string[]> = {
   starter: [
-    'Full 12-week ICP optimization roadmap',
-    'Monthly diagnostic refresh',
-    'Email report delivery',
-    '1 business covered',
+    'Full improvement roadmap and all critical findings',
+    'Weekly ICP intelligence briefings',
+    'Monthly ICP health score refresh',
+    'AI chat in your dashboard',
   ],
   pro: [
     'Everything in Starter',
-    'Weekly performance snapshots',
-    'Priority email support',
-    'Up to 3 businesses',
+    'Live landing page audit (AI visits your URL)',
+    'Competitor positioning and regional benchmarks',
+    'Monthly strategy session with a B2B media buyer',
   ],
   agency: [
     'Everything in Pro',
-    'Quarterly deep-dive reports',
-    'White-label PDF export',
-    'Unlimited businesses',
+    'Team of B2B media buyers on your account',
+    'White-label reports produced by your account team',
+    'Dedicated account manager and unlimited diagnoses',
   ],
 }
 

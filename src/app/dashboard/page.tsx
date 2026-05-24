@@ -149,7 +149,7 @@ const TIER_PRICE_KES: Record<string, number> = { starter: 6500, pro: 13000, agen
 const TIER_DESC: Record<string, string> = {
   starter: 'Monthly ICP diagnostic with full report, findings, and quick wins.',
   pro:     'Everything in Starter plus priority re-diagnosis and campaign CSV analysis.',
-  agency:  'Everything in Pro plus multi-client reporting and dedicated strategy review.',
+  agency:  'Everything in Pro plus a team of B2B media buyers, white-label reports, and a dedicated account manager.',
   free:    'Basic ICP diagnostic based on questionnaire answers only.',
 }
 
