@@ -59,6 +59,29 @@ type ReportRow = {
 type Finding  = { title: string; severity: string; explanation: string }
 type QuickWin = { action: string; impact: string; timeline?: string }
 
+type BreakdownItem = { label: string; score: number; found: string; why: string }
+
+type BusinessOutcomes = {
+  cac_current?: string
+  cac_projected?: string
+  ltv_cac_current?: string
+  ltv_cac_projected?: string
+  monthly_revenue_opportunity?: string
+}
+
+type CategoryData = {
+  score?: number
+  summary?: string
+  findings?: Finding[]
+  quick_wins?: QuickWin[]
+  breakdown?: BreakdownItem[]
+  meta_audience_notes?: string
+  keyword_analysis?: string
+  landing_page_assessment?: string
+  monthly_waste_estimate?: string
+  business_outcomes?: BusinessOutcomes
+}
+
 type DiagnosisData = {
   overall_score?: number; health_score?: number
   executive_summary?: string
@@ -67,14 +90,12 @@ type DiagnosisData = {
   landing_page_assessment?: string
   monthly_waste_estimate?: string
   is_deep_research?: boolean
-  breakdown?: Array<{ label: string; score: number; found: string; why: string }>
-  business_outcomes?: {
-    cac_current?: string
-    cac_projected?: string
-    ltv_cac_current?: string
-    ltv_cac_projected?: string
-    monthly_revenue_opportunity?: string
-  }
+  breakdown?: BreakdownItem[]
+  business_outcomes?: BusinessOutcomes
+  audience?: CategoryData
+  search?: CategoryData
+  funnel?: CategoryData
+  economics?: CategoryData
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -1286,10 +1307,12 @@ function BreakdownBarsSection({ diag, labels }: { diag: DiagnosisData; labels: s
 function AudienceTab({ diag, hasReports, score, onUpgrade }: {
   diag: DiagnosisData; hasReports: boolean; score: number | null; onUpgrade: () => void
 }) {
+  const catData  = diag.audience
   const keywords = ['audience', 'icp', 'target', 'persona', 'buyer', 'profile', 'firmograph', 'segment', 'demographic', 'b2b', 'decision maker', 'account based', 'ideal customer']
-  const findings = catFindings(diag, keywords)
-  const wins     = catWins(diag, keywords)
-  const catScore = catBreakdownScore(diag, ['icp alignment', 'targeting accuracy'])
+  const findings = catData?.findings?.length ? catData.findings : catFindings(diag, keywords)
+  const wins     = catData?.quick_wins?.length ? catData.quick_wins : catWins(diag, keywords)
+  const catScore = catData?.score ?? catBreakdownScore(diag, ['icp alignment', 'targeting accuracy'])
+  const metaNotes = catData?.meta_audience_notes
 
   if (!hasReports) return <NoDiagnosisPlaceholder tabName="Audience" />
 
@@ -1302,6 +1325,10 @@ function AudienceTab({ diag, hasReports, score, onUpgrade }: {
         icon={<Users size={18} />}
       />
 
+      {catData?.summary && (
+        <p style={{ fontFamily: fontB, fontSize: 15, color: '#605d52', lineHeight: 1.7, margin: 0 }}>{catData.summary}</p>
+      )}
+
       <Card>
         <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 20px' }}>Audience Performance</p>
         <BreakdownBarsSection diag={diag} labels={['ICP Alignment', 'Targeting Accuracy']} />
@@ -1313,7 +1340,7 @@ function AudienceTab({ diag, hasReports, score, onUpgrade }: {
           findings={findings.length > 0 ? findings : getFindings(diag).slice(0, 3)}
           emptyMessage="No audience-specific findings in this report."
         />
-        {findings.length === 0 && getFindings(diag).length > 0 && (
+        {!catData && findings.length === 0 && getFindings(diag).length > 0 && (
           <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, marginTop: 10 }}>Showing top overall findings. Audience-specific analysis depends on your questionnaire answers about ICP targeting.</p>
         )}
       </div>
@@ -1330,21 +1357,27 @@ function AudienceTab({ diag, hasReports, score, onUpgrade }: {
 
       <Card style={{ background: '#f8f4f0' }}>
         <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 12px' }}>Meta Audience Setup Notes</p>
-        <p style={{ fontFamily: fontB, fontSize: 14, color: P, lineHeight: 1.65, margin: '0 0 14px' }}>
-          Your audience findings above apply directly to your Meta (Facebook/Instagram) audience setup. Cross-check your saved audiences against the ICP profile in your diagnostic to identify misalignment.
-        </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {[
-            'Narrow to exact job titles from your ICP — not broad interest categories',
-            'Use company size targeting that matches your stated firmographic profile',
-            'Exclude current customers and lookalike audiences that skew too broad',
-          ].map((tip, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-              <span style={{ fontFamily: fontB, fontSize: 13, color: Accent, flexShrink: 0, marginTop: 2 }}>→</span>
-              <span style={{ fontFamily: fontB, fontSize: 13, color: '#605d52', lineHeight: 1.55 }}>{tip}</span>
+        {metaNotes ? (
+          <p style={{ fontFamily: fontB, fontSize: 14, color: P, lineHeight: 1.65, margin: 0 }}>{metaNotes}</p>
+        ) : (
+          <>
+            <p style={{ fontFamily: fontB, fontSize: 14, color: P, lineHeight: 1.65, margin: '0 0 14px' }}>
+              Your audience findings above apply directly to your Meta (Facebook/Instagram) audience setup. Cross-check your saved audiences against the ICP profile in your diagnostic to identify misalignment.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {[
+                'Narrow to exact job titles from your ICP, not broad interest categories',
+                'Use company size targeting that matches your stated firmographic profile',
+                'Exclude current customers and lookalike audiences that skew too broad',
+              ].map((tip, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                  <span style={{ fontFamily: fontB, fontSize: 13, color: Accent, flexShrink: 0, marginTop: 2 }}>→</span>
+                  <span style={{ fontFamily: fontB, fontSize: 13, color: '#605d52', lineHeight: 1.55 }}>{tip}</span>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </>
+        )}
       </Card>
     </div>
   )
@@ -1355,10 +1388,12 @@ function AudienceTab({ diag, hasReports, score, onUpgrade }: {
 function SearchTab({ diag, hasReports, score, onUpgrade }: {
   diag: DiagnosisData; hasReports: boolean; score: number | null; onUpgrade: () => void
 }) {
+  const catData  = diag.search
   const keywords = ['keyword', 'search', 'google', 'cpc', 'bid', 'ad copy', 'creative', 'campaign', 'intent', 'query', 'ppc', 'ad spend', 'search term']
-  const findings = catFindings(diag, keywords)
-  const wins     = catWins(diag, keywords)
-  const catScore = catBreakdownScore(diag, ['channel efficiency', 'message to market'])
+  const findings = catData?.findings?.length ? catData.findings : catFindings(diag, keywords)
+  const wins     = catData?.quick_wins?.length ? catData.quick_wins : catWins(diag, keywords)
+  const catScore = catData?.score ?? catBreakdownScore(diag, ['channel efficiency', 'message to market'])
+  const keywordAnalysis = catData?.keyword_analysis
 
   if (!hasReports) return <NoDiagnosisPlaceholder tabName="Search" />
 
@@ -1371,6 +1406,10 @@ function SearchTab({ diag, hasReports, score, onUpgrade }: {
         icon={<Search size={18} />}
       />
 
+      {catData?.summary && (
+        <p style={{ fontFamily: fontB, fontSize: 15, color: '#605d52', lineHeight: 1.7, margin: 0 }}>{catData.summary}</p>
+      )}
+
       <Card>
         <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 20px' }}>Search Performance</p>
         <BreakdownBarsSection diag={diag} labels={['Channel Efficiency', 'Message to Market Fit']} />
@@ -1382,7 +1421,7 @@ function SearchTab({ diag, hasReports, score, onUpgrade }: {
           findings={findings.length > 0 ? findings : getFindings(diag).slice(0, 2)}
           emptyMessage="No search-specific findings in this report."
         />
-        {findings.length === 0 && getFindings(diag).length > 0 && (
+        {!catData && findings.length === 0 && getFindings(diag).length > 0 && (
           <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, marginTop: 10 }}>Showing top overall findings. Search-specific analysis depends on your questionnaire answers about keyword strategy.</p>
         )}
       </div>
@@ -1396,23 +1435,29 @@ function SearchTab({ diag, hasReports, score, onUpgrade }: {
       </div>
 
       <Card style={{ background: '#f8f4f0' }}>
-        <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 14px' }}>Google Search Benchmarks</p>
-        <p style={{ fontFamily: fontB, fontSize: 14, color: P, lineHeight: 1.65, margin: '0 0 16px' }}>
-          B2B SaaS average CPCs on Google Search range from $8 to $40 per click depending on keyword intent. Bottom-of-funnel terms (product comparisons, alternatives) typically convert 3 to 5x better than awareness-stage terms.
-        </p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10 }}>
-          {[
-            { label: 'Awareness CPC', value: '$3 - $8', sub: 'Low intent, high volume' },
-            { label: 'Consideration CPC', value: '$8 - $20', sub: 'Category terms' },
-            { label: 'Decision CPC', value: '$20 - $40+', sub: 'High intent, best ROI' },
-          ].map(({ label, value, sub }) => (
-            <div key={label} style={{ background: BgAlt, borderRadius: 8, padding: '12px 14px' }}>
-              <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: Pmuted, margin: '0 0 6px' }}>{label}</p>
-              <p style={{ fontFamily: font, fontSize: 17, fontWeight: 800, color: P, margin: '0 0 2px', lineHeight: 1 }}>{value}</p>
-              <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: 0 }}>{sub}</p>
+        <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 14px' }}>Keyword and Channel Analysis</p>
+        {keywordAnalysis ? (
+          <p style={{ fontFamily: fontB, fontSize: 14, color: P, lineHeight: 1.65, margin: 0 }}>{keywordAnalysis}</p>
+        ) : (
+          <>
+            <p style={{ fontFamily: fontB, fontSize: 14, color: P, lineHeight: 1.65, margin: '0 0 16px' }}>
+              B2B SaaS average CPCs on Google Search range from $8 to $40 per click depending on keyword intent. Bottom-of-funnel terms (product comparisons, alternatives) typically convert 3 to 5x better than awareness-stage terms.
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10 }}>
+              {[
+                { label: 'Awareness CPC', value: '$3 - $8', sub: 'Low intent, high volume' },
+                { label: 'Consideration CPC', value: '$8 - $20', sub: 'Category terms' },
+                { label: 'Decision CPC', value: '$20 - $40+', sub: 'High intent, best ROI' },
+              ].map(({ label, value, sub }) => (
+                <div key={label} style={{ background: BgAlt, borderRadius: 8, padding: '12px 14px' }}>
+                  <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: Pmuted, margin: '0 0 6px' }}>{label}</p>
+                  <p style={{ fontFamily: font, fontSize: 17, fontWeight: 800, color: P, margin: '0 0 2px', lineHeight: 1 }}>{value}</p>
+                  <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: 0 }}>{sub}</p>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </>
+        )}
       </Card>
     </div>
   )
@@ -1423,12 +1468,13 @@ function SearchTab({ diag, hasReports, score, onUpgrade }: {
 function FunnelTab({ diag, hasReports, score, onUpgrade }: {
   diag: DiagnosisData; hasReports: boolean; score: number | null; onUpgrade: () => void
 }) {
+  const catData  = diag.funnel
   const keywords = ['landing page', 'cta', 'form', 'conversion', 'funnel', 'mobile', 'friction', 'copy', 'message', 'headline', 'above the fold', 'checkout', 'signup', 'trust', 'lead']
-  const findings = catFindings(diag, keywords)
-  const wins     = catWins(diag, keywords)
-  const catScore = catBreakdownScore(diag, ['funnel friction', 'message to market'])
+  const findings = catData?.findings?.length ? catData.findings : catFindings(diag, keywords)
+  const wins     = catData?.quick_wins?.length ? catData.quick_wins : catWins(diag, keywords)
+  const catScore = catData?.score ?? catBreakdownScore(diag, ['funnel friction', 'message to market'])
   const [expanded, setExpanded] = useState(false)
-  const lpText = diag.landing_page_assessment ?? ''
+  const lpText = catData?.landing_page_assessment ?? diag.landing_page_assessment ?? ''
 
   if (!hasReports) return <NoDiagnosisPlaceholder tabName="Funnel" />
 
@@ -1440,6 +1486,10 @@ function FunnelTab({ diag, hasReports, score, onUpgrade }: {
         score={catScore ?? score}
         icon={<Filter size={18} />}
       />
+
+      {catData?.summary && (
+        <p style={{ fontFamily: fontB, fontSize: 15, color: '#605d52', lineHeight: 1.7, margin: 0 }}>{catData.summary}</p>
+      )}
 
       <Card>
         <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 20px' }}>Funnel Performance</p>
@@ -1477,6 +1527,9 @@ function FunnelTab({ diag, hasReports, score, onUpgrade }: {
           findings={findings.length > 0 ? findings : getFindings(diag).filter(f => f.severity === 'Critical').slice(0, 2)}
           emptyMessage="No funnel-specific findings in this report."
         />
+        {!catData && findings.length === 0 && getFindings(diag).length > 0 && (
+          <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, marginTop: 10 }}>Showing critical findings. Funnel-specific analysis depends on your questionnaire answers about landing page and CTA setup.</p>
+        )}
       </div>
 
       <div>
@@ -1512,12 +1565,13 @@ function FunnelTab({ diag, hasReports, score, onUpgrade }: {
 function EconomicsTab({ diag, hasReports, score, currency, onUpgrade }: {
   diag: DiagnosisData; hasReports: boolean; score: number | null; currency: string; onUpgrade: () => void
 }) {
+  const catData  = diag.economics
   const keywords = ['budget', 'waste', 'cac', 'ltv', 'spend', 'cost', 'revenue', 'roi', 'reallocation', 'acquisition cost', 'return', 'profit', 'unit economics']
-  const findings = catFindings(diag, keywords)
-  const wins     = catWins(diag, keywords)
-  const catScore = catBreakdownScore(diag, ['budget reallocation', 'channel efficiency'])
-  const waste    = parseWaste(diag.monthly_waste_estimate)
-  const bo       = diag.business_outcomes
+  const findings = catData?.findings?.length ? catData.findings : catFindings(diag, keywords)
+  const wins     = catData?.quick_wins?.length ? catData.quick_wins : catWins(diag, keywords)
+  const catScore = catData?.score ?? catBreakdownScore(diag, ['budget reallocation', 'channel efficiency'])
+  const waste    = parseWaste(catData?.monthly_waste_estimate ?? diag.monthly_waste_estimate)
+  const bo       = catData?.business_outcomes ?? diag.business_outcomes
   const displayWaste = waste.amount > 0 ? convertAmount(waste.amount, waste.fromCurrency, currency) : waste.raw
 
   if (!hasReports) return <NoDiagnosisPlaceholder tabName="Economics" />
@@ -1530,6 +1584,10 @@ function EconomicsTab({ diag, hasReports, score, currency, onUpgrade }: {
         score={catScore ?? score}
         icon={<DollarSign size={18} />}
       />
+
+      {catData?.summary && (
+        <p style={{ fontFamily: fontB, fontSize: 15, color: '#605d52', lineHeight: 1.7, margin: 0 }}>{catData.summary}</p>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
@@ -1610,6 +1668,9 @@ function EconomicsTab({ diag, hasReports, score, currency, onUpgrade }: {
           findings={findings.length > 0 ? findings : getFindings(diag).slice(0, 2)}
           emptyMessage="No economics-specific findings in this report."
         />
+        {!catData && findings.length === 0 && getFindings(diag).length > 0 && (
+          <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, marginTop: 10 }}>Showing top overall findings. Economics-specific analysis depends on your questionnaire answers about budget and spend.</p>
+        )}
       </div>
 
       <div>

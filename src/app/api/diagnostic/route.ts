@@ -312,78 +312,283 @@ Return this exact JSON structure:
 {
   "overall_score": <integer 0-100>,
   "executive_summary": "<2-3 sentence diagnosis of the biggest ICP problem and its revenue impact>",
+
+  "audience": {
+    "score": <integer 0-100>,
+    "summary": "<2 sentences specific to ICP alignment and targeting accuracy>",
+    "meta_audience_notes": "<specific advice on Meta/Google audience setup based on their targeting parameters and best customer profile — reference ${geographicRegion}>",
+    "findings": [
+      {
+        "title": "<finding tied to ICP definition or best customer clarity — Q1-Q13>",
+        "severity": "<Critical|Warning|Opportunity>",
+        "explanation": "<specific finding referencing their business offering, best customer profile, and decision maker titles>"
+      },
+      {
+        "title": "<finding tied to audience mismatch or targeting parameters — Q14, Q18, Q24>",
+        "severity": "<Critical|Warning|Opportunity>",
+        "explanation": "<specific finding referencing their perceived ideal customer vs best customer profile>"
+      }
+    ],
+    "quick_wins": [
+      {
+        "action": "<specific audience targeting improvement — reference regional platforms in ${geographicRegion}>",
+        "impact": "<High|Medium|Low>",
+        "timeline": "<This week|This month|Next quarter>"
+      },
+      {
+        "action": "<specific ICP definition or persona refinement step>",
+        "impact": "<High|Medium|Low>",
+        "timeline": "<This week|This month|Next quarter>"
+      }
+    ],
+    "breakdown": [
+      {
+        "label": "ICP Alignment",
+        "score": <integer 0-100>,
+        "found": "<1 sentence: what you found about their ICP definition based on Q1-Q13>",
+        "why": "<1 sentence: why this costs them revenue>"
+      },
+      {
+        "label": "Targeting Accuracy",
+        "score": <integer 0-100>,
+        "found": "<1 sentence: what you found about their targeting parameters based on Q14, Q18>",
+        "why": "<1 sentence: why this costs them revenue>"
+      }
+    ]
+  },
+
+  "search": {
+    "score": <integer 0-100>,
+    "summary": "<2 sentences specific to channel mix and keyword/search strategy>",
+    "keyword_analysis": "<analysis of their Google keyword targeting and search intent strategy — use web research for ${geographicRegion} benchmarks in their industry>",
+    "findings": [
+      {
+        "title": "<finding tied to channel selection or platform mix — Q15, Q19-Q20>",
+        "severity": "<Critical|Warning|Opportunity>",
+        "explanation": "<specific finding referencing their active channels and budget allocation across them>"
+      },
+      {
+        "title": "<finding tied to ad spend efficiency or lead quality — Q21-Q24>",
+        "severity": "<Critical|Warning|Opportunity>",
+        "explanation": "<specific finding referencing their lead volume, conversion rate, and CPA>"
+      }
+    ],
+    "quick_wins": [
+      {
+        "action": "<specific channel or keyword improvement — reference ${geographicRegion} platform benchmarks from web research>",
+        "impact": "<High|Medium|Low>",
+        "timeline": "<This week|This month|Next quarter>"
+      },
+      {
+        "action": "<specific budget reallocation between channels based on their mix>",
+        "impact": "<High|Medium|Low>",
+        "timeline": "<This week|This month|Next quarter>"
+      }
+    ],
+    "breakdown": [
+      {
+        "label": "Channel Efficiency",
+        "score": <integer 0-100>,
+        "found": "<1 sentence: what you found about their channel mix and platform selection>",
+        "why": "<1 sentence: why this costs them revenue>"
+      },
+      {
+        "label": "Message to Market Fit",
+        "score": <integer 0-100>,
+        "found": "<1 sentence: what you found about their ad messaging vs target market expectations>",
+        "why": "<1 sentence: why this costs them revenue>"
+      }
+    ]
+  },
+
+  "funnel": {
+    "score": <integer 0-100>,
+    "summary": "<2 sentences specific to landing page performance and conversion friction>",
+    "landing_page_assessment": "<detailed assessment of the landing page based on web research — cover offer clarity, CTA effectiveness, trust signals, mobile readiness, and conversion barriers>",
+    "findings": [
+      {
+        "title": "<finding tied to landing page structure or CTA — Q16, Q25-Q27>",
+        "severity": "<Critical|Warning|Opportunity>",
+        "explanation": "<specific finding referencing their landing page URL, primary CTA, and funnel steps>"
+      },
+      {
+        "title": "<finding tied to form friction, mobile usability, or trust signals — Q28-Q32>",
+        "severity": "<Critical|Warning|Opportunity>",
+        "explanation": "<specific finding referencing their mobile score, form completion rate, and differentiation clarity score>"
+      }
+    ],
+    "quick_wins": [
+      {
+        "action": "<specific landing page or CTA improvement based on assessment>",
+        "impact": "<High|Medium|Low>",
+        "timeline": "<This week|This month|Next quarter>"
+      },
+      {
+        "action": "<specific form simplification or trust signal addition>",
+        "impact": "<High|Medium|Low>",
+        "timeline": "<This week|This month|Next quarter>"
+      }
+    ],
+    "breakdown": [
+      {
+        "label": "Funnel Friction Index",
+        "score": <integer 0-100>,
+        "found": "<1 sentence: what you found about their funnel conversion steps and form completion>",
+        "why": "<1 sentence: why this costs them revenue>"
+      },
+      {
+        "label": "Message to Market Fit",
+        "score": <same integer as search.breakdown[1].score>,
+        "found": "<1 sentence: what you found about their landing page messaging and differentiation clarity>",
+        "why": "<1 sentence: why this costs them revenue>"
+      }
+    ]
+  },
+
+  "economics": {
+    "score": <integer 0-100>,
+    "summary": "<2 sentences specific to budget efficiency and unit economics>",
+    "monthly_waste_estimate": "<estimated monthly budget being wasted with reasoning based on their spend, leads, and conversion data>",
+    "business_outcomes": {
+      "cac_current": "<estimated current CAC — calculate from monthly budget divided by (leads x close rate) — show the figure with brief working>",
+      "cac_projected": "<projected CAC after implementing top 3 fixes — show expected percentage reduction and resulting figure>",
+      "ltv_cac_current": "<current LTV:CAC ratio based on their stated deal size or LTV — e.g. 1.8:1. Flag if below 3:1 benchmark>",
+      "ltv_cac_projected": "<projected LTV:CAC after fixes — target at least 3:1 for healthy B2B unit economics>",
+      "monthly_revenue_opportunity": "<additional monthly revenue opportunity from fixing ICP — quantify with brief reasoning>"
+    },
+    "findings": [
+      {
+        "title": "<finding tied to budget efficiency or spend allocation — Q11, Q19-Q20>",
+        "severity": "<Critical|Warning|Opportunity>",
+        "explanation": "<specific finding referencing their deal size, monthly spend, and channel allocation>"
+      },
+      {
+        "title": "<finding tied to unit economics or revenue per lead — Q21-Q23>",
+        "severity": "<Critical|Warning|Opportunity>",
+        "explanation": "<specific finding referencing their lead volume, conversions, and CPA vs deal size>"
+      }
+    ],
+    "quick_wins": [
+      {
+        "action": "<specific budget reallocation or spend efficiency improvement with projected impact>",
+        "impact": "<High|Medium|Low>",
+        "timeline": "<This week|This month|Next quarter>"
+      },
+      {
+        "action": "<specific unit economics improvement — CAC reduction or LTV increase strategy>",
+        "impact": "<High|Medium|Low>",
+        "timeline": "<This week|This month|Next quarter>"
+      }
+    ],
+    "breakdown": [
+      {
+        "label": "Budget Reallocation Opportunity",
+        "score": <integer 0-100>,
+        "found": "<1 sentence: what you found about their budget distribution across channels>",
+        "why": "<1 sentence: why this costs them revenue>"
+      },
+      {
+        "label": "Channel Efficiency",
+        "score": <same integer as search.breakdown[0].score>,
+        "found": "<1 sentence: what you found about their cost per acquisition vs benchmarks>",
+        "why": "<1 sentence: why this costs them revenue>"
+      }
+    ]
+  },
+
   "critical_findings": [
     {
-      "title": "<short finding title>",
+      "title": "<most impactful finding across all 4 categories>",
       "severity": "<Critical|Warning|Opportunity>",
-      "explanation": "<specific, region-aware finding with revenue impact>"
+      "explanation": "<specific, region-aware finding with revenue impact — reference ${geographicRegion}>"
+    },
+    {
+      "title": "<second most impactful finding>",
+      "severity": "<Critical|Warning|Opportunity>",
+      "explanation": "<specific finding with revenue impact>"
+    },
+    {
+      "title": "<third most impactful finding>",
+      "severity": "<Critical|Warning|Opportunity>",
+      "explanation": "<specific finding with revenue impact — reference ${geographicRegion}>"
+    }
+  ],
+  "quick_wins": [
+    {
+      "action": "<highest-impact quick win across all categories — reference regional platforms where relevant>",
+      "impact": "<High|Medium|Low>",
+      "timeline": "<This week|This month|Next quarter>"
+    },
+    {
+      "action": "<second highest-impact quick win>",
+      "impact": "<High|Medium|Low>",
+      "timeline": "<This week|This month|Next quarter>"
+    },
+    {
+      "action": "<third highest-impact quick win>",
+      "impact": "<High|Medium|Low>",
+      "timeline": "<This week|This month|Next quarter>"
     }
   ],
   "breakdown": [
     {
       "label": "ICP Alignment",
-      "score": <integer 0-100>,
-      "found": "<1 sentence: what you found specific to their responses>",
-      "why": "<1 sentence: why this costs them revenue>"
+      "score": <same as audience.breakdown[0].score>,
+      "found": "<copy from audience.breakdown[0].found>",
+      "why": "<copy from audience.breakdown[0].why>"
     },
     {
       "label": "Targeting Accuracy",
-      "score": <integer 0-100>,
-      "found": "<1 sentence: what you found specific to their responses>",
-      "why": "<1 sentence: why this costs them revenue>"
+      "score": <same as audience.breakdown[1].score>,
+      "found": "<copy from audience.breakdown[1].found>",
+      "why": "<copy from audience.breakdown[1].why>"
     },
     {
       "label": "Channel Efficiency",
-      "score": <integer 0-100>,
-      "found": "<1 sentence: what you found specific to their responses>",
-      "why": "<1 sentence: why this costs them revenue>"
+      "score": <same as search.breakdown[0].score>,
+      "found": "<copy from search.breakdown[0].found>",
+      "why": "<copy from search.breakdown[0].why>"
     },
     {
-      "label": "Funnel Friction",
-      "score": <integer 0-100>,
-      "found": "<1 sentence: what you found specific to their responses>",
-      "why": "<1 sentence: why this costs them revenue>"
+      "label": "Funnel Friction Index",
+      "score": <same as funnel.breakdown[0].score>,
+      "found": "<copy from funnel.breakdown[0].found>",
+      "why": "<copy from funnel.breakdown[0].why>"
     },
     {
       "label": "Message to Market Fit",
-      "score": <integer 0-100>,
-      "found": "<1 sentence: what you found specific to their responses>",
-      "why": "<1 sentence: why this costs them revenue>"
+      "score": <same as search.breakdown[1].score>,
+      "found": "<copy from search.breakdown[1].found>",
+      "why": "<copy from search.breakdown[1].why>"
     },
     {
-      "label": "Budget Allocation",
-      "score": <integer 0-100>,
-      "found": "<1 sentence: what you found specific to their responses>",
-      "why": "<1 sentence: why this costs them revenue>"
+      "label": "Budget Reallocation Opportunity",
+      "score": <same as economics.breakdown[0].score>,
+      "found": "<copy from economics.breakdown[0].found>",
+      "why": "<copy from economics.breakdown[0].why>"
     }
   ],
-  "quick_wins": [
-    {
-      "action": "<specific, actionable step — reference regional platforms/tools where relevant>",
-      "impact": "<High|Medium|Low>",
-      "timeline": "<This week|This month|Next quarter>"
-    }
-  ],
-  "landing_page_assessment": "<assessment of the landing page URL if provided, otherwise note that no URL was given>",
+  "landing_page_assessment": "<copy of funnel.landing_page_assessment>",
   "competitor_insights": "<brief note on competitive landscape in this region/industry based on web research>",
   "regional_benchmarks": "<current CPC/CPA benchmarks for ${geographicRegion} in this category based on web research>",
-  "monthly_waste_estimate": "<estimated monthly budget being wasted based on the diagnosis, with reasoning>",
+  "monthly_waste_estimate": "<copy of economics.monthly_waste_estimate>",
   "business_outcomes": {
-    "cac_current": "<estimated current CAC — calculate from their monthly budget divided by (leads x close rate) — show the number in KES with brief working>",
-    "cac_projected": "<projected CAC after implementing top 3 fixes — show expected percentage reduction and resulting figure in KES>",
-    "ltv_cac_current": "<current LTV:CAC ratio based on their stated LTV — e.g. 1.8:1. Flag if below 3:1 benchmark>",
-    "ltv_cac_projected": "<projected LTV:CAC after fixes — target at least 3:1 for healthy B2B unit economics>",
-    "monthly_revenue_opportunity": "<additional monthly revenue opportunity from fixing ICP — quantify in KES with brief reasoning>"
+    "cac_current": "<copy of economics.business_outcomes.cac_current>",
+    "cac_projected": "<copy of economics.business_outcomes.cac_projected>",
+    "ltv_cac_current": "<copy of economics.business_outcomes.ltv_cac_current>",
+    "ltv_cac_projected": "<copy of economics.business_outcomes.ltv_cac_projected>",
+    "monthly_revenue_opportunity": "<copy of economics.business_outcomes.monthly_revenue_opportunity>"
   }
 }
 
 Rules:
-- critical_findings: exactly 3 items, ranked by revenue impact
-- breakdown: exactly 6 items in the order listed, scores based on actual responses
-- quick_wins: exactly 3 items
-- All scores must reflect the actual responses — do not return generic numbers
-- Reference ${geographicRegion} explicitly in at least 2 findings or quick_wins
-- Use web search results to populate landing_page_assessment, competitor_insights, and regional_benchmarks with real data`
+- Each category (audience, search, funnel, economics): exactly 2 findings and 2 quick_wins, specific to that category's data
+- critical_findings: exactly 3 items, the highest-impact findings drawn from across all 4 categories
+- quick_wins (top-level): exactly 3 items, the highest-impact actions drawn from across all 4 categories
+- breakdown (top-level): exactly 6 items in the order listed, scores must match the corresponding category breakdown scores
+- All scores must reflect the actual questionnaire responses — do not return generic numbers
+- Reference ${geographicRegion} explicitly in at least 2 category analyses
+- Use web search results to populate landing_page_assessment, keyword_analysis, competitor_insights, and regional_benchmarks with real data`
 
   // ── Branched Claude call ──────────────────────────────────────────────────
   let diagnosisText: string
@@ -391,7 +596,7 @@ Rules:
   if (isSubscriber) {
     const res = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
-      max_tokens: 4000,
+      max_tokens: 7000,
       system: systemPrompt,
       tools: [{ type: 'web_search_20250305' as const, name: 'web_search' }],
       messages: [{ role: 'user', content: prompt }],
@@ -457,77 +662,284 @@ Return this exact JSON structure:
 {
   "overall_score": <integer 0-100>,
   "executive_summary": "<2-3 sentence diagnosis of the biggest ICP problem and its revenue impact>",
+
+  "audience": {
+    "score": <integer 0-100>,
+    "summary": "<2 sentences specific to ICP alignment and targeting accuracy>",
+    "meta_audience_notes": "<specific advice on Meta/Google audience setup based on their targeting parameters and best customer profile>",
+    "findings": [
+      {
+        "title": "<finding tied to ICP definition or best customer clarity — Q1-Q13>",
+        "severity": "<Critical|Warning|Opportunity>",
+        "explanation": "<specific finding referencing their business offering, best customer profile, and decision maker titles>"
+      },
+      {
+        "title": "<finding tied to audience mismatch or targeting parameters — Q14, Q18, Q24>",
+        "severity": "<Critical|Warning|Opportunity>",
+        "explanation": "<specific finding referencing their perceived ideal customer vs best customer profile>"
+      }
+    ],
+    "quick_wins": [
+      {
+        "action": "<specific audience targeting improvement based on their questionnaire responses>",
+        "impact": "<High|Medium|Low>",
+        "timeline": "<This week|This month|Next quarter>"
+      },
+      {
+        "action": "<specific ICP definition or persona refinement step>",
+        "impact": "<High|Medium|Low>",
+        "timeline": "<This week|This month|Next quarter>"
+      }
+    ],
+    "breakdown": [
+      {
+        "label": "ICP Alignment",
+        "score": <integer 0-100>,
+        "found": "<1 sentence: what you found about their ICP definition based on Q1-Q13>",
+        "why": "<1 sentence: why this costs them revenue>"
+      },
+      {
+        "label": "Targeting Accuracy",
+        "score": <integer 0-100>,
+        "found": "<1 sentence: what you found about their targeting parameters based on Q14, Q18>",
+        "why": "<1 sentence: why this costs them revenue>"
+      }
+    ]
+  },
+
+  "search": {
+    "score": <integer 0-100>,
+    "summary": "<2 sentences specific to channel mix and keyword/search strategy>",
+    "keyword_analysis": "<analysis of their channel mix and search strategy based solely on their questionnaire responses — no web research>",
+    "findings": [
+      {
+        "title": "<finding tied to channel selection or platform mix — Q15, Q19-Q20>",
+        "severity": "<Critical|Warning|Opportunity>",
+        "explanation": "<specific finding referencing their active channels and budget allocation across them>"
+      },
+      {
+        "title": "<finding tied to ad spend efficiency or lead quality — Q21-Q24>",
+        "severity": "<Critical|Warning|Opportunity>",
+        "explanation": "<specific finding referencing their lead volume, conversion rate, and CPA>"
+      }
+    ],
+    "quick_wins": [
+      {
+        "action": "<specific channel or keyword improvement based on their responses>",
+        "impact": "<High|Medium|Low>",
+        "timeline": "<This week|This month|Next quarter>"
+      },
+      {
+        "action": "<specific budget reallocation between channels based on their mix>",
+        "impact": "<High|Medium|Low>",
+        "timeline": "<This week|This month|Next quarter>"
+      }
+    ],
+    "breakdown": [
+      {
+        "label": "Channel Efficiency",
+        "score": <integer 0-100>,
+        "found": "<1 sentence: what you found about their channel mix and platform selection>",
+        "why": "<1 sentence: why this costs them revenue>"
+      },
+      {
+        "label": "Message to Market Fit",
+        "score": <integer 0-100>,
+        "found": "<1 sentence: what you found about their ad messaging vs target market expectations>",
+        "why": "<1 sentence: why this costs them revenue>"
+      }
+    ]
+  },
+
+  "funnel": {
+    "score": <integer 0-100>,
+    "summary": "<2 sentences specific to landing page performance and conversion friction>",
+    "landing_page_assessment": "<assessment of their funnel based on questionnaire answers — CTA type, funnel steps, form fields, mobile score, trust signals, and differentiation score>",
+    "findings": [
+      {
+        "title": "<finding tied to landing page structure or CTA — Q16, Q25-Q27>",
+        "severity": "<Critical|Warning|Opportunity>",
+        "explanation": "<specific finding referencing their primary CTA, funnel steps, and form fields>"
+      },
+      {
+        "title": "<finding tied to form friction, mobile usability, or trust signals — Q28-Q32>",
+        "severity": "<Critical|Warning|Opportunity>",
+        "explanation": "<specific finding referencing their mobile score, form completion rate, and differentiation clarity score>"
+      }
+    ],
+    "quick_wins": [
+      {
+        "action": "<specific landing page or CTA improvement based on their responses>",
+        "impact": "<High|Medium|Low>",
+        "timeline": "<This week|This month|Next quarter>"
+      },
+      {
+        "action": "<specific form simplification or trust signal addition>",
+        "impact": "<High|Medium|Low>",
+        "timeline": "<This week|This month|Next quarter>"
+      }
+    ],
+    "breakdown": [
+      {
+        "label": "Funnel Friction Index",
+        "score": <integer 0-100>,
+        "found": "<1 sentence: what you found about their funnel conversion steps and form completion>",
+        "why": "<1 sentence: why this costs them revenue>"
+      },
+      {
+        "label": "Message to Market Fit",
+        "score": <same integer as search.breakdown[1].score>,
+        "found": "<1 sentence: what you found about their landing page messaging and differentiation clarity>",
+        "why": "<1 sentence: why this costs them revenue>"
+      }
+    ]
+  },
+
+  "economics": {
+    "score": <integer 0-100>,
+    "summary": "<2 sentences specific to budget efficiency and unit economics>",
+    "monthly_waste_estimate": "<estimated monthly budget being wasted with reasoning based on their spend, leads, and conversion data>",
+    "business_outcomes": {
+      "cac_current": "<estimated current CAC — calculate from monthly budget divided by (leads x close rate) — show the figure with brief working>",
+      "cac_projected": "<projected CAC after implementing top 3 fixes — show expected percentage reduction and resulting figure>",
+      "ltv_cac_current": "<current LTV:CAC ratio based on their stated deal size or LTV — e.g. 1.8:1. Flag if below 3:1 benchmark>",
+      "ltv_cac_projected": "<projected LTV:CAC after fixes — target at least 3:1 for healthy B2B unit economics>",
+      "monthly_revenue_opportunity": "<additional monthly revenue opportunity from fixing ICP — quantify with brief reasoning>"
+    },
+    "findings": [
+      {
+        "title": "<finding tied to budget efficiency or spend allocation — Q11, Q19-Q20>",
+        "severity": "<Critical|Warning|Opportunity>",
+        "explanation": "<specific finding referencing their deal size, monthly spend, and channel allocation>"
+      },
+      {
+        "title": "<finding tied to unit economics or revenue per lead — Q21-Q23>",
+        "severity": "<Critical|Warning|Opportunity>",
+        "explanation": "<specific finding referencing their lead volume, conversions, and CPA vs deal size>"
+      }
+    ],
+    "quick_wins": [
+      {
+        "action": "<specific budget reallocation or spend efficiency improvement with projected impact>",
+        "impact": "<High|Medium|Low>",
+        "timeline": "<This week|This month|Next quarter>"
+      },
+      {
+        "action": "<specific unit economics improvement — CAC reduction or LTV increase strategy>",
+        "impact": "<High|Medium|Low>",
+        "timeline": "<This week|This month|Next quarter>"
+      }
+    ],
+    "breakdown": [
+      {
+        "label": "Budget Reallocation Opportunity",
+        "score": <integer 0-100>,
+        "found": "<1 sentence: what you found about their budget distribution across channels>",
+        "why": "<1 sentence: why this costs them revenue>"
+      },
+      {
+        "label": "Channel Efficiency",
+        "score": <same integer as search.breakdown[0].score>,
+        "found": "<1 sentence: what you found about their cost per acquisition vs benchmarks>",
+        "why": "<1 sentence: why this costs them revenue>"
+      }
+    ]
+  },
+
   "critical_findings": [
     {
-      "title": "<short finding title>",
+      "title": "<most impactful finding across all 4 categories>",
       "severity": "<Critical|Warning|Opportunity>",
       "explanation": "<specific finding with revenue impact>"
+    },
+    {
+      "title": "<second most impactful finding>",
+      "severity": "<Critical|Warning|Opportunity>",
+      "explanation": "<specific finding with revenue impact>"
+    },
+    {
+      "title": "<third most impactful finding>",
+      "severity": "<Critical|Warning|Opportunity>",
+      "explanation": "<specific finding with revenue impact>"
+    }
+  ],
+  "quick_wins": [
+    {
+      "action": "<highest-impact quick win across all categories>",
+      "impact": "<High|Medium|Low>",
+      "timeline": "<This week|This month|Next quarter>"
+    },
+    {
+      "action": "<second highest-impact quick win>",
+      "impact": "<High|Medium|Low>",
+      "timeline": "<This week|This month|Next quarter>"
+    },
+    {
+      "action": "<third highest-impact quick win>",
+      "impact": "<High|Medium|Low>",
+      "timeline": "<This week|This month|Next quarter>"
     }
   ],
   "breakdown": [
     {
       "label": "ICP Alignment",
-      "score": <integer 0-100>,
-      "found": "<1 sentence: what you found specific to their responses>",
-      "why": "<1 sentence: why this costs them revenue>"
+      "score": <same as audience.breakdown[0].score>,
+      "found": "<copy from audience.breakdown[0].found>",
+      "why": "<copy from audience.breakdown[0].why>"
     },
     {
       "label": "Targeting Accuracy",
-      "score": <integer 0-100>,
-      "found": "<1 sentence: what you found specific to their responses>",
-      "why": "<1 sentence: why this costs them revenue>"
+      "score": <same as audience.breakdown[1].score>,
+      "found": "<copy from audience.breakdown[1].found>",
+      "why": "<copy from audience.breakdown[1].why>"
     },
     {
       "label": "Channel Efficiency",
-      "score": <integer 0-100>,
-      "found": "<1 sentence: what you found specific to their responses>",
-      "why": "<1 sentence: why this costs them revenue>"
+      "score": <same as search.breakdown[0].score>,
+      "found": "<copy from search.breakdown[0].found>",
+      "why": "<copy from search.breakdown[0].why>"
     },
     {
-      "label": "Funnel Friction",
-      "score": <integer 0-100>,
-      "found": "<1 sentence: what you found specific to their responses>",
-      "why": "<1 sentence: why this costs them revenue>"
+      "label": "Funnel Friction Index",
+      "score": <same as funnel.breakdown[0].score>,
+      "found": "<copy from funnel.breakdown[0].found>",
+      "why": "<copy from funnel.breakdown[0].why>"
     },
     {
       "label": "Message to Market Fit",
-      "score": <integer 0-100>,
-      "found": "<1 sentence: what you found specific to their responses>",
-      "why": "<1 sentence: why this costs them revenue>"
+      "score": <same as search.breakdown[1].score>,
+      "found": "<copy from search.breakdown[1].found>",
+      "why": "<copy from search.breakdown[1].why>"
     },
     {
-      "label": "Budget Allocation",
-      "score": <integer 0-100>,
-      "found": "<1 sentence: what you found specific to their responses>",
-      "why": "<1 sentence: why this costs them revenue>"
+      "label": "Budget Reallocation Opportunity",
+      "score": <same as economics.breakdown[0].score>,
+      "found": "<copy from economics.breakdown[0].found>",
+      "why": "<copy from economics.breakdown[0].why>"
     }
   ],
-  "quick_wins": [
-    {
-      "action": "<specific, actionable step>",
-      "impact": "<High|Medium|Low>",
-      "timeline": "<This week|This month|Next quarter>"
-    }
-  ],
-  "monthly_waste_estimate": "<estimated monthly budget being wasted based on the diagnosis, with reasoning>",
+  "landing_page_assessment": "<copy of funnel.landing_page_assessment>",
+  "monthly_waste_estimate": "<copy of economics.monthly_waste_estimate>",
   "business_outcomes": {
-    "cac_current": "<estimated current CAC — calculate from their monthly budget divided by (leads x close rate) — show the number in KES with brief working>",
-    "cac_projected": "<projected CAC after implementing top 3 fixes — show expected percentage reduction and resulting figure in KES>",
-    "ltv_cac_current": "<current LTV:CAC ratio based on their stated LTV — e.g. 1.8:1. Flag if below 3:1 benchmark>",
-    "ltv_cac_projected": "<projected LTV:CAC after fixes — target at least 3:1 for healthy B2B unit economics>",
-    "monthly_revenue_opportunity": "<additional monthly revenue opportunity from fixing ICP — quantify in KES with brief reasoning>"
+    "cac_current": "<copy of economics.business_outcomes.cac_current>",
+    "cac_projected": "<copy of economics.business_outcomes.cac_projected>",
+    "ltv_cac_current": "<copy of economics.business_outcomes.ltv_cac_current>",
+    "ltv_cac_projected": "<copy of economics.business_outcomes.ltv_cac_projected>",
+    "monthly_revenue_opportunity": "<copy of economics.business_outcomes.monthly_revenue_opportunity>"
   }
 }
 
 Rules:
-- critical_findings: exactly 3 items, ranked by revenue impact
-- breakdown: exactly 6 items in the order listed, scores based on actual responses
-- quick_wins: exactly 3 items
-- All scores must reflect the actual responses — do not return generic numbers`
+- Each category (audience, search, funnel, economics): exactly 2 findings and 2 quick_wins, specific to that category's data
+- critical_findings: exactly 3 items, the highest-impact findings drawn from across all 4 categories
+- quick_wins (top-level): exactly 3 items, the highest-impact actions drawn from across all 4 categories
+- breakdown (top-level): exactly 6 items in the order listed, scores must match the corresponding category breakdown scores
+- All scores must reflect the actual questionnaire responses — do not return generic numbers
+- Base all analysis on questionnaire answers only — no web research`
 
     const res = await anthropic.messages.create({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 2500,
+      max_tokens: 4000,
       system: freeSystemPrompt,
       messages: [{ role: 'user', content: freePrompt }],
     })
