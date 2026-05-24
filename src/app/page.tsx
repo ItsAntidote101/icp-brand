@@ -30,6 +30,7 @@ const TIERS = [
     name: 'Starter',
     monthly: 'KES 6,500',
     annual: 'KES 65,000',
+    annualMonthly: 'KES 5,400',
     desc: 'For solo founders and small teams running their first serious paid campaigns.',
     bullets: ['Monthly ICP health monitoring', 'Critical findings with fixes', 'Quick wins action plan'],
     cta: 'Start Free Diagnosis',
@@ -40,6 +41,7 @@ const TIERS = [
     name: 'Pro',
     monthly: 'KES 13,000',
     annual: 'KES 130,000',
+    annualMonthly: 'KES 10,800',
     desc: 'For growing teams that need speed, depth, and campaign-level analysis.',
     bullets: ['Everything in Starter', 'Deep research with live web analysis', 'Weekly competitive intelligence briefing'],
     cta: 'Get Started with Pro',
@@ -50,6 +52,7 @@ const TIERS = [
     name: 'Agency',
     monthly: 'KES 26,000',
     annual: 'KES 260,000',
+    annualMonthly: 'KES 21,600',
     desc: 'For agencies managing multiple clients who need reporting at scale.',
     bullets: ['Everything in Pro', 'Monthly strategy session with media buyer', 'Multi-client reporting and white label'],
     cta: 'Contact Our Team',
@@ -147,8 +150,9 @@ export default function Page() {
 
   const countRef        = useRef<HTMLSpanElement>(null)
   const hasAnimated     = useRef(false)
+  const [diagnosisCount,  setDiagnosisCount]  = useState(9400)
   const diagCountRef    = useRef<HTMLSpanElement>(null)
-  const hasAnimatedDiag = useRef(false)
+  const prevDiagCount   = useRef(9400)
   const outputCanvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
@@ -189,25 +193,48 @@ export default function Page() {
     return () => observer.disconnect()
   }, [])
 
-  useEffect(() => {
+  const animateWaste = (from: number, to: number, duration = 1800) => {
     const el = diagCountRef.current
     if (!el) return
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting && !hasAnimatedDiag.current) {
-        hasAnimatedDiag.current = true
-        const target = 441800000; const duration = 2800; const start = performance.now()
-        const tick = (now: number) => {
-          const t = Math.min((now - start) / duration, 1)
-          const ease = 1 - Math.pow(1 - t, 3)
-          el.textContent = 'KES ' + Math.floor(ease * target).toLocaleString()
-          if (t < 1) requestAnimationFrame(tick)
-          else el.textContent = 'KES 441,800,000'
+    const start = performance.now()
+    const tick = (now: number) => {
+      const t = Math.min((now - start) / duration, 1)
+      const ease = 1 - Math.pow(1 - t, 3)
+      el.textContent = 'KES ' + Math.floor(from + (to - from) * ease).toLocaleString()
+      if (t < 1) requestAnimationFrame(tick)
+      else el.textContent = 'KES ' + to.toLocaleString()
+    }
+    requestAnimationFrame(tick)
+  }
+
+  useEffect(() => {
+    // Animate on first mount (count up from 0)
+    animateWaste(0, diagnosisCount * 47000, 2800)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    // Animate when count changes after mount
+    const prev = prevDiagCount.current
+    if (prev !== diagnosisCount) {
+      animateWaste(prev * 47000, diagnosisCount * 47000, 900)
+      prevDiagCount.current = diagnosisCount
+    }
+  }, [diagnosisCount]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const fetchCount = async () => {
+      try {
+        const res = await fetch('/api/stats')
+        if (!res.ok) return
+        const { count } = await res.json()
+        if (typeof count === 'number' && count !== prevDiagCount.current) {
+          setDiagnosisCount(count)
         }
-        requestAnimationFrame(tick)
-      }
-    }, { threshold: 0.3 })
-    observer.observe(el)
-    return () => observer.disconnect()
+      } catch { /* keep current value */ }
+    }
+    fetchCount()
+    const interval = setInterval(fetchCount, 30000)
+    return () => clearInterval(interval)
   }, [])
 
   useEffect(() => {
@@ -371,7 +398,7 @@ export default function Page() {
       `}</style>
 
       {/* ── NAV ─────────────────────────────────────────────────────────── */}
-      <nav style={{ position: 'sticky', top: 0, zIndex: 50, background: Warm, borderBottom: `1px solid ${Border}`, padding: '0 clamp(20px,5vw,56px)' }}>
+      <nav style={{ position: 'sticky', top: 0, zIndex: 50, background: Warm, borderBottom: `1.5px solid ${Border}`, padding: '0 clamp(20px,5vw,56px)' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 60 }}>
           <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 9, textDecoration: 'none' }}>
             <div style={{ width: 26, height: 26, borderRadius: 6, background: Orange, flexShrink: 0 }} />
@@ -396,7 +423,7 @@ export default function Page() {
         <div style={{ position: 'fixed', inset: 0, zIndex: 49, background: Warm, display: 'flex', flexDirection: 'column', padding: '80px 32px 40px' }}>
           {[['How It Works', '#how-it-works'], ['Results', '#results'], ['Pricing', '#pricing'], ['FAQ', '#faq']].map(([label, href]) => (
             <a key={href} href={href} onClick={() => setMobileOpen(false)}
-              style={{ fontFamily: font, fontSize: 22, color: Text, textDecoration: 'none', fontWeight: 700, padding: '18px 0', borderBottom: `1px solid ${Border}` }}>{label}</a>
+              style={{ fontFamily: font, fontSize: 22, color: Text, textDecoration: 'none', fontWeight: 700, padding: '18px 0', borderBottom: `1.5px solid ${Border}` }}>{label}</a>
           ))}
           <div style={{ marginTop: 32, display: 'flex', flexDirection: 'column', gap: 12 }}>
             <Link href="/questionnaire" onClick={() => setMobileOpen(false)} style={{ ...btnPrimary, justifyContent: 'center', fontSize: 17 }}>Get free diagnostic</Link>
@@ -406,10 +433,10 @@ export default function Page() {
       )}
 
       {/* ── HERO ────────────────────────────────────────────────────────── */}
-      <section style={{ background: Warm, borderBottom: `1px solid ${Border}` }}>
+      <section style={{ background: Warm, borderBottom: `1.5px solid ${Border}` }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', minHeight: 420 }} className="block md:grid">
           {/* Left */}
-          <div style={{ padding: 'clamp(48px,8vw,96px) clamp(20px,5vw,56px)', borderRight: `1px solid ${Border}` }}>
+          <div style={{ padding: 'clamp(48px,8vw,96px) clamp(20px,5vw,56px)', borderRight: `1.5px solid ${Border}` }}>
             <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 24px' }}>ICP Diagnostic Tool</p>
             <h1 style={{ fontFamily: fontSerif, fontSize: 'clamp(32px,4.5vw,56px)', fontWeight: 700, color: Text, lineHeight: 1.08, margin: '0 0 32px' }}>
               Your targeting is{' '}
@@ -431,13 +458,13 @@ export default function Page() {
             <p style={{ fontFamily: fontB, fontSize: 'clamp(16px,2vw,20px)', color: Muted, lineHeight: 1.7, margin: 0 }}>
               Most B2B teams waste 30 to 60 percent of their ad budget targeting people who will never buy. The ICP Diagnostic finds the exact misalignment, scores your targeting, and gives you a ranked fix list in 5 minutes.
             </p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 0, borderTop: `1px solid ${Border}`, borderLeft: `1px solid ${Border}` }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 0, borderTop: `1.5px solid ${Border}`, borderLeft: `1.5px solid ${Border}` }}>
               {[
                 { stat: '5 min', label: 'To complete' },
                 { stat: 'Instant', label: 'Results' },
                 { stat: '0', label: 'Ad access needed' },
               ].map(({ stat, label }) => (
-                <div key={label} style={{ padding: '20px 16px', borderBottom: `1px solid ${Border}`, borderRight: `1px solid ${Border}` }}>
+                <div key={label} style={{ padding: '20px 16px', borderBottom: `1.5px solid ${Border}`, borderRight: `1.5px solid ${Border}` }}>
                   <p style={{ fontFamily: fontSerif, fontSize: 24, fontWeight: 700, color: Text, margin: '0 0 4px' }}>{stat}</p>
                   <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, margin: 0 }}>{label}</p>
                 </div>
@@ -448,7 +475,7 @@ export default function Page() {
       </section>
 
       {/* ── PLATFORM DIAGRAM ───────────────────────────────────────────── */}
-      <section style={{ background: Warm, borderBottom: `1px solid ${Border}` }}>
+      <section style={{ background: Warm, borderBottom: `1.5px solid ${Border}` }}>
         <style>{`
           @keyframes spin { to { transform: rotate(360deg); } }
           @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
@@ -479,7 +506,7 @@ export default function Page() {
           </h2>
 
           {/* 6-column analysis grid */}
-          <div style={{ border: `1px solid ${Border}`, borderRadius: 8, display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', maxWidth: 1100, margin: '0 auto', overflow: 'hidden' }}
+          <div style={{ border: `1.5px solid ${Border}`, borderRadius: 0, display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', maxWidth: 1100, margin: '0 auto', overflow: 'hidden' }}
                className="hidden md:grid">
             {[
               { Icon: Target,       title: 'ICP Foundation',          sub: 'Who you are targeting and whether it is right' },
@@ -489,8 +516,8 @@ export default function Page() {
               { Icon: TrendingDown, title: 'CAC Analysis',            sub: 'Cost per customer relative to LTV' },
               { Icon: Eye,          title: 'Competitive Intel',       sub: 'Market positioning and gap identification' },
             ].map(({ Icon, title, sub }, i) => (
-              <div key={title} style={{ padding: '28px 18px 28px', borderLeft: i > 0 ? `1px solid ${Border}` : 'none', display: 'flex', flexDirection: 'column', gap: 14 }}>
-                <div style={{ width: 36, height: 36, border: `1px solid ${Border}`, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <div key={title} style={{ padding: '28px 18px 28px', borderLeft: i > 0 ? `1.5px solid ${Border}` : 'none', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <div style={{ width: 36, height: 36, border: `1.5px solid ${Border}`, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <Icon size={17} color={Dark} strokeWidth={1.5} />
                 </div>
                 <div>
@@ -502,7 +529,7 @@ export default function Page() {
           </div>
 
           {/* Mobile: 2-col grid */}
-          <div className="md:hidden" style={{ border: `1px solid ${Border}`, borderRadius: 8, display: 'grid', gridTemplateColumns: '1fr 1fr', overflow: 'hidden' }}>
+          <div className="md:hidden" style={{ border: `1.5px solid ${Border}`, borderRadius: 0, display: 'grid', gridTemplateColumns: '1fr 1fr', overflow: 'hidden' }}>
             {[
               { Icon: Target,       title: 'ICP Foundation' },
               { Icon: Crosshair,    title: 'Ad Targeting' },
@@ -511,8 +538,8 @@ export default function Page() {
               { Icon: TrendingDown, title: 'CAC Analysis' },
               { Icon: Eye,          title: 'Competitive Intel' },
             ].map(({ Icon, title }, i) => (
-              <div key={title} style={{ padding: '20px 16px', borderLeft: i % 2 === 1 ? `1px solid ${Border}` : 'none', borderTop: i >= 2 ? `1px solid ${Border}` : 'none', display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ width: 32, height: 32, border: `1px solid ${Border}`, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <div key={title} style={{ padding: '20px 16px', borderLeft: i % 2 === 1 ? `1.5px solid ${Border}` : 'none', borderTop: i >= 2 ? `1.5px solid ${Border}` : 'none', display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ width: 32, height: 32, border: `1.5px solid ${Border}`, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <Icon size={15} color={Dark} strokeWidth={1.5} />
                 </div>
                 <p style={{ fontFamily: font, fontSize: 12, fontWeight: 700, color: Dark, margin: 0 }}>{title}</p>
@@ -534,7 +561,7 @@ export default function Page() {
           {(() => {
             const pillStyle = (bg = 'rgba(255,255,255,0.9)'): React.CSSProperties => ({
               fontFamily: fontB, fontSize: 13, color: Dark, fontWeight: 600,
-              border: `1px solid ${Border}`, borderRadius: 6, padding: '9px 16px',
+              border: `1.5px solid ${Border}`, borderRadius: 6, padding: '9px 16px',
               background: bg, backdropFilter: 'blur(4px)',
               display: 'inline-flex', alignItems: 'center', gap: 8, flexShrink: 0,
               boxShadow: '0 2px 6px rgba(24,17,10,0.06)',
@@ -547,7 +574,7 @@ export default function Page() {
             const speeds = ['75s', '90s', '65s']
             const dirs   = ['marqueeLeft', 'marqueeRight', 'marqueeLeft']
             return (
-              <div style={{ border: `1px solid ${Border}`, borderRadius: 8, maxWidth: 1100, margin: '0 auto', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ border: `1.5px solid ${Border}`, borderRadius: 0, maxWidth: 1100, margin: '0 auto', position: 'relative', overflow: 'hidden' }}>
                 <canvas ref={outputCanvasRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} />
                 <div style={{ position: 'relative', zIndex: 1, padding: '28px 0 32px' }}>
                   <p style={{ fontFamily: fontB, fontSize: 11, color: Orange, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 24px', paddingLeft: 28 }}>Your outputs</p>
@@ -573,15 +600,15 @@ export default function Page() {
       </section>
 
       {/* ── 4-COLUMN TRUST GRID ────────────────────────────────────────── */}
-      <section style={{ background: Warm, borderBottom: `1px solid ${Border}` }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', borderLeft: `1px solid ${Border}` }}>
+      <section style={{ background: Warm, borderBottom: `1.5px solid ${Border}` }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', borderLeft: `1.5px solid ${Border}` }}>
           {[
             { Icon: Shield, title: 'No ad account access', body: 'No Google OAuth. No Meta permissions. Zero.' },
             { Icon: Globe,  title: '10+ markets covered',  body: 'Kenya, Nigeria, South Africa, UK, US and more.' },
             { Icon: Users,  title: 'Built by media buyers', body: 'USD 2M+ in ad spend managed. Real practitioners built every rule.' },
             { Icon: Lock,   title: 'Your data is private',  body: 'Stored securely. Never shared. Never sold.' },
           ].map(({ Icon, title, body }) => (
-            <div key={title} style={{ padding: 'clamp(24px,3vw,36px)', borderRight: `1px solid ${Border}`, borderBottom: `1px solid ${Border}` }}>
+            <div key={title} style={{ padding: 'clamp(24px,3vw,36px)', borderRight: `1.5px solid ${Border}`, borderBottom: `1.5px solid ${Border}` }}>
               <Icon size={20} color={Orange} style={{ marginBottom: 14 }} />
               <h3 style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: Text, margin: '0 0 8px' }}>{title}</h3>
               <p style={{ fontFamily: fontB, fontSize: 14, color: Muted, lineHeight: 1.6, margin: 0 }}>{body}</p>
@@ -591,7 +618,7 @@ export default function Page() {
       </section>
 
       {/* ── PROOF OF CONCEPT ─────────────────────────────────────────────── */}
-      <section style={{ background: Dark, borderBottom: `1px solid ${DarkBorder}` }}>
+      <section style={{ background: Dark, borderBottom: `1.5px solid ${DarkBorder}` }}>
         <style>{`
           @keyframes livePulse {
             0%, 100% { opacity: 1; transform: scale(1); }
@@ -608,7 +635,7 @@ export default function Page() {
         <div className="container" style={{ paddingTop: 'clamp(56px,8vw,96px)', paddingBottom: 0 }}>
 
           {/* Header row */}
-          <div style={{ borderBottom: `1px solid ${DarkBorder}`, paddingBottom: 'clamp(40px,6vw,64px)' }}>
+          <div style={{ borderBottom: `1.5px solid ${DarkBorder}`, paddingBottom: 'clamp(40px,6vw,64px)' }}>
             <p style={{ fontFamily: fontB, fontSize: 13, color: DarkMuted, fontWeight: 400, margin: '0 0 28px' }}>
               No guesswork here. <span style={{ color: Orange }}>Just real data.</span>
             </p>
@@ -630,15 +657,15 @@ export default function Page() {
               in monthly ad spend waste identified across East Africa (and counting)
             </p>
             <p style={{ fontFamily: fontB, fontSize: 13, color: DarkMuted, margin: 0 }}>
-              Across {(9000 + liveCount).toLocaleString()}+ B2B diagnoses completed on the platform
+              Across {diagnosisCount.toLocaleString()}+ B2B diagnoses completed on the platform
             </p>
           </div>
 
           {/* Chart + description row */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderBottom: `1px solid ${DarkBorder}` }} className="block md:grid">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderBottom: `1.5px solid ${DarkBorder}` }} className="block md:grid">
 
             {/* Growth chart */}
-            <div style={{ borderRight: `1px solid ${DarkBorder}`, padding: 'clamp(28px,4vw,48px)' }}>
+            <div style={{ borderRight: `1.5px solid ${DarkBorder}`, padding: 'clamp(28px,4vw,48px)' }}>
               <p style={{ fontFamily: fontB, fontSize: 11, color: DarkMuted, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 20px' }}>Diagnoses completed over time</p>
               <svg viewBox="0 0 540 200" style={{ width: '100%', height: 'auto', display: 'block' }} aria-hidden="true">
                 <defs>
@@ -683,15 +710,15 @@ export default function Page() {
           </div>
 
           {/* 4 tiles */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', borderLeft: `1px solid ${DarkBorder}` }} className="block md:grid">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', borderLeft: `1.5px solid ${DarkBorder}` }} className="block md:grid">
             {[
               { Icon: Zap,       title: '22 questions across 3 targeting layers', body: 'No ad account access. No agency. Takes 5 minutes from sign-up to your first scored finding.' },
               { Icon: BarChart2, title: '43% average CAC reduction after fixing ICP', body: 'Reported by businesses that completed their first diagnosis and acted on the top two findings.' },
               { Icon: Target,    title: 'KES 47,000 average monthly waste identified', body: 'Per business, per month. Found in audience mismatch, landing page friction, and funnel leaks.' },
               { Icon: TrendingDown, title: 'LTV:CAC ratio below 3:1 in 6 out of 10 audits', body: 'The B2B benchmark is 3:1. Most businesses we see are between 1.2 and 2.1 before the fix.' },
             ].map(({ Icon, title, body }, i) => (
-              <div key={i} style={{ padding: 'clamp(24px,3vw,36px)', borderRight: `1px solid ${DarkBorder}`, borderTop: `1px solid ${DarkBorder}`, borderBottom: `1px solid ${DarkBorder}` }}>
-                <div style={{ width: 32, height: 32, borderRadius: 6, border: `1px solid ${DarkBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+              <div key={i} style={{ padding: 'clamp(24px,3vw,36px)', borderRight: `1.5px solid ${DarkBorder}`, borderTop: `1.5px solid ${DarkBorder}`, borderBottom: `1.5px solid ${DarkBorder}` }}>
+                <div style={{ width: 32, height: 32, borderRadius: 6, border: `1.5px solid ${DarkBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
                   <Icon size={16} color={Orange} strokeWidth={1.5} />
                 </div>
                 <h3 style={{ fontFamily: font, fontSize: 'clamp(14px,1.5vw,16px)', fontWeight: 700, color: '#fff', margin: '0 0 10px', lineHeight: 1.3 }}>{title}</h3>
@@ -704,10 +731,10 @@ export default function Page() {
       </section>
 
       {/* ── USE CASE TICKER ─────────────────────────────────────────────── */}
-      <div style={{ background: Warm, borderBottom: `1px solid ${Border}`, overflow: 'hidden', padding: '14px 0' }}>
+      <div style={{ background: Warm, borderBottom: `1.5px solid ${Border}`, overflow: 'hidden', padding: '14px 0' }}>
         <div className="ticker-track">
           {[...USE_CASES, ...USE_CASES].map((item, i) => (
-            <span key={i} style={{ fontFamily: fontB, fontSize: 13, color: Muted, whiteSpace: 'nowrap', padding: '4px 16px', border: `1px solid ${Border}`, borderRadius: 4 }}>
+            <span key={i} style={{ fontFamily: fontB, fontSize: 13, color: Muted, whiteSpace: 'nowrap', padding: '4px 16px', border: `1.5px solid ${Border}`, borderRadius: 4 }}>
               {item}
             </span>
           ))}
@@ -715,7 +742,7 @@ export default function Page() {
       </div>
 
       {/* ── HOW IT WORKS ────────────────────────────────────────────────── */}
-      <section id="how-it-works" style={{ background: Warm, borderBottom: `1px solid ${Border}` }}>
+      <section id="how-it-works" style={{ background: Warm, borderBottom: `1.5px solid ${Border}` }}>
         <div className="container" style={{ paddingTop: 'clamp(56px,8vw,96px)', paddingBottom: 'clamp(56px,8vw,96px)' }}>
           <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 14px' }}>How It Works</p>
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, marginBottom: 48 }}>
@@ -728,18 +755,18 @@ export default function Page() {
           </div>
 
           {/* 3-card grid */}
-          <div style={{ border: `1px solid ${Border}`, borderRadius: 8, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', overflow: 'hidden', marginBottom: 0 }}
+          <div style={{ border: `1.5px solid ${Border}`, borderRadius: 0, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', overflow: 'hidden', marginBottom: 0 }}
                className="hidden md:grid">
             {[
               { num: '01', Icon: FileText, title: 'Answer 22 questions', body: 'Tell us about your targeting and funnel. No ad account access needed. Takes around 5 minutes.', chip: '5 minutes', chipBg: 'rgba(232,51,10,0.1)' },
               { num: '02', Icon: Zap,      title: 'Get your report',      body: 'Your ICP health score, monthly waste estimate, CAC analysis, and top findings ranked by revenue impact.', chip: 'Instant',   chipBg: 'rgba(232,51,10,0.1)' },
               { num: '03', Icon: ArrowRight, title: 'Fix what is broken', body: 'Follow the prioritised action plan. Subscribe for ongoing monitoring, weekly intelligence, and CAC tracking.', chip: 'Start today', chipBg: 'rgba(232,51,10,0.1)' },
             ].map(({ num, Icon, title, body, chip, chipBg }, i) => (
-              <div key={i} style={{ borderLeft: i > 0 ? `1px solid ${Border}` : 'none', padding: '36px 28px 36px', display: 'flex', flexDirection: 'column', gap: 0, position: 'relative', overflow: 'hidden' }}>
+              <div key={i} style={{ borderLeft: i > 0 ? `1.5px solid ${Border}` : 'none', padding: '36px 28px 36px', display: 'flex', flexDirection: 'column', gap: 0, position: 'relative', overflow: 'hidden' }}>
                 {/* Ghost number watermark */}
                 <span style={{ position: 'absolute', top: 12, right: 20, fontFamily: fontSerif, fontSize: 72, fontWeight: 700, color: Orange, opacity: 0.07, lineHeight: 1, userSelect: 'none', pointerEvents: 'none' }}>{num}</span>
                 {/* Icon */}
-                <div style={{ width: 40, height: 40, borderRadius: 8, border: `1.5px solid ${Border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24, flexShrink: 0 }}>
+                <div style={{ width: 40, height: 40, borderRadius: 0, border: `1.5px solid ${Border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24, flexShrink: 0 }}>
                   <Icon size={18} color={Dark} strokeWidth={1.5} />
                 </div>
                 {/* Step number label */}
@@ -752,13 +779,13 @@ export default function Page() {
           </div>
 
           {/* Mobile: stacked with border separator */}
-          <div className="md:hidden" style={{ border: `1px solid ${Border}`, borderRadius: 8, overflow: 'hidden' }}>
+          <div className="md:hidden" style={{ border: `1.5px solid ${Border}`, borderRadius: 0, overflow: 'hidden' }}>
             {[
               { num: '01', Icon: FileText,  title: 'Answer 22 questions', body: 'No ad account needed. Takes 5 minutes.', chip: '5 minutes' },
               { num: '02', Icon: Zap,       title: 'Get your report',      body: 'Health score, CAC analysis, and ranked findings instantly.', chip: 'Instant' },
               { num: '03', Icon: ArrowRight, title: 'Fix what is broken',  body: 'Follow the action plan and track your progress.', chip: 'Start today' },
             ].map(({ num, Icon, title, body, chip }, i) => (
-              <div key={i} style={{ borderTop: i > 0 ? `1px solid ${Border}` : 'none', padding: '24px 20px', display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+              <div key={i} style={{ borderTop: i > 0 ? `1.5px solid ${Border}` : 'none', padding: '24px 20px', display: 'flex', gap: 16, alignItems: 'flex-start' }}>
                 <div style={{ width: 36, height: 36, borderRadius: 7, border: `1.5px solid ${Border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <Icon size={16} color={Dark} strokeWidth={1.5} />
                 </div>
@@ -775,7 +802,7 @@ export default function Page() {
           </div>
 
           {/* Free report includes bar */}
-          <div style={{ borderTop: `1px solid ${Border}`, marginTop: 48, paddingTop: 40, display: 'flex', flexWrap: 'wrap', gap: 28, alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ borderTop: `1.5px solid ${Border}`, marginTop: 48, paddingTop: 40, display: 'flex', flexWrap: 'wrap', gap: 28, alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
               <p style={{ fontFamily: fontB, fontSize: 11, color: Muted, fontWeight: 700, margin: '0 0 14px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Your free report includes</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 24px' }}>
@@ -825,7 +852,7 @@ export default function Page() {
         const t = testimonials[activeTestimonial]
         const total = testimonials.length
         return (
-          <section id="results" style={{ background: Warm, borderBottom: `1px solid ${Border}` }}>
+          <section id="results" style={{ background: Warm, borderBottom: `1.5px solid ${Border}` }}>
             <div className="container" style={{ paddingTop: 'clamp(56px,7vw,88px)', paddingBottom: 'clamp(56px,7vw,88px)' }}>
 
               {/* Section header */}
@@ -839,13 +866,13 @@ export default function Page() {
               </div>
 
               {/* Testimonial card */}
-              <div style={{ border: `1px solid ${Border}`, borderRadius: 8, overflow: 'hidden', display: 'grid', gridTemplateColumns: '1fr 1fr', background: '#fff' }} className="block md:grid">
+              <div style={{ border: `1.5px solid ${Border}`, borderRadius: 0, overflow: 'hidden', display: 'grid', gridTemplateColumns: '1fr 1fr', background: '#fff' }} className="block md:grid">
 
                 {/* Left: quote panel */}
-                <div style={{ display: 'flex', flexDirection: 'column', borderRight: `1px solid ${Border}` }}>
+                <div style={{ display: 'flex', flexDirection: 'column', borderRight: `1.5px solid ${Border}` }}>
 
                   {/* Company tag */}
-                  <div style={{ padding: '28px 36px 24px', borderBottom: `1px solid ${Border}` }}>
+                  <div style={{ padding: '28px 36px 24px', borderBottom: `1.5px solid ${Border}` }}>
                     <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.14em', color: Text, margin: 0 }}>{t.company}</p>
                   </div>
 
@@ -861,9 +888,9 @@ export default function Page() {
                   </div>
 
                   {/* Stats */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderTop: `1px solid ${Border}` }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderTop: `1.5px solid ${Border}` }}>
                     {t.stats.map(({ val, label }, i) => (
-                      <div key={i} style={{ padding: '24px 28px', borderRight: i === 0 ? `1px solid ${Border}` : 'none' }}>
+                      <div key={i} style={{ padding: '24px 28px', borderRight: i === 0 ? `1.5px solid ${Border}` : 'none' }}>
                         <p style={{ fontFamily: fontSerif, fontSize: 'clamp(22px,2.5vw,32px)', fontWeight: 700, color: Orange, margin: '0 0 5px' }}>{val}</p>
                         <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, margin: 0, lineHeight: 1.5 }}>{label}</p>
                       </div>
@@ -871,7 +898,7 @@ export default function Page() {
                   </div>
 
                   {/* CTA row */}
-                  <div style={{ padding: '20px 28px', borderTop: `1px solid ${Border}` }}>
+                  <div style={{ padding: '20px 28px', borderTop: `1.5px solid ${Border}` }}>
                     <Link href="/questionnaire" style={{ display: 'inline-flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
                       <span style={{ width: 36, height: 36, borderRadius: '50%', border: `1.5px solid ${Border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <ArrowRight size={15} color={Text} />
@@ -915,7 +942,7 @@ export default function Page() {
       })()}
 
       {/* ── BUSINESS OUTCOMES CALCULATOR ────────────────────────────────── */}
-      <section id="calculator" style={{ background: Dark, borderBottom: `1px solid ${DarkBorder}` }}>
+      <section id="calculator" style={{ background: Dark, borderBottom: `1.5px solid ${DarkBorder}` }}>
         <div className="container" style={{ paddingTop: 'clamp(56px,8vw,96px)', paddingBottom: 'clamp(56px,8vw,96px)' }}>
 
           {/* Section header */}
@@ -931,9 +958,9 @@ export default function Page() {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0, border: `1px solid ${DarkBorder}`, borderRadius: 8, overflow: 'hidden' }} className="block md:grid">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0, border: `1.5px solid ${DarkBorder}`, borderRadius: 0, overflow: 'hidden' }} className="block md:grid">
             {/* Left: Inputs */}
-            <div style={{ padding: 'clamp(24px,4vw,40px)', borderRight: `1px solid ${DarkBorder}` }}>
+            <div style={{ padding: 'clamp(24px,4vw,40px)', borderRight: `1.5px solid ${DarkBorder}` }}>
               <p style={{ fontFamily: fontB, fontSize: 11, color: DarkMuted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 20px' }}>Your current numbers</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 <div>
@@ -1009,7 +1036,7 @@ export default function Page() {
                     const active  = i === calcStep
                     const pending = i > calcStep
                     return (
-                      <div key={i} className="calc-step" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '11px 0', borderTop: i > 0 ? `1px solid ${DarkBorder}` : 'none', opacity: pending ? 0.25 : 1, animation: active || done ? `stepIn 0.25s ease both` : 'none' }}>
+                      <div key={i} className="calc-step" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '11px 0', borderTop: i > 0 ? `1.5px solid ${DarkBorder}` : 'none', opacity: pending ? 0.25 : 1, animation: active || done ? `stepIn 0.25s ease both` : 'none' }}>
                         {/* Icon: spinner / check / circle */}
                         <div className={active ? 'calc-spinner' : ''} style={{ width: 22, height: 22, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
                           border: done ? 'none' : active ? `2px solid rgba(255,255,255,0.12)` : `1.5px solid ${DarkBorder}`,
@@ -1034,14 +1061,14 @@ export default function Page() {
                   <p style={{ fontFamily: fontB, fontSize: 11, color: DarkMuted, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 20px' }}>Your projected outcomes</p>
 
                   {/* 4 metric cells in a 2x2 grid */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', border: `1px solid ${DarkBorder}`, borderRadius: 6, overflow: 'hidden', marginBottom: 12 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', border: `1.5px solid ${DarkBorder}`, borderRadius: 6, overflow: 'hidden', marginBottom: 12 }}>
                     {[
                       { label: 'CAC today',    value: `KES ${calcMetrics.cacCurrent.toLocaleString()}`,   accent: false },
                       { label: 'CAC after fix', value: `KES ${calcMetrics.cacProjected.toLocaleString()}`, accent: true, sub: `${Math.round((1 - calcMetrics.cacProjected / calcMetrics.cacCurrent) * 100)}% lower` },
                       { label: 'LTV:CAC now',  value: `${calcMetrics.ltvCacCurrent}:1`,                  accent: false, warn: calcMetrics.ltvCacCurrent < 3 },
                       { label: 'LTV:CAC after', value: `${calcMetrics.ltvCacProjected}:1`,               accent: true, sub: calcMetrics.ltvCacCurrent < 3 ? 'Toward 3:1 benchmark' : 'Compounding gains' },
                     ].map(({ label, value, accent, sub, warn }, i) => (
-                      <div key={i} style={{ padding: '18px 16px', borderLeft: i % 2 === 1 ? `1px solid ${DarkBorder}` : 'none', borderTop: i >= 2 ? `1px solid ${DarkBorder}` : 'none' }}>
+                      <div key={i} style={{ padding: '18px 16px', borderLeft: i % 2 === 1 ? `1.5px solid ${DarkBorder}` : 'none', borderTop: i >= 2 ? `1.5px solid ${DarkBorder}` : 'none' }}>
                         <p style={{ fontFamily: fontB, fontSize: 11, color: warn ? '#f59e0b' : accent ? '#22c55e' : DarkMuted, fontWeight: 700, margin: '0 0 6px', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{label}</p>
                         <p style={{ fontFamily: fontSerif, fontSize: 20, fontWeight: 700, color: accent ? '#22c55e' : '#fff', margin: '0 0 3px' }}>{value}</p>
                         {sub && <p style={{ fontFamily: fontB, fontSize: 11, color: DarkMuted, margin: 0 }}>{sub}</p>}
@@ -1050,7 +1077,7 @@ export default function Page() {
                   </div>
 
                   {/* Customers row */}
-                  <div style={{ border: `1px solid ${DarkBorder}`, borderRadius: 6, padding: '16px', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                  <div style={{ border: `1.5px solid ${DarkBorder}`, borderRadius: 6, padding: '16px', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
                     <div>
                       <p style={{ fontFamily: fontB, fontSize: 11, color: DarkMuted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', margin: '0 0 5px' }}>New customers per month</p>
                       <p style={{ fontFamily: fontSerif, fontSize: 20, fontWeight: 700, color: '#fff', margin: 0 }}>
@@ -1089,7 +1116,7 @@ export default function Page() {
       </section>
 
       {/* ── PRICING ─────────────────────────────────────────────────────── */}
-      <section id="pricing" style={{ background: Warm, borderBottom: `1px solid ${Border}` }}>
+      <section id="pricing" style={{ background: Warm, borderBottom: `1.5px solid ${Border}` }}>
         <div className="container" style={{ paddingTop: 'clamp(56px,8vw,88px)', paddingBottom: 'clamp(56px,8vw,88px)' }}>
           <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 16px' }}>Simple Pricing</p>
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between', gap: 20, marginBottom: 40 }}>
@@ -1107,7 +1134,7 @@ export default function Page() {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 0, border: `1px solid ${Border}`, borderRadius: 12, overflow: 'hidden' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 0, border: `1.5px solid ${Border}`, borderRadius: 0, overflow: 'hidden' }}>
             {TIERS.map((tier, i) => (
               <div key={tier.name} style={{
                 background: tier.highlight ? Dark : '#fff',
@@ -1121,9 +1148,14 @@ export default function Page() {
                 )}
                 <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: tier.highlight ? DarkMuted : Muted, margin: '0 0 6px' }}>{tier.name}</p>
                 <p style={{ fontFamily: fontB, fontSize: 13, color: tier.highlight ? DarkMuted : Muted, margin: '0 0 20px', lineHeight: 1.55, minHeight: 40 }}>{tier.desc}</p>
-                <p style={{ fontFamily: fontSerif, fontSize: 32, fontWeight: 700, color: tier.highlight ? '#fff' : Text, margin: '0 0 4px' }}>
-                  {billingAnnual ? tier.annual + '/yr' : tier.monthly + '/mo'}
+                <p style={{ fontFamily: fontSerif, fontSize: 32, fontWeight: 700, color: tier.highlight ? '#fff' : Text, margin: '0 0 2px' }}>
+                  {billingAnnual ? (tier as typeof tier & { annualMonthly: string }).annualMonthly + '/mo' : tier.monthly + '/mo'}
                 </p>
+                {billingAnnual && (
+                  <p style={{ fontFamily: fontB, fontSize: 12, color: tier.highlight ? 'rgba(255,255,255,0.4)' : Muted, margin: '0 0 4px' }}>
+                    Billed as {(tier as typeof tier & { annual: string }).annual}/year
+                  </p>
+                )}
                 <div style={{ margin: '20px 0 28px', display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
                   {tier.bullets.map((bullet) => (
                     <div key={bullet} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
@@ -1158,7 +1190,7 @@ export default function Page() {
       </section>
 
       {/* ── FAQ ─────────────────────────────────────────────────────────── */}
-      <section id="faq" style={{ background: '#fff', borderBottom: `1px solid ${Border}` }}>
+      <section id="faq" style={{ background: '#fff', borderBottom: `1.5px solid ${Border}` }}>
         <div className="container" style={{ paddingTop: 'clamp(56px,8vw,80px)', paddingBottom: 'clamp(56px,8vw,80px)' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 'clamp(24px,6vw,80px)', alignItems: 'start' }} className="block md:grid">
             <div>
@@ -1170,11 +1202,11 @@ export default function Page() {
               {FAQS.map((faq, i) => {
                 const isOpen = openFaq === i
                 return (
-                  <div key={i} style={{ borderTop: `1px solid ${Border}`, overflow: 'hidden' }}>
+                  <div key={i} style={{ borderTop: `1.5px solid ${Border}`, overflow: 'hidden' }}>
                     <button onClick={() => setOpenFaq(isOpen ? null : i)}
                       style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 0', border: 'none', background: 'none', cursor: 'pointer', textAlign: 'left', gap: 16 }}>
                       <span style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: Text, lineHeight: 1.4 }}>{faq.q}</span>
-                      <div style={{ width: 28, height: 28, borderRadius: 4, background: isOpen ? Dark : Warm, border: `1px solid ${Border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background 0.2s' }}>
+                      <div style={{ width: 28, height: 28, borderRadius: 4, background: isOpen ? Dark : Warm, border: `1.5px solid ${Border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background 0.2s' }}>
                         {isOpen ? <ChevronUp size={14} color="#fff" /> : <ChevronDown size={14} color={Text} />}
                       </div>
                     </button>
@@ -1184,14 +1216,14 @@ export default function Page() {
                   </div>
                 )
               })}
-              <div style={{ borderTop: `1px solid ${Border}` }} />
+              <div style={{ borderTop: `1.5px solid ${Border}` }} />
             </div>
           </div>
         </div>
       </section>
 
       {/* ── FINAL CTA ────────────────────────────────────────────────────── */}
-      <section style={{ background: Dark, borderBottom: `1px solid ${DarkBorder}` }}>
+      <section style={{ background: Dark, borderBottom: `1.5px solid ${DarkBorder}` }}>
         <div className="container" style={{ paddingTop: 'clamp(72px,10vw,112px)', paddingBottom: 'clamp(72px,10vw,112px)', textAlign: 'center' }}>
           <p style={{ fontFamily: fontB, fontSize: 12, color: DarkMuted, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 20px' }}>Get started today</p>
           <h2 style={{ fontFamily: fontSerif, fontSize: 'clamp(28px,5vw,60px)', color: '#fff', fontWeight: 700, maxWidth: 720, margin: '0 auto 20px', lineHeight: 1.1 }}>
@@ -1220,7 +1252,7 @@ export default function Page() {
       </section>
 
       {/* ── FOOTER ──────────────────────────────────────────────────────── */}
-      <footer style={{ background: Dark, borderTop: `1px solid ${DarkBorder}`, padding: 'clamp(32px,5vw,48px) 0 clamp(24px,4vw,32px)' }}>
+      <footer style={{ background: Dark, borderTop: `1.5px solid ${DarkBorder}`, padding: 'clamp(32px,5vw,48px) 0 clamp(24px,4vw,32px)' }}>
         <div className="container">
           <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 24, alignItems: 'center' }}>
             <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 9, textDecoration: 'none' }}>
@@ -1233,7 +1265,7 @@ export default function Page() {
               ))}
             </div>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, alignItems: 'center', borderTop: `1px solid ${DarkBorder}`, paddingTop: 20 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, alignItems: 'center', borderTop: `1.5px solid ${DarkBorder}`, paddingTop: 20 }}>
             <span style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.22)' }}>2026 ICP Diagnostic. All rights reserved.</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               {[
@@ -1253,7 +1285,7 @@ export default function Page() {
 
       {/* ── STICKY BAR ──────────────────────────────────────────────────── */}
       {showStickyBar && !stickyDismissed && (
-        <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 999, background: '#fff', borderTop: `1px solid ${Border}`, padding: '12px clamp(16px,4vw,24px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 999, background: '#fff', borderTop: `1.5px solid ${Border}`, padding: '12px clamp(16px,4vw,24px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
           <p style={{ fontFamily: fontB, fontSize: 14, color: Text, fontWeight: 600, margin: 0, flex: 1 }}>
             Free ICP Score. 5 minutes. No card needed.
           </p>
