@@ -405,8 +405,12 @@ export default function Page() {
             <span style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: Text }}>ICP Diagnostic</span>
           </Link>
           <div className="hidden md:flex" style={{ gap: 28 }}>
-            {[['How It Works', '#how-it-works'], ['Results', '#results'], ['Pricing', '#pricing'], ['FAQ', '#faq']].map(([label, href]) => (
-              <a key={href} href={href} className="nav-link" style={{ fontFamily: fontB, fontSize: 14, color: Muted, textDecoration: 'none', fontWeight: 500, transition: 'color 0.15s' }}>{label}</a>
+            {[['How It Works', '#how-it-works'], ['Results', '#results'], ['Pricing', '/pricing'], ['FAQ', '#faq']].map(([label, href]) => (
+              href.startsWith('/') ? (
+                <Link key={href} href={href} className="nav-link" style={{ fontFamily: fontB, fontSize: 14, color: Muted, textDecoration: 'none', fontWeight: 500, transition: 'color 0.15s' }}>{label}</Link>
+              ) : (
+                <a key={href} href={href} className="nav-link" style={{ fontFamily: fontB, fontSize: 14, color: Muted, textDecoration: 'none', fontWeight: 500, transition: 'color 0.15s' }}>{label}</a>
+              )
             ))}
           </div>
           <div className="hidden md:flex" style={{ gap: 10, alignItems: 'center' }}>
@@ -421,9 +425,14 @@ export default function Page() {
 
       {mobileOpen && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 49, background: Warm, display: 'flex', flexDirection: 'column', padding: '80px 32px 40px' }}>
-          {[['How It Works', '#how-it-works'], ['Results', '#results'], ['Pricing', '#pricing'], ['FAQ', '#faq']].map(([label, href]) => (
-            <a key={href} href={href} onClick={() => setMobileOpen(false)}
-              style={{ fontFamily: font, fontSize: 22, color: Text, textDecoration: 'none', fontWeight: 700, padding: '18px 0', borderBottom: `1.5px solid ${Border}` }}>{label}</a>
+          {[['How It Works', '#how-it-works'], ['Results', '#results'], ['Pricing', '/pricing'], ['FAQ', '#faq']].map(([label, href]) => (
+            href.startsWith('/') ? (
+              <Link key={href} href={href} onClick={() => setMobileOpen(false)}
+                style={{ fontFamily: font, fontSize: 22, color: Text, textDecoration: 'none', fontWeight: 700, padding: '18px 0', borderBottom: `1.5px solid ${Border}` }}>{label}</Link>
+            ) : (
+              <a key={href} href={href} onClick={() => setMobileOpen(false)}
+                style={{ fontFamily: font, fontSize: 22, color: Text, textDecoration: 'none', fontWeight: 700, padding: '18px 0', borderBottom: `1.5px solid ${Border}` }}>{label}</a>
+            )
           ))}
           <div style={{ marginTop: 32, display: 'flex', flexDirection: 'column', gap: 12 }}>
             <Link href="/questionnaire" onClick={() => setMobileOpen(false)} style={{ ...btnPrimary, justifyContent: 'center', fontSize: 17 }}>Get free diagnostic</Link>
@@ -1170,6 +1179,13 @@ export default function Page() {
                 <p style={{ fontFamily: fontB, fontSize: 12, color: tier.highlight ? DarkMuted : Muted, textAlign: 'center', marginTop: 10, marginBottom: 0 }}>Cancel anytime.</p>
               </div>
             ))}
+          </div>
+
+          {/* Full comparison CTA */}
+          <div style={{ marginTop: 28, textAlign: 'center' }}>
+            <Link href="/pricing" style={{ fontFamily: fontB, fontSize: 14, color: Muted, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6, borderBottom: `1px solid ${Border}`, paddingBottom: 2, transition: 'color 0.15s' }}>
+              See full feature comparison <ArrowRight size={14} />
+            </Link>
           </div>
 
           {/* Payment strip */}
