@@ -192,18 +192,18 @@ export default function Page() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
     let raf: number
-    const PARTICLE_COUNT = 55
-    const CONNECT_DIST   = 110
-    const W = () => canvas.width
-    const H = () => canvas.height
+    const DOT_COUNT = 60
+    const MAX_SPEED = 0.5
+    const REPEL_PAD = 10   // extra clearance around each pill rect
+    const REPEL_FORCE = 0.18
 
-    type P = { x: number; y: number; vx: number; vy: number; r: number }
-    const particles: P[] = Array.from({ length: PARTICLE_COUNT }, () => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      vx: (Math.random() - 0.5) * 0.35,
-      vy: (Math.random() - 0.5) * 0.35,
-      r: Math.random() * 1.5 + 0.8,
+    type Dot = { x: number; y: number; vx: number; vy: number; r: number }
+    const dots: Dot[] = Array.from({ length: DOT_COUNT }, () => ({
+      x: Math.random() * canvas.offsetWidth,
+      y: Math.random() * canvas.offsetHeight,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      r: Math.random() * 1.4 + 0.7,
     }))
 
     const resize = () => {
@@ -215,33 +215,52 @@ export default function Page() {
     ro.observe(canvas)
 
     const draw = () => {
-      ctx.clearRect(0, 0, W(), H())
-      for (const p of particles) {
-        p.x += p.vx; p.y += p.vy
-        if (p.x < 0 || p.x > W()) p.vx *= -1
-        if (p.y < 0 || p.y > H()) p.vy *= -1
-      }
-      for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x
-          const dy = particles[i].y - particles[j].y
-          const d  = Math.sqrt(dx * dx + dy * dy)
-          if (d < CONNECT_DIST) {
-            ctx.beginPath()
-            ctx.moveTo(particles[i].x, particles[i].y)
-            ctx.lineTo(particles[j].x, particles[j].y)
-            ctx.strokeStyle = `rgba(24,17,10,${0.07 * (1 - d / CONNECT_DIST)})`
-            ctx.lineWidth = 0.8
-            ctx.stroke()
+      const W = canvas.width
+      const H = canvas.height
+      ctx.clearRect(0, 0, W, H)
+
+      // Collect pill rects relative to canvas each frame
+      const canvasRect = canvas.getBoundingClientRect()
+      const pills = canvas.parentElement?.querySelectorAll('.pill-item') ?? []
+      const rects = Array.from(pills).map(el => {
+        const r = el.getBoundingClientRect()
+        return { l: r.left - canvasRect.left - REPEL_PAD, t: r.top - canvasRect.top - REPEL_PAD, r: r.right - canvasRect.left + REPEL_PAD, b: r.bottom - canvasRect.top + REPEL_PAD }
+      })
+
+      for (const d of dots) {
+        // Repel from pill rects
+        for (const rect of rects) {
+          // Find closest point on rect to dot
+          const cx = Math.max(rect.l, Math.min(d.x, rect.r))
+          const cy = Math.max(rect.t, Math.min(d.y, rect.b))
+          const dx = d.x - cx
+          const dy = d.y - cy
+          const dist = Math.sqrt(dx * dx + dy * dy)
+          if (dist < 18) {
+            const push = dist === 0 ? 1 : dist
+            d.vx += (dx / push) * REPEL_FORCE
+            d.vy += (dy / push) * REPEL_FORCE
           }
         }
-      }
-      for (const p of particles) {
+
+        // Clamp speed
+        const speed = Math.sqrt(d.vx * d.vx + d.vy * d.vy)
+        if (speed > MAX_SPEED) { d.vx = d.vx / speed * MAX_SPEED; d.vy = d.vy / speed * MAX_SPEED }
+
+        d.x += d.vx; d.y += d.vy
+
+        // Bounce off walls
+        if (d.x < 0)  { d.x = 0;  d.vx =  Math.abs(d.vx) }
+        if (d.x > W)  { d.x = W;  d.vx = -Math.abs(d.vx) }
+        if (d.y < 0)  { d.y = 0;  d.vy =  Math.abs(d.vy) }
+        if (d.y > H)  { d.y = H;  d.vy = -Math.abs(d.vy) }
+
         ctx.beginPath()
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
-        ctx.fillStyle = 'rgba(24,17,10,0.18)'
+        ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2)
+        ctx.fillStyle = 'rgba(24,17,10,0.15)'
         ctx.fill()
       }
+
       raf = requestAnimationFrame(draw)
     }
     draw()
@@ -494,7 +513,7 @@ export default function Page() {
               ['Audience Gaps', 'Landing Page Score', 'Funnel Leak Analysis', 'Benchmark Comparison', 'Lead Quality Score', 'Competitor Positioning', 'Ad Copy Audit', 'CTA Effectiveness', 'Targeting Fit Score', 'Regional Insights'],
               ['Monthly Waste Estimate', 'Revenue Opportunity', 'ICP Segment Map', 'Growth Action Plan', 'Conversion Diagnosis', 'Spend Efficiency', 'Market Positioning', 'Buyer Persona Gaps', 'Sales Alignment Score', 'Channel Breakdown'],
             ]
-            const speeds = ['32s', '38s', '28s']
+            const speeds = ['75s', '90s', '65s']
             const dirs   = ['marqueeLeft', 'marqueeRight', 'marqueeLeft']
             return (
               <div style={{ border: `1px solid ${Border}`, borderRadius: 8, maxWidth: 1100, margin: '0 auto', position: 'relative', overflow: 'hidden' }}>
@@ -506,7 +525,7 @@ export default function Page() {
                       <div key={ri} style={{ overflow: 'hidden', width: '100%' }}>
                         <div className="pill-row-track" style={{ display: 'flex', gap: 10, width: 'max-content', animation: `${dirs[ri]} ${speeds[ri]} linear infinite` }}>
                           {[...row, ...row].map((pill, i) => (
-                            <span key={`${pill}-${i}`} style={pillStyle()}>
+                            <span key={`${pill}-${i}`} className="pill-item" style={pillStyle()}>
                               <Check size={12} color={Orange} strokeWidth={2.5} />
                               {pill}
                             </span>
