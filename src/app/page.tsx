@@ -276,7 +276,7 @@ export default function Page() {
         <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', minHeight: 420 }} className="block md:grid">
           {/* Left */}
           <div style={{ padding: 'clamp(48px,8vw,96px) clamp(20px,5vw,56px)', borderRight: `1px solid ${Border}` }}>
-            <p style={{ fontFamily: fontB, fontSize: 12, color: Orange, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 24px' }}>ICP Diagnostic Tool</p>
+            <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 24px' }}>ICP Diagnostic Tool</p>
             <h1 style={{ fontFamily: fontSerif, fontSize: 'clamp(32px,4.5vw,56px)', fontWeight: 700, color: Text, lineHeight: 1.08, margin: '0 0 32px' }}>
               Your targeting is{' '}
               <span style={{ color: Orange }}>leaking money.</span>
@@ -332,7 +332,7 @@ export default function Page() {
           }
         `}</style>
         <div className="container" style={{ paddingTop: 'clamp(56px,8vw,96px)', paddingBottom: 'clamp(56px,8vw,96px)' }}>
-          <p style={{ fontFamily: fontB, fontSize: 12, color: Orange, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 16px', textAlign: 'center' }}>How the platform works</p>
+          <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 16px', textAlign: 'center' }}>How the platform works</p>
           <h2 style={{ fontFamily: fontSerif, fontSize: 'clamp(28px,4vw,52px)', fontWeight: 700, color: Dark, textAlign: 'center', margin: '0 0 56px', lineHeight: 1.1, maxWidth: 640, marginLeft: 'auto', marginRight: 'auto' }}>
             22 questions. A complete <span style={{ color: Orange }}>growth diagnosis.</span>
           </h2>
@@ -482,7 +482,7 @@ export default function Page() {
       {/* ── HOW IT WORKS ────────────────────────────────────────────────── */}
       <section id="how-it-works" style={{ background: Warm, borderBottom: `1px solid ${Border}` }}>
         <div className="container" style={{ paddingTop: 'clamp(56px,8vw,96px)', paddingBottom: 'clamp(56px,8vw,96px)' }}>
-          <p style={{ fontFamily: fontB, fontSize: 12, color: Orange, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 14px' }}>How It Works</p>
+          <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 14px' }}>How It Works</p>
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, marginBottom: 48 }}>
             <h2 style={{ fontFamily: fontSerif, fontSize: 'clamp(28px,4.5vw,52px)', color: Text, fontWeight: 700, margin: 0, lineHeight: 1.08 }}>
               Three steps to clarity.
@@ -633,7 +633,7 @@ export default function Page() {
 
           {/* Section header */}
           <div style={{ marginBottom: 56 }}>
-            <p style={{ fontFamily: fontB, fontSize: 12, color: Orange, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 14px' }}>Business Outcomes Calculator</p>
+            <p style={{ fontFamily: fontB, fontSize: 12, color: DarkMuted, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 14px' }}>Business Outcomes Calculator</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', gap: 24, justifyContent: 'space-between' }}>
               <h2 style={{ fontFamily: fontSerif, fontSize: 'clamp(28px,4vw,48px)', color: '#fff', fontWeight: 700, margin: 0, lineHeight: 1.08 }}>
                 Model your <span style={{ color: Orange }}>unit economics.</span>
@@ -764,7 +764,7 @@ export default function Page() {
       {/* ── PRICING ─────────────────────────────────────────────────────── */}
       <section id="pricing" style={{ background: Warm, borderBottom: `1px solid ${Border}` }}>
         <div className="container" style={{ paddingTop: 'clamp(56px,8vw,88px)', paddingBottom: 'clamp(56px,8vw,88px)' }}>
-          <p style={{ fontFamily: fontB, fontSize: 12, color: Orange, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 16px' }}>Simple Pricing</p>
+          <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 16px' }}>Simple Pricing</p>
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between', gap: 20, marginBottom: 40 }}>
             <h2 style={{ fontFamily: fontSerif, fontSize: 'clamp(28px,4.5vw,52px)', color: Text, fontWeight: 700, margin: 0, lineHeight: 1.08 }}>
               Start free. <span style={{ color: Orange }}>Upgrade when ready.</span>
@@ -835,7 +835,7 @@ export default function Page() {
         <div className="container" style={{ paddingTop: 'clamp(56px,8vw,80px)', paddingBottom: 'clamp(56px,8vw,80px)' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 'clamp(24px,6vw,80px)', alignItems: 'start' }} className="block md:grid">
             <div>
-              <p style={{ fontFamily: fontB, fontSize: 12, color: Orange, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 12px' }}>FAQ</p>
+              <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 12px' }}>FAQ</p>
               <h2 style={{ fontFamily: fontSerif, fontSize: 'clamp(24px,3vw,36px)', color: Text, fontWeight: 700, margin: '0 0 12px', lineHeight: 1.15 }}>You ask, we answer.</h2>
               <p style={{ fontFamily: fontB, fontSize: 15, color: Muted, margin: 0 }}>Everything you need before getting started.</p>
             </div>
@@ -866,7 +866,7 @@ export default function Page() {
       {/* ── FINAL CTA ────────────────────────────────────────────────────── */}
       <section style={{ background: Dark, borderBottom: `1px solid ${DarkBorder}` }}>
         <div className="container" style={{ paddingTop: 'clamp(72px,10vw,112px)', paddingBottom: 'clamp(72px,10vw,112px)', textAlign: 'center' }}>
-          <p style={{ fontFamily: fontB, fontSize: 12, color: Orange, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 20px' }}>Get started today</p>
+          <p style={{ fontFamily: fontB, fontSize: 12, color: DarkMuted, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 20px' }}>Get started today</p>
           <h2 style={{ fontFamily: fontSerif, fontSize: 'clamp(28px,5vw,60px)', color: '#fff', fontWeight: 700, maxWidth: 720, margin: '0 auto 20px', lineHeight: 1.1 }}>
             Your competitors ran ads today without knowing their <span style={{ color: Orange }}>ICP score.</span>
           </h2>
