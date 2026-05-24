@@ -14,10 +14,10 @@ import {
 import { AreaChart, Area, ResponsiveContainer, Tooltip } from 'recharts'
 
 // ─── Tokens ───────────────────────────────────────────────────────────────────
-const P       = '#18110a'
-const Pmuted  = 'rgba(24,17,10,0.45)'
-const Pborder = 'rgba(24,17,10,0.08)'
-const BgAlt   = '#faf6ef'
+const P       = '#201515'
+const Pmuted  = '#939084'
+const Pborder = 'rgba(201,192,177,0.3)'
+const BgAlt   = '#fffefb'
 const Accent  = '#e8330a'
 const font    = "'PolySans Median', -apple-system, system-ui, sans-serif"
 const fontB   = "'PolySans Neutral', -apple-system, system-ui, sans-serif"
@@ -156,7 +156,7 @@ const TIER_DESC: Record<string, string> = {
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 function Skel({ style }: { style?: React.CSSProperties }) {
-  return <div className="animate-pulse" style={{ background: 'rgba(24,17,10,0.07)', borderRadius: 8, ...style }} />
+  return <div className="animate-pulse" style={{ background: 'rgba(201,192,177,0.3)', borderRadius: 8, ...style }} />
 }
 
 function Card({ children, style, delay = 0 }: { children: React.ReactNode; style?: React.CSSProperties; delay?: number }) {
@@ -164,7 +164,7 @@ function Card({ children, style, delay = 0 }: { children: React.ReactNode; style
     <div style={{
       background: '#fff', borderRadius: 12, padding: 28,
       border: `1px solid ${Pborder}`,
-      boxShadow: '0 2px 16px rgba(24,17,10,0.06)',
+      boxShadow: '0 2px 16px rgba(201,192,177,0.25)',
       animation: 'fadeUp 0.4s ease both',
       animationDelay: `${delay}ms`,
       ...style,
@@ -274,7 +274,7 @@ function QuickWinsWidget({ diag, delay }: { diag: DiagnosisData; delay: number }
           <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
             <button onClick={() => toggle(i)} style={{
               width: 22, height: 22, borderRadius: '50%',
-              border: `2px solid ${checked[i] ? P : 'rgba(24,17,10,0.25)'}`,
+              border: `2px solid ${checked[i] ? P : '#c5c0b1'}`,
               background: checked[i] ? P : 'transparent',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               cursor: 'pointer', flexShrink: 0, transition: 'all 0.2s', marginTop: 1,
@@ -401,7 +401,7 @@ function LandingPageWidget({ diag, delay, onUpgrade }: { diag: DiagnosisData; de
     return (
       <Card delay={delay}>
         <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: '0 0 12px' }}>Landing Page Assessment</p>
-        <p style={{ fontFamily: fontB, fontSize: 14, color: 'rgba(24,17,10,0.75)', lineHeight: 1.75, margin: '0 0 20px' }}>
+        <p style={{ fontFamily: fontB, fontSize: 14, color: '#605d52', lineHeight: 1.75, margin: '0 0 20px' }}>
           Your landing page assessment will appear in your next report. Pro subscribers get a live AI review of their actual page — competitors, friction points, and conversion fixes.
         </p>
         <button onClick={onUpgrade}
@@ -416,7 +416,7 @@ function LandingPageWidget({ diag, delay, onUpgrade }: { diag: DiagnosisData; de
   return (
     <Card delay={delay}>
       <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: '0 0 12px' }}>Your Landing Page</p>
-      <p style={{ fontFamily: fontB, fontSize: 14, color: 'rgba(24,17,10,0.8)', lineHeight: 1.75, margin: 0,
+      <p style={{ fontFamily: fontB, fontSize: 14, color: '#605d52', lineHeight: 1.75, margin: 0,
         ...(!expanded ? { display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as React.CSSProperties : {}) }}>
         {text}
       </p>
@@ -586,7 +586,7 @@ function DailyBriefCard({ diag, reports, score, hasIntelligence, onTabChange, us
   }
 
   return (
-    <div style={{ background: '#fff', borderRadius: 12, borderLeft: `4px solid ${statusColor}`, padding: '24px 32px', boxShadow: '0 2px 16px rgba(24,17,10,0.06)', animation: 'fadeUp 0.4s ease both' }}>
+    <div style={{ background: '#fff', borderRadius: 12, borderLeft: `4px solid ${statusColor}`, padding: '24px 32px', boxShadow: '0 2px 16px rgba(201,192,177,0.25)', animation: 'fadeUp 0.4s ease both' }}>
       <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap' }}>
         {/* Left: brief */}
         <div style={{ flex: '1 1 300px', minWidth: 0 }}>
@@ -598,11 +598,11 @@ function DailyBriefCard({ diag, reports, score, hasIntelligence, onTabChange, us
           </div>
           {briefLoading ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
-              <div style={{ height: 14, borderRadius: 6, background: 'rgba(24,17,10,0.07)', width: '92%', animation: 'pulse 1.4s ease-in-out infinite' }} />
-              <div style={{ height: 14, borderRadius: 6, background: 'rgba(24,17,10,0.07)', width: '78%', animation: 'pulse 1.4s ease-in-out infinite' }} />
+              <div style={{ height: 14, borderRadius: 6, background: 'rgba(201,192,177,0.3)', width: '92%', animation: 'pulse 1.4s ease-in-out infinite' }} />
+              <div style={{ height: 14, borderRadius: 6, background: 'rgba(201,192,177,0.3)', width: '78%', animation: 'pulse 1.4s ease-in-out infinite' }} />
             </div>
           ) : (
-            <p style={{ fontFamily: font, fontSize: 15, color: 'rgba(24,17,10,0.8)', lineHeight: 1.7, margin: '0 0 16px', fontWeight: 400 }}>{displayText}</p>
+            <p style={{ fontFamily: font, fontSize: 15, color: '#605d52', lineHeight: 1.7, margin: '0 0 16px', fontWeight: 400 }}>{displayText}</p>
           )}
           {!briefLoading && (hasIntelligence && !topFinding ? (
             <button onClick={() => onTabChange('intelligence')} style={ctaStyle}>
@@ -718,10 +718,10 @@ function WasteTicker({ diag, report, currency }: { diag: DiagnosisData; report: 
 
   return (
     <div style={{
-      background: 'linear-gradient(135deg,#0d0806 0%,#18110a 100%)',
+      background: 'linear-gradient(135deg,#0d0806 0%,#201515 100%)',
       borderRadius: 12,
       padding: '28px 32px',
-      boxShadow: '0 2px 16px rgba(24,17,10,0.15)',
+      boxShadow: '0 2px 16px rgba(201,192,177,0.5)',
       border: isPulsing ? '1px solid rgba(239,68,68,0.5)' : '1px solid transparent',
       transition: 'border-color 0.3s ease',
       animation: 'fadeUp 0.4s ease both',
@@ -903,7 +903,7 @@ function EnhancedQuickWinsWidget({ diag, user, onStreakUpdate, maxWins = 3, repo
           setTimeout(() => setBadgeToast(''), 4000)
         }
         const mod = await import('canvas-confetti')
-        mod.default({ particleCount: 60, spread: 70, origin: { y: 0.6 }, colors: ['#18110a', '#e8330a', '#22c55e'] })
+        mod.default({ particleCount: 60, spread: 70, origin: { y: 0.6 }, colors: ['#201515', '#e8330a', '#22c55e'] })
       }
     } catch {
       setWinError('Could not save. Please try again.')
@@ -922,9 +922,9 @@ function EnhancedQuickWinsWidget({ diag, user, onStreakUpdate, maxWins = 3, repo
             <button
               onClick={() => !checked[i] && setConfirming(confirming === i ? null : i)}
               disabled={saving === i}
-              style={{ width: 24, height: 24, borderRadius: '50%', border: `2px solid ${checked[i] ? P : 'rgba(24,17,10,0.25)'}`, background: checked[i] ? P : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: checked[i] ? 'default' : 'pointer', flexShrink: 0, transition: 'all 0.2s', marginTop: 1 }}>
+              style={{ width: 24, height: 24, borderRadius: '50%', border: `2px solid ${checked[i] ? P : '#c5c0b1'}`, background: checked[i] ? P : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: checked[i] ? 'default' : 'pointer', flexShrink: 0, transition: 'all 0.2s', marginTop: 1 }}>
               {checked[i] && <Check size={12} color="#fff" strokeWidth={3} />}
-              {saving === i && <div style={{ width: 8, height: 8, borderRadius: '50%', border: '2px solid rgba(24,17,10,0.3)', borderTopColor: P, animation: 'spin 0.6s linear infinite' }} />}
+              {saving === i && <div style={{ width: 8, height: 8, borderRadius: '50%', border: '2px solid #939084', borderTopColor: P, animation: 'spin 0.6s linear infinite' }} />}
             </button>
             <div style={{ flex: 1, minWidth: 0 }}>
               <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', background: impactBg(w.impact), color: impactColor(w.impact), padding: '2px 8px', borderRadius: 100, display: 'inline-block', marginBottom: 5 }}>
@@ -961,7 +961,7 @@ function EnhancedQuickWinsWidget({ diag, user, onStreakUpdate, maxWins = 3, repo
       {wins.length === 0 && <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: 0 }}>No quick wins in this report.</p>}
 
       {badgeToast && (
-        <div style={{ position: 'fixed', bottom: 100, left: '50%', transform: 'translateX(-50%)', zIndex: 300, background: P, color: '#fff', fontFamily: fontB, fontSize: 13, fontWeight: 600, padding: '12px 22px', borderRadius: 100, boxShadow: '0 8px 32px rgba(24,17,10,0.25)', whiteSpace: 'nowrap', animation: 'slideUp 0.25s ease both' }}>
+        <div style={{ position: 'fixed', bottom: 100, left: '50%', transform: 'translateX(-50%)', zIndex: 300, background: P, color: '#fff', fontFamily: fontB, fontSize: 13, fontWeight: 600, padding: '12px 22px', borderRadius: 100, boxShadow: '0 8px 32px #c5c0b1', whiteSpace: 'nowrap', animation: 'slideUp 0.25s ease both' }}>
           {badgeToast}
         </div>
       )}
@@ -1004,7 +1004,7 @@ function EnhancedFindingsSection({ diag, report, maxFindings, onUpgrade }: { dia
                     </span>
                   )}
                 </div>
-                <p style={{ fontFamily: fontB, fontSize: 13, color: 'rgba(24,17,10,0.8)', lineHeight: 1.65, margin: 0,
+                <p style={{ fontFamily: fontB, fontSize: 13, color: '#605d52', lineHeight: 1.65, margin: 0,
                   ...(expandedIdx !== i ? { display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as React.CSSProperties : {}) }}>
                   {f.explanation}
                 </p>
@@ -1080,7 +1080,7 @@ function MilestonesSection({ milestones }: { milestones: Milestone[] }) {
           const ms     = milestones.find(m => m.key === def.key)
           const earned = ms?.earned ?? false
           return (
-            <div key={def.key} style={{ width: 140, background: '#fff', borderRadius: 16, padding: '20px 16px', textAlign: 'center', border: `1px solid ${earned ? def.color + '30' : Pborder}`, opacity: earned ? 1 : 0.5, position: 'relative', transition: 'opacity 0.2s' }}>
+            <div key={def.key} style={{ width: 140, background: '#f8f4f0', borderRadius: 12, padding: '20px 16px', textAlign: 'center', border: `1px solid ${earned ? def.color + '30' : Pborder}`, opacity: earned ? 1 : 0.5, position: 'relative', transition: 'opacity 0.2s' }}>
               <div style={{ width: 52, height: 52, borderRadius: '50%', background: earned ? def.color + '20' : '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px' }}>
                 <def.Icon size={24} color={earned ? def.color : '#9ca3af'} />
               </div>
@@ -1127,14 +1127,14 @@ function TodaysPriorityCard({ diag, report, user, onComplete }: {
         setDone(true)
         onComplete(d.streak)
         const mod = await import('canvas-confetti')
-        mod.default({ particleCount: 80, spread: 90, origin: { y: 0.5 }, colors: ['#18110a', '#e8330a', '#22c55e', '#f59e0b'] })
+        mod.default({ particleCount: 80, spread: 90, origin: { y: 0.5 }, colors: ['#201515', '#e8330a', '#22c55e', '#f59e0b'] })
       }
     } catch { /* noop */ }
     finally { setSaving(false) }
   }
 
   return (
-    <div style={{ background: '#fafafa', borderLeft: `4px solid ${col}`, borderRadius: '0 20px 20px 0', padding: '28px 32px', boxShadow: '0 2px 16px rgba(24,17,10,0.06)', animation: 'fadeUp 0.4s ease both' }}>
+    <div style={{ background: '#fafafa', borderLeft: `4px solid ${col}`, borderRadius: '0 20px 20px 0', padding: '28px 32px', boxShadow: '0 2px 16px rgba(201,192,177,0.25)', animation: 'fadeUp 0.4s ease both' }}>
       <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: col }}>FIX THIS TODAY</span>
       <h3 style={{ fontFamily: font, fontSize: 22, fontWeight: 700, color: P, margin: '8px 0 6px', letterSpacing: '-0.01em', lineHeight: 1.2 }}>{topFinding.title}</h3>
       {days > 0 && (
@@ -1142,7 +1142,7 @@ function TodaysPriorityCard({ diag, report, user, onComplete }: {
           Unresolved for {days} {days === 1 ? 'day' : 'days'}
         </span>
       )}
-      <p style={{ fontFamily: fontB, fontSize: 14, color: 'rgba(24,17,10,0.75)', lineHeight: 1.65, margin: '0 0 18px', ...({ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as React.CSSProperties) }}>
+      <p style={{ fontFamily: fontB, fontSize: 14, color: '#605d52', lineHeight: 1.65, margin: '0 0 18px', ...({ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as React.CSSProperties) }}>
         {topFinding.explanation}
       </p>
       {topWin && (
@@ -1182,7 +1182,7 @@ function AchievementModal({ achievement, onDismiss }: {
   useEffect(() => {
     const t = setTimeout(onDismiss, 3500)
     import('canvas-confetti').then(mod => {
-      mod.default({ particleCount: 100, spread: 80, origin: { y: 0.5 }, colors: [achievement.color, '#18110a', '#fff'] })
+      mod.default({ particleCount: 100, spread: 80, origin: { y: 0.5 }, colors: [achievement.color, '#201515', '#fff'] })
     })
     return () => clearTimeout(t)
   }, [onDismiss, achievement.color])
@@ -1218,7 +1218,7 @@ function GetItDoneCard({ tier, onBook, onUpgrade }: { tier: string; onBook: () =
   ]
   return (
     <div style={{
-      background: 'linear-gradient(135deg,#18110a 0%,#2d1e0a 100%)',
+      background: 'linear-gradient(135deg,#201515 0%,#2d1e0a 100%)',
       borderRadius: 12, animation: 'fadeUp 0.4s ease both', animationDelay: '230ms',
     }}
       className="grid grid-cols-1 lg:grid-cols-2 gap-0"
@@ -1319,7 +1319,7 @@ function BookingModal({
       onClick={e => { if (e.target === e.currentTarget) onClose() }}>
       <div style={{ background: '#fff', borderRadius: 14, padding: 'clamp(28px,5vw,40px)', maxWidth: 560, width: '100%', maxHeight: '90vh', overflowY: 'auto', position: 'relative' }}>
         {/* Close */}
-        <button onClick={onClose} style={{ position: 'absolute', top: 20, right: 20, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(24,17,10,0.4)', padding: 4 }}>
+        <button onClick={onClose} style={{ position: 'absolute', top: 20, right: 20, background: 'none', border: 'none', cursor: 'pointer', color: '#939084', padding: 4 }}>
           <X size={20} />
         </button>
 
@@ -1329,10 +1329,10 @@ function BookingModal({
               <Check size={28} color="#16a34a" strokeWidth={3} />
             </div>
             <h2 style={{ fontFamily: font, fontSize: 22, fontWeight: 700, color: P, margin: '0 0 12px', letterSpacing: '-0.02em' }}>Session request received.</h2>
-            <p style={{ fontFamily: fontB, fontSize: 15, color: 'rgba(24,17,10,0.65)', lineHeight: 1.7, margin: '0 0 8px' }}>
+            <p style={{ fontFamily: fontB, fontSize: 15, color: '#605d52', lineHeight: 1.7, margin: '0 0 8px' }}>
               We will confirm your booking within 2 business hours via email.
             </p>
-            <p style={{ fontFamily: fontB, fontSize: 14, color: 'rgba(24,17,10,0.5)', lineHeight: 1.6, margin: '0 0 28px' }}>
+            <p style={{ fontFamily: fontB, fontSize: 14, color: '#605d52', lineHeight: 1.6, margin: '0 0 28px' }}>
               Your media buyer will review your diagnostic before the session.
             </p>
             <button onClick={onClose} style={{ fontFamily: font, fontWeight: 600, fontSize: 14, background: P, color: '#fff', border: 'none', borderRadius: 12, padding: '13px 28px', cursor: 'pointer' }}>
@@ -1344,13 +1344,13 @@ function BookingModal({
             <h2 style={{ fontFamily: font, fontSize: 'clamp(20px,3vw,24px)', fontWeight: 700, color: P, margin: '0 0 8px', letterSpacing: '-0.02em' }}>
               Book Your Strategy Session
             </h2>
-            <p style={{ fontFamily: fontB, fontSize: 15, color: 'rgba(24,17,10,0.6)', margin: '0 0 24px', lineHeight: 1.6 }}>
+            <p style={{ fontFamily: fontB, fontSize: 15, color: '#605d52', margin: '0 0 24px', lineHeight: 1.6 }}>
               Your diagnostic report will be shared with your media buyer before the session. Come ready to make decisions.
             </p>
 
             {/* Brief */}
             <div style={{ background: BgAlt, borderRadius: 12, padding: '18px 22px', marginBottom: 24 }}>
-              <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(24,17,10,0.5)', margin: '0 0 14px' }}>Your Session Brief</p>
+              <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#605d52', margin: '0 0 14px' }}>Your Session Brief</p>
               {brief.map(b => (
                 <div key={b.label} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
                   <div style={{ width: 6, height: 6, borderRadius: '50%', background: P, flexShrink: 0 }} />
@@ -1370,7 +1370,7 @@ function BookingModal({
                     style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, padding: '9px 16px', borderRadius: 10, cursor: 'pointer', transition: 'all 0.15s',
                       background: format === f ? P : '#fff',
                       color:      format === f ? '#fff' : P,
-                      border:     `1.5px solid ${format === f ? P : 'rgba(24,17,10,0.2)'}`,
+                      border:     `1.5px solid ${format === f ? P : '#c5c0b1'}`,
                     }}>
                     {f}
                   </button>
@@ -1383,7 +1383,7 @@ function BookingModal({
               <p style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, color: P, margin: '0 0 8px' }}>When works for you?</p>
               <input type="text" value={time} onChange={e => setTime(e.target.value)}
                 placeholder="e.g. Weekdays after 3pm EAT"
-                style={{ width: '100%', fontFamily: fontB, fontSize: 14, color: P, background: '#fff', border: '1px solid rgba(24,17,10,0.18)', borderRadius: 10, padding: '12px 16px', outline: 'none', boxSizing: 'border-box' }} />
+                style={{ width: '100%', fontFamily: fontB, fontSize: 14, color: P, background: '#fff', border: '1px solid #c5c0b1', borderRadius: 10, padding: '12px 16px', outline: 'none', boxSizing: 'border-box' }} />
             </div>
 
             {/* Notes */}
@@ -1391,7 +1391,7 @@ function BookingModal({
               <p style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, color: P, margin: '0 0 8px' }}>Anything specific you want us to focus on?</p>
               <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3}
                 placeholder="Optional — any context that would help us prepare"
-                style={{ width: '100%', fontFamily: fontB, fontSize: 14, color: P, background: '#fff', border: '1px solid rgba(24,17,10,0.18)', borderRadius: 10, padding: '12px 16px', outline: 'none', resize: 'vertical', boxSizing: 'border-box' }} />
+                style={{ width: '100%', fontFamily: fontB, fontSize: 14, color: P, background: '#fff', border: '1px solid #c5c0b1', borderRadius: 10, padding: '12px 16px', outline: 'none', resize: 'vertical', boxSizing: 'border-box' }} />
             </div>
 
             <button type="submit" disabled={step === 'submitting'}
@@ -1426,7 +1426,7 @@ function FindingsSection({ diag }: { diag: DiagnosisData }) {
                     {f.severity}
                   </span>
                 </div>
-                <p style={{ fontFamily: fontB, fontSize: 13, color: 'rgba(24,17,10,0.8)', lineHeight: 1.65, margin: 0,
+                <p style={{ fontFamily: fontB, fontSize: 13, color: '#605d52', lineHeight: 1.65, margin: 0,
                   ...(expandedIdx !== i ? { display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as React.CSSProperties : {}) }}>
                   {f.explanation}
                 </p>
@@ -1458,7 +1458,7 @@ function FirstRunDashboard({ user }: { user: UserData }) {
 
       {/* Hero CTA — full-width, impossible to miss */}
       <div style={{
-        background: 'linear-gradient(135deg,#18110a 0%,#2d1e0a 100%)',
+        background: 'linear-gradient(135deg,#201515 0%,#2d1e0a 100%)',
         borderRadius: 12, padding: 'clamp(28px,5vw,48px) clamp(24px,5vw,52px)',
       }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 28 }}>
@@ -1498,7 +1498,7 @@ function FirstRunDashboard({ user }: { user: UserData }) {
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {reveals.map((r, i) => (
-            <div key={i} style={{ background: '#fff', borderRadius: 16, padding: '20px 22px', border: `1.5px solid ${Pborder}`, display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+            <div key={i} style={{ background: '#f8f4f0', borderRadius: 12, padding: '20px 22px', border: `1.5px solid ${Pborder}`, display: 'flex', gap: 14, alignItems: 'flex-start' }}>
               <div style={{ width: 40, height: 40, borderRadius: 12, background: BgAlt, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 {r.icon}
               </div>
@@ -1512,7 +1512,7 @@ function FirstRunDashboard({ user }: { user: UserData }) {
       </div>
 
       {/* Progress rail — shows where they are in the 3-step journey */}
-      <div style={{ background: '#fff', borderRadius: 16, padding: '20px 24px', border: `1.5px solid ${Pborder}` }}>
+      <div style={{ background: '#f8f4f0', borderRadius: 12, padding: '20px 24px', border: `1.5px solid ${Pborder}` }}>
         <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 16px' }}>Your journey</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {[
@@ -1537,7 +1537,7 @@ function FirstRunDashboard({ user }: { user: UserData }) {
 function WelcomeBanner({ user }: { user: UserData }) {
   return (
     <div style={{
-      background: 'linear-gradient(135deg,#18110a 0%,#2d1e0a 100%)',
+      background: 'linear-gradient(135deg,#201515 0%,#2d1e0a 100%)',
       borderRadius: 12, padding: 'clamp(22px,4vw,36px) clamp(20px,5vw,48px)',
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       gap: 20, flexWrap: 'wrap',
@@ -2457,7 +2457,7 @@ function AccountTab({ user, currency, score, reportCount, reports, onSignOut, on
                 )}
                 {user.subscription_tier !== 'free' && (
                   <button onClick={() => setShowCancelModal(true)}
-                    style={{ background: 'transparent', border: 'none', fontFamily: fontB, fontSize: 13, color: 'rgba(24,17,10,0.4)', cursor: 'pointer', textDecoration: 'underline', padding: '4px 0', textAlign: 'left' }}>
+                    style={{ background: 'transparent', border: 'none', fontFamily: fontB, fontSize: 13, color: '#939084', cursor: 'pointer', textDecoration: 'underline', padding: '4px 0', textAlign: 'left' }}>
                     Cancel subscription
                   </button>
                 )}
@@ -2498,7 +2498,7 @@ function AccountTab({ user, currency, score, reportCount, reports, onSignOut, on
               const isUpgrade  = tiers.indexOf(t) > tiers.indexOf(user.subscription_tier)
               const btnLabel   = isCurrent ? 'Current Plan' : isUpgrade ? `Upgrade to ${tLabel}` : `Switch to ${tLabel}`
               return (
-                <div key={t} style={{ background: '#fff', border: isCurrent ? `2px solid ${P}` : '1px solid rgba(24,17,10,0.10)', borderRadius: 10, padding: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div key={t} style={{ background: '#f8f4f0', border: isCurrent ? `2px solid ${P}` : '1px solid #c5c0b1', borderRadius: 10, padding: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
                   <div style={{ minHeight: 22 }}>
                     {isCurrent && <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, background: P, color: '#fff', padding: '2px 10px', borderRadius: 100 }}>Current Plan</span>}
                     {isPopular && <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, background: '#e8330a', color: '#fff', padding: '2px 10px', borderRadius: 100 }}>Most Popular</span>}
@@ -2854,14 +2854,14 @@ function BenchmarkTrack({ name, userValue, industryAvg, top10, unit, higherIsBet
   const fmt = (v: number) => unit === '%' ? `${v}%` : unit === '$' ? `$${v.toLocaleString()}` : `${unit}${v.toLocaleString()}`
 
   const DOTS = [
-    { p: uPos, color: '#18110a', label: fmt(userValue ?? industryAvg), name: 'You', size: 14 },
+    { p: uPos, color: '#201515', label: fmt(userValue ?? industryAvg), name: 'You', size: 14 },
     { p: aPos, color: '#e8330a', label: fmt(industryAvg), name: 'Avg', size: 12 },
     { p: tPos, color: '#22c55e', label: fmt(top10), name: 'Top 10%', size: 12 },
   ]
 
   return (
     <div style={{ marginBottom: 28 }}>
-      <div style={{ fontFamily: "'PolySans Median', system-ui, sans-serif", fontSize: 15, fontWeight: 600, color: '#18110a', marginBottom: 20 }}>{name}</div>
+      <div style={{ fontFamily: "'PolySans Median', system-ui, sans-serif", fontSize: 15, fontWeight: 600, color: '#201515', marginBottom: 20 }}>{name}</div>
       <div style={{ position: 'relative', height: 52 }}>
         {/* Track */}
         <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', height: 6, borderRadius: 3, background: higherIsBetter ? 'linear-gradient(90deg,#ef4444,#f59e0b,#22c55e)' : 'linear-gradient(90deg,#22c55e,#f59e0b,#ef4444)', transform: 'translateY(-50%)' }} />
@@ -2870,7 +2870,7 @@ function BenchmarkTrack({ name, userValue, industryAvg, top10, unit, higherIsBet
           <div key={d.name} style={{ position: 'absolute', left: `${d.p}%`, top: '50%', transform: 'translate(-50%,-50%)' }}>
             <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: 4, whiteSpace: 'nowrap', textAlign: 'center' }}>
               <div style={{ fontFamily: "'PolySans Neutral', system-ui, sans-serif", fontSize: 11, fontWeight: 700, color: d.color }}>{d.label}</div>
-              <div style={{ fontFamily: "'PolySans Neutral', system-ui, sans-serif", fontSize: 10, color: 'rgba(24,17,10,0.4)' }}>{d.name}</div>
+              <div style={{ fontFamily: "'PolySans Neutral', system-ui, sans-serif", fontSize: 10, color: '#939084' }}>{d.name}</div>
             </div>
             <div style={{ width: d.size, height: d.size, borderRadius: '50%', background: d.color, border: '2px solid #fff', boxShadow: '0 1px 4px rgba(0,0,0,0.15)', position: 'relative', zIndex: 1 }} />
           </div>
@@ -2882,7 +2882,7 @@ function BenchmarkTrack({ name, userValue, industryAvg, top10, unit, higherIsBet
 
 function InsightCard({ insight }: { insight: MarketInsight }) {
   const iconConfig = {
-    market_movement:     { icon: <TrendingUp size={16} color="#fff" />,  bg: insight.title.toLowerCase().includes('declin') || insight.title.toLowerCase().includes('drop') ? '#ef4444' : '#18110a' },
+    market_movement:     { icon: <TrendingUp size={16} color="#fff" />,  bg: insight.title.toLowerCase().includes('declin') || insight.title.toLowerCase().includes('drop') ? '#ef4444' : '#201515' },
     competitor_strategy: { icon: <Target size={16} color="#fff" />,      bg: '#e8330a' },
     opportunity:         { icon: <Zap size={16} color="#fff" />,         bg: '#f59e0b' },
     platform_update:     { icon: <Bell size={16} color="#fff" />,        bg: '#3b82f6' },
@@ -2890,24 +2890,24 @@ function InsightCard({ insight }: { insight: MarketInsight }) {
   const cfg = iconConfig[insight.type]
 
   return (
-    <div style={{ background: '#fff', border: '1px solid rgba(24,17,10,0.08)', borderRadius: 16, padding: '20px 24px', marginBottom: 12 }}>
+    <div style={{ background: '#f8f4f0', border: '1px solid rgba(201,192,177,0.3)', borderRadius: 16, padding: '20px 24px', marginBottom: 12 }}>
       <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
         <div style={{ width: 34, height: 34, borderRadius: '50%', background: cfg.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           {cfg.icon}
         </div>
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 6 }}>
-            <p style={{ fontFamily: "'PolySans Median', system-ui", fontSize: 14, fontWeight: 700, color: '#18110a', margin: 0, lineHeight: 1.3 }}>{insight.title}</p>
+            <p style={{ fontFamily: "'PolySans Median', system-ui", fontSize: 14, fontWeight: 700, color: '#201515', margin: 0, lineHeight: 1.3 }}>{insight.title}</p>
             <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-              {insight.source && <span style={{ fontFamily: "'PolySans Neutral', system-ui", fontSize: 10, fontWeight: 700, background: '#faf6ef', color: 'rgba(24,17,10,0.6)', padding: '2px 8px', borderRadius: 100, whiteSpace: 'nowrap' }}>{insight.source}</span>}
-              <span style={{ fontFamily: "'PolySans Neutral', system-ui", fontSize: 10, color: 'rgba(24,17,10,0.35)' }}>{insight.timeLabel}</span>
+              {insight.source && <span style={{ fontFamily: "'PolySans Neutral', system-ui", fontSize: 10, fontWeight: 700, background: '#fffefb', color: '#605d52', padding: '2px 8px', borderRadius: 100, whiteSpace: 'nowrap' }}>{insight.source}</span>}
+              <span style={{ fontFamily: "'PolySans Neutral', system-ui", fontSize: 10, color: '#939084' }}>{insight.timeLabel}</span>
             </div>
           </div>
-          <p style={{ fontFamily: "'PolySans Neutral', system-ui", fontSize: 13, color: 'rgba(24,17,10,0.6)', margin: 0, lineHeight: 1.6 }}>{insight.body}</p>
+          <p style={{ fontFamily: "'PolySans Neutral', system-ui", fontSize: 13, color: '#605d52', margin: 0, lineHeight: 1.6 }}>{insight.body}</p>
           {insight.implication && (
-            <div style={{ marginTop: 10, background: '#faf6ef', borderRadius: 8, padding: '8px 12px' }}>
-              <span style={{ fontFamily: "'PolySans Neutral', system-ui", fontSize: 12, fontWeight: 700, color: '#18110a' }}>What this means for you: </span>
-              <span style={{ fontFamily: "'PolySans Neutral', system-ui", fontSize: 12, color: 'rgba(24,17,10,0.65)' }}>{insight.implication}</span>
+            <div style={{ marginTop: 10, background: '#fffefb', borderRadius: 8, padding: '8px 12px' }}>
+              <span style={{ fontFamily: "'PolySans Neutral', system-ui", fontSize: 12, fontWeight: 700, color: '#201515' }}>What this means for you: </span>
+              <span style={{ fontFamily: "'PolySans Neutral', system-ui", fontSize: 12, color: '#605d52' }}>{insight.implication}</span>
             </div>
           )}
           {insight.recommendation && (
@@ -2937,13 +2937,13 @@ function CompetitiveRadar({ userPos, competitors }: { userPos: { x: number; y: n
       {/* Quadrant fills */}
       {quadrants.map((q, i) => <rect key={i} x={q.x} y={q.y} width={q.w} height={q.h} fill={q.color} />)}
       {/* Center lines */}
-      <line x1={midX} y1={PAD} x2={midX} y2={H - PAD} stroke="rgba(24,17,10,0.1)" strokeWidth={1} strokeDasharray="4 3" />
-      <line x1={PAD}  y1={midY} x2={W - PAD} y2={midY} stroke="rgba(24,17,10,0.1)" strokeWidth={1} strokeDasharray="4 3" />
+      <line x1={midX} y1={PAD} x2={midX} y2={H - PAD} stroke="#c5c0b1" strokeWidth={1} strokeDasharray="4 3" />
+      <line x1={PAD}  y1={midY} x2={W - PAD} y2={midY} stroke="#c5c0b1" strokeWidth={1} strokeDasharray="4 3" />
       {/* Border */}
-      <rect x={PAD} y={PAD} width={W - 2 * PAD} height={H - 2 * PAD} fill="none" stroke="rgba(24,17,10,0.12)" strokeWidth={1} rx={4} />
+      <rect x={PAD} y={PAD} width={W - 2 * PAD} height={H - 2 * PAD} fill="none" stroke="#c5c0b1" strokeWidth={1} rx={4} />
       {/* Axis labels */}
-      <text x={W / 2} y={H - 8}  textAnchor="middle" fill="rgba(24,17,10,0.45)" fontSize={11} fontFamily="sans-serif">Ad Spend Efficiency →</text>
-      <text x={10}    y={H / 2}   textAnchor="middle" fill="rgba(24,17,10,0.45)" fontSize={11} fontFamily="sans-serif" transform={`rotate(-90,10,${H / 2})`}>ICP Alignment →</text>
+      <text x={W / 2} y={H - 8}  textAnchor="middle" fill="#939084" fontSize={11} fontFamily="sans-serif">Ad Spend Efficiency →</text>
+      <text x={10}    y={H / 2}   textAnchor="middle" fill="#939084" fontSize={11} fontFamily="sans-serif" transform={`rotate(-90,10,${H / 2})`}>ICP Alignment →</text>
       {/* Quadrant labels */}
       {quadrants.map((q, i) => (
         <text key={i} x={q.x + q.w / 2} y={q.y + q.h / 2} textAnchor="middle" fill={quadLabColors[i]} fontSize={10} fontFamily="sans-serif" fontWeight="600" opacity={0.8}>{q.label}</text>
@@ -2954,14 +2954,14 @@ function CompetitiveRadar({ userPos, competitors }: { userPos: { x: number; y: n
         return (
           <g key={c.label}>
             <circle cx={cx} cy={cy} r={7} fill="rgba(160,160,180,0.5)" stroke="#fff" strokeWidth={1.5} />
-            <text x={cx} y={cy - 11} textAnchor="middle" fill="rgba(24,17,10,0.5)" fontSize={9} fontFamily="sans-serif">{c.label}</text>
+            <text x={cx} y={cy - 11} textAnchor="middle" fill="#605d52" fontSize={9} fontFamily="sans-serif">{c.label}</text>
           </g>
         )
       })}
       {/* Industry avg */}
-      {(() => { const { cx, cy } = toSVG(45, 45); return <g><circle cx={cx} cy={cy} r={9} fill="rgba(100,100,120,0.4)" stroke="#fff" strokeWidth={2} /><text x={cx} y={cy - 13} textAnchor="middle" fill="rgba(24,17,10,0.5)" fontSize={9} fontFamily="sans-serif">Industry Avg</text></g> })()}
+      {(() => { const { cx, cy } = toSVG(45, 45); return <g><circle cx={cx} cy={cy} r={9} fill="rgba(100,100,120,0.4)" stroke="#fff" strokeWidth={2} /><text x={cx} y={cy - 13} textAnchor="middle" fill="#605d52" fontSize={9} fontFamily="sans-serif">Industry Avg</text></g> })()}
       {/* User dot */}
-      {(() => { const { cx, cy } = toSVG(userPos.x, userPos.y); return <g><circle cx={cx} cy={cy} r={13} fill="#18110a" stroke="#fff" strokeWidth={2.5} /><text x={cx} y={cy + 4} textAnchor="middle" fill="#fff" fontSize={9} fontFamily="sans-serif" fontWeight="700">You</text></g> })()}
+      {(() => { const { cx, cy } = toSVG(userPos.x, userPos.y); return <g><circle cx={cx} cy={cy} r={13} fill="#201515" stroke="#fff" strokeWidth={2.5} /><text x={cx} y={cy + 4} textAnchor="middle" fill="#fff" fontSize={9} fontFamily="sans-serif" fontWeight="700">You</text></g> })()}
     </svg>
   )
 }
@@ -3048,10 +3048,10 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
 
   const font  = "'PolySans Median', -apple-system, system-ui, sans-serif"
   const fontB = "'PolySans Neutral', -apple-system, system-ui, sans-serif"
-  const P     = '#18110a'
-  const Pmuted  = 'rgba(24,17,10,0.45)'
-  const Pborder = 'rgba(24,17,10,0.08)'
-  const BgAlt   = '#faf6ef'
+  const P     = '#201515'
+  const Pmuted  = '#939084'
+  const Pborder = 'rgba(201,192,177,0.3)'
+  const BgAlt   = '#fffefb'
 
   const tier = user.subscription_tier as 'free' | 'starter' | 'pro' | 'agency'
 
@@ -3069,7 +3069,7 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
 
   // ── Q&A card (shared between columns) ────────────────────────────────
   const QACard = (
-    <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 16, padding: '24px 28px', boxShadow: '0 1px 8px rgba(24,17,10,0.04)' }}>
+    <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 16, padding: '24px 28px', boxShadow: '0 1px 8px rgba(201,192,177,0.18)' }}>
       <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: '0 0 4px', letterSpacing: '-0.02em' }}>Ask your market.</p>
       <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 16px' }}>Ask anything about your market or competitive landscape.</p>
 
@@ -3110,7 +3110,7 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
               {a.sources && a.sources.length > 0 && (
                 <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 5 }}>
                   {a.sources.map(s => (
-                    <span key={s} style={{ fontFamily: fontB, fontSize: 10, background: 'rgba(24,17,10,0.08)', color: Pmuted, padding: '2px 8px', borderRadius: 100 }}>{s}</span>
+                    <span key={s} style={{ fontFamily: fontB, fontSize: 10, background: 'rgba(201,192,177,0.3)', color: Pmuted, padding: '2px 8px', borderRadius: 100 }}>{s}</span>
                   ))}
                 </div>
               )}
@@ -3124,7 +3124,7 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
   return (
     <>
       {hasNewIntelligence && (
-        <div style={{ background: 'linear-gradient(135deg,#18110a 0%,#2d1e0a 100%)', borderRadius: 14, padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+        <div style={{ background: 'linear-gradient(135deg,#201515 0%,#2d1e0a 100%)', borderRadius: 14, padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
           <Bell size={16} color="#fff" />
           <span style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, color: '#fff' }}>New market intelligence is available since your last visit.</span>
         </div>
@@ -3181,7 +3181,7 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
         {/* Weekly Briefing header card */}
-        <div style={{ background: 'linear-gradient(135deg,#18110a 0%,#2d1e0a 100%)', borderRadius: 12, padding: 'clamp(24px,4vw,36px) clamp(20px,5vw,40px)' }}>
+        <div style={{ background: 'linear-gradient(135deg,#201515 0%,#2d1e0a 100%)', borderRadius: 12, padding: 'clamp(24px,4vw,36px) clamp(20px,5vw,40px)' }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20, justifyContent: 'space-between', alignItems: 'center', marginBottom: tierBadge || !canRefresh ? 16 : 0 }}>
             <div>
               <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, background: 'rgba(255,255,255,0.2)', color: '#fff', padding: '3px 12px', borderRadius: 100, letterSpacing: '0.1em', textTransform: 'uppercase', display: 'inline-block', marginBottom: 12 }}>
@@ -3256,11 +3256,11 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
         {loading ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {[200, 160, 120].map(h => (
-              <div key={h} className="animate-pulse" style={{ height: h, borderRadius: 16, background: 'rgba(24,17,10,0.06)' }} />
+              <div key={h} className="animate-pulse" style={{ height: h, borderRadius: 16, background: 'rgba(201,192,177,0.25)' }} />
             ))}
           </div>
         ) : !briefing ? (
-          <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 16, padding: '40px 28px', textAlign: 'center', boxShadow: '0 1px 8px rgba(24,17,10,0.04)' }}>
+          <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 16, padding: '40px 28px', textAlign: 'center', boxShadow: '0 1px 8px rgba(201,192,177,0.18)' }}>
             <Brain size={32} color={Pmuted} style={{ marginBottom: 14 }} />
             <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: '0 0 8px' }}>Your first briefing will be ready next Monday.</p>
             <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 20px' }}>{"Can't wait? Click Refresh for an on-demand briefing now."}</p>
@@ -3273,12 +3273,12 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
         ) : (
           <>
             {/* Benchmark Comparison */}
-            <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 16, padding: '24px 28px', boxShadow: '0 1px 8px rgba(24,17,10,0.04)' }}>
+            <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 16, padding: '24px 28px', boxShadow: '0 1px 8px rgba(201,192,177,0.18)' }}>
               <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: '0 0 4px', letterSpacing: '-0.02em' }}>How you compare.</p>
               <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 24px' }}>Your metrics vs industry average vs top 10% performers.</p>
               <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', marginBottom: 16 }}>
                 {[
-                  { color: '#18110a', label: 'You' },
+                  { color: '#201515', label: 'You' },
                   { color: '#e8330a', label: 'Industry Avg' },
                   { color: '#22c55e', label: 'Top 10%' },
                 ].map(l => (
@@ -3312,7 +3312,7 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
           {QACard}
 
           {briefing && (
-            <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 16, padding: '24px 28px', boxShadow: '0 1px 8px rgba(24,17,10,0.04)' }}>
+            <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 16, padding: '24px 28px', boxShadow: '0 1px 8px rgba(201,192,177,0.18)' }}>
               <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: '0 0 4px', letterSpacing: '-0.02em' }}>Your competitive position.</p>
               <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '0 0 20px' }}>Approximate positioning based on ICP alignment and ad spend efficiency.</p>
               <CompetitiveRadar userPos={briefing.userPosition} competitors={briefing.competitorPositions} />
@@ -3473,7 +3473,7 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
         <div style={{
           position: 'fixed', zIndex: 1000, overflow: 'hidden',
           background: '#fff',
-          boxShadow: '0 8px 48px rgba(24,17,10,0.15)',
+          boxShadow: '0 8px 48px rgba(201,192,177,0.5)',
           display: 'flex', flexDirection: 'column',
           // mobile: full width, 70vh, bottom sheet
           bottom: 0, right: 0, left: 0,
@@ -3542,7 +3542,7 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
                     fontSize: 14,
                     fontFamily: fontB,
                     lineHeight: 1.6,
-                    boxShadow: '0 1px 4px rgba(24,17,10,0.08)',
+                    boxShadow: '0 1px 4px rgba(201,192,177,0.3)',
                     whiteSpace: 'pre-wrap',
                   }}>
                     {isTyping ? (
@@ -3572,7 +3572,7 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 4 }}>
                 {lastSuggestions.map(q => (
                   <button key={q} onClick={() => { setLastSuggestions([]); sendMessage(q) }}
-                    style={{ background: '#fff', border: `1px solid rgba(24,17,10,0.15)`, borderRadius: 100, padding: '8px 16px', fontFamily: fontB, fontSize: 13, color: P, cursor: 'pointer' }}>
+                    style={{ background: '#fff', border: `1px solid rgba(201,192,177,0.5)`, borderRadius: 100, padding: '8px 16px', fontFamily: fontB, fontSize: 13, color: P, cursor: 'pointer' }}>
                     {q}
                   </button>
                 ))}
@@ -3637,7 +3637,7 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
                 }}
                 placeholder="Ask anything about your marketing..."
                 rows={1}
-                style={{ flex: 1, fontFamily: fontB, fontSize: 14, color: P, background: BgAlt, border: `1px solid rgba(24,17,10,0.15)`, borderRadius: 12, padding: '10px 14px', outline: 'none', resize: 'none', lineHeight: 1.5 }}
+                style={{ flex: 1, fontFamily: fontB, fontSize: 14, color: P, background: BgAlt, border: `1px solid rgba(201,192,177,0.5)`, borderRadius: 12, padding: '10px 14px', outline: 'none', resize: 'none', lineHeight: 1.5 }}
               />
               <button
                 onClick={() => sendMessage(input)}
@@ -3647,7 +3647,7 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
               </button>
             </div>
             <button onClick={() => { setNeedsEscalation(true); setShowEscalation(true) }}
-              style={{ background: 'none', border: 'none', fontFamily: fontB, fontSize: 12, color: 'rgba(24,17,10,0.4)', cursor: 'pointer', textAlign: 'left', padding: 0 }}>
+              style={{ background: 'none', border: 'none', fontFamily: fontB, fontSize: 12, color: '#939084', cursor: 'pointer', textAlign: 'left', padding: 0 }}>
               Escalate to media buyer
             </button>
           </div>
@@ -3662,7 +3662,7 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
           width: 56, height: 56, borderRadius: '50%',
           background: P,
           border: 'none',
-          boxShadow: '0 4px 24px rgba(24,17,10,0.3)',
+          boxShadow: '0 4px 24px #939084',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           cursor: 'pointer',
           transform: isOpen ? 'scale(0.95)' : 'scale(1)',
@@ -3692,7 +3692,7 @@ function HelpFAQItem({ question, answer, font, fontB, P, Pmuted, Pborder }: {
         {open ? <ChevronUp size={16} color={Pmuted} /> : <ChevronDown size={16} color={Pmuted} />}
       </button>
       {open && (
-        <p style={{ fontFamily: font, fontSize: 13, color: 'rgba(24,17,10,0.75)', lineHeight: 1.65, margin: '0 0 14px', paddingRight: 8 }}>{answer}</p>
+        <p style={{ fontFamily: font, fontSize: 13, color: '#605d52', lineHeight: 1.65, margin: '0 0 14px', paddingRight: 8 }}>{answer}</p>
       )}
     </div>
   )
@@ -3804,7 +3804,7 @@ export default function DashboardPage() {
       .then((d: { newlyEarned?: string[] } | null) => {
         if (d?.newlyEarned && d.newlyEarned.length > 0) {
           const ACHIEVEMENT_DEFS_MAP: Record<string, { name: string; description: string; color: string; iconName: string }> = {
-            first_diagnosis:     { name: 'First Diagnosis',     description: 'Completed your first ICP diagnostic',     color: '#18110a', iconName: 'FileSearch' },
+            first_diagnosis:     { name: 'First Diagnosis',     description: 'Completed your first ICP diagnostic',     color: '#201515', iconName: 'FileSearch' },
             quick_win:           { name: 'Quick Win',           description: 'Marked your first fix as complete',       color: '#f59e0b', iconName: 'Zap' },
             consistent:          { name: 'Consistent',          description: 'Completed 3 ICP diagnoses',               color: '#22c55e', iconName: 'Target' },
             score_climber:       { name: 'Score Climber',       description: 'Improved your ICP score by 10+ points',  color: '#e8330a', iconName: 'TrendingUp' },
@@ -3886,8 +3886,8 @@ export default function DashboardPage() {
         @keyframes spin        { to { transform: rotate(360deg) } }
         @keyframes fadeUp      { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:translateY(0) } }
         @keyframes slideUp     { from { opacity:0; transform:translateY(12px) } to { opacity:1; transform:translateY(0) } }
-        @keyframes wastePulse  { 0%,100% { border-color: rgba(24,17,10,0.08) } 50% { border-color: #ef4444 } }
-        .sidebar-nav-item:hover { background: #faf6ef !important; }
+        @keyframes wastePulse  { 0%,100% { border-color: rgba(201,192,177,0.3) } 50% { border-color: #ef4444 } }
+        .sidebar-nav-item:hover { background: #fffefb !important; }
         button:has(.avatar-overlay):hover .avatar-overlay { opacity: 1 !important; }
         @media (prefers-reduced-motion: reduce) {
           *, *::before, *::after {
@@ -3952,7 +3952,7 @@ export default function DashboardPage() {
             const isActive = activeTab === tab
             return (
               <button key={tab} onClick={() => setActiveTab(tab)} className="sidebar-nav-item"
-                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', marginBottom: 2, textAlign: 'left', background: isActive ? 'rgba(232,51,10,0.08)' : 'transparent', color: isActive ? '#e8330a' : 'rgba(24,17,10,0.6)', fontFamily: fontB, fontSize: 13, fontWeight: isActive ? 600 : 500, transition: 'background 0.12s' }}>
+                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', marginBottom: 2, textAlign: 'left', background: isActive ? 'rgba(232,51,10,0.08)' : 'transparent', color: isActive ? '#e8330a' : '#605d52', fontFamily: fontB, fontSize: 13, fontWeight: isActive ? 600 : 500, transition: 'background 0.12s' }}>
                 <span style={{ position: 'relative', flexShrink: 0, display: 'flex' }}>
                   {TAB_ICONS[tab]}
                   {tab === 'intelligence' && hasNewIntelligence && (
@@ -4003,12 +4003,12 @@ export default function DashboardPage() {
           <div style={{ margin: '12px 0', borderTop: `1px solid ${Pborder}` }} />
 
           <button onClick={() => setShowHelp(true)} className="sidebar-nav-item"
-            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', textAlign: 'left', background: 'transparent', color: 'rgba(24,17,10,0.6)', fontFamily: fontB, fontSize: 13, fontWeight: 500 }}>
+            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', textAlign: 'left', background: 'transparent', color: '#605d52', fontFamily: fontB, fontSize: 13, fontWeight: 500 }}>
             <HelpCircle size={18} />
             Help & Support
           </button>
           <button onClick={handleSignOut} className="sidebar-nav-item"
-            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', marginTop: 2, textAlign: 'left', background: 'transparent', color: 'rgba(24,17,10,0.6)', fontFamily: fontB, fontSize: 13, fontWeight: 500 }}>
+            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', marginTop: 2, textAlign: 'left', background: 'transparent', color: '#605d52', fontFamily: fontB, fontSize: 13, fontWeight: 500 }}>
             <LogOut size={18} />
             Sign out
           </button>
@@ -4069,7 +4069,7 @@ export default function DashboardPage() {
               {showNotifications && (
                 <>
                   <div onClick={() => setShowNotifications(false)} style={{ position: 'fixed', inset: 0, zIndex: 90 }} />
-                  <div style={{ position: 'absolute', top: 46, right: 0, zIndex: 100, width: 320, background: '#fff', borderRadius: 16, boxShadow: '0 8px 32px rgba(24,17,10,0.14)', border: `1px solid ${Pborder}`, overflow: 'hidden' }}>
+                  <div style={{ position: 'absolute', top: 46, right: 0, zIndex: 100, width: 320, background: '#f8f4f0', borderRadius: 12, boxShadow: '0 8px 32px rgba(32,21,21,0.14)', border: `1px solid ${Pborder}`, overflow: 'hidden' }}>
                     <div style={{ padding: '16px 20px 12px', borderBottom: `1px solid ${Pborder}` }}>
                       <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: Pmuted, margin: 0 }}>Notifications</p>
                     </div>
@@ -4159,7 +4159,7 @@ export default function DashboardPage() {
 
                 {/* Re-diagnosis nudge: score may have drifted */}
                 {daysSinceDiag > reDiagThreshold && (
-                  <div style={{ background: 'linear-gradient(135deg,#18110a 0%,#2d1e0a 100%)', borderRadius: 16, padding: '18px 24px', display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+                  <div style={{ background: 'linear-gradient(135deg,#201515 0%,#2d1e0a 100%)', borderRadius: 16, padding: '18px 24px', display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between' }}>
                     <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                       <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <RefreshCw size={16} color="#fff" />
@@ -4182,7 +4182,7 @@ export default function DashboardPage() {
 
                 {/* Free-tier score improvement nudge */}
                 {t === 'free' && daysSinceDiag > 30 && score !== null && score < 50 && (
-                  <div style={{ background: '#fff', border: '1px solid rgba(239,68,68,0.2)', borderLeft: '4px solid #ef4444', borderRadius: '0 16px 16px 0', padding: '18px 24px', display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+                  <div style={{ background: '#f8f4f0', border: '1px solid rgba(239,68,68,0.2)', borderLeft: '4px solid #ef4444', borderRadius: '0 16px 16px 0', padding: '18px 24px', display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between' }}>
                     <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                       <AlertTriangle size={20} color="#ef4444" style={{ flexShrink: 0 }} />
                       <div>
@@ -4348,7 +4348,7 @@ export default function DashboardPage() {
 
       {/* ── Cancellation toast ────────────────────────────────────────────── */}
       {cancelToast && (
-        <div style={{ position: 'fixed', bottom: 80, left: '50%', transform: 'translateX(-50%)', zIndex: 200, background: P, color: '#fff', fontFamily: fontB, fontSize: 13, fontWeight: 500, padding: '12px 22px', borderRadius: 100, boxShadow: '0 8px 32px rgba(24,17,10,0.25)', whiteSpace: 'nowrap', animation: 'slideUp 0.25s ease both' }}>
+        <div style={{ position: 'fixed', bottom: 80, left: '50%', transform: 'translateX(-50%)', zIndex: 200, background: P, color: '#fff', fontFamily: fontB, fontSize: 13, fontWeight: 500, padding: '12px 22px', borderRadius: 100, boxShadow: '0 8px 32px #c5c0b1', whiteSpace: 'nowrap', animation: 'slideUp 0.25s ease both' }}>
           {cancelToast}
         </div>
       )}
@@ -4357,7 +4357,7 @@ export default function DashboardPage() {
       {showHelp && (
         <>
           <div onClick={() => setShowHelp(false)} style={{ position: 'fixed', inset: 0, zIndex: 1090, background: 'rgba(0,0,0,0.25)' }} />
-          <div style={{ position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 1095, width: 'min(440px, 100vw)', background: '#fff', boxShadow: '-8px 0 48px rgba(24,17,10,0.12)', display: 'flex', flexDirection: 'column', animation: 'slideUp 0.2s ease both' }}>
+          <div style={{ position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 1095, width: 'min(440px, 100vw)', background: '#fff', boxShadow: '-8px 0 48px #c5c0b1', display: 'flex', flexDirection: 'column', animation: 'slideUp 0.2s ease both' }}>
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '24px 28px 20px', borderBottom: `1px solid ${Pborder}` }}>
               <div>

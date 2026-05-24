@@ -5,11 +5,11 @@ import Link from 'next/link'
 import { Suspense } from 'react'
 import { XCircle, ArrowLeft, RefreshCw } from 'lucide-react'
 
-const Warm   = '#faf6ef'
-const Dark   = '#18110a'
+const Warm   = '#fffefb'
+const Dark   = '#201515'
 const Orange = '#e8330a'
-const Muted  = 'rgba(24,17,10,0.5)'
-const Border = 'rgba(24,17,10,0.12)'
+const Muted  = '#605d52'
+const Border = '#c5c0b1'
 const font   = "'PolySans Median', -apple-system, system-ui, sans-serif"
 const fontB  = "'PolySans Neutral', -apple-system, system-ui, sans-serif"
 
@@ -31,7 +31,7 @@ function CancelContent() {
         @media (prefers-reduced-motion: reduce) {
           *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
         }
-        .cancel-btn-back:hover { background: rgba(24,17,10,0.04) !important; }
+        .cancel-btn-back:hover { background: rgba(201,192,177,0.18) !important; }
         .cancel-btn-retry:hover { opacity: 0.88; }
       `}</style>
 
@@ -54,7 +54,7 @@ function CancelContent() {
         </p>
 
         {/* Common fixes */}
-        <div style={{ border: `1.5px solid ${Border}`, background: '#fff', padding: '24px 28px', textAlign: 'left', marginBottom: 28 }}>
+        <div style={{ border: `1.5px solid ${Border}`, background: '#f8f4f0', padding: '24px 28px', textAlign: 'left', marginBottom: 28 }}>
           <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: Muted, margin: '0 0 14px' }}>
             Common fixes
           </p>

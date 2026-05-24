@@ -154,9 +154,9 @@ function SeverityBadge({ severity }: { severity: Severity }) {
 
 function ImpactBadge({ impact }: { impact: Impact }) {
   const styles: Record<Impact, string> = {
-    High: 'bg-indigo-900/30 text-indigo-400 border-indigo-700/40',
-    Medium: 'bg-violet-900/30 text-violet-400 border-violet-700/40',
-    Low: 'bg-slate-800/50 text-[rgba(24,17,10,0.5)] border-slate-700/40',
+    High: 'bg-[rgba(220,38,38,0.06)] text-[#e8330a] border-[rgba(220,38,38,0.25)]',
+    Medium: 'bg-[rgba(245,158,11,0.06)] text-amber-500 border-amber-600/30',
+    Low: 'bg-[rgba(201,192,177,0.2)] text-[#939084] border-[#c5c0b1]',
   }
   return (
     <span className={`text-[11px] font-semibold tracking-wide uppercase px-2.5 py-0.5 rounded-full border ${styles[impact]}`}>
@@ -171,7 +171,7 @@ function ScoreBar({ score, animate }: { score: number; animate: boolean }) {
     : score >= 41 ? 'from-amber-500 to-amber-400'
     : 'from-red-500 to-red-400'
   return (
-    <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+    <div className="h-2 bg-[rgba(201,192,177,0.25)] rounded-full overflow-hidden">
       <div
         className={`h-full rounded-full bg-gradient-to-r ${color} transition-all duration-700 ease-out`}
         style={{ width: animate ? `${score}%` : '0%' }}
@@ -207,8 +207,8 @@ function CircleScore({ score, animate }: { score: number; animate: boolean }) {
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-4xl font-black text-[#18110a] leading-none">{score}</span>
-          <span className="text-xs text-[rgba(24,17,10,0.45)] mt-0.5">/ 100</span>
+          <span className="text-4xl font-black text-[#201515] leading-none">{score}</span>
+          <span className="text-xs text-[#939084] mt-0.5">/ 100</span>
         </div>
       </div>
       <span
@@ -223,13 +223,13 @@ function CircleScore({ score, animate }: { score: number; animate: boolean }) {
 
 function LoadingSkeleton() {
   return (
-    <div className="min-h-screen bg-[#faf6ef] flex items-center justify-center">
+    <div className="min-h-screen bg-[#fffefb] flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
         <svg className="animate-spin h-10 w-10 text-[#e8330a]" viewBox="0 0 24 24" fill="none">
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
         </svg>
-        <p className="text-[rgba(24,17,10,0.5)] text-sm font-medium animate-pulse">Generating your diagnostic report…</p>
+        <p className="text-[#605d52] text-sm font-medium animate-pulse">Generating your diagnostic report…</p>
       </div>
     </div>
   )
@@ -316,16 +316,16 @@ export default function ReportPage({ params }: { params: { id: string } }) {
   if (!report) return <LoadingSkeleton />
 
   return (
-    <div className="min-h-screen bg-[#faf6ef] text-[#18110a]">
+    <div className="min-h-screen bg-[#fffefb] text-[#201515]">
 
       {/* Nav */}
-      <nav className="border-b border-[rgba(24,17,10,0.1)] px-6 py-4 flex items-center justify-between max-w-5xl mx-auto">
-        <Link href="/" className="text-sm font-bold tracking-tight text-[#18110a]">
-          ICP<span className="text-indigo-400">Diagnostic</span>
+      <nav className="border-b border-[#c5c0b1] px-6 py-4 flex items-center justify-between max-w-5xl mx-auto">
+        <Link href="/" className="text-sm font-bold tracking-tight text-[#201515]">
+          ICP<span className="text-[#e8330a]">Diagnostic</span>
         </Link>
         <div className="flex items-center gap-4">
-          <span className="text-xs text-[rgba(24,17,10,0.45)]">Report ID: {params.id.slice(0, 8)}…</span>
-          <button className="text-xs font-medium border border-[rgba(24,17,10,0.1)] px-3 py-1.5 rounded-lg text-[rgba(24,17,10,0.5)] hover:border-white/20 hover:text-[#18110a] transition-colors">
+          <span className="text-xs text-[#939084]">Report ID: {params.id.slice(0, 8)}…</span>
+          <button className="text-xs font-medium border border-[#c5c0b1] px-3 py-1.5 rounded-lg text-[#605d52] hover:border-white/20 hover:text-[#201515] transition-colors">
             Download PDF
           </button>
         </div>
@@ -334,16 +334,16 @@ export default function ReportPage({ params }: { params: { id: string } }) {
       <div className="max-w-5xl mx-auto px-6 py-12 space-y-12">
 
         {/* ── SECTION 1 · Header ─────────────────────────────────────────── */}
-        <section className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-8 pb-10 border-b border-[rgba(24,17,10,0.1)]">
+        <section className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-8 pb-10 border-b border-[#c5c0b1]">
           <div className="flex-1">
-            <span className="inline-block text-[11px] font-semibold uppercase tracking-widest text-indigo-400 bg-indigo-400/10 border border-indigo-400/20 px-3 py-1 rounded-full mb-4">
+            <span className="inline-block text-[11px] font-semibold uppercase tracking-widest text-[#e8330a] bg-[rgba(232,51,10,0.08)] border border-[rgba(232,51,10,0.2)] px-3 py-1 rounded-full mb-4">
               ICP Diagnostic Report
             </span>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-[#18110a] leading-tight mb-2">
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-[#201515] leading-tight mb-2">
               Your ICP Diagnostic Report
             </h1>
-            <p className="text-[rgba(24,17,10,0.5)] text-sm mb-1">{report.company}</p>
-            <p className="text-[rgba(24,17,10,0.45)] text-xs">Generated {report.date}</p>
+            <p className="text-[#605d52] text-sm mb-1">{report.company}</p>
+            <p className="text-[#939084] text-xs">Generated {report.date}</p>
 
             <div className="mt-6 grid grid-cols-3 sm:grid-cols-3 gap-3 xs:gap-4">
               {[
@@ -351,9 +351,9 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                 { label: 'Questions Answered', value: '30' },
                 { label: 'Actions Identified', value: `${report.quick_wins.length + 9}` },
               ].map(s => (
-                <div key={s.label} className="bg-white border border-[rgba(24,17,10,0.1)] rounded px-4 py-3">
-                  <p className="text-xl font-bold text-[#18110a]">{s.value}</p>
-                  <p className="text-[11px] text-[rgba(24,17,10,0.45)] mt-0.5">{s.label}</p>
+                <div key={s.label} className="bg-[#f8f4f0] border border-[#c5c0b1] rounded px-4 py-3">
+                  <p className="text-xl font-bold text-[#201515]">{s.value}</p>
+                  <p className="text-[11px] text-[#939084] mt-0.5">{s.label}</p>
                 </div>
               ))}
             </div>
@@ -361,7 +361,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
 
           <div className="flex-shrink-0">
             <CircleScore score={report.health_score} animate={animate} />
-            <p className="text-center text-xs text-[rgba(24,17,10,0.45)] mt-3 max-w-[160px]">
+            <p className="text-center text-xs text-[#939084] mt-3 max-w-[160px]">
               Overall ICP Health Score
             </p>
           </div>
@@ -369,18 +369,18 @@ export default function ReportPage({ params }: { params: { id: string } }) {
 
         {/* ── AI Executive Summary ────────────────────────────────────────── */}
         {report.executive_summary && (
-          <section className="bg-white/[0.02] border border-[rgba(24,17,10,0.1)] rounded p-6">
+          <section className="bg-[#f8f4f0] border border-[#c5c0b1] rounded p-6">
             <div className="flex items-start gap-3">
               <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-[#e8330a]/20 border border-[#e8330a]/30 flex items-center justify-center mt-0.5">
-                <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-indigo-400">
+                <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-[#e8330a]">
                   <path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm1 11H9v-2h2v2zm0-4H9V7h2v2z" />
                 </svg>
               </div>
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-indigo-400 mb-2">Diagnosis Summary</p>
-                <p className="text-[rgba(24,17,10,0.65)] text-sm leading-relaxed">{report.executive_summary}</p>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-[#e8330a] mb-2">Diagnosis Summary</p>
+                <p className="text-[#605d52] text-sm leading-relaxed">{report.executive_summary}</p>
                 {report.monthly_waste_estimate && (
-                  <p className="text-xs text-[rgba(24,17,10,0.45)] mt-2 pt-2 border-t border-[rgba(24,17,10,0.06)]">Estimated waste: {report.monthly_waste_estimate}</p>
+                  <p className="text-xs text-[#939084] mt-2 pt-2 border-t border-[rgba(201,192,177,0.25)]">Estimated waste: {report.monthly_waste_estimate}</p>
                 )}
               </div>
             </div>
@@ -390,24 +390,24 @@ export default function ReportPage({ params }: { params: { id: string } }) {
         {/* ── SECTION 2 · Executive Summary ──────────────────────────────── */}
         <section>
           <div className="mb-6">
-            <h2 className="text-xl font-bold text-[#18110a] mb-1">Executive Summary</h2>
-            <p className="text-[rgba(24,17,10,0.45)] text-sm">3 critical findings ranked by revenue impact</p>
+            <h2 className="text-xl font-bold text-[#201515] mb-1">Executive Summary</h2>
+            <p className="text-[#939084] text-sm">3 critical findings ranked by revenue impact</p>
           </div>
           <div className="space-y-4">
             {report.findings.map((f, i) => (
               <div
                 key={i}
-                className="flex gap-4 bg-white border border-[rgba(24,17,10,0.1)] rounded p-5 hover:border-white/20 transition-colors"
+                className="flex gap-4 bg-[#f8f4f0] border border-[#c5c0b1] rounded p-5 hover:border-white/20 transition-colors"
               >
-                <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-white/5 border border-[rgba(24,17,10,0.1)] flex items-center justify-center text-[rgba(24,17,10,0.5)] text-sm font-bold">
+                <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-[rgba(201,192,177,0.18)] border border-[#c5c0b1] flex items-center justify-center text-[#605d52] text-sm font-bold">
                   {i + 1}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                    <h3 className="text-[#18110a] font-semibold text-sm">{f.title}</h3>
+                    <h3 className="text-[#201515] font-semibold text-sm">{f.title}</h3>
                     <SeverityBadge severity={f.severity} />
                   </div>
-                  <p className="text-[rgba(24,17,10,0.5)] text-sm leading-relaxed">{f.explanation}</p>
+                  <p className="text-[#605d52] text-sm leading-relaxed">{f.explanation}</p>
                 </div>
               </div>
             ))}
@@ -417,8 +417,8 @@ export default function ReportPage({ params }: { params: { id: string } }) {
         {/* ── SECTION 3 · Detailed Breakdown ─────────────────────────────── */}
         <section>
           <div className="mb-6">
-            <h2 className="text-xl font-bold text-[#18110a] mb-1">Detailed Breakdown</h2>
-            <p className="text-[rgba(24,17,10,0.45)] text-sm">Score, finding, and revenue implication for each diagnostic dimension</p>
+            <h2 className="text-xl font-bold text-[#201515] mb-1">Detailed Breakdown</h2>
+            <p className="text-[#939084] text-sm">Score, finding, and revenue implication for each diagnostic dimension</p>
           </div>
           <div className="grid sm:grid-cols-2 gap-4">
             {report.breakdown.map((card, i) => {
@@ -429,21 +429,21 @@ export default function ReportPage({ params }: { params: { id: string } }) {
               return (
                 <div
                   key={i}
-                  className="bg-white border border-[rgba(24,17,10,0.1)] rounded p-5 hover:border-white/20 transition-colors"
+                  className="bg-[#f8f4f0] border border-[#c5c0b1] rounded p-5 hover:border-white/20 transition-colors"
                 >
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-[#18110a] font-semibold text-sm">{card.label}</h3>
+                    <h3 className="text-[#201515] font-semibold text-sm">{card.label}</h3>
                     <span className={`text-xl font-black ${scoreColor}`}>{card.score}</span>
                   </div>
                   <ScoreBar score={card.score} animate={animate} />
                   <div className="mt-4 space-y-2.5">
                     <div className="flex gap-2">
-                      <span className="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider text-[rgba(24,17,10,0.45)] w-16 pt-0.5">Found</span>
-                      <p className="text-[rgba(24,17,10,0.65)] text-xs leading-relaxed">{card.found}</p>
+                      <span className="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider text-[#939084] w-16 pt-0.5">Found</span>
+                      <p className="text-[#605d52] text-xs leading-relaxed">{card.found}</p>
                     </div>
                     <div className="flex gap-2">
-                      <span className="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider text-[rgba(24,17,10,0.45)] w-16 pt-0.5">Why it matters</span>
-                      <p className="text-[rgba(24,17,10,0.5)] text-xs leading-relaxed">{card.why}</p>
+                      <span className="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider text-[#939084] w-16 pt-0.5">Why it matters</span>
+                      <p className="text-[#605d52] text-xs leading-relaxed">{card.why}</p>
                     </div>
                   </div>
                 </div>
@@ -455,25 +455,25 @@ export default function ReportPage({ params }: { params: { id: string } }) {
         {/* ── SECTION 4 · Quick Wins ──────────────────────────────────────── */}
         <section>
           <div className="mb-6">
-            <h2 className="text-xl font-bold text-[#18110a] mb-1">Quick Wins</h2>
-            <p className="text-[rgba(24,17,10,0.45)] text-sm">3 actions you can implement this week — no agency required</p>
+            <h2 className="text-xl font-bold text-[#201515] mb-1">Quick Wins</h2>
+            <p className="text-[#939084] text-sm">3 actions you can implement this week — no agency required</p>
           </div>
           <div className="space-y-4">
             {report.quick_wins.map((w, i) => (
               <div
                 key={i}
-                className="flex gap-4 bg-white border border-[rgba(24,17,10,0.1)] rounded p-5 hover:border-[#e8330a]/20 hover:border-opacity-100 transition-all group"
+                className="flex gap-4 bg-[#f8f4f0] border border-[#c5c0b1] rounded p-5 hover:border-[#e8330a]/20 hover:border-opacity-100 transition-all group"
               >
-                <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-[#e8330a]/20 border border-[#e8330a]/30 flex items-center justify-center text-indigo-400 font-bold text-sm">
+                <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-[#e8330a]/20 border border-[#e8330a]/30 flex items-center justify-center text-[#e8330a] font-bold text-sm">
                   {i + 1}
                 </div>
                 <div className="flex-1">
-                  <p className="text-slate-200 text-sm leading-relaxed mb-2">{w.action}</p>
+                  <p className="text-[#605d52] text-sm leading-relaxed mb-2">{w.action}</p>
                   <ImpactBadge impact={w.impact} />
                 </div>
                 <div className="flex-shrink-0 self-start pt-0.5">
                   <span className="text-lg">
-                    {w.impact === 'High' ? '⚡' : w.impact === 'Medium' ? '🎯' : '📌'}
+                    {''}
                   </span>
                 </div>
               </div>
@@ -485,52 +485,52 @@ export default function ReportPage({ params }: { params: { id: string } }) {
         {report.business_outcomes && (
           <section>
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-[#18110a] mb-1">Business Outcomes</h2>
-              <p className="text-[rgba(24,17,10,0.45)] text-sm">Projected unit economics before and after fixing your ICP</p>
+              <h2 className="text-xl font-bold text-[#201515] mb-1">Business Outcomes</h2>
+              <p className="text-[#939084] text-sm">Projected unit economics before and after fixing your ICP</p>
             </div>
             <div className="grid sm:grid-cols-2 gap-4 mb-4">
               {/* CAC comparison */}
-              <div className="bg-white border border-[rgba(24,17,10,0.1)] rounded p-5">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-[rgba(24,17,10,0.45)] mb-3">Customer Acquisition Cost</p>
+              <div className="bg-[#f8f4f0] border border-[#c5c0b1] rounded p-5">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-[#939084] mb-3">Customer Acquisition Cost</p>
                 <div className="flex items-end gap-4 mb-3">
                   <div>
-                    <p className="text-[11px] text-[rgba(24,17,10,0.45)] mb-0.5">Current</p>
+                    <p className="text-[11px] text-[#939084] mb-0.5">Current</p>
                     <p className="text-lg font-black text-red-400">{report.business_outcomes.cac_current}</p>
                   </div>
                   <div className="text-slate-700 mb-1">to</div>
                   <div>
-                    <p className="text-[11px] text-[rgba(24,17,10,0.45)] mb-0.5">Projected</p>
+                    <p className="text-[11px] text-[#939084] mb-0.5">Projected</p>
                     <p className="text-lg font-black text-emerald-400">{report.business_outcomes.cac_projected}</p>
                   </div>
                 </div>
-                <p className="text-xs text-[rgba(24,17,10,0.45)] leading-relaxed">Lower CAC means more customers from the same budget after ICP alignment.</p>
+                <p className="text-xs text-[#939084] leading-relaxed">Lower CAC means more customers from the same budget after ICP alignment.</p>
               </div>
 
               {/* LTV:CAC comparison */}
-              <div className="bg-white border border-[rgba(24,17,10,0.1)] rounded p-5">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-[rgba(24,17,10,0.45)] mb-3">LTV : CAC Ratio</p>
+              <div className="bg-[#f8f4f0] border border-[#c5c0b1] rounded p-5">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-[#939084] mb-3">LTV : CAC Ratio</p>
                 <div className="flex items-end gap-4 mb-3">
                   <div>
-                    <p className="text-[11px] text-[rgba(24,17,10,0.45)] mb-0.5">Current</p>
+                    <p className="text-[11px] text-[#939084] mb-0.5">Current</p>
                     <p className="text-lg font-black text-amber-400">{report.business_outcomes.ltv_cac_current}</p>
                   </div>
                   <div className="text-slate-700 mb-1">to</div>
                   <div>
-                    <p className="text-[11px] text-[rgba(24,17,10,0.45)] mb-0.5">Projected</p>
+                    <p className="text-[11px] text-[#939084] mb-0.5">Projected</p>
                     <p className="text-lg font-black text-emerald-400">{report.business_outcomes.ltv_cac_projected}</p>
                   </div>
                 </div>
-                <p className="text-xs text-[rgba(24,17,10,0.45)] leading-relaxed">Healthy B2B benchmark is 3:1 or above. Below 2:1 means your acquisition model is unsustainable.</p>
+                <p className="text-xs text-[#939084] leading-relaxed">Healthy B2B benchmark is 3:1 or above. Below 2:1 means your acquisition model is unsustainable.</p>
               </div>
             </div>
 
             {/* Revenue opportunity */}
             {report.business_outcomes.monthly_revenue_opportunity && (
-              <div className="bg-indigo-950/30 border border-[#e8330a]/20 rounded p-5">
+              <div className="bg-[#f8f4f0] border border-[#e8330a]/20 rounded p-5">
                 <div className="flex items-start gap-4">
                   <div className="flex-1">
-                    <p className="text-[11px] font-bold uppercase tracking-wider text-indigo-400 mb-1">Monthly Revenue Opportunity</p>
-                    <p className="text-[rgba(24,17,10,0.65)] text-sm leading-relaxed">{report.business_outcomes.monthly_revenue_opportunity}</p>
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-[#e8330a] mb-1">Monthly Revenue Opportunity</p>
+                    <p className="text-[#605d52] text-sm leading-relaxed">{report.business_outcomes.monthly_revenue_opportunity}</p>
                   </div>
                 </div>
               </div>
@@ -542,9 +542,9 @@ export default function ReportPage({ params }: { params: { id: string } }) {
         <section className="relative">
 
           {/* Blurred locked preview */}
-          <div className="relative overflow-hidden rounded border border-[rgba(24,17,10,0.1)] bg-white/[0.02]">
+          <div className="relative overflow-hidden rounded border border-[#c5c0b1] bg-[#f8f4f0]">
             <div className="blur-sm pointer-events-none select-none p-8 space-y-5 opacity-50">
-              <h3 className="text-[#18110a] font-bold text-lg">Full Optimization Roadmap — Weeks 1–12</h3>
+              <h3 className="text-[#201515] font-bold text-lg">Full Optimization Roadmap — Weeks 1–12</h3>
               {[
                 'Week 1–2: Rebuild ICP definition with firmographic and psychographic filters',
                 'Week 3–4: Restructure ad account with ICP-segmented campaign architecture',
@@ -555,29 +555,29 @@ export default function ReportPage({ params }: { params: { id: string } }) {
               ].map((item, i) => (
                 <div key={i} className="flex gap-3 items-start">
                   <div className="w-5 h-5 rounded-full bg-[#e8330a]/30 flex-shrink-0 mt-0.5" />
-                  <p className="text-[rgba(24,17,10,0.65)] text-sm">{item}</p>
+                  <p className="text-[#605d52] text-sm">{item}</p>
                 </div>
               ))}
-              <div className="h-px bg-white/10 my-4" />
-              <p className="text-[rgba(24,17,10,0.5)] text-xs">+ Monthly monitoring dashboards · Weekly performance snapshots · Quarterly deep-dive reports</p>
+              <div className="h-px bg-[rgba(201,192,177,0.25)] my-4" />
+              <p className="text-[#605d52] text-xs">+ Monthly monitoring dashboards · Weekly performance snapshots · Quarterly deep-dive reports</p>
             </div>
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#faf6ef]/60 to-[#faf6ef]" />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#fffefb/60] to-[#fffefb]" />
           </div>
 
           {/* Paywall card */}
           <div className="relative -mt-8 z-10">
-            <div className="bg-gradient-to-br from-[#13131f] to-[#0e0e1a] border border-[#e8330a]/20 rounded p-8 text-center shadow-2xl shadow-indigo-950/50">
-              <span className="inline-block text-[11px] font-semibold uppercase tracking-widest text-indigo-400 bg-indigo-400/10 border border-indigo-400/20 px-3 py-1 rounded-full mb-5">
-                🔒 Unlock Full Access
+            <div className="bg-[#201515] border border-[#e8330a]/20 rounded p-8 text-center shadow-2xl ">
+              <span className="inline-block text-[11px] font-semibold uppercase tracking-widest text-[#e8330a] bg-[rgba(232,51,10,0.08)] border border-[rgba(232,51,10,0.2)] px-3 py-1 rounded-full mb-5">
+                Unlock Full Access
               </span>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-[#18110a] mb-3">
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-[#fffefb] mb-3">
                 Unlock Your Full Optimization Roadmap
               </h2>
-              <p className="text-[rgba(24,17,10,0.5)] text-sm max-w-xl mx-auto mb-2 leading-relaxed">
+              <p className="text-[rgba(255,255,255,0.65)] text-sm max-w-xl mx-auto mb-2 leading-relaxed">
                 Your report identified {report.breakdown.filter(b => b.score < 50).length} critical gaps costing you leads every day.
                 Get the complete week-by-week fix plan, monthly monitoring, and ongoing diagnostic updates.
               </p>
-              <p className="text-xs text-[rgba(24,17,10,0.45)] mb-6">
+              <p className="text-xs text-[rgba(255,255,255,0.4)] mb-6">
                 Monthly monitoring · Weekly snapshots · Quarterly deep-dive reports
               </p>
 
@@ -606,28 +606,28 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                     key={tier.name}
                     className={`relative rounded p-5 text-left border transition-all ${
                       tier.highlight
-                        ? 'border-[#e8330a] bg-[#e8330a]/10 shadow-lg shadow-indigo-900/30'
-                        : 'border-[rgba(24,17,10,0.1)] bg-white'
+                        ? 'border-[#e8330a] bg-[#e8330a]/10 shadow-lg'
+                        : 'border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.04)]'
                     }`}
                   >
                     {tier.highlight && (
                       <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                        <span className="text-[10px] font-bold uppercase tracking-widest bg-[#e8330a] text-[#18110a] px-3 py-1 rounded-full">
+                        <span className="text-[10px] font-bold uppercase tracking-widest bg-[#e8330a] text-[#201515] px-3 py-1 rounded-full">
                           Most Popular
                         </span>
                       </div>
                     )}
                     <div className="mb-3">
-                      <p className="text-[rgba(24,17,10,0.5)] text-xs font-semibold uppercase tracking-wider mb-1">{tier.name}</p>
+                      <p className={`text-xs font-semibold uppercase tracking-wider mb-1 ${tier.highlight ? 'text-[#605d52]' : 'text-[rgba(255,255,255,0.5)]'}`}>{tier.name}</p>
                       <div className="flex items-baseline gap-0.5 flex-wrap">
-                        <span className="text-2xl font-black text-[#18110a]">{PRICES[tier.name]}</span>
-                        <span className="text-[rgba(24,17,10,0.45)] text-sm">/mo</span>
+                        <span className={`text-2xl font-black ${tier.highlight ? 'text-[#201515]' : 'text-[#fffefb]'}`}>{PRICES[tier.name]}</span>
+                        <span className={`text-sm ${tier.highlight ? 'text-[#939084]' : 'text-[rgba(255,255,255,0.4)]'}`}>/mo</span>
                       </div>
                     </div>
                     <ul className="space-y-1.5 mb-5">
                       {tier.features.map(f => (
-                        <li key={f} className="flex items-start gap-2 text-xs text-[rgba(24,17,10,0.5)]">
-                          <span className="text-indigo-400 flex-shrink-0 mt-px">✓</span>
+                        <li key={f} className={`flex items-start gap-2 text-xs ${tier.highlight ? 'text-[#605d52]' : 'text-[rgba(255,255,255,0.65)]'}`}>
+                          <span className="text-[#e8330a] flex-shrink-0 mt-px">✓</span>
                           {f}
                         </li>
                       ))}
@@ -636,8 +636,8 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                       onClick={() => openSubscribe(tier.name)}
                       className={`w-full py-2.5 rounded-lg text-sm font-semibold transition-all active:scale-95 ${
                         tier.highlight
-                          ? 'bg-[#e8330a] hover:bg-[#e8330a] text-[#18110a] shadow shadow-[#e8330a]/30'
-                          : 'border border-[rgba(24,17,10,0.1)] bg-white/5 text-[rgba(24,17,10,0.65)] hover:bg-white/10 hover:text-[#18110a]'
+                          ? 'bg-[#e8330a] text-[#fffefb] shadow shadow-[#e8330a]/40'
+                          : 'border border-[rgba(255,255,255,0.15)] bg-[rgba(255,255,255,0.06)] text-[rgba(255,255,255,0.7)] hover:bg-[rgba(255,255,255,0.12)] hover:text-[#fffefb]'
                       }`}
                     >
                       Subscribe
@@ -646,8 +646,8 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                 ))}
               </div>
 
-              <p className="text-xs text-[rgba(24,17,10,0.45)]">
-                ⚡ Your competitors are already optimizing. Start today.
+              <p className="text-xs text-[rgba(255,255,255,0.4)]">
+                Your competitors are already optimizing. Start today.
               </p>
             </div>
           </div>
@@ -663,20 +663,20 @@ export default function ReportPage({ params }: { params: { id: string } }) {
             <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
 
             {/* Modal */}
-            <div className="relative w-full max-w-md bg-[#fff] border border-[#e8330a]/20 rounded p-7 shadow-2xl shadow-indigo-950/60">
+            <div className="relative w-full max-w-md bg-[#f8f4f0] border border-[#e8330a]/20 rounded p-7 shadow-2xl">
               <button
                 onClick={() => setShowModal(false)}
-                className="absolute top-4 right-4 text-[rgba(24,17,10,0.45)] hover:text-[#18110a] transition-colors text-xl leading-none"
+                className="absolute top-4 right-4 text-[#939084] hover:text-[#201515] transition-colors text-xl leading-none"
               >
                 ✕
               </button>
 
-              <span className="inline-block text-[10px] font-semibold uppercase tracking-widest text-indigo-400 bg-indigo-400/10 border border-indigo-400/20 px-2.5 py-1 rounded-full mb-4">
+              <span className="inline-block text-[10px] font-semibold uppercase tracking-widest text-[#e8330a] bg-[rgba(232,51,10,0.08)] border border-[rgba(232,51,10,0.2)] px-2.5 py-1 rounded-full mb-4">
                 {selectedTier} — {PRICES[selectedTier]}/mo
               </span>
 
-              <h3 className="text-xl font-bold text-[#18110a] mb-1">Enter your email to continue</h3>
-              <p className="text-[rgba(24,17,10,0.5)] text-sm mb-5">
+              <h3 className="text-xl font-bold text-[#201515] mb-1">Enter your email to continue</h3>
+              <p className="text-[#605d52] text-sm mb-5">
                 Your receipt and subscription details will be sent here.
               </p>
 
@@ -687,7 +687,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                 onChange={e => setEmail(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') handleSubscribe() }}
                 placeholder="you@company.com"
-                className="w-full bg-white/5 border border-[rgba(24,17,10,0.1)] focus:border-[#e8330a] rounded px-4 py-3 text-[#18110a] placeholder-slate-500 text-sm outline-none transition-colors mb-3"
+                className="w-full bg-[rgba(201,192,177,0.18)] border border-[#c5c0b1] focus:border-[#e8330a] rounded px-4 py-3 text-[#201515] placeholder-[#939084] text-sm outline-none transition-colors mb-3"
               />
 
               {subscribeError && (
@@ -697,7 +697,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
               <button
                 onClick={handleSubscribe}
                 disabled={subscribing}
-                className="w-full py-3 rounded bg-[#e8330a] hover:bg-[#e8330a] disabled:opacity-50 disabled:cursor-not-allowed text-[#18110a] text-sm font-semibold transition-all active:scale-95 flex items-center justify-center gap-2"
+                className="w-full py-3 rounded bg-[#e8330a] hover:bg-[#e8330a] disabled:opacity-50 disabled:cursor-not-allowed text-[#201515] text-sm font-semibold transition-all active:scale-95 flex items-center justify-center gap-2"
               >
                 {subscribing ? (
                   <>
@@ -712,7 +712,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                 )}
               </button>
 
-              <p className="text-center text-xs text-[rgba(24,17,10,0.45)] mt-3">
+              <p className="text-center text-xs text-[#939084] mt-3">
                 Secured by Paystack · Cancel anytime
               </p>
             </div>
@@ -720,16 +720,16 @@ export default function ReportPage({ params }: { params: { id: string } }) {
         )}
 
         {/* Footer */}
-        <footer className="border-t border-[rgba(24,17,10,0.1)] pt-8 pb-4 text-center text-[rgba(24,17,10,0.45)] text-xs">
-          <span>ICP<span className="text-indigo-400/50">Diagnostic</span></span>
+        <footer className="border-t border-[#c5c0b1] pt-8 pb-4 text-center text-[#939084] text-xs">
+          <span>ICP<span className="text-[#e8330a]/50">Diagnostic</span></span>
           <span className="mx-2">·</span>
-          <Link href="/" className="hover:text-[rgba(24,17,10,0.5)] transition-colors">Back to Home</Link>
+          <Link href="/" className="hover:text-[#605d52] transition-colors">Back to Home</Link>
           <span className="mx-2">·</span>
-          <Link href="/questionnaire" className="hover:text-[rgba(24,17,10,0.5)] transition-colors">Retake Diagnostic</Link>
+          <Link href="/questionnaire" className="hover:text-[#605d52] transition-colors">Retake Diagnostic</Link>
           <span className="mx-2">·</span>
-          <Link href="/privacy" className="hover:text-[rgba(24,17,10,0.5)] transition-colors">Privacy</Link>
+          <Link href="/privacy" className="hover:text-[#605d52] transition-colors">Privacy</Link>
           <span className="mx-2">·</span>
-          <Link href="/terms" className="hover:text-[rgba(24,17,10,0.5)] transition-colors">Terms</Link>
+          <Link href="/terms" className="hover:text-[#605d52] transition-colors">Terms</Link>
         </footer>
       </div>
     </div>

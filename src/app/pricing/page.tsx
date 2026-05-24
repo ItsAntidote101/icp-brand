@@ -4,12 +4,12 @@ import Link from 'next/link'
 import { Check, Minus, ArrowRight, Zap, BarChart2, FileText, Target, Brain, Users, Shield, TrendingDown } from 'lucide-react'
 
 // ── Design tokens (match landing page) ───────────────────────────────────────
-const Warm       = '#faf6ef'
-const Dark       = '#18110a'
+const Warm       = '#fffefb'
+const Dark       = '#201515'
 const Orange     = '#e8330a'
-const Text       = '#18110a'
-const Muted      = 'rgba(24,17,10,0.5)'
-const Border     = 'rgba(24,17,10,0.12)'
+const Text       = '#201515'
+const Muted      = '#605d52'
+const Border     = '#c5c0b1'
 const DarkMuted  = 'rgba(255,255,255,0.5)'
 const DarkBorder = 'rgba(255,255,255,0.12)'
 const font       = "'PolySans Median', -apple-system, system-ui, sans-serif"
@@ -223,7 +223,7 @@ export default function PricingPage() {
 
   const Col = ({ cell }: { cell: Cell }) => {
     if (cell === true)  return <Check size={16} color={Orange} strokeWidth={2.5} />
-    if (cell === false) return <Minus size={16} color={`rgba(24,17,10,0.2)`} strokeWidth={1.5} />
+    if (cell === false) return <Minus size={16} color={`rgba(32,21,21,0.2)`} strokeWidth={1.5} />
     return <span style={{ fontFamily: fontB, fontSize: 13, color: Text, fontWeight: 600 }}>{cell}</span>
   }
 
@@ -233,7 +233,7 @@ export default function PricingPage() {
         * { box-sizing: border-box; }
         @media (max-width: 640px) {
           .plans-grid { grid-template-columns: 1fr !important; }
-          .plans-grid > div { border-left: 1.5px solid rgba(24,17,10,0.12); }
+          .plans-grid > div { border-left: 1.5px solid #c5c0b1; }
           .paid-includes-grid { grid-template-columns: 1fr !important; }
           .paid-includes-inner { grid-template-columns: 1fr !important; }
           .pricing-faq-grid { grid-template-columns: 1fr !important; gap: 24px !important; }
@@ -311,7 +311,7 @@ export default function PricingPage() {
                   <p style={{ fontFamily: fontB, fontSize: 13, color: plan.highlight ? DarkMuted : Muted, margin: '0 0 4px' }}>/mo</p>
                 )}
                 {annual && plan.monthly > 0 && (
-                  <p style={{ fontFamily: fontB, fontSize: 12, color: plan.highlight ? 'rgba(255,255,255,0.35)' : 'rgba(24,17,10,0.35)', margin: '0 0 0px' }}>
+                  <p style={{ fontFamily: fontB, fontSize: 12, color: plan.highlight ? 'rgba(255,255,255,0.35)' : '#939084', margin: '0 0 0px' }}>
                     Billed as KES {plan.annual.toLocaleString()}/year
                   </p>
                 )}
@@ -404,7 +404,7 @@ export default function PricingPage() {
             {COMPARISON.map((group, gi) => (
               <div key={gi}>
                 {/* Group header */}
-                <div style={{ padding: '14px 20px', background: 'rgba(24,17,10,0.03)', borderBottom: `1.5px solid ${Border}` }}>
+                <div style={{ padding: '14px 20px', background: 'rgba(201,192,177,0.12)', borderBottom: `1.5px solid ${Border}` }}>
                   <span style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: Text }}>{group.group}</span>
                 </div>
                 {/* Rows */}
@@ -415,7 +415,7 @@ export default function PricingPage() {
                       {row.note && <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, margin: '3px 0 0', lineHeight: 1.4 }}>{row.note}</p>}
                     </div>
                     {row.cells.map((cell, ci) => (
-                      <div key={ci} style={{ padding: '14px 20px', borderLeft: `1.5px solid ${Border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', background: ci === 2 ? 'rgba(24,17,10,0.04)' : 'transparent' }}>
+                      <div key={ci} style={{ padding: '14px 20px', borderLeft: `1.5px solid ${Border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', background: ci === 2 ? 'rgba(201,192,177,0.18)' : 'transparent' }}>
                         <Col cell={cell} />
                       </div>
                     ))}

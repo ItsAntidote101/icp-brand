@@ -9,11 +9,11 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-static'
 
-const Warm   = '#faf6ef'
-const Dark   = '#18110a'
+const Warm   = '#fffefb'
+const Dark   = '#201515'
 const Orange = '#e8330a'
-const Muted  = 'rgba(24,17,10,0.5)'
-const Border = 'rgba(24,17,10,0.12)'
+const Muted  = '#605d52'
+const Border = '#c5c0b1'
 const font   = "'PolySans Median', -apple-system, system-ui, sans-serif"
 const fontB  = "'PolySans Neutral', -apple-system, system-ui, sans-serif"
 
@@ -29,7 +29,7 @@ export default function AboutPage() {
           position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '14px clamp(16px,4vw,40px)',
-          background: 'rgba(24,17,10,0.88)',
+          background: '#201515',
           backdropFilter: 'blur(16px)',
           WebkitBackdropFilter: 'blur(16px)',
           borderBottom: '1px solid rgba(255,255,255,0.07)',
@@ -109,7 +109,7 @@ export default function AboutPage() {
                 { icon: <AlertTriangle size={20} color="#f59e0b" />, bg: 'rgba(245,158,11,0.08)', title: 'Broken funnels', desc: 'Landing pages with too much friction kill conversions before the audience even sees the offer.' },
                 { icon: <TrendingDown size={20} color="#dc2626" />, bg: 'rgba(220,38,38,0.08)', title: 'Wasted budget', desc: 'Money follows targeting. Wrong targeting means every shilling spent compounds the problem.' },
               ].map((card) => (
-                <div key={card.title} style={{ background: '#fff', border: `1.5px solid ${Border}`, padding: '24px 20px', display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+                <div key={card.title} style={{ background: '#f8f4f0', border: `1.5px solid ${Border}`, padding: '24px 20px', display: 'flex', gap: 16, alignItems: 'flex-start' }}>
                   <div style={{ width: 40, height: 40, background: card.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     {card.icon}
                   </div>
@@ -125,7 +125,7 @@ export default function AboutPage() {
       </section>
 
       {/* ── SECTION THREE: The Team ── */}
-      <section style={{ background: '#fff', padding: 'clamp(52px,10vw,120px) 0' }}>
+      <section style={{ background: '#f8f4f0', padding: 'clamp(52px,10vw,120px) 0' }}>
         <div style={{ maxWidth: 1320, margin: '0 auto', padding: '0 24px' }}>
           <h2 style={{ fontFamily: font, fontWeight: 700, fontSize: 'clamp(28px,3vw,42px)', color: Dark, textAlign: 'center', margin: '0 0 16px', letterSpacing: '-0.02em' }}>
             The minds behind the diagnostic.
@@ -148,7 +148,7 @@ export default function AboutPage() {
               </p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
                 {['Google Ads', 'Meta Ads', 'East Africa', 'B2B Lead Gen'].map((tag) => (
-                  <span key={tag} style={{ fontFamily: fontB, fontSize: 12, fontWeight: 600, color: Dark, background: 'rgba(24,17,10,0.07)', border: `1px solid ${Border}`, padding: '3px 10px' }}>{tag}</span>
+                  <span key={tag} style={{ fontFamily: fontB, fontSize: 12, fontWeight: 600, color: Dark, background: 'rgba(201,192,177,0.3)', border: `1px solid ${Border}`, padding: '3px 10px' }}>{tag}</span>
                 ))}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 14, fontSize: 13, color: Muted }}>
@@ -176,7 +176,7 @@ export default function AboutPage() {
 
             {/* Card 3 — The Intelligence System */}
             <div style={{ background: Warm, border: `1.5px solid ${Border}`, padding: 32 }}>
-              <div style={{ width: 64, height: 64, background: 'rgba(24,17,10,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ width: 64, height: 64, background: 'rgba(201,192,177,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Brain size={28} color={Dark} />
               </div>
               <div style={{ fontFamily: font, fontWeight: 700, fontSize: 20, color: Dark, margin: '16px 0 4px' }}>The Intelligence System</div>
@@ -186,14 +186,14 @@ export default function AboutPage() {
               </p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
                 {['Competitor Monitoring', 'Weekly Briefings', '10+ Regions', 'Benchmark Tracking'].map((tag) => (
-                  <span key={tag} style={{ fontFamily: fontB, fontSize: 12, fontWeight: 600, color: Dark, background: 'rgba(24,17,10,0.07)', border: `1px solid ${Border}`, padding: '3px 10px' }}>{tag}</span>
+                  <span key={tag} style={{ fontFamily: fontB, fontSize: 12, fontWeight: 600, color: Dark, background: 'rgba(201,192,177,0.3)', border: `1px solid ${Border}`, padding: '3px 10px' }}>{tag}</span>
                 ))}
               </div>
             </div>
 
             {/* Card 4 — Regional Advisors */}
-            <div style={{ background: '#fff', border: `1.5px dashed ${Border}`, padding: 32 }}>
-              <div style={{ width: 64, height: 64, background: 'rgba(24,17,10,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ background: '#f8f4f0', border: `1.5px dashed ${Border}`, padding: 32 }}>
+              <div style={{ width: 64, height: 64, background: 'rgba(201,192,177,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Users size={28} color={Muted} />
               </div>
               <div style={{ fontFamily: font, fontWeight: 700, fontSize: 20, color: Dark, margin: '16px 0 4px' }}>Regional Advisors</div>
@@ -237,7 +237,7 @@ export default function AboutPage() {
                 desc: 'We will tell you your ICP is wrong, your landing page is broken, and your budget is misallocated. Even when it is uncomfortable. Especially when it is uncomfortable.',
               },
             ].map((v) => (
-              <div key={v.title} style={{ background: '#fff', border: `1.5px solid ${Border}`, padding: 32 }}>
+              <div key={v.title} style={{ background: '#f8f4f0', border: `1.5px solid ${Border}`, padding: 32 }}>
                 <div style={{ width: 48, height: 48, background: v.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {v.icon}
                 </div>

@@ -3,11 +3,11 @@
 import Link from 'next/link'
 import { ArrowRight, Download } from 'lucide-react'
 
-const Warm   = '#faf6ef'
-const Dark   = '#18110a'
+const Warm   = '#fffefb'
+const Dark   = '#201515'
 const Orange = '#e8330a'
-const Muted  = 'rgba(24,17,10,0.5)'
-const Border = 'rgba(24,17,10,0.12)'
+const Muted  = '#605d52'
+const Border = '#c5c0b1'
 const font   = "'PolySans Median', -apple-system, system-ui, sans-serif"
 const fontB  = "'PolySans Neutral', -apple-system, system-ui, sans-serif"
 
@@ -136,7 +136,7 @@ export default function LPChecklistPage() {
                   <div>
                     <p style={{ fontFamily: fontB, fontSize: 14, fontWeight: 600, color: Dark, margin: '0 0 4px', lineHeight: 1.4 }}>{item.label}</p>
                     <p style={{ fontFamily: fontB, fontSize: 13, color: Muted, margin: 0, lineHeight: 1.6 }}>
-                      <span style={{ fontWeight: 600, color: 'rgba(24,17,10,0.65)' }}>Why it matters: </span>
+                      <span style={{ fontWeight: 600, color: '#605d52' }}>Why it matters: </span>
                       {item.why}
                     </p>
                   </div>

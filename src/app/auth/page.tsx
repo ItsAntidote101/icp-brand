@@ -17,11 +17,11 @@ function GoogleIcon() {
   )
 }
 
-const Warm   = '#faf6ef'
-const Dark   = '#18110a'
+const Warm   = '#fffefb'
+const Dark   = '#201515'
 const Orange = '#e8330a'
-const Muted  = 'rgba(24,17,10,0.5)'
-const Border = 'rgba(24,17,10,0.12)'
+const Muted  = '#605d52'
+const Border = '#c5c0b1'
 const font   = "'PolySans Median', -apple-system, system-ui, sans-serif"
 const fontB  = "'PolySans Neutral', -apple-system, system-ui, sans-serif"
 
@@ -189,7 +189,7 @@ function AuthInner() {
       </div>
 
       {/* Right column */}
-      <div style={{ flex: 1, background: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '48px 24px' }}>
+      <div style={{ flex: 1, background: '#fffefb', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '48px 24px' }}>
 
         {/* Mobile logo */}
         <Link href="/" className="flex lg:hidden" style={{ alignItems: 'center', gap: 10, textDecoration: 'none', marginBottom: 40 }}>
@@ -206,9 +206,9 @@ function AuthInner() {
                 style={{
                   flex: 1, padding: '10px 16px', border: 'none', cursor: 'pointer',
                   fontFamily: fontB, fontSize: 14, fontWeight: 600,
-                  background: tab === t ? '#fff' : 'transparent',
+                  background: tab === t ? '#f8f4f0' : 'transparent',
                   color: tab === t ? Dark : Muted,
-                  boxShadow: tab === t ? '0 1px 3px rgba(24,17,10,0.08)' : 'none',
+                  boxShadow: tab === t ? '0 1px 3px rgba(201,192,177,0.3)' : 'none',
                   transition: 'background 0.15s, color 0.15s',
                 }}>
                 {t === 'signup' ? 'Sign Up' : 'Log In'}
@@ -224,7 +224,7 @@ function AuthInner() {
               <button
                 className="auth-btn-google"
                 onClick={handleGoogleAuth}
-                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '12px 16px', border: `1.5px solid ${Border}`, background: '#fff', cursor: 'pointer', fontFamily: fontB, fontSize: 14, fontWeight: 600, color: Dark, marginBottom: 20, transition: 'background 0.15s' }}>
+                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '12px 16px', border: `1.5px solid ${Border}`, background: '#fffefb', cursor: 'pointer', fontFamily: fontB, fontSize: 14, fontWeight: 600, color: Dark, marginBottom: 20, transition: 'background 0.15s' }}>
                 <GoogleIcon />
                 Continue with Google
               </button>
@@ -277,7 +277,7 @@ function AuthInner() {
               <button
                 className="auth-btn-google"
                 onClick={handleGoogleAuth}
-                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '12px 16px', border: `1.5px solid ${Border}`, background: '#fff', cursor: 'pointer', fontFamily: fontB, fontSize: 14, fontWeight: 600, color: Dark, marginBottom: 20, transition: 'background 0.15s' }}>
+                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '12px 16px', border: `1.5px solid ${Border}`, background: '#fffefb', cursor: 'pointer', fontFamily: fontB, fontSize: 14, fontWeight: 600, color: Dark, marginBottom: 20, transition: 'background 0.15s' }}>
                 <GoogleIcon />
                 Continue with Google
               </button>
@@ -315,7 +315,7 @@ function AuthInner() {
 
       {/* Toast */}
       {toast && (
-        <div style={{ position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', background: Dark, color: '#fff', padding: '12px 20px', fontFamily: fontB, fontSize: 14, zIndex: 100, boxShadow: '0 8px 32px rgba(24,17,10,0.2)', whiteSpace: 'nowrap' }}>
+        <div style={{ position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', background: Dark, color: '#fff', padding: '12px 20px', fontFamily: fontB, fontSize: 14, zIndex: 100, boxShadow: '0 8px 32px rgba(32,21,21,0.2)', whiteSpace: 'nowrap' }}>
           {toast}
         </div>
       )}

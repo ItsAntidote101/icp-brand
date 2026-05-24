@@ -9,9 +9,9 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-static'
 
-const P       = '#18110a'
-const Pmuted  = 'rgba(24,17,10,0.5)'
-const Pborder = 'rgba(24,17,10,0.12)'
+const P       = '#201515'
+const Pmuted  = '#605d52'
+const Pborder = '#c5c0b1'
 const font    = "'PolySans Median', -apple-system, system-ui, sans-serif"
 const fontB   = "'PolySans Neutral', -apple-system, system-ui, sans-serif"
 
@@ -19,7 +19,7 @@ const LAST_UPDATED = '22 May 2025'
 
 export default function PrivacyPage() {
   return (
-    <div style={{ fontFamily: fontB, color: P, backgroundColor: '#faf6ef', margin: 0, padding: 0 }}>
+    <div style={{ fontFamily: fontB, color: P, backgroundColor: '#fffefb', margin: 0, padding: 0 }}>
 
       {/* Nav */}
       <nav style={{
@@ -32,7 +32,7 @@ export default function PrivacyPage() {
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: '14px clamp(16px,4vw,40px)',
-        background: 'rgba(24,17,10,0.92)',
+        background: 'rgba(32,21,21,0.92)',
         backdropFilter: 'blur(16px)',
         WebkitBackdropFilter: 'blur(16px)',
         borderBottom: '1px solid rgba(255,255,255,0.08)',
@@ -49,7 +49,7 @@ export default function PrivacyPage() {
 
       {/* Hero */}
       <section style={{
-        background: '#18110a',
+        background: '#201515',
         padding: 'clamp(88px,12vw,140px) clamp(16px,4vw,24px) clamp(48px,6vw,80px)',
         textAlign: 'center',
       }}>
@@ -189,7 +189,7 @@ export default function PrivacyPage() {
           <div style={{
             marginTop: 16,
             padding: '20px 24px',
-            background: '#faf6ef',
+            background: '#fffefb',
             border: `1.5px solid ${Pborder}`,
             fontSize: 14,
             lineHeight: 1.8,
@@ -231,10 +231,10 @@ function Section({ title, children }: { title: string; children: React.ReactNode
         fontFamily: "'PolySans Median', -apple-system, system-ui, sans-serif",
         fontSize: 18,
         fontWeight: 700,
-        color: '#18110a',
+        color: '#201515',
         margin: '0 0 16px',
         paddingBottom: 10,
-        borderBottom: '1.5px solid rgba(24,17,10,0.12)',
+        borderBottom: '1.5px solid #c5c0b1',
       }}>
         {title}
       </h2>
@@ -251,7 +251,7 @@ function Para({ children }: { children: React.ReactNode }) {
       margin: 0,
       fontSize: 15,
       lineHeight: 1.8,
-      color: 'rgba(24,17,10,0.6)',
+      color: '#605d52',
     }}>
       {children}
     </p>

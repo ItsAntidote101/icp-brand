@@ -15,11 +15,11 @@ interface SocialProofEvent {
 }
 
 const ICON_MAP = {
-  diagnosis:     { Icon: FileSearch,   color: '#302161' },
+  diagnosis:     { Icon: FileSearch,   color: '#e8330a' },
   subscription:  { Icon: CreditCard,   color: '#22c55e' },
   waste_found:   { Icon: AlertCircle,  color: '#ef4444' },
-  score_improved:{ Icon: TrendingUp,   color: '#a855f7' },
-  weekly_stat:   { Icon: BarChart2,    color: '#302161' },
+  score_improved:{ Icon: TrendingUp,   color: '#e8330a' },
+  weekly_stat:   { Icon: BarChart2,    color: '#201515' },
 } as const
 
 const font  = "'PolySans Median', -apple-system, system-ui, sans-serif"
@@ -147,10 +147,10 @@ export default function SocialProofToast() {
           left: 24,
           zIndex: 998,
           width: 300,
-          background: '#fff',
-          borderRadius: 16,
+          background: '#f8f4f0',
+          borderRadius: 12,
           padding: '14px 28px 14px 16px',
-          boxShadow: '0 4px 24px rgba(48,33,97,0.12), 0 1px 4px rgba(48,33,97,0.08)',
+          boxShadow: '0 4px 24px rgba(32,21,21,0.12), 0 1px 4px rgba(32,21,21,0.08)',
           borderLeft: `3px solid ${color}`,
           display: 'flex',
           gap: 12,
@@ -172,12 +172,12 @@ export default function SocialProofToast() {
         {/* Text */}
         <div style={{ flex: 1, minWidth: 0 }}>
           <p style={{
-            fontFamily: font, fontSize: 13, color: '#302161', fontWeight: 600,
+            fontFamily: font, fontSize: 13, color: '#201515', fontWeight: 600,
             lineHeight: 1.4, margin: '0 0 3px',
           }}>
             {currentEvent.message}
           </p>
-          <p style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(48,33,97,0.5)', margin: 0 }}>
+          <p style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(32,21,21,0.5)', margin: 0 }}>
             {currentEvent.subtext}
           </p>
         </div>
@@ -192,14 +192,14 @@ export default function SocialProofToast() {
             padding: 2, display: 'flex', alignItems: 'center',
           }}
         >
-          <X size={12} color="rgba(48,33,97,0.3)" />
+          <X size={12} color="rgba(32,21,21,0.3)" />
         </button>
 
         {/* Progress bar */}
         <div style={{
           position: 'absolute', bottom: 0, left: 0, width: '100%',
-          height: 2, background: 'rgba(48,33,97,0.08)',
-          borderRadius: '0 0 16px 16px',
+          height: 2, background: 'rgba(32,21,21,0.08)',
+          borderRadius: '0 0 12px 12px',
         }}>
           {!isExiting && (
             <div style={{

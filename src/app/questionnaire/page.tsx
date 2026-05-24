@@ -196,28 +196,28 @@ type Answers = Record<number, string | string[] | number>
 function TextInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
   return (
     <input type="text" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} autoFocus
-      className="w-full bg-[rgba(24,17,10,0.04)] border border-[rgba(24,17,10,0.1)] focus:border-[#e8330a] rounded px-4 py-3.5 text-[#18110a] placeholder-slate-500 text-base outline-none transition-colors" />
+      className="w-full bg-[rgba(201,192,177,0.18)] border border-[#c5c0b1] focus:border-[#e8330a] rounded px-4 py-3.5 text-[#201515] placeholder-[#939084] text-base outline-none transition-colors" />
   )
 }
 
 function UrlInput({ value, onChange, onBlur, placeholder }: { value: string; onChange: (v: string) => void; onBlur?: () => void; placeholder?: string }) {
   return (
     <input type="url" value={value} onChange={e => onChange(e.target.value)} onBlur={onBlur} placeholder={placeholder} autoFocus
-      className="w-full bg-[rgba(24,17,10,0.04)] border border-[rgba(24,17,10,0.1)] focus:border-[#e8330a] rounded px-4 py-3.5 text-[#18110a] placeholder-slate-500 text-base outline-none transition-colors" />
+      className="w-full bg-[rgba(201,192,177,0.18)] border border-[#c5c0b1] focus:border-[#e8330a] rounded px-4 py-3.5 text-[#201515] placeholder-[#939084] text-base outline-none transition-colors" />
   )
 }
 
 function TextareaInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
   return (
     <textarea value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} rows={4} autoFocus
-      className="w-full bg-[rgba(24,17,10,0.04)] border border-[rgba(24,17,10,0.1)] focus:border-[#e8330a] rounded px-4 py-3.5 text-[#18110a] placeholder-slate-500 text-base outline-none resize-none transition-colors leading-relaxed" />
+      className="w-full bg-[rgba(201,192,177,0.18)] border border-[#c5c0b1] focus:border-[#e8330a] rounded px-4 py-3.5 text-[#201515] placeholder-[#939084] text-base outline-none resize-none transition-colors leading-relaxed" />
   )
 }
 
 function SelectInput({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: string[] }) {
   return (
     <select value={value} onChange={e => onChange(e.target.value)}
-      className="w-full bg-[#fff] border border-[rgba(24,17,10,0.1)] focus:border-[#e8330a] rounded px-4 py-3.5 text-[#18110a] text-base outline-none transition-colors cursor-pointer appearance-none">
+      className="w-full bg-[#fff] border border-[#c5c0b1] focus:border-[#e8330a] rounded px-4 py-3.5 text-[#201515] text-base outline-none transition-colors cursor-pointer appearance-none">
       <option value="" disabled>Select an option…</option>
       {options.map(o => <option key={o} value={o}>{o}</option>)}
     </select>
@@ -229,8 +229,8 @@ function RadioInput({ value, onChange, options }: { value: string; onChange: (v:
     <div className="flex flex-col gap-3">
       {options.map(o => (
         <button key={o} type="button" onClick={() => onChange(o)}
-          className={`flex items-center gap-3 w-full px-5 py-3.5 rounded border text-left text-sm font-medium transition-all ${value === o ? 'border-[#e8330a] bg-[#e8330a]/20 text-[#18110a]' : 'border-[rgba(24,17,10,0.1)] bg-white text-[rgba(24,17,10,0.65)] hover:border-white/25 hover:bg-[rgba(24,17,10,0.05)]'}`}>
-          <span className={`flex-shrink-0 w-4 h-4 rounded-full border-2 flex items-center justify-center ${value === o ? 'border-[#e8330a]' : 'border-slate-600'}`}>
+          className={`flex items-center gap-3 w-full px-5 py-3.5 rounded border text-left text-sm font-medium transition-all ${value === o ? 'border-[#e8330a] bg-[#e8330a]/20 text-[#201515]' : 'border-[#c5c0b1] bg-white text-[#605d52] hover:border-white/25 hover:bg-[rgba(201,192,177,0.18)]'}`}>
+          <span className={`flex-shrink-0 w-4 h-4 rounded-full border-2 flex items-center justify-center ${value === o ? 'border-[#e8330a]' : 'border-[#c5c0b1]'}`}>
             {value === o && <span className="w-2 h-2 rounded-full bg-[#e8330a] block" />}
           </span>
           {o}
@@ -246,10 +246,10 @@ function CheckboxInput({ value, onChange, options }: { value: string[]; onChange
     <div className="flex flex-col gap-3">
       {options.map(o => (
         <button key={o} type="button" onClick={() => toggle(o)}
-          className={`flex items-center gap-3 w-full px-5 py-3.5 rounded border text-left text-sm font-medium transition-all ${value.includes(o) ? 'border-[#e8330a] bg-[#e8330a]/20 text-[#18110a]' : 'border-[rgba(24,17,10,0.1)] bg-white text-[rgba(24,17,10,0.65)] hover:border-white/25 hover:bg-[rgba(24,17,10,0.05)]'}`}>
-          <span className={`flex-shrink-0 w-4 h-4 rounded border-2 flex items-center justify-center ${value.includes(o) ? 'border-[#e8330a] bg-[#e8330a]' : 'border-slate-600'}`}>
+          className={`flex items-center gap-3 w-full px-5 py-3.5 rounded border text-left text-sm font-medium transition-all ${value.includes(o) ? 'border-[#e8330a] bg-[#e8330a]/20 text-[#201515]' : 'border-[#c5c0b1] bg-white text-[#605d52] hover:border-white/25 hover:bg-[rgba(201,192,177,0.18)]'}`}>
+          <span className={`flex-shrink-0 w-4 h-4 rounded border-2 flex items-center justify-center ${value.includes(o) ? 'border-[#e8330a] bg-[#e8330a]' : 'border-[#c5c0b1]'}`}>
             {value.includes(o) && (
-              <svg className="w-2.5 h-2.5 text-[#18110a]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+              <svg className="w-2.5 h-2.5 text-[#201515]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             )}
@@ -264,7 +264,7 @@ function CheckboxInput({ value, onChange, options }: { value: string[]; onChange
 function NumberInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
   return (
     <input type="number" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} min={0} autoFocus
-      className="w-full bg-[rgba(24,17,10,0.04)] border border-[rgba(24,17,10,0.1)] focus:border-[#e8330a] rounded px-4 py-3.5 text-[#18110a] placeholder-slate-500 text-base outline-none transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+      className="w-full bg-[rgba(201,192,177,0.18)] border border-[#c5c0b1] focus:border-[#e8330a] rounded px-4 py-3.5 text-[#201515] placeholder-[#939084] text-base outline-none transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
   )
 }
 
@@ -274,19 +274,19 @@ function SliderInput({ value, onChange, question }: { value: number; onChange: (
     : ['Not at all clear', 'Crystal clear']
   return (
     <div className="py-4">
-      <div className="flex justify-between text-xs text-[rgba(24,17,10,0.45)] mb-3">
+      <div className="flex justify-between text-xs text-[#939084] mb-3">
         <span>{labels[0]}</span><span>{labels[1]}</span>
       </div>
       <input type="range" min={1} max={10} value={value} onChange={e => onChange(Number(e.target.value))} className="w-full"
-        style={{ background: `linear-gradient(to right,#e8330a 0%,#e8330a ${(value - 1) / 9 * 100}%,#1e1e2e ${(value - 1) / 9 * 100}%,#1e1e2e 100%)` }} />
+        style={{ background: `linear-gradient(to right,#e8330a 0%,#e8330a ${(value - 1) / 9 * 100}%,#c5c0b1 ${(value - 1) / 9 * 100}%,#1e1e2e 100%)` }} />
       <div className="flex justify-between mt-3">
-        <div className="text-xs text-[rgba(24,17,10,0.45)] flex gap-1">
+        <div className="text-xs text-[#939084] flex gap-1">
           {Array.from({ length: 10 }, (_, i) => (
-            <span key={i} className={`w-5 text-center ${i + 1 === value ? 'text-[#e8330a] font-bold' : 'text-[rgba(24,17,10,0.35)]'}`}>{i + 1}</span>
+            <span key={i} className={`w-5 text-center ${i + 1 === value ? 'text-[#e8330a] font-bold' : 'text-[#939084]'}`}>{i + 1}</span>
           ))}
         </div>
       </div>
-      <p className="text-center mt-3 text-2xl font-bold text-[#e8330a]">{value}<span className="text-sm text-[rgba(24,17,10,0.45)] font-normal"> / 10</span></p>
+      <p className="text-center mt-3 text-2xl font-bold text-[#e8330a]">{value}<span className="text-sm text-[#939084] font-normal"> / 10</span></p>
     </div>
   )
 }
@@ -299,7 +299,7 @@ function YesNoInput({ value, onChange }: { value: string; onChange: (v: string) 
           className={`flex-1 py-5 rounded border text-base font-semibold transition-all ${
             value === opt
               ? opt === 'Yes' ? 'border-emerald-500 bg-emerald-600/20 text-emerald-300' : 'border-red-500 bg-red-600/20 text-red-300'
-              : 'border-[rgba(24,17,10,0.1)] bg-white text-[rgba(24,17,10,0.65)] hover:border-white/25 hover:bg-[rgba(24,17,10,0.05)]'
+              : 'border-[#c5c0b1] bg-white text-[#605d52] hover:border-white/25 hover:bg-[rgba(201,192,177,0.18)]'
           }`}>
           {opt === 'Yes' ? '✓  Yes' : '✕  No'}
         </button>
@@ -385,8 +385,8 @@ function WelcomePanel({ diagCount }: { diagCount: number }) {
                 </svg>
               </div>
               <div>
-                <p className="text-sm font-semibold text-[#18110a] leading-snug">{item.label}</p>
-                <p className="text-xs text-[rgba(24,17,10,0.45)] leading-snug mt-0.5">{item.sub}</p>
+                <p className="text-sm font-semibold text-[#201515] leading-snug">{item.label}</p>
+                <p className="text-xs text-[#939084] leading-snug mt-0.5">{item.sub}</p>
               </div>
             </div>
           ))}
@@ -394,14 +394,14 @@ function WelcomePanel({ diagCount }: { diagCount: number }) {
       </div>
 
       {/* Sample report preview (stylised) */}
-      <div className="rounded border border-[rgba(24,17,10,0.1)] bg-white p-4 overflow-hidden relative">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(24,17,10,0.35)] mb-3">Sample report</p>
+      <div className="rounded border border-[#c5c0b1] bg-white p-4 overflow-hidden relative">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#939084] mb-3">Sample report</p>
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 rounded-full bg-[#e8330a]/20 border border-[#e8330a]/30 flex items-center justify-center flex-shrink-0">
             <span className="text-sm font-black text-[#e8330a]">74</span>
           </div>
           <div>
-            <p className="text-xs font-bold text-[#18110a]">ICP Health Score</p>
+            <p className="text-xs font-bold text-[#201515]">ICP Health Score</p>
             <p className="text-[10px] text-amber-400">3 critical findings</p>
           </div>
         </div>
@@ -409,27 +409,27 @@ function WelcomePanel({ diagCount }: { diagCount: number }) {
           {['Audience mismatch costing KES 41,000/mo', 'Landing page CTA misaligned with ICP intent', 'Targeting too broad — 63% budget wasted'].map((line, i) => (
             <div key={i} className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-red-500/60 flex-shrink-0" />
-              <p className="text-[11px] text-[rgba(24,17,10,0.5)] leading-snug">{line}</p>
+              <p className="text-[11px] text-[#605d52] leading-snug">{line}</p>
             </div>
           ))}
         </div>
         {/* subtle blur overlay to suggest "preview" */}
-        <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-[#0a0a0f] to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-[#201515] to-transparent" />
       </div>
 
       {/* Social proof */}
-      <div className="flex flex-col gap-2 pt-2 border-t border-[rgba(24,17,10,0.1)]">
+      <div className="flex flex-col gap-2 pt-2 border-t border-[#c5c0b1]">
         <div className="flex items-center gap-2">
           <span className="relative flex h-2 w-2 flex-shrink-0">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60" />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
           </span>
-          <span className="text-xs text-[rgba(24,17,10,0.5)]">
-            <span className="font-bold text-[#18110a] tabular-nums">{diagCount.toLocaleString()}+</span> diagnoses run
+          <span className="text-xs text-[#605d52]">
+            <span className="font-bold text-[#201515] tabular-nums">{diagCount.toLocaleString()}+</span> diagnoses run
           </span>
         </div>
-        <p className="text-xs text-[rgba(24,17,10,0.45)]">Average waste found: <span className="text-[#18110a] font-semibold">KES 47,000/mo</span></p>
-        <p className="text-xs text-[rgba(24,17,10,0.45)]">Takes 5 minutes. Free. No credit card.</p>
+        <p className="text-xs text-[#939084]">Average waste found: <span className="text-[#201515] font-semibold">KES 47,000/mo</span></p>
+        <p className="text-xs text-[#939084]">Takes 5 minutes. Free. No credit card.</p>
       </div>
     </div>
   )
@@ -477,7 +477,7 @@ function QuestionPanel({
       unit: 'KES',
       state: !layer2Done ? 'locked' : layer3Pct > 0 ? 'ready' : 'scanning',
       stateLabel: !layer2Done ? '—' : layer3Pct > 0 ? 'Funnel data captured' : 'Calculating CAC…',
-      color: 'text-purple-400',
+      color: 'text-[#e8330a]',
     },
   ]
 
@@ -502,20 +502,20 @@ function QuestionPanel({
       {/* Score arc */}
       <div className="text-center">
         <ScoreArc progress={progress} />
-        <p className="text-[10px] text-[rgba(24,17,10,0.35)] mt-1">Score unlocks on submission</p>
+        <p className="text-[10px] text-[#939084] mt-1">Score unlocks on submission</p>
       </div>
 
       {/* Metric preview cards */}
       <div>
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(24,17,10,0.35)] mb-3">Report metrics</p>
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#939084] mb-3">Report metrics</p>
         <div className="flex flex-col gap-2">
           {metrics.map((m, i) => (
             <div key={i} className={`flex items-center justify-between px-3 py-2.5 rounded-lg border transition-all duration-500 ${m.state === 'locked' ? 'border-white/[0.05] bg-transparent' : m.state === 'scanning' ? 'border-[rgba(232,51,10,0.2)] bg-[#e8330a]/[0.06]' : 'border-emerald-500/25 bg-emerald-600/[0.06]'}`}>
               <div>
-                <p className={`text-[11px] font-semibold leading-snug ${m.state === 'locked' ? 'text-[rgba(24,17,10,0.35)]' : 'text-[#18110a]'}`}>{m.label}</p>
-                <p className={`text-[10px] mt-0.5 ${m.state === 'locked' ? 'text-slate-700' : m.state === 'scanning' ? m.color : 'text-emerald-400'}`}>{m.stateLabel}</p>
+                <p className={`text-[11px] font-semibold leading-snug ${m.state === 'locked' ? 'text-[#939084]' : 'text-[#201515]'}`}>{m.label}</p>
+                <p className={`text-[10px] mt-0.5 ${m.state === 'locked' ? 'text-[#939084]' : m.state === 'scanning' ? m.color : 'text-emerald-400'}`}>{m.stateLabel}</p>
               </div>
-              <div className={`flex-shrink-0 w-5 h-5 rounded-full border flex items-center justify-center ${m.state === 'locked' ? 'border-[rgba(24,17,10,0.1)] bg-transparent' : m.state === 'scanning' ? 'border-[#e8330a]/40 bg-[#e8330a]/20' : 'border-emerald-500/40 bg-emerald-600/20'}`}>
+              <div className={`flex-shrink-0 w-5 h-5 rounded-full border flex items-center justify-center ${m.state === 'locked' ? 'border-[#c5c0b1] bg-transparent' : m.state === 'scanning' ? 'border-[#e8330a]/40 bg-[#e8330a]/20' : 'border-emerald-500/40 bg-emerald-600/20'}`}>
                 {m.state === 'locked' && <span className="text-slate-700 text-[8px]">•</span>}
                 {m.state === 'scanning' && (
                   <svg className="animate-spin w-2.5 h-2.5 text-[#e8330a]" viewBox="0 0 24 24" fill="none">
@@ -536,21 +536,21 @@ function QuestionPanel({
 
       {/* Layer progress */}
       <div>
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(24,17,10,0.35)] mb-3">Analysis layers</p>
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#939084] mb-3">Analysis layers</p>
         <div className="flex flex-col gap-2.5">
           {layers.map(l => (
             <div key={l.num}>
               <div className="flex items-center justify-between mb-1">
-                <span className={`text-[11px] font-medium ${l.pct > 0 ? 'text-[rgba(24,17,10,0.65)]' : 'text-[rgba(24,17,10,0.35)]'}`}>
+                <span className={`text-[11px] font-medium ${l.pct > 0 ? 'text-[#605d52]' : 'text-[#939084]'}`}>
                   {l.done ? '✓ ' : ''}{l.name}
                 </span>
-                <span className={`text-[10px] tabular-nums ${l.pct > 0 ? 'text-[rgba(24,17,10,0.5)]' : 'text-slate-700'}`}>
+                <span className={`text-[10px] tabular-nums ${l.pct > 0 ? 'text-[#605d52]' : 'text-[#939084]'}`}>
                   {Math.round(l.pct * 100)}%
                 </span>
               </div>
-              <div className="h-1 rounded-full bg-[rgba(24,17,10,0.05)] overflow-hidden">
+              <div className="h-1 rounded-full bg-[rgba(201,192,177,0.18)] overflow-hidden">
                 <div
-                  className={`h-full rounded-full transition-all duration-500 ${l.num === 1 ? 'bg-[#e8330a]' : l.num === 2 ? 'bg-[#e8330a]' : 'bg-purple-500'}`}
+                  className={`h-full rounded-full transition-all duration-500 ${l.num === 1 ? 'bg-[#e8330a]' : l.num === 2 ? 'bg-[#e8330a]' : 'bg-[#e8330a]'}`}
                   style={{ width: `${l.pct * 100}%` }}
                 />
               </div>
@@ -560,11 +560,11 @@ function QuestionPanel({
       </div>
 
       {/* Social proof */}
-      <div className="flex flex-col gap-1.5 pt-2 border-t border-[rgba(24,17,10,0.1)]">
-        <p className="text-xs text-[rgba(24,17,10,0.45)]">
-          <span className="text-[#18110a] font-semibold tabular-nums">{diagCount.toLocaleString()}+</span> businesses diagnosed
+      <div className="flex flex-col gap-1.5 pt-2 border-t border-[#c5c0b1]">
+        <p className="text-xs text-[#939084]">
+          <span className="text-[#201515] font-semibold tabular-nums">{diagCount.toLocaleString()}+</span> businesses diagnosed
         </p>
-        <p className="text-xs text-[rgba(24,17,10,0.45)]">Average waste found: <span className="text-[#18110a] font-semibold">KES 47,000/mo</span></p>
+        <p className="text-xs text-[#939084]">Average waste found: <span className="text-[#201515] font-semibold">KES 47,000/mo</span></p>
       </div>
     </div>
   )
@@ -605,12 +605,12 @@ function LayerCompleteScreen({
 
   const layerColors: Record<number, { ring: string; bg: string; text: string; badge: string }> = {
     1: { ring: 'border-[#e8330a]/60', bg: 'bg-[#e8330a]/15', text: 'text-[#e8330a]', badge: 'bg-[#e8330a]/20 border-[#e8330a]/40' },
-    2: { ring: 'border-[#e8330a]/60', bg: 'bg-[rgba(24,17,10,0.06)]', text: 'text-[rgba(24,17,10,0.6)]', badge: 'bg-violet-600/20 border-[#e8330a]/40' },
+    2: { ring: 'border-[#e8330a]/60', bg: 'bg-[rgba(201,192,177,0.25)]', text: 'text-[#605d52]', badge: 'bg-[rgba(232,51,10,0.08)] border-[#e8330a]/40' },
   }
   const c = layerColors[layer]
 
   return (
-    <div className="min-h-screen bg-[#faf6ef] text-[#18110a] flex flex-col">
+    <div className="min-h-screen bg-[#fffefb] text-[#201515] flex flex-col">
       <style>{`
         @keyframes scaleIn { from { transform: scale(0.7); opacity: 0 } to { transform: scale(1); opacity: 1 } }
         @keyframes fadeUp  { from { opacity: 0; transform: translateY(16px) } to { opacity: 1; transform: translateY(0) } }
@@ -618,8 +618,8 @@ function LayerCompleteScreen({
         @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
       `}</style>
 
-      <header className="border-b border-[rgba(24,17,10,0.1)] px-6 py-4 flex items-center justify-between max-w-3xl mx-auto w-full">
-        <a href="/" className="text-sm font-bold tracking-tight text-[#18110a]">ICP<span className="text-[#e8330a]">Diagnostic</span></a>
+      <header className="border-b border-[#c5c0b1] px-6 py-4 flex items-center justify-between max-w-3xl mx-auto w-full">
+        <a href="/" className="text-sm font-bold tracking-tight text-[#201515]">ICP<span className="text-[#e8330a]">Diagnostic</span></a>
         <XpBadge xp={xpEarned} />
       </header>
 
@@ -637,31 +637,31 @@ function LayerCompleteScreen({
             <span className={`inline-block text-[10px] font-semibold uppercase tracking-widest px-3 py-1 rounded-full border ${c.badge} ${c.text} mb-4`}>
               Layer {layer} Complete
             </span>
-            <h2 className="text-2xl sm:text-3xl font-bold text-[#18110a] mb-2">
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#201515] mb-2">
               {info.next === 'Targeting Mismatch' ? 'ICP Foundation' : 'Targeting Mismatch'} locked in.
             </h2>
-            <p className="text-[rgba(24,17,10,0.5)] text-sm max-w-xs mx-auto leading-relaxed">
+            <p className="text-[#605d52] text-sm max-w-xs mx-auto leading-relaxed">
               Your foundation answers are saved. Your score is building.
             </p>
           </div>
 
           <div style={{ animation: ready ? 'fadeUp 0.4s 0.2s ease both' : 'none' }}
-            className="mt-8 mb-8 inline-flex flex-col items-center gap-1 px-8 py-5 rounded border border-[rgba(24,17,10,0.1)] bg-white">
-            <span className="text-xs text-[rgba(24,17,10,0.45)] uppercase tracking-widest font-semibold">XP Earned</span>
+            className="mt-8 mb-8 inline-flex flex-col items-center gap-1 px-8 py-5 rounded border border-[#c5c0b1] bg-white">
+            <span className="text-xs text-[#939084] uppercase tracking-widest font-semibold">XP Earned</span>
             <span className="text-4xl font-black text-[#e8330a] tabular-nums">+{countedXp}</span>
-            <span className="text-xs text-[rgba(24,17,10,0.35)]">Keep going — diagnosis unlocks at 200 XP</span>
+            <span className="text-xs text-[#939084]">Keep going — diagnosis unlocks at 200 XP</span>
           </div>
 
           <div style={{ animation: ready ? 'fadeUp 0.4s 0.3s ease both' : 'none' }}
-            className="mb-8 max-w-sm mx-auto px-5 py-4 rounded border border-[rgba(24,17,10,0.1)] bg-white text-left">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(24,17,10,0.45)] mb-1">Unlocking next</p>
-            <p className="text-sm font-bold text-[#18110a] mb-1">{info.next}</p>
-            <p className="text-xs text-[rgba(24,17,10,0.5)] leading-relaxed">{info.description}</p>
+            className="mb-8 max-w-sm mx-auto px-5 py-4 rounded border border-[#c5c0b1] bg-white text-left">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#939084] mb-1">Unlocking next</p>
+            <p className="text-sm font-bold text-[#201515] mb-1">{info.next}</p>
+            <p className="text-xs text-[#605d52] leading-relaxed">{info.description}</p>
           </div>
 
           <div style={{ animation: ready ? 'fadeUp 0.4s 0.4s ease both' : 'none' }}>
             <button type="button" onClick={onContinue}
-              className="px-10 py-3.5 rounded bg-[#e8330a] hover:bg-[#e8330a] text-[#18110a] font-semibold text-sm transition-all active:scale-95 shadow-lg shadow-[#e8330a]/25">
+              className="px-10 py-3.5 rounded bg-[#e8330a] hover:bg-[#e8330a] text-[#201515] font-semibold text-sm transition-all active:scale-95 shadow-lg shadow-[#e8330a]/25">
               Unlock Layer {layer + 1} →
             </button>
           </div>
@@ -821,9 +821,9 @@ export default function QuestionnairePage() {
   const isLast = current === totalQ - 1
 
   const layerColors = {
-    bar:    { 1: 'bg-[#e8330a]',        2: 'bg-[#e8330a]',        3: 'bg-purple-500'        },
-    text:   { 1: 'text-[#e8330a]',      2: 'text-[#e8330a]',      3: 'text-purple-400'      },
-    border: { 1: 'border-[#e8330a]/40', 2: 'border-[#e8330a]/40', 3: 'border-purple-500/40' },
+    bar:    { 1: 'bg-[#e8330a]',        2: 'bg-[#e8330a]',        3: 'bg-[#e8330a]'        },
+    text:   { 1: 'text-[#e8330a]',      2: 'text-[#e8330a]',      3: 'text-[#e8330a]'      },
+    border: { 1: 'border-[#e8330a]/40', 2: 'border-[#e8330a]/40', 3: 'border-[#e8330a]/40' },
   }
 
   const welcomeValid =
@@ -840,12 +840,12 @@ export default function QuestionnairePage() {
   // ── Welcome screen ───────────────────────────────────────────────────────
   if (step === 'welcome') {
     return (
-      <div className="min-h-screen bg-[#faf6ef] text-[#18110a] flex flex-col">
+      <div className="min-h-screen bg-[#fffefb] text-[#201515] flex flex-col">
         <style>{`@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }`}</style>
 
-        <header className="border-b border-[rgba(24,17,10,0.1)] px-6 py-4 flex items-center justify-between max-w-[1100px] mx-auto w-full">
-          <a href="/" className="text-sm font-bold tracking-tight text-[#18110a]">ICP<span className="text-[#e8330a]">Diagnostic</span></a>
-          <span className="text-xs text-[rgba(24,17,10,0.45)] font-medium">Step 1 of 4</span>
+        <header className="border-b border-[#c5c0b1] px-6 py-4 flex items-center justify-between max-w-[1100px] mx-auto w-full">
+          <a href="/" className="text-sm font-bold tracking-tight text-[#201515]">ICP<span className="text-[#e8330a]">Diagnostic</span></a>
+          <span className="text-xs text-[#939084] font-medium">Step 1 of 4</span>
         </header>
 
         <div className="flex flex-1 max-w-[1100px] mx-auto w-full">
@@ -855,50 +855,50 @@ export default function QuestionnairePage() {
             <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest mb-4 px-2.5 py-1 rounded-full border border-[#e8330a]/40 text-[#e8330a] bg-white w-fit">
               Welcome
             </span>
-            <h2 className="text-xl sm:text-2xl font-bold text-[#18110a] mb-4 leading-snug">
+            <h2 className="text-xl sm:text-2xl font-bold text-[#201515] mb-4 leading-snug">
               Let&apos;s get started — tell us about yourself
             </h2>
             <div className="flex flex-wrap gap-2 mb-6">
               {['3 layers', '22 questions', '5 minutes', 'Instant results'].map(chip => (
-                <span key={chip} className="inline-block text-xs font-semibold text-[#e8330a] bg-[rgba(24,17,10,0.05)] border border-[rgba(24,17,10,0.1)] rounded-full px-3 py-1">{chip}</span>
+                <span key={chip} className="inline-block text-xs font-semibold text-[#e8330a] bg-[rgba(201,192,177,0.18)] border border-[#c5c0b1] rounded-full px-3 py-1">{chip}</span>
               ))}
             </div>
-            <p className="text-[rgba(24,17,10,0.5)] text-sm mb-8">
+            <p className="text-[#605d52] text-sm mb-8">
               Your answers are used only to personalise your diagnostic report.
             </p>
 
             <div className="space-y-5 mb-8">
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-widest text-[rgba(24,17,10,0.45)] mb-2">Full Name</label>
+                <label className="block text-xs font-semibold uppercase tracking-widest text-[#939084] mb-2">Full Name</label>
                 <input type="text" value={profile.name} onChange={e => setProfile(p => ({ ...p, name: e.target.value }))}
                   placeholder="Jane Smith" autoFocus
-                  className="w-full bg-[rgba(24,17,10,0.04)] border border-[rgba(24,17,10,0.1)] focus:border-[#e8330a] rounded px-4 py-3.5 text-[#18110a] placeholder-slate-500 text-base outline-none transition-colors" />
+                  className="w-full bg-[rgba(201,192,177,0.18)] border border-[#c5c0b1] focus:border-[#e8330a] rounded px-4 py-3.5 text-[#201515] placeholder-[#939084] text-base outline-none transition-colors" />
               </div>
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-widest text-[rgba(24,17,10,0.45)] mb-2">Email Address</label>
+                <label className="block text-xs font-semibold uppercase tracking-widest text-[#939084] mb-2">Email Address</label>
                 <input type="email" value={profile.email} onChange={e => setProfile(p => ({ ...p, email: e.target.value }))}
                   placeholder="jane@company.com"
-                  className="w-full bg-[rgba(24,17,10,0.04)] border border-[rgba(24,17,10,0.1)] focus:border-[#e8330a] rounded px-4 py-3.5 text-[#18110a] placeholder-slate-500 text-base outline-none transition-colors" />
+                  className="w-full bg-[rgba(201,192,177,0.18)] border border-[#c5c0b1] focus:border-[#e8330a] rounded px-4 py-3.5 text-[#201515] placeholder-[#939084] text-base outline-none transition-colors" />
               </div>
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-widest text-[rgba(24,17,10,0.45)] mb-2">Company Name</label>
+                <label className="block text-xs font-semibold uppercase tracking-widest text-[#939084] mb-2">Company Name</label>
                 <input type="text" value={profile.company} onChange={e => setProfile(p => ({ ...p, company: e.target.value }))}
                   placeholder="Acme Inc." onKeyDown={e => { if (e.key === 'Enter' && welcomeValid) setStep('questions') }}
-                  className="w-full bg-[rgba(24,17,10,0.04)] border border-[rgba(24,17,10,0.1)] focus:border-[#e8330a] rounded px-4 py-3.5 text-[#18110a] placeholder-slate-500 text-base outline-none transition-colors" />
+                  className="w-full bg-[rgba(201,192,177,0.18)] border border-[#c5c0b1] focus:border-[#e8330a] rounded px-4 py-3.5 text-[#201515] placeholder-[#939084] text-base outline-none transition-colors" />
               </div>
             </div>
 
             <button type="button" onClick={() => setStep('questions')} disabled={!welcomeValid}
-              className={`sm:w-fit px-8 py-3 rounded text-sm font-semibold transition-all ${welcomeValid ? 'bg-[#e8330a] hover:bg-[#e8330a] text-[#18110a] shadow-lg shadow-[#e8330a]/25 active:scale-95' : 'bg-[rgba(24,17,10,0.04)] text-[rgba(24,17,10,0.35)] cursor-not-allowed border border-[rgba(24,17,10,0.06)]'}`}>
+              className={`sm:w-fit px-8 py-3 rounded text-sm font-semibold transition-all ${welcomeValid ? 'bg-[#e8330a] hover:bg-[#e8330a] text-[#201515] shadow-lg shadow-[#e8330a]/25 active:scale-95' : 'bg-[rgba(201,192,177,0.18)] text-[#939084] cursor-not-allowed border border-[rgba(201,192,177,0.25)]'}`}>
               Get Started →
             </button>
             {!welcomeValid && (profile.name || profile.email || profile.company) && (
-              <p className="mt-3 text-xs text-[rgba(24,17,10,0.35)]">Fill in all three fields to continue.</p>
+              <p className="mt-3 text-xs text-[#939084]">Fill in all three fields to continue.</p>
             )}
           </div>
 
           {/* Right: what you will get panel */}
-          <aside className="hidden lg:flex flex-col w-[340px] flex-shrink-0 border-l border-[rgba(24,17,10,0.1)] overflow-y-auto">
+          <aside className="hidden lg:flex flex-col w-[340px] flex-shrink-0 border-l border-[#c5c0b1] overflow-y-auto">
             <WelcomePanel diagCount={diagCount} />
           </aside>
         </div>
@@ -909,9 +909,9 @@ export default function QuestionnairePage() {
   // ── Loading / analysis screen ────────────────────────────────────────────
   if (submitting) {
     return (
-      <div className="min-h-screen bg-[#faf6ef] text-[#18110a] flex flex-col">
-        <header className="border-b border-[rgba(24,17,10,0.1)] px-6 py-4 flex items-center max-w-3xl mx-auto w-full">
-          <a href="/" className="text-sm font-bold tracking-tight text-[#18110a]">ICP<span className="text-[#e8330a]">Diagnostic</span></a>
+      <div className="min-h-screen bg-[#fffefb] text-[#201515] flex flex-col">
+        <header className="border-b border-[#c5c0b1] px-6 py-4 flex items-center max-w-3xl mx-auto w-full">
+          <a href="/" className="text-sm font-bold tracking-tight text-[#201515]">ICP<span className="text-[#e8330a]">Diagnostic</span></a>
         </header>
         <div className="flex-1 flex flex-col items-center justify-center px-6 pb-16">
           <div className="w-full max-w-md">
@@ -923,8 +923,8 @@ export default function QuestionnairePage() {
                 </span>
                 Running Deep Diagnostic
               </div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-[#18110a] mb-2">Analysing your ICP&hellip;</h2>
-              <p className="text-[rgba(24,17,10,0.45)] text-sm">We are doing real research — this takes about 30 seconds</p>
+              <h2 className="text-2xl sm:text-3xl font-bold text-[#201515] mb-2">Analysing your ICP&hellip;</h2>
+              <p className="text-[#939084] text-sm">We are doing real research — this takes about 30 seconds</p>
             </div>
 
             <div className="space-y-2.5">
@@ -934,7 +934,7 @@ export default function QuestionnairePage() {
                 const isCurrent = loadingStep === num
                 const isPending = loadingStep < num
                 return (
-                  <div key={i} className={`flex items-center gap-4 px-4 py-3.5 rounded border transition-all duration-500 ${isCurrent ? 'border-[#e8330a]/40 bg-[#e8330a]/10' : isDone ? 'border-[rgba(24,17,10,0.1)] bg-[rgba(24,17,10,0.03)]' : 'border-white/[0.04] bg-transparent'}`}>
+                  <div key={i} className={`flex items-center gap-4 px-4 py-3.5 rounded border transition-all duration-500 ${isCurrent ? 'border-[#e8330a]/40 bg-[#e8330a]/10' : isDone ? 'border-[#c5c0b1] bg-[rgba(201,192,177,0.12)]' : 'border-white/[0.04] bg-transparent'}`}>
                     <div className="flex-shrink-0 w-7 h-7 flex items-center justify-center">
                       {isDone && (
                         <div className="w-6 h-6 rounded-full bg-emerald-500/15 border border-emerald-500/40 flex items-center justify-center">
@@ -949,10 +949,10 @@ export default function QuestionnairePage() {
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                         </svg>
                       )}
-                      {isPending && <div className="w-5 h-5 rounded-full border border-[rgba(24,17,10,0.1)] bg-white" />}
+                      {isPending && <div className="w-5 h-5 rounded-full border border-[#c5c0b1] bg-white" />}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-medium leading-tight ${isCurrent ? 'text-[#18110a]' : isDone ? 'text-[rgba(24,17,10,0.45)]' : 'text-slate-700'}`}>{s.label}</p>
+                      <p className={`text-sm font-medium leading-tight ${isCurrent ? 'text-[#201515]' : isDone ? 'text-[#939084]' : 'text-[#939084]'}`}>{s.label}</p>
                       {isCurrent && <p className="text-xs text-[#e8330a]/70 mt-0.5">{s.sublabel}</p>}
                       {isDone    && <p className="text-xs text-emerald-600/80 mt-0.5">Complete</p>}
                     </div>
@@ -962,8 +962,8 @@ export default function QuestionnairePage() {
             </div>
 
             <div className="mt-8">
-              <div className="h-0.5 bg-[rgba(24,17,10,0.06)] rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-[#e8330a] to-purple-500 rounded-full transition-all duration-1000 ease-out"
+              <div className="h-0.5 bg-[rgba(201,192,177,0.25)] rounded-full overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-[#e8330a] to-[#e8330a] rounded-full transition-all duration-1000 ease-out"
                   style={{ width: `${Math.max(4, ((loadingStep - 1) / LOADING_STEPS.length) * 100)}%` }} />
               </div>
               <p className="text-xs text-slate-700 mt-2 text-center tabular-nums">
@@ -982,14 +982,14 @@ export default function QuestionnairePage() {
 
   // ── Question screen ──────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-[#faf6ef] text-[#18110a] flex flex-col">
+    <div className="min-h-screen bg-[#fffefb] text-[#201515] flex flex-col">
       <style>{`@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }`}</style>
 
-      <header className="border-b border-[rgba(24,17,10,0.1)] px-6 py-4 flex items-center justify-between max-w-[1100px] mx-auto w-full">
-        <a href="/" className="text-sm font-bold tracking-tight text-[#18110a]">ICP<span className="text-[#e8330a]">Diagnostic</span></a>
+      <header className="border-b border-[#c5c0b1] px-6 py-4 flex items-center justify-between max-w-[1100px] mx-auto w-full">
+        <a href="/" className="text-sm font-bold tracking-tight text-[#201515]">ICP<span className="text-[#e8330a]">Diagnostic</span></a>
         <div className="flex items-center gap-3">
           <XpBadge xp={xp} />
-          <span className="text-xs text-[rgba(24,17,10,0.45)] font-medium tabular-nums">Q{current + 1}/{totalQ}</span>
+          <span className="text-xs text-[#939084] font-medium tabular-nums">Q{current + 1}/{totalQ}</span>
         </div>
       </header>
 
@@ -1001,16 +1001,16 @@ export default function QuestionnairePage() {
           <div className="px-6 pt-6">
             <div className="flex gap-2 mb-4">
               {([1, 2, 3] as const).map(l => (
-                <div key={l} className={`flex-1 flex flex-col gap-1.5 px-3 py-2 rounded-lg border transition-all ${l === q.layer ? `border ${layerColors.border[l]} bg-[rgba(24,17,10,0.04)]` : l < q.layer ? 'border-[rgba(24,17,10,0.1)] bg-[rgba(24,17,10,0.03)]' : 'border-[rgba(24,17,10,0.06)] bg-transparent'}`}>
+                <div key={l} className={`flex-1 flex flex-col gap-1.5 px-3 py-2 rounded-lg border transition-all ${l === q.layer ? `border ${layerColors.border[l]} bg-[rgba(201,192,177,0.18)]` : l < q.layer ? 'border-[#c5c0b1] bg-[rgba(201,192,177,0.12)]' : 'border-[rgba(201,192,177,0.25)] bg-transparent'}`}>
                   <div className="flex items-center justify-between">
-                    <span className={`text-[10px] font-semibold uppercase tracking-widest ${l === q.layer ? layerColors.text[l] : l < q.layer ? 'text-[rgba(24,17,10,0.45)]' : 'text-slate-700'}`}>
+                    <span className={`text-[10px] font-semibold uppercase tracking-widest ${l === q.layer ? layerColors.text[l] : l < q.layer ? 'text-[#939084]' : 'text-[#939084]'}`}>
                       {l < q.layer ? '✓ ' : ''}Layer {l}
                     </span>
                     {l === q.layer && (
                       <span className={`text-[10px] font-medium ${layerColors.text[l]}`}>{posInLayer}/{layerLen}</span>
                     )}
                   </div>
-                  <div className="h-1 rounded-full bg-[rgba(24,17,10,0.06)] overflow-hidden">
+                  <div className="h-1 rounded-full bg-[rgba(201,192,177,0.25)] overflow-hidden">
                     <div className={`h-full rounded-full transition-all duration-500 ${layerColors.bar[l]}`}
                       style={{ width: l < q.layer ? '100%' : l === q.layer ? `${(posInLayer / layerLen) * 100}%` : '0%' }} />
                   </div>
@@ -1019,13 +1019,13 @@ export default function QuestionnairePage() {
             </div>
 
             <div className="flex items-center gap-3 mb-1">
-              <div className="flex-1 h-1 bg-[rgba(24,17,10,0.06)] rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-[#e8330a] to-purple-500 rounded-full transition-all duration-500"
+              <div className="flex-1 h-1 bg-[rgba(201,192,177,0.25)] rounded-full overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-[#e8330a] to-[#e8330a] rounded-full transition-all duration-500"
                   style={{ width: `${overallPct}%` }} />
               </div>
-              <span className="text-xs text-[rgba(24,17,10,0.45)] tabular-nums w-8 text-right">{overallPct}%</span>
+              <span className="text-xs text-[#939084] tabular-nums w-8 text-right">{overallPct}%</span>
             </div>
-            <p className="text-xs text-[rgba(24,17,10,0.35)] mb-6">Layer {q.layer} of 3 — {q.layerName}</p>
+            <p className="text-xs text-[#939084] mb-6">Layer {q.layer} of 3 — {q.layerName}</p>
           </div>
 
           {/* Question card */}
@@ -1034,11 +1034,11 @@ export default function QuestionnairePage() {
 
               <div className={`inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest mb-4 px-2.5 py-1 rounded-full border ${layerColors.border[q.layer]} ${layerColors.text[q.layer]} bg-white`}>
                 <span>Q{q.id}</span>
-                <span className="text-[#18110a]/20">·</span>
+                <span className="text-[#201515]/20">·</span>
                 <span>{q.layerName}</span>
               </div>
 
-              <h2 className="text-xl sm:text-2xl font-bold text-[#18110a] mb-6 leading-snug">{q.question}</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-[#201515] mb-6 leading-snug">{q.question}</h2>
 
               <div className="mb-8">
                 {q.type === 'text'     && <TextInput     value={textVal} onChange={setAnswer} placeholder={q.placeholder} />}
@@ -1067,18 +1067,18 @@ export default function QuestionnairePage() {
               <div className="flex items-center gap-3">
                 {current > 0 && (
                   <button type="button" onClick={() => navigate('back')}
-                    className="px-5 py-3 rounded border border-[rgba(24,17,10,0.1)] text-[rgba(24,17,10,0.5)] text-sm font-medium hover:border-white/20 hover:text-[#18110a] transition-all">
+                    className="px-5 py-3 rounded border border-[#c5c0b1] text-[#605d52] text-sm font-medium hover:border-white/20 hover:text-[#201515] transition-all">
                     Back
                   </button>
                 )}
                 {!isLast ? (
                   <button type="button" onClick={() => navigate('next')} disabled={!canProceed()}
-                    className={`flex-1 sm:flex-none sm:min-w-[160px] py-3 px-6 rounded text-sm font-semibold transition-all ${canProceed() ? 'bg-[#e8330a] hover:bg-[#e8330a] text-[#18110a] shadow-lg shadow-[#e8330a]/25 active:scale-95' : 'bg-[rgba(24,17,10,0.04)] text-[rgba(24,17,10,0.35)] cursor-not-allowed border border-[rgba(24,17,10,0.06)]'}`}>
+                    className={`flex-1 sm:flex-none sm:min-w-[160px] py-3 px-6 rounded text-sm font-semibold transition-all ${canProceed() ? 'bg-[#e8330a] hover:bg-[#e8330a] text-[#201515] shadow-lg shadow-[#e8330a]/25 active:scale-95' : 'bg-[rgba(201,192,177,0.18)] text-[#939084] cursor-not-allowed border border-[rgba(201,192,177,0.25)]'}`}>
                     Next →
                   </button>
                 ) : (
                   <button type="button" onClick={handleSubmit} disabled={!canProceed()}
-                    className={`flex-1 sm:flex-none sm:min-w-[200px] py-3 px-8 rounded text-sm font-semibold transition-all ${canProceed() ? 'bg-gradient-to-r from-[#e8330a] to-purple-600 hover:from-[#e8330a] hover:to-purple-500 text-[#18110a] shadow-lg shadow-[#e8330a]/30 active:scale-95' : 'bg-[rgba(24,17,10,0.04)] text-[rgba(24,17,10,0.35)] cursor-not-allowed border border-[rgba(24,17,10,0.06)]'}`}>
+                    className={`flex-1 sm:flex-none sm:min-w-[200px] py-3 px-8 rounded text-sm font-semibold transition-all ${canProceed() ? 'bg-[#e8330a] hover:bg-[#e8330a] text-[#201515] shadow-lg shadow-[#e8330a]/30 active:scale-95' : 'bg-[rgba(201,192,177,0.18)] text-[#939084] cursor-not-allowed border border-[rgba(201,192,177,0.25)]'}`}>
                     Get My Diagnosis →
                   </button>
                 )}
@@ -1088,22 +1088,22 @@ export default function QuestionnairePage() {
                 <p className="mt-4 text-sm text-red-400 bg-red-900/20 border border-red-800/40 rounded-lg px-4 py-3">{apiError}</p>
               )}
               {isLast && (
-                <p className="mt-4 text-xs text-[rgba(24,17,10,0.35)] text-center">
+                <p className="mt-4 text-xs text-[#939084] text-center">
                   By submitting you agree to our{' '}
-                  <a href="/terms" className="underline hover:text-[rgba(24,17,10,0.5)] transition-colors">Terms</a>
+                  <a href="/terms" className="underline hover:text-[#605d52] transition-colors">Terms</a>
                   {' '}and{' '}
-                  <a href="/privacy" className="underline hover:text-[rgba(24,17,10,0.5)] transition-colors">Privacy Policy</a>.
+                  <a href="/privacy" className="underline hover:text-[#605d52] transition-colors">Privacy Policy</a>.
                 </p>
               )}
               {!isLast && !canProceed() && (
-                <p className="mt-3 text-xs text-[rgba(24,17,10,0.35)]">Answer to continue — all questions help improve your diagnosis.</p>
+                <p className="mt-3 text-xs text-[#939084]">Answer to continue — all questions help improve your diagnosis.</p>
               )}
             </div>
           </div>
         </div>
 
         {/* Right: live report preview panel */}
-        <aside className="hidden lg:flex flex-col w-[320px] flex-shrink-0 border-l border-[rgba(24,17,10,0.1)] overflow-y-auto">
+        <aside className="hidden lg:flex flex-col w-[320px] flex-shrink-0 border-l border-[#c5c0b1] overflow-y-auto">
           <QuestionPanel answers={answers} current={current} diagCount={diagCount} />
         </aside>
       </div>

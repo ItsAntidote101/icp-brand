@@ -18,25 +18,35 @@
   font-display: swap;
 }
 
-/* ── Design tokens ────────────────────────────────────────────────────────── */
+/* ── Design tokens (Zapier-aligned) ──────────────────────────────────────── */
 :root {
   --font-heading: 'PolySans Median', -apple-system, system-ui, sans-serif;
   --font-body:    'PolySans Neutral', -apple-system, system-ui, sans-serif;
-  --color-primary: #18110a;
-  --color-body:    rgba(24, 17, 10, 0.88);
-  --color-muted:   rgba(24, 17, 10, 0.5);
-  --color-bg:      #faf6ef;
-  --color-bg-soft: #fff;
-  --color-accent:  #e8330a;
-  --color-border:  rgba(24, 17, 10, 0.12);
 
-  /* kept for backward compat */
-  --brand-primary: #18110a;
-  --brand-body:    rgba(24, 17, 10, 0.88);
-  --brand-muted:   rgba(24, 17, 10, 0.5);
-  --brand-bg:      #faf6ef;
-  --brand-bg-alt:  #fff;
-  --brand-border:  rgba(24, 17, 10, 0.12);
+  /* Surfaces */
+  --color-canvas:      #fffefb;   /* warm off-white — page background */
+  --color-canvas-soft: #f8f4f0;   /* cream — card / inset surface */
+
+  /* Text hierarchy */
+  --color-ink:         #201515;   /* deep coffee — headings + primary text */
+  --color-body:        #605d52;   /* default body text */
+  --color-body-mid:    #939084;   /* secondary / metadata */
+  --color-mute:        #c5c0b1;   /* dividers, borders, fine print */
+
+  /* Accent */
+  --color-accent:      #e8330a;   /* brand orange — CTAs */
+
+  /* Legacy aliases */
+  --color-primary:     #201515;
+  --color-bg:          #fffefb;
+  --color-bg-soft:     #f8f4f0;
+  --color-border:      #c5c0b1;
+  --brand-primary:     #201515;
+  --brand-body:        #605d52;
+  --brand-muted:       #939084;
+  --brand-bg:          #fffefb;
+  --brand-bg-alt:      #f8f4f0;
+  --brand-border:      #c5c0b1;
 }
 
 /* ── Base ─────────────────────────────────────────────────────────────────── */
@@ -47,11 +57,10 @@ html { overflow-x: clip; }
 body {
   font-family: var(--font-body);
   color: var(--color-body);
-  background: var(--color-bg);
+  background: var(--color-canvas);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: clip;
-  /* safe-area insets for notched phones */
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
 }
@@ -61,6 +70,7 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 1.1;
+  color: var(--color-ink);
 }
 
 h1 { font-size: clamp(40px, 6vw, 72px); }
@@ -82,7 +92,7 @@ h3 { font-size: clamp(20px, 2.5vw, 28px); }
     transition: background 0.15s;
   }
   .nav-link:hover {
-    background: rgba(136, 136, 137, 0.08);
+    background: rgba(201, 192, 177, 0.25);
   }
   .animate-marquee {
     animation: marquee 32s linear infinite;
@@ -96,7 +106,6 @@ h3 { font-size: clamp(20px, 2.5vw, 28px); }
   .font-body {
     font-family: var(--font-body);
   }
-  /* section vertical rhythm — no horizontal padding, container handles that */
   .section-pad {
     padding-top: 100px;
     padding-bottom: 100px;
@@ -150,7 +159,7 @@ input[type='range'] {
   width: 100%;
   height: 6px;
   border-radius: 9999px;
-  background: rgba(24, 17, 10, 0.12);
+  background: #c5c0b1;
   outline: none;
   cursor: pointer;
 }
@@ -161,8 +170,8 @@ input[type='range']::-webkit-slider-thumb {
   height: 24px;
   border-radius: 50%;
   background: #e8330a;
-  border: 2px solid #fff;
-  box-shadow: 0 1px 4px rgba(24,17,10,0.2);
+  border: 2px solid #fffefb;
+  box-shadow: 0 1px 4px rgba(32,21,21,0.2);
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
@@ -175,15 +184,13 @@ input[type='range']::-moz-range-thumb {
   height: 24px;
   border-radius: 50%;
   background: #e8330a;
-  border: 2px solid #fff;
-  box-shadow: 0 1px 4px rgba(24,17,10,0.2);
+  border: 2px solid #fffefb;
+  box-shadow: 0 1px 4px rgba(32,21,21,0.2);
   cursor: pointer;
 }
 
 /* ── Mobile utilities ─────────────────────────────────────────────────────── */
 @media (max-width: 640px) {
-  /* Ensure tap targets are at least 44px */
   button, a, [role="button"] { min-height: 44px; }
-  /* No massive horizontal padding on small screens */
   .mob-px { padding-left: clamp(16px, 4vw, 24px) !important; padding-right: clamp(16px, 4vw, 24px) !important; }
 }

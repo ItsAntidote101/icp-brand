@@ -11,12 +11,12 @@ import SocialProofToast from '@/components/SocialProofToast'
 export const dynamic = 'force-static'
 
 // ── Zapier-style palette ──────────────────────────────────────────────────────
-const Warm       = '#faf6ef'
-const Dark       = '#18110a'
+const Warm       = '#fffefb'
+const Dark       = '#201515'
 const Orange     = '#e8330a'
-const Text       = '#18110a'
-const Muted      = 'rgba(24,17,10,0.5)'
-const Border     = 'rgba(24,17,10,0.12)'
+const Text       = '#201515'
+const Muted      = '#605d52'
+const Border     = '#c5c0b1'
 const DarkMuted  = 'rgba(255,255,255,0.5)'
 const DarkBorder = 'rgba(255,255,255,0.12)'
 
@@ -315,7 +315,7 @@ export default function Page() {
 
         ctx.beginPath()
         ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2)
-        ctx.fillStyle = 'rgba(24,17,10,0.15)'
+        ctx.fillStyle = 'rgba(201,192,177,0.45)'
         ctx.fill()
       }
 
@@ -393,7 +393,7 @@ export default function Page() {
         .nav-link:hover { color: ${Text} !important; }
         .btn-primary:hover { background: #c82c08 !important; }
         .btn-dark:hover { background: #2c1e0f !important; }
-        .btn-ghost:hover { background: rgba(24,17,10,0.05) !important; }
+        .btn-ghost:hover { background: rgba(201,192,177,0.18) !important; }
         .btn-ghost-dark:hover { background: rgba(255,255,255,0.08) !important; }
         /* Mobile responsive fixes */
         @media (max-width: 767px) {
@@ -591,7 +591,7 @@ export default function Page() {
               border: `1.5px solid ${Border}`, borderRadius: 6, padding: '9px 16px',
               background: bg, backdropFilter: 'blur(4px)',
               display: 'inline-flex', alignItems: 'center', gap: 8, flexShrink: 0,
-              boxShadow: '0 2px 6px rgba(24,17,10,0.06)',
+              boxShadow: '0 2px 6px rgba(201,192,177,0.25)',
             })
             const rows: string[][] = [
               ['ICP Health Score', 'Critical Findings', 'CAC Before / After', 'LTV:CAC Ratio', 'Quick Wins', 'Weekly Intelligence', 'Executive Summary', 'Improvement Roadmap', 'Budget Efficiency', 'Close Rate Uplift'],
@@ -944,7 +944,7 @@ export default function Page() {
                     style={{ objectFit: 'cover', objectPosition: 'center' }}
                   />
                   {/* Company overlay */}
-                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(24,17,10,0.18)' }}>
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(201,192,177,0.45)' }}>
                     <p style={{ fontFamily: fontSerif, fontSize: 'clamp(18px,2.5vw,28px)', fontWeight: 700, color: '#fff', letterSpacing: '0.12em', textTransform: 'uppercase', textAlign: 'center', margin: 0, textShadow: '0 2px 12px rgba(0,0,0,0.3)' }}>
                       {t.company}
                     </p>
