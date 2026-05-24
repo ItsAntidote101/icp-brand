@@ -10,6 +10,7 @@ import {
   RefreshCw, Bell, Brain, Send, Settings, HelpCircle, LogOut,
   MessageCircle, ArrowUp, UserCheck, BrainCircuit, Clock, Lock,
   Star, Flame, AlertTriangle, Camera, Pencil,
+  Users, Search, Filter, DollarSign,
 } from 'lucide-react'
 import { AreaChart, Area, ResponsiveContainer, Tooltip } from 'recharts'
 
@@ -33,7 +34,7 @@ function convertAmount(amount: number, fromCurrency: string, toCurrency: string)
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type Tab = 'overview' | 'intelligence' | 'reports' | 'account'
+type Tab = 'overview' | 'audience' | 'search' | 'funnel' | 'economics' | 'intelligence' | 'reports' | 'account'
 
 type UserData = {
   id: string; email: string; full_name: string | null
@@ -95,6 +96,27 @@ const sevColor     = (s: string) => s === 'Critical' ? '#ef4444' : s === 'Warnin
 const sevBg        = (s: string) => s === 'Critical' ? '#fee2e2' : s === 'Warning' ? '#fef3c7' : '#dcfce7'
 const impactColor  = (i: string) => i === 'High' ? '#ef4444' : i === 'Medium' ? '#d97706' : '#16a34a'
 const impactBg     = (i: string) => i === 'High' ? '#fee2e2' : i === 'Medium' ? '#fef3c7' : '#dcfce7'
+
+// ─── Category helpers ─────────────────────────────────────────────────────────
+
+function catBreakdownScore(diag: DiagnosisData, labels: string[]): number | null {
+  const bd = diag.breakdown ?? []
+  const relevant = bd.filter(b => labels.some(l => b.label.toLowerCase().includes(l.toLowerCase())))
+  if (relevant.length === 0) return null
+  return Math.round(relevant.reduce((s, b) => s + b.score, 0) / relevant.length)
+}
+
+function catFindings(diag: DiagnosisData, keywords: string[]): Finding[] {
+  return getFindings(diag).filter(f =>
+    keywords.some(k => f.title.toLowerCase().includes(k) || f.explanation.toLowerCase().includes(k))
+  )
+}
+
+function catWins(diag: DiagnosisData, keywords: string[]): QuickWin[] {
+  return (diag.quick_wins ?? []).filter(w =>
+    keywords.some(k => w.action.toLowerCase().includes(k))
+  )
+}
 
 function greeting(name: string | null) {
   const h = new Date().getHours()
@@ -190,6 +212,23 @@ function AnimatedGauge({ score, size = 140 }: { score: number; size?: number }) 
         <div style={{ fontFamily: font, fontSize: 38, fontWeight: 800, color: P, lineHeight: 1 }}>{cur}</div>
         <div style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, marginTop: 2 }}>/100</div>
       </div>
+    </div>
+  )
+}
+
+function MiniGauge({ score, size = 72 }: { score: number; size?: number }) {
+  const [cur, setCur] = useState(0)
+  useEffect(() => { const t = setTimeout(() => setCur(score), 80); return () => clearTimeout(t) }, [score])
+  const r = (size / 2) * 0.72; const circ = 2 * Math.PI * r; const fill = (cur / 100) * circ
+  return (
+    <div style={{ position: 'relative', width: size, height: size, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ position: 'absolute', transform: 'rotate(-90deg)' }}>
+        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={Pborder} strokeWidth={6} />
+        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={scoreColor(score)} strokeWidth={6}
+          strokeDasharray={`${fill} ${circ}`} strokeLinecap="round"
+          style={{ transition: 'stroke-dasharray 1.2s cubic-bezier(0.16,1,0.3,1)' }} />
+      </svg>
+      <span style={{ fontFamily: font, fontSize: size < 80 ? 16 : 18, fontWeight: 800, color: P }}>{cur}</span>
     </div>
   )
 }
@@ -1093,6 +1132,510 @@ function MilestonesSection({ milestones }: { milestones: Milestone[] }) {
           )
         })}
       </div>
+    </div>
+  )
+}
+
+// ─── Shared category tab sub-components ──────────────────────────────────────
+
+function NoDiagnosisPlaceholder({ tabName }: { tabName: string }) {
+  return (
+    <div style={{ textAlign: 'center', padding: '60px 24px', background: '#f8f4f0', borderRadius: 12, border: `1.5px dashed ${Pborder}` }}>
+      <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(232,51,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+        <Lock size={24} color={Accent} />
+      </div>
+      <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: '0 0 8px', letterSpacing: '-0.01em' }}>Run a diagnosis to unlock {tabName}</p>
+      <p style={{ fontFamily: fontB, fontSize: 14, color: Pmuted, margin: '0 0 24px', lineHeight: 1.6, maxWidth: 360, display: 'inline-block' }}>
+        Your {tabName.toLowerCase()} analysis will appear here after your first diagnostic.
+      </p>
+      <Link href="/questionnaire" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: P, color: '#fff', textDecoration: 'none', fontFamily: font, fontWeight: 600, fontSize: 14, padding: '13px 24px', borderRadius: 12 }}>
+        Run First Diagnosis <ArrowRight size={15} />
+      </Link>
+    </div>
+  )
+}
+
+function CategoryTabHeader({ title, subtitle, score, icon }: {
+  title: string; subtitle: string; score: number | null; icon: React.ReactNode
+}) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 4, flexWrap: 'wrap' }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(232,51,10,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: Accent, flexShrink: 0 }}>
+            {icon}
+          </div>
+          <h2 style={{ fontFamily: font, fontSize: 'clamp(18px,3vw,24px)', fontWeight: 700, color: P, margin: 0, letterSpacing: '-0.02em' }}>{title}</h2>
+        </div>
+        <p style={{ fontFamily: fontB, fontSize: 14, color: Pmuted, margin: 0, lineHeight: 1.5 }}>{subtitle}</p>
+      </div>
+      {score !== null && (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+          <MiniGauge score={score} />
+          <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, color: Pmuted, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Category Score</span>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function CategoryFindingsSection({ findings, emptyMessage }: { findings: Finding[]; emptyMessage?: string }) {
+  const [expandedIdx, setExpandedIdx] = useState<number | null>(null)
+  if (findings.length === 0) {
+    return (
+      <div style={{ background: '#f8f4f0', borderRadius: 12, padding: '20px 24px', border: `1px solid ${Pborder}` }}>
+        <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: 0 }}>
+          {emptyMessage ?? 'No findings in this category for your current report.'}
+        </p>
+      </div>
+    )
+  }
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      {findings.map((f, i) => (
+        <div key={i} style={{ background: '#fff', border: `1px solid ${Pborder}`, borderLeft: `4px solid ${sevColor(f.severity)}`, borderRadius: '0 14px 14px 0', padding: '18px 22px' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+            <span style={{ fontFamily: font, fontSize: 22, fontWeight: 700, color: P, opacity: 0.1, lineHeight: 1, flexShrink: 0, minWidth: 30 }}>
+              {String(i + 1).padStart(2, '0')}
+            </span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 5 }}>
+                <h3 style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: 0 }}>{f.title}</h3>
+                <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: sevColor(f.severity), background: sevBg(f.severity), padding: '2px 8px', borderRadius: 100 }}>
+                  {f.severity}
+                </span>
+              </div>
+              <p style={{ fontFamily: fontB, fontSize: 13, color: '#605d52', lineHeight: 1.65, margin: 0,
+                ...(expandedIdx !== i ? { display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as React.CSSProperties : {}) }}>
+                {f.explanation}
+              </p>
+              <button onClick={() => setExpandedIdx(expandedIdx === i ? null : i)}
+                style={{ marginTop: 7, fontFamily: fontB, fontSize: 12, fontWeight: 600, color: P, background: 'none', border: 'none', cursor: 'pointer', padding: 0, opacity: 0.6, display: 'flex', alignItems: 'center', gap: 4 }}>
+                {expandedIdx === i ? <>Show less <ChevronUp size={12} /></> : <>Read more <ChevronDown size={12} /></>}
+              </button>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function CategoryWinsSection({ wins, emptyMessage }: { wins: QuickWin[]; emptyMessage?: string }) {
+  if (wins.length === 0) {
+    return (
+      <div style={{ background: '#f8f4f0', borderRadius: 12, padding: '20px 24px', border: `1px solid ${Pborder}` }}>
+        <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: 0 }}>
+          {emptyMessage ?? 'No quick wins for this category yet.'}
+        </p>
+      </div>
+    )
+  }
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {wins.map((w, i) => (
+        <div key={i} style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 12, padding: '16px 20px', display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+          <div style={{ width: 28, height: 28, borderRadius: '50%', background: impactBg(w.impact), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
+            <span style={{ fontFamily: font, fontSize: 12, fontWeight: 700, color: impactColor(w.impact) }}>{i + 1}</span>
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', background: impactBg(w.impact), color: impactColor(w.impact), padding: '2px 8px', borderRadius: 100, display: 'inline-block', marginBottom: 6 }}>
+              {w.impact} Impact
+            </span>
+            <p style={{ fontFamily: fontB, fontSize: 14, color: P, margin: '0 0 4px', lineHeight: 1.4 }}>{w.action}</p>
+            {w.timeline && <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: 0 }}>{w.timeline}</p>}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function BreakdownBarsSection({ diag, labels }: { diag: DiagnosisData; labels: string[] }) {
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { const t = setTimeout(() => setMounted(true), 120); return () => clearTimeout(t) }, [])
+  const items = (diag.breakdown ?? []).filter(b => labels.includes(b.label))
+  if (items.length === 0) {
+    return <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: 0 }}>Detailed breakdown available on Pro and above.</p>
+  }
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {items.map((b, i) => (
+        <div key={b.label}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <span style={{ fontFamily: fontB, fontSize: 14, fontWeight: 600, color: P }}>{b.label}</span>
+            <span style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: scoreColor(b.score) }}>{b.score}</span>
+          </div>
+          <div style={{ height: 10, background: '#f3f4f6', borderRadius: 100, overflow: 'hidden', marginBottom: 8 }}>
+            <div style={{
+              height: '100%', borderRadius: 100, background: scoreColor(b.score),
+              width: mounted ? `${b.score}%` : '0%',
+              transition: `width 900ms cubic-bezier(0.16,1,0.3,1) ${i * 100}ms`,
+            }} />
+          </div>
+          {b.found && <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '0 0 4px', lineHeight: 1.5 }}>{b.found}</p>}
+          {b.why && <p style={{ fontFamily: fontB, fontSize: 12, color: P, margin: 0, lineHeight: 1.5 }}>{b.why}</p>}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// ─── Audience Tab ─────────────────────────────────────────────────────────────
+
+function AudienceTab({ diag, hasReports, score, onUpgrade }: {
+  diag: DiagnosisData; hasReports: boolean; score: number | null; onUpgrade: () => void
+}) {
+  const keywords = ['audience', 'icp', 'target', 'persona', 'buyer', 'profile', 'firmograph', 'segment', 'demographic', 'b2b', 'decision maker', 'account based', 'ideal customer']
+  const findings = catFindings(diag, keywords)
+  const wins     = catWins(diag, keywords)
+  const catScore = catBreakdownScore(diag, ['icp alignment', 'targeting accuracy'])
+
+  if (!hasReports) return <NoDiagnosisPlaceholder tabName="Audience" />
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, animation: 'fadeUp 0.4s ease both' }}>
+      <CategoryTabHeader
+        title="Audience"
+        subtitle="ICP fit, targeting accuracy, firmographic gaps and Meta audience alignment"
+        score={catScore ?? score}
+        icon={<Users size={18} />}
+      />
+
+      <Card>
+        <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 20px' }}>Audience Performance</p>
+        <BreakdownBarsSection diag={diag} labels={['ICP Alignment', 'Targeting Accuracy']} />
+      </Card>
+
+      <div>
+        <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: '0 0 14px', letterSpacing: '-0.02em' }}>Audience Findings</p>
+        <CategoryFindingsSection
+          findings={findings.length > 0 ? findings : getFindings(diag).slice(0, 3)}
+          emptyMessage="No audience-specific findings in this report."
+        />
+        {findings.length === 0 && getFindings(diag).length > 0 && (
+          <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, marginTop: 10 }}>Showing top overall findings. Audience-specific analysis depends on your questionnaire answers about ICP targeting.</p>
+        )}
+      </div>
+
+      {(wins.length > 0 || (diag.quick_wins ?? []).length > 0) && (
+        <div>
+          <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: '0 0 14px', letterSpacing: '-0.02em' }}>Audience Quick Wins</p>
+          <CategoryWinsSection
+            wins={wins.length > 0 ? wins : (diag.quick_wins ?? []).slice(0, 2)}
+            emptyMessage="No audience-specific quick wins in this report."
+          />
+        </div>
+      )}
+
+      <Card style={{ background: '#f8f4f0' }}>
+        <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 12px' }}>Meta Audience Setup Notes</p>
+        <p style={{ fontFamily: fontB, fontSize: 14, color: P, lineHeight: 1.65, margin: '0 0 14px' }}>
+          Your audience findings above apply directly to your Meta (Facebook/Instagram) audience setup. Cross-check your saved audiences against the ICP profile in your diagnostic to identify misalignment.
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {[
+            'Narrow to exact job titles from your ICP — not broad interest categories',
+            'Use company size targeting that matches your stated firmographic profile',
+            'Exclude current customers and lookalike audiences that skew too broad',
+          ].map((tip, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+              <span style={{ fontFamily: fontB, fontSize: 13, color: Accent, flexShrink: 0, marginTop: 2 }}>→</span>
+              <span style={{ fontFamily: fontB, fontSize: 13, color: '#605d52', lineHeight: 1.55 }}>{tip}</span>
+            </div>
+          ))}
+        </div>
+      </Card>
+    </div>
+  )
+}
+
+// ─── Search Tab ───────────────────────────────────────────────────────────────
+
+function SearchTab({ diag, hasReports, score, onUpgrade }: {
+  diag: DiagnosisData; hasReports: boolean; score: number | null; onUpgrade: () => void
+}) {
+  const keywords = ['keyword', 'search', 'google', 'cpc', 'bid', 'ad copy', 'creative', 'campaign', 'intent', 'query', 'ppc', 'ad spend', 'search term']
+  const findings = catFindings(diag, keywords)
+  const wins     = catWins(diag, keywords)
+  const catScore = catBreakdownScore(diag, ['channel efficiency', 'message to market'])
+
+  if (!hasReports) return <NoDiagnosisPlaceholder tabName="Search" />
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, animation: 'fadeUp 0.4s ease both' }}>
+      <CategoryTabHeader
+        title="Search"
+        subtitle="Google keyword targeting, intent alignment, CPC benchmarks and ad creative performance"
+        score={catScore ?? score}
+        icon={<Search size={18} />}
+      />
+
+      <Card>
+        <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 20px' }}>Search Performance</p>
+        <BreakdownBarsSection diag={diag} labels={['Channel Efficiency', 'Message to Market Fit']} />
+      </Card>
+
+      <div>
+        <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: '0 0 14px', letterSpacing: '-0.02em' }}>Search Findings</p>
+        <CategoryFindingsSection
+          findings={findings.length > 0 ? findings : getFindings(diag).slice(0, 2)}
+          emptyMessage="No search-specific findings in this report."
+        />
+        {findings.length === 0 && getFindings(diag).length > 0 && (
+          <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, marginTop: 10 }}>Showing top overall findings. Search-specific analysis depends on your questionnaire answers about keyword strategy.</p>
+        )}
+      </div>
+
+      <div>
+        <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: '0 0 14px', letterSpacing: '-0.02em' }}>Search Quick Wins</p>
+        <CategoryWinsSection
+          wins={wins.length > 0 ? wins : (diag.quick_wins ?? []).slice(0, 2)}
+          emptyMessage="No search-specific quick wins in this report."
+        />
+      </div>
+
+      <Card style={{ background: '#f8f4f0' }}>
+        <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 14px' }}>Google Search Benchmarks</p>
+        <p style={{ fontFamily: fontB, fontSize: 14, color: P, lineHeight: 1.65, margin: '0 0 16px' }}>
+          B2B SaaS average CPCs on Google Search range from $8 to $40 per click depending on keyword intent. Bottom-of-funnel terms (product comparisons, alternatives) typically convert 3 to 5x better than awareness-stage terms.
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10 }}>
+          {[
+            { label: 'Awareness CPC', value: '$3 - $8', sub: 'Low intent, high volume' },
+            { label: 'Consideration CPC', value: '$8 - $20', sub: 'Category terms' },
+            { label: 'Decision CPC', value: '$20 - $40+', sub: 'High intent, best ROI' },
+          ].map(({ label, value, sub }) => (
+            <div key={label} style={{ background: BgAlt, borderRadius: 8, padding: '12px 14px' }}>
+              <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: Pmuted, margin: '0 0 6px' }}>{label}</p>
+              <p style={{ fontFamily: font, fontSize: 17, fontWeight: 800, color: P, margin: '0 0 2px', lineHeight: 1 }}>{value}</p>
+              <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: 0 }}>{sub}</p>
+            </div>
+          ))}
+        </div>
+      </Card>
+    </div>
+  )
+}
+
+// ─── Funnel Tab ───────────────────────────────────────────────────────────────
+
+function FunnelTab({ diag, hasReports, score, onUpgrade }: {
+  diag: DiagnosisData; hasReports: boolean; score: number | null; onUpgrade: () => void
+}) {
+  const keywords = ['landing page', 'cta', 'form', 'conversion', 'funnel', 'mobile', 'friction', 'copy', 'message', 'headline', 'above the fold', 'checkout', 'signup', 'trust', 'lead']
+  const findings = catFindings(diag, keywords)
+  const wins     = catWins(diag, keywords)
+  const catScore = catBreakdownScore(diag, ['funnel friction', 'message to market'])
+  const [expanded, setExpanded] = useState(false)
+  const lpText = diag.landing_page_assessment ?? ''
+
+  if (!hasReports) return <NoDiagnosisPlaceholder tabName="Funnel" />
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, animation: 'fadeUp 0.4s ease both' }}>
+      <CategoryTabHeader
+        title="Funnel"
+        subtitle="Landing page health, CTA clarity, form friction, mobile experience and conversion optimization"
+        score={catScore ?? score}
+        icon={<Filter size={18} />}
+      />
+
+      <Card>
+        <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 20px' }}>Funnel Performance</p>
+        <BreakdownBarsSection diag={diag} labels={['Funnel Friction Index', 'Message to Market Fit']} />
+      </Card>
+
+      {lpText ? (
+        <Card>
+          <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: '0 0 12px' }}>Landing Page Assessment</p>
+          <p style={{ fontFamily: fontB, fontSize: 14, color: '#605d52', lineHeight: 1.75, margin: 0,
+            ...(!expanded ? { display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as React.CSSProperties : {}) }}>
+            {lpText}
+          </p>
+          {lpText.length > 200 && (
+            <button onClick={() => setExpanded(e => !e)} style={{ marginTop: 10, fontFamily: fontB, fontSize: 13, color: P, background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 4, opacity: 0.7 }}>
+              {expanded ? <>Show less <ChevronUp size={13} /></> : <>Read more <ChevronDown size={13} /></>}
+            </button>
+          )}
+        </Card>
+      ) : (
+        <Card style={{ background: '#f8f4f0' }}>
+          <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: '0 0 12px' }}>Landing Page Assessment</p>
+          <p style={{ fontFamily: fontB, fontSize: 14, color: '#605d52', lineHeight: 1.75, margin: '0 0 16px' }}>
+            Your landing page assessment will appear in your next report. Pro subscribers get a live AI review of their actual page — competitors, friction points, and conversion fixes.
+          </p>
+          <button onClick={onUpgrade} style={{ fontFamily: font, fontWeight: 600, fontSize: 13, color: P, background: 'none', border: 'none', cursor: 'pointer', padding: 0, opacity: 0.75 }}>
+            See what Pro includes →
+          </button>
+        </Card>
+      )}
+
+      <div>
+        <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: '0 0 14px', letterSpacing: '-0.02em' }}>Funnel Findings</p>
+        <CategoryFindingsSection
+          findings={findings.length > 0 ? findings : getFindings(diag).filter(f => f.severity === 'Critical').slice(0, 2)}
+          emptyMessage="No funnel-specific findings in this report."
+        />
+      </div>
+
+      <div>
+        <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: '0 0 14px', letterSpacing: '-0.02em' }}>Funnel Quick Wins</p>
+        <CategoryWinsSection
+          wins={wins.length > 0 ? wins : (diag.quick_wins ?? []).slice(0, 2)}
+          emptyMessage="No funnel-specific quick wins in this report."
+        />
+      </div>
+
+      <Card style={{ background: '#f8f4f0' }}>
+        <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 14px' }}>Conversion Benchmarks</p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10 }}>
+          {[
+            { label: 'B2B Landing Page CVR', value: '2 - 5%', sub: 'Average for SaaS' },
+            { label: 'Form Completion', value: '10 - 25%', sub: '5 fields max performs best' },
+            { label: 'Mobile Traffic Share', value: '40 - 60%', sub: 'Optimize mobile-first' },
+          ].map(({ label, value, sub }) => (
+            <div key={label} style={{ background: BgAlt, borderRadius: 8, padding: '12px 14px' }}>
+              <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: Pmuted, margin: '0 0 6px' }}>{label}</p>
+              <p style={{ fontFamily: font, fontSize: 17, fontWeight: 800, color: P, margin: '0 0 2px', lineHeight: 1 }}>{value}</p>
+              <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: 0 }}>{sub}</p>
+            </div>
+          ))}
+        </div>
+      </Card>
+    </div>
+  )
+}
+
+// ─── Economics Tab ────────────────────────────────────────────────────────────
+
+function EconomicsTab({ diag, hasReports, score, currency, onUpgrade }: {
+  diag: DiagnosisData; hasReports: boolean; score: number | null; currency: string; onUpgrade: () => void
+}) {
+  const keywords = ['budget', 'waste', 'cac', 'ltv', 'spend', 'cost', 'revenue', 'roi', 'reallocation', 'acquisition cost', 'return', 'profit', 'unit economics']
+  const findings = catFindings(diag, keywords)
+  const wins     = catWins(diag, keywords)
+  const catScore = catBreakdownScore(diag, ['budget reallocation', 'channel efficiency'])
+  const waste    = parseWaste(diag.monthly_waste_estimate)
+  const bo       = diag.business_outcomes
+  const displayWaste = waste.amount > 0 ? convertAmount(waste.amount, waste.fromCurrency, currency) : waste.raw
+
+  if (!hasReports) return <NoDiagnosisPlaceholder tabName="Economics" />
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, animation: 'fadeUp 0.4s ease both' }}>
+      <CategoryTabHeader
+        title="Economics"
+        subtitle="CAC, LTV:CAC ratio, monthly waste estimate and budget reallocation opportunities"
+        score={catScore ?? score}
+        icon={<DollarSign size={18} />}
+      />
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card>
+          <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 8px' }}>Estimated Monthly Waste</p>
+          <div style={{ fontFamily: font, fontSize: 44, fontWeight: 800, color: waste.amount > 0 ? '#ef4444' : P, lineHeight: 1, margin: '0 0 4px' }}>
+            {waste.amount > 0 ? displayWaste : waste.raw}
+          </div>
+          <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: 0 }}>per month</p>
+        </Card>
+
+        {bo?.cac_current ? (
+          <Card>
+            <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 16px' }}>Customer Acquisition Cost</p>
+            <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
+              <div>
+                <p style={{ fontFamily: fontB, fontSize: 12, color: '#dc2626', margin: '0 0 2px' }}>Current</p>
+                <p style={{ fontFamily: font, fontSize: 28, fontWeight: 800, color: P, margin: 0, lineHeight: 1.1 }}>{bo.cac_current}</p>
+              </div>
+              {bo.cac_projected && (
+                <>
+                  <div style={{ width: 1, background: Pborder, alignSelf: 'stretch', flexShrink: 0 }} />
+                  <div>
+                    <p style={{ fontFamily: fontB, fontSize: 12, color: '#16a34a', margin: '0 0 2px' }}>After fix</p>
+                    <p style={{ fontFamily: font, fontSize: 28, fontWeight: 800, color: '#16a34a', margin: 0, lineHeight: 1.1 }}>{bo.cac_projected}</p>
+                  </div>
+                </>
+              )}
+            </div>
+          </Card>
+        ) : (
+          <Card style={{ background: '#f8f4f0' }}>
+            <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 8px' }}>Customer Acquisition Cost</p>
+            <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, lineHeight: 1.6, margin: '0 0 12px' }}>CAC projections are generated in Pro and Agency diagnostic reports.</p>
+            <button onClick={onUpgrade} style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, color: P, background: 'none', border: 'none', cursor: 'pointer', padding: 0, opacity: 0.75 }}>Upgrade to Pro →</button>
+          </Card>
+        )}
+      </div>
+
+      {(bo?.ltv_cac_current || bo?.monthly_revenue_opportunity) && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {bo?.ltv_cac_current && (
+            <Card>
+              <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 16px' }}>LTV : CAC Ratio</p>
+              <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
+                <div>
+                  <p style={{ fontFamily: fontB, fontSize: 12, color: '#d97706', margin: '0 0 2px' }}>Current</p>
+                  <p style={{ fontFamily: font, fontSize: 28, fontWeight: 800, color: P, margin: 0, lineHeight: 1.1 }}>{bo.ltv_cac_current}</p>
+                </div>
+                {bo.ltv_cac_projected && (
+                  <>
+                    <div style={{ width: 1, background: Pborder, alignSelf: 'stretch', flexShrink: 0 }} />
+                    <div>
+                      <p style={{ fontFamily: fontB, fontSize: 12, color: '#16a34a', margin: '0 0 2px' }}>After fix</p>
+                      <p style={{ fontFamily: font, fontSize: 28, fontWeight: 800, color: '#16a34a', margin: 0, lineHeight: 1.1 }}>{bo.ltv_cac_projected}</p>
+                    </div>
+                  </>
+                )}
+              </div>
+            </Card>
+          )}
+          {bo?.monthly_revenue_opportunity && (
+            <Card style={{ background: 'rgba(232,51,10,0.06)', border: `1px solid rgba(232,51,10,0.15)` }}>
+              <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Accent, margin: '0 0 8px' }}>Revenue Opportunity</p>
+              <p style={{ fontFamily: fontB, fontSize: 14, color: P, lineHeight: 1.65, margin: 0 }}>{bo.monthly_revenue_opportunity}</p>
+            </Card>
+          )}
+        </div>
+      )}
+
+      <Card>
+        <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 20px' }}>Budget Efficiency Breakdown</p>
+        <BreakdownBarsSection diag={diag} labels={['Budget Reallocation Opportunity', 'Channel Efficiency']} />
+      </Card>
+
+      <div>
+        <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: '0 0 14px', letterSpacing: '-0.02em' }}>Economics Findings</p>
+        <CategoryFindingsSection
+          findings={findings.length > 0 ? findings : getFindings(diag).slice(0, 2)}
+          emptyMessage="No economics-specific findings in this report."
+        />
+      </div>
+
+      <div>
+        <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: '0 0 14px', letterSpacing: '-0.02em' }}>Economics Quick Wins</p>
+        <CategoryWinsSection
+          wins={wins.length > 0 ? wins : (diag.quick_wins ?? []).slice(0, 2)}
+          emptyMessage="No budget-specific quick wins in this report."
+        />
+      </div>
+
+      <Card style={{ background: '#f8f4f0' }}>
+        <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 14px' }}>B2B Unit Economics Benchmarks</p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10 }}>
+          {[
+            { label: 'Healthy LTV:CAC', value: '3:1 or higher', sub: 'Ideal: 5:1 for SaaS' },
+            { label: 'CAC Payback', value: '12 - 18 months', sub: 'Best-in-class under 12' },
+            { label: 'Budget Waste (avg)', value: '30 - 60%', sub: 'B2B teams with ICP drift' },
+          ].map(({ label, value, sub }) => (
+            <div key={label} style={{ background: BgAlt, borderRadius: 8, padding: '12px 14px' }}>
+              <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: Pmuted, margin: '0 0 6px' }}>{label}</p>
+              <p style={{ fontFamily: font, fontSize: 15, fontWeight: 800, color: P, margin: '0 0 2px', lineHeight: 1.2 }}>{value}</p>
+              <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: 0 }}>{sub}</p>
+            </div>
+          ))}
+        </div>
+      </Card>
     </div>
   )
 }
@@ -3872,12 +4415,20 @@ export default function DashboardPage() {
 
   const TAB_ICONS: Record<Tab, React.ReactNode> = {
     overview:     <LayoutDashboard size={20} />,
+    audience:     <Users size={20} />,
+    search:       <Search size={20} />,
+    funnel:       <Filter size={20} />,
+    economics:    <DollarSign size={20} />,
     intelligence: <Brain size={20} />,
     reports:      <FileText size={20} />,
     account:      <User size={20} />,
   }
 
-  const TAB_LABELS: Record<Tab, string> = { overview: 'Overview', intelligence: 'Intelligence', reports: 'Reports', account: 'Account' }
+  const TAB_LABELS: Record<Tab, string> = {
+    overview: 'Overview', audience: 'Audience', search: 'Search',
+    funnel: 'Funnel', economics: 'Economics',
+    intelligence: 'Intelligence', reports: 'Reports', account: 'Account',
+  }
   const userInitials = (user?.full_name ?? user?.email ?? '?').split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase()
 
   return (
@@ -3948,26 +4499,56 @@ export default function DashboardPage() {
 
         {/* Nav items */}
         <nav style={{ flex: 1, padding: '12px 12px', overflowY: 'auto' }}>
-          {(['overview', 'intelligence', 'reports', 'account'] as Tab[]).map(tab => {
+          {/* Diagnostic sections */}
+          <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: Pmuted, margin: '4px 0 6px', padding: '0 12px' }}>Diagnostic</p>
+          {(['overview', 'audience', 'search', 'funnel', 'economics'] as Tab[]).map(tab => {
             const isActive = activeTab === tab
             return (
               <button key={tab} onClick={() => setActiveTab(tab)} className="sidebar-nav-item"
-                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', marginBottom: 2, textAlign: 'left', background: isActive ? 'rgba(232,51,10,0.08)' : 'transparent', color: isActive ? '#e8330a' : '#605d52', fontFamily: fontB, fontSize: 13, fontWeight: isActive ? 600 : 500, transition: 'background 0.12s' }}>
-                <span style={{ position: 'relative', flexShrink: 0, display: 'flex' }}>
-                  {TAB_ICONS[tab]}
-                  {tab === 'intelligence' && hasNewIntelligence && (
-                    <span style={{ position: 'absolute', top: -2, right: -2, width: 7, height: 7, borderRadius: '50%', background: '#ef4444', border: '1.5px solid #fff' }} />
-                  )}
-                </span>
+                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', marginBottom: 1, textAlign: 'left', background: isActive ? 'rgba(232,51,10,0.08)' : 'transparent', color: isActive ? '#e8330a' : '#605d52', fontFamily: fontB, fontSize: 13, fontWeight: isActive ? 600 : 500, transition: 'background 0.12s' }}>
+                <span style={{ flexShrink: 0, display: 'flex' }}>{TAB_ICONS[tab]}</span>
                 <span style={{ flex: 1 }}>{TAB_LABELS[tab]}</span>
                 {tab === 'overview' && score !== null && (
                   <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, background: scoreLabelBg(score), color: scoreColor(score), padding: '2px 7px', borderRadius: 100, flexShrink: 0 }}>{score}</span>
                 )}
+              </button>
+            )
+          })}
+
+          <div style={{ margin: '10px 0', borderTop: `1px solid ${Pborder}` }} />
+
+          {/* Intelligence */}
+          {(['intelligence'] as Tab[]).map(tab => {
+            const isActive = activeTab === tab
+            return (
+              <button key={tab} onClick={() => setActiveTab(tab)} className="sidebar-nav-item"
+                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', marginBottom: 1, textAlign: 'left', background: isActive ? 'rgba(232,51,10,0.08)' : 'transparent', color: isActive ? '#e8330a' : '#605d52', fontFamily: fontB, fontSize: 13, fontWeight: isActive ? 600 : 500, transition: 'background 0.12s' }}>
+                <span style={{ position: 'relative', flexShrink: 0, display: 'flex' }}>
+                  {TAB_ICONS[tab]}
+                  {hasNewIntelligence && (
+                    <span style={{ position: 'absolute', top: -2, right: -2, width: 7, height: 7, borderRadius: '50%', background: '#ef4444', border: '1.5px solid #fff' }} />
+                  )}
+                </span>
+                <span style={{ flex: 1 }}>{TAB_LABELS[tab]}</span>
+                {hasNewIntelligence && (
+                  <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, background: '#fee2e2', color: '#ef4444', padding: '2px 7px', borderRadius: 100, flexShrink: 0 }}>New</span>
+                )}
+              </button>
+            )
+          })}
+
+          <div style={{ margin: '10px 0', borderTop: `1px solid ${Pborder}` }} />
+
+          {/* Utility */}
+          {(['reports', 'account'] as Tab[]).map(tab => {
+            const isActive = activeTab === tab
+            return (
+              <button key={tab} onClick={() => setActiveTab(tab)} className="sidebar-nav-item"
+                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', marginBottom: 1, textAlign: 'left', background: isActive ? 'rgba(232,51,10,0.08)' : 'transparent', color: isActive ? '#e8330a' : '#605d52', fontFamily: fontB, fontSize: 13, fontWeight: isActive ? 600 : 500, transition: 'background 0.12s' }}>
+                <span style={{ flexShrink: 0, display: 'flex' }}>{TAB_ICONS[tab]}</span>
+                <span style={{ flex: 1 }}>{TAB_LABELS[tab]}</span>
                 {tab === 'reports' && reports.length > 0 && (
                   <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, background: Pborder, color: Pmuted, padding: '2px 7px', borderRadius: 100, flexShrink: 0 }}>{reports.length}</span>
-                )}
-                {tab === 'intelligence' && hasNewIntelligence && (
-                  <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, background: '#fee2e2', color: '#ef4444', padding: '2px 7px', borderRadius: 100, flexShrink: 0 }}>New</span>
                 )}
                 {tab === 'account' && user?.renewal_date && (() => {
                   const days = Math.ceil((new Date(user.renewal_date).getTime() - Date.now()) / 86_400_000)
@@ -4300,6 +4881,10 @@ export default function DashboardPage() {
           </>
         )}
 
+        {activeTab === 'audience'     && <AudienceTab  diag={diag} hasReports={hasReports} score={score} onUpgrade={() => setShowUpgradeModal(true)} />}
+        {activeTab === 'search'       && <SearchTab    diag={diag} hasReports={hasReports} score={score} onUpgrade={() => setShowUpgradeModal(true)} />}
+        {activeTab === 'funnel'       && <FunnelTab    diag={diag} hasReports={hasReports} score={score} onUpgrade={() => setShowUpgradeModal(true)} />}
+        {activeTab === 'economics'    && <EconomicsTab diag={diag} hasReports={hasReports} score={score} currency={currency} onUpgrade={() => setShowUpgradeModal(true)} />}
         {activeTab === 'intelligence' && user && <IntelligenceTab user={user} score={score} hasNewIntelligence={hasNewIntelligence} onUpgrade={() => setShowUpgradeModal(true)} />}
         {activeTab === 'reports' && <ReportsTab reports={reports} dataLoading={dataLoading} />}
         {activeTab === 'account' && user && (
@@ -4401,19 +4986,25 @@ export default function DashboardPage() {
       {user && <ChatWidget user={user} score={score} diag={diag} activeTab={activeTab} />}
 
       {/* ── Mobile bottom tab bar (lg:hidden) ─────────────────────────────── */}
-      <div className="lg:hidden" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'rgba(255,255,255,0.96)', backdropFilter: 'blur(20px)', borderTop: `1px solid ${Pborder}`, display: 'flex', zIndex: 50 }}>
-        {(['overview', 'intelligence', 'reports', 'account'] as Tab[]).map(tab => (
-          <button key={tab} onClick={() => setActiveTab(tab)} style={{
-            flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-            gap: 4, padding: '10px 0', border: 'none', background: 'transparent', cursor: 'pointer',
-            color: activeTab === tab ? P : Pmuted, transition: 'color 0.15s',
-          }}>
-            {TAB_ICONS[tab]}
-            <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: activeTab === tab ? 700 : 500 }}>
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
-            </span>
-          </button>
-        ))}
+      <div className="lg:hidden" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'rgba(255,255,255,0.96)', backdropFilter: 'blur(20px)', borderTop: `1px solid ${Pborder}`, zIndex: 50, overflowX: 'auto' }}>
+        <style>{`.mob-tab-bar::-webkit-scrollbar{display:none}`}</style>
+        <div className="mob-tab-bar" style={{ display: 'flex', minWidth: 'max-content', padding: '0 4px' }}>
+          {(['overview', 'audience', 'search', 'funnel', 'economics', 'intelligence', 'reports', 'account'] as Tab[]).map(tab => (
+            <button key={tab} onClick={() => setActiveTab(tab)} style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              gap: 3, padding: '10px 14px', border: 'none', background: 'transparent', cursor: 'pointer',
+              color: activeTab === tab ? P : Pmuted, transition: 'color 0.15s', flexShrink: 0, position: 'relative',
+            }}>
+              {tab === 'intelligence' && hasNewIntelligence && (
+                <span style={{ position: 'absolute', top: 8, right: 10, width: 6, height: 6, borderRadius: '50%', background: '#ef4444', border: '1px solid #fff' }} />
+              )}
+              {TAB_ICONS[tab]}
+              <span style={{ fontFamily: fontB, fontSize: 9, fontWeight: activeTab === tab ? 700 : 500, whiteSpace: 'nowrap' }}>
+                {TAB_LABELS[tab]}
+              </span>
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   )
