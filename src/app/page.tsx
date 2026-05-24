@@ -533,7 +533,7 @@ export default function Page() {
           </h2>
 
           {/* 6-column analysis grid */}
-          <div style={{ border: `1.5px solid ${Border}`, borderRadius: 0, display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', maxWidth: 1100, margin: '0 auto', overflow: 'hidden' }}
+          <div style={{ border: `1.5px solid ${Border}`, borderRadius: 0, gridTemplateColumns: 'repeat(6, 1fr)', maxWidth: 1100, margin: '0 auto', overflow: 'hidden' }}
                className="hidden md:grid">
             {[
               { Icon: Target,       title: 'ICP Foundation',          sub: 'Who you are targeting and whether it is right' },
@@ -556,7 +556,7 @@ export default function Page() {
           </div>
 
           {/* Mobile: 2-col grid */}
-          <div className="md:hidden" style={{ border: `1.5px solid ${Border}`, borderRadius: 0, display: 'grid', gridTemplateColumns: '1fr 1fr', overflow: 'hidden' }}>
+          <div className="grid md:hidden" style={{ border: `1.5px solid ${Border}`, borderRadius: 0, gridTemplateColumns: '1fr 1fr', overflow: 'hidden' }}>
             {[
               { Icon: Target,       title: 'ICP Foundation' },
               { Icon: Crosshair,    title: 'Ad Targeting' },
@@ -782,7 +782,7 @@ export default function Page() {
           </div>
 
           {/* 3-card grid */}
-          <div style={{ border: `1.5px solid ${Border}`, borderRadius: 0, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', overflow: 'hidden', marginBottom: 0 }}
+          <div style={{ border: `1.5px solid ${Border}`, borderRadius: 0, gridTemplateColumns: 'repeat(3, 1fr)', overflow: 'hidden', marginBottom: 0 }}
                className="hidden md:grid">
             {[
               { num: '01', Icon: FileText, title: 'Answer 22 questions', body: 'Tell us about your targeting and funnel. No ad account access needed. Takes around 5 minutes.', chip: '5 minutes', chipBg: 'rgba(232,51,10,0.1)' },
