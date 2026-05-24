@@ -9,9 +9,9 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-static'
 
-const P       = '#302161'
-const Pmuted  = 'rgba(48,33,97,0.55)'
-const Pborder = 'rgba(48,33,97,0.1)'
+const P       = '#18110a'
+const Pmuted  = 'rgba(24,17,10,0.5)'
+const Pborder = 'rgba(24,17,10,0.12)'
 const font    = "'PolySans Median', -apple-system, system-ui, sans-serif"
 const fontB   = "'PolySans Neutral', -apple-system, system-ui, sans-serif"
 
@@ -19,7 +19,7 @@ const LAST_UPDATED = '22 May 2025'
 
 export default function PrivacyPage() {
   return (
-    <div style={{ fontFamily: fontB, color: P, backgroundColor: '#fff', margin: 0, padding: 0 }}>
+    <div style={{ fontFamily: fontB, color: P, backgroundColor: '#faf6ef', margin: 0, padding: 0 }}>
 
       {/* Nav */}
       <nav style={{
@@ -32,19 +32,13 @@ export default function PrivacyPage() {
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: '16px 40px',
-        background: 'rgba(48,33,97,0.96)',
+        background: 'rgba(24,17,10,0.92)',
         backdropFilter: 'blur(16px)',
         WebkitBackdropFilter: 'blur(16px)',
-        borderBottom: '1px solid rgba(255,255,255,0.1)',
+        borderBottom: '1px solid rgba(255,255,255,0.08)',
       }}>
         <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-          <span style={{
-            width: 34, height: 34, borderRadius: 8,
-            background: 'linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.8) 100%)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-          }}>
-            <span style={{ width: 16, height: 16, background: 'linear-gradient(135deg, #302161 0%, #6c4ddd 100%)', borderRadius: 3, display: 'block' }} />
-          </span>
+          <div style={{ width: 28, height: 28, background: '#e8330a', flexShrink: 0 }} />
           <span style={{ fontFamily: font, fontWeight: 700, fontSize: 16, color: '#fff' }}>ICP Diagnostic</span>
         </Link>
         <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
@@ -55,7 +49,7 @@ export default function PrivacyPage() {
 
       {/* Hero */}
       <section style={{
-        background: 'linear-gradient(135deg, #302161 0%, #4c1d95 100%)',
+        background: '#18110a',
         padding: '140px 24px 80px',
         textAlign: 'center',
       }}>
@@ -195,9 +189,8 @@ export default function PrivacyPage() {
           <div style={{
             marginTop: 16,
             padding: '20px 24px',
-            background: '#f8f7ff',
-            borderRadius: 12,
-            border: `1px solid ${Pborder}`,
+            background: '#faf6ef',
+            border: `1.5px solid ${Pborder}`,
             fontSize: 14,
             lineHeight: 1.8,
             color: Pmuted,
@@ -238,10 +231,10 @@ function Section({ title, children }: { title: string; children: React.ReactNode
         fontFamily: "'PolySans Median', -apple-system, system-ui, sans-serif",
         fontSize: 18,
         fontWeight: 700,
-        color: '#302161',
+        color: '#18110a',
         margin: '0 0 16px',
         paddingBottom: 10,
-        borderBottom: '1px solid rgba(48,33,97,0.1)',
+        borderBottom: '1.5px solid rgba(24,17,10,0.12)',
       }}>
         {title}
       </h2>
@@ -258,7 +251,7 @@ function Para({ children }: { children: React.ReactNode }) {
       margin: 0,
       fontSize: 15,
       lineHeight: 1.8,
-      color: 'rgba(48,33,97,0.7)',
+      color: 'rgba(24,17,10,0.6)',
     }}>
       {children}
     </p>

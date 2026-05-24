@@ -156,7 +156,7 @@ function ImpactBadge({ impact }: { impact: Impact }) {
   const styles: Record<Impact, string> = {
     High: 'bg-indigo-900/30 text-indigo-400 border-indigo-700/40',
     Medium: 'bg-violet-900/30 text-violet-400 border-violet-700/40',
-    Low: 'bg-slate-800/50 text-slate-400 border-slate-700/40',
+    Low: 'bg-slate-800/50 text-[rgba(24,17,10,0.5)] border-slate-700/40',
   }
   return (
     <span className={`text-[11px] font-semibold tracking-wide uppercase px-2.5 py-0.5 rounded-full border ${styles[impact]}`}>
@@ -207,7 +207,7 @@ function CircleScore({ score, animate }: { score: number; animate: boolean }) {
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-4xl font-black text-white leading-none">{score}</span>
+          <span className="text-4xl font-black text-[#18110a] leading-none">{score}</span>
           <span className="text-xs text-slate-500 mt-0.5">/ 100</span>
         </div>
       </div>
@@ -223,13 +223,13 @@ function CircleScore({ score, animate }: { score: number; animate: boolean }) {
 
 function LoadingSkeleton() {
   return (
-    <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+    <div className="min-h-screen bg-[#faf6ef] flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
-        <svg className="animate-spin h-10 w-10 text-indigo-500" viewBox="0 0 24 24" fill="none">
+        <svg className="animate-spin h-10 w-10 text-[#e8330a]" viewBox="0 0 24 24" fill="none">
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
         </svg>
-        <p className="text-slate-400 text-sm font-medium animate-pulse">Generating your diagnostic report…</p>
+        <p className="text-[rgba(24,17,10,0.5)] text-sm font-medium animate-pulse">Generating your diagnostic report…</p>
       </div>
     </div>
   )
@@ -316,16 +316,16 @@ export default function ReportPage({ params }: { params: { id: string } }) {
   if (!report) return <LoadingSkeleton />
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white">
+    <div className="min-h-screen bg-[#faf6ef] text-[#18110a]">
 
       {/* Nav */}
       <nav className="border-b border-white/10 px-6 py-4 flex items-center justify-between max-w-5xl mx-auto">
-        <Link href="/" className="text-sm font-bold tracking-tight text-white">
+        <Link href="/" className="text-sm font-bold tracking-tight text-[#18110a]">
           ICP<span className="text-indigo-400">Diagnostic</span>
         </Link>
         <div className="flex items-center gap-4">
           <span className="text-xs text-slate-500">Report ID: {params.id.slice(0, 8)}…</span>
-          <button className="text-xs font-medium border border-white/10 px-3 py-1.5 rounded-lg text-slate-400 hover:border-white/20 hover:text-white transition-colors">
+          <button className="text-xs font-medium border border-white/10 px-3 py-1.5 rounded-lg text-[rgba(24,17,10,0.5)] hover:border-white/20 hover:text-[#18110a] transition-colors">
             Download PDF
           </button>
         </div>
@@ -339,10 +339,10 @@ export default function ReportPage({ params }: { params: { id: string } }) {
             <span className="inline-block text-[11px] font-semibold uppercase tracking-widest text-indigo-400 bg-indigo-400/10 border border-indigo-400/20 px-3 py-1 rounded-full mb-4">
               ICP Diagnostic Report
             </span>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-white leading-tight mb-2">
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-[#18110a] leading-tight mb-2">
               Your ICP Diagnostic Report
             </h1>
-            <p className="text-slate-400 text-sm mb-1">{report.company}</p>
+            <p className="text-[rgba(24,17,10,0.5)] text-sm mb-1">{report.company}</p>
             <p className="text-slate-600 text-xs">Generated {report.date}</p>
 
             <div className="mt-6 grid grid-cols-3 gap-4">
@@ -352,7 +352,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                 { label: 'Actions Identified', value: `${report.quick_wins.length + 9}` },
               ].map(s => (
                 <div key={s.label} className="bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3">
-                  <p className="text-xl font-bold text-white">{s.value}</p>
+                  <p className="text-xl font-bold text-[#18110a]">{s.value}</p>
                   <p className="text-[11px] text-slate-500 mt-0.5">{s.label}</p>
                 </div>
               ))}
@@ -371,14 +371,14 @@ export default function ReportPage({ params }: { params: { id: string } }) {
         {report.executive_summary && (
           <section className="bg-white/[0.02] border border-white/10 rounded-xl p-6">
             <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center mt-0.5">
+              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-[#e8330a]/20 border border-[#e8330a]/30 flex items-center justify-center mt-0.5">
                 <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-indigo-400">
                   <path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm1 11H9v-2h2v2zm0-4H9V7h2v2z" />
                 </svg>
               </div>
               <div>
                 <p className="text-[11px] font-bold uppercase tracking-wider text-indigo-400 mb-2">Diagnosis Summary</p>
-                <p className="text-slate-300 text-sm leading-relaxed">{report.executive_summary}</p>
+                <p className="text-[rgba(24,17,10,0.65)] text-sm leading-relaxed">{report.executive_summary}</p>
                 {report.monthly_waste_estimate && (
                   <p className="text-xs text-slate-500 mt-2 pt-2 border-t border-white/5">Estimated waste: {report.monthly_waste_estimate}</p>
                 )}
@@ -390,7 +390,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
         {/* ── SECTION 2 · Executive Summary ──────────────────────────────── */}
         <section>
           <div className="mb-6">
-            <h2 className="text-xl font-bold text-white mb-1">Executive Summary</h2>
+            <h2 className="text-xl font-bold text-[#18110a] mb-1">Executive Summary</h2>
             <p className="text-slate-500 text-sm">3 critical findings ranked by revenue impact</p>
           </div>
           <div className="space-y-4">
@@ -399,15 +399,15 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                 key={i}
                 className="flex gap-4 bg-white/[0.03] border border-white/10 rounded-xl p-5 hover:border-white/20 transition-colors"
               >
-                <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 text-sm font-bold">
+                <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-[rgba(24,17,10,0.5)] text-sm font-bold">
                   {i + 1}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                    <h3 className="text-white font-semibold text-sm">{f.title}</h3>
+                    <h3 className="text-[#18110a] font-semibold text-sm">{f.title}</h3>
                     <SeverityBadge severity={f.severity} />
                   </div>
-                  <p className="text-slate-400 text-sm leading-relaxed">{f.explanation}</p>
+                  <p className="text-[rgba(24,17,10,0.5)] text-sm leading-relaxed">{f.explanation}</p>
                 </div>
               </div>
             ))}
@@ -417,7 +417,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
         {/* ── SECTION 3 · Detailed Breakdown ─────────────────────────────── */}
         <section>
           <div className="mb-6">
-            <h2 className="text-xl font-bold text-white mb-1">Detailed Breakdown</h2>
+            <h2 className="text-xl font-bold text-[#18110a] mb-1">Detailed Breakdown</h2>
             <p className="text-slate-500 text-sm">Score, finding, and revenue implication for each diagnostic dimension</p>
           </div>
           <div className="grid sm:grid-cols-2 gap-4">
@@ -432,18 +432,18 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                   className="bg-white/[0.03] border border-white/10 rounded-xl p-5 hover:border-white/20 transition-colors"
                 >
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-white font-semibold text-sm">{card.label}</h3>
+                    <h3 className="text-[#18110a] font-semibold text-sm">{card.label}</h3>
                     <span className={`text-xl font-black ${scoreColor}`}>{card.score}</span>
                   </div>
                   <ScoreBar score={card.score} animate={animate} />
                   <div className="mt-4 space-y-2.5">
                     <div className="flex gap-2">
                       <span className="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider text-slate-600 w-16 pt-0.5">Found</span>
-                      <p className="text-slate-300 text-xs leading-relaxed">{card.found}</p>
+                      <p className="text-[rgba(24,17,10,0.65)] text-xs leading-relaxed">{card.found}</p>
                     </div>
                     <div className="flex gap-2">
                       <span className="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider text-slate-600 w-16 pt-0.5">Why it matters</span>
-                      <p className="text-slate-400 text-xs leading-relaxed">{card.why}</p>
+                      <p className="text-[rgba(24,17,10,0.5)] text-xs leading-relaxed">{card.why}</p>
                     </div>
                   </div>
                 </div>
@@ -455,16 +455,16 @@ export default function ReportPage({ params }: { params: { id: string } }) {
         {/* ── SECTION 4 · Quick Wins ──────────────────────────────────────── */}
         <section>
           <div className="mb-6">
-            <h2 className="text-xl font-bold text-white mb-1">Quick Wins</h2>
+            <h2 className="text-xl font-bold text-[#18110a] mb-1">Quick Wins</h2>
             <p className="text-slate-500 text-sm">3 actions you can implement this week — no agency required</p>
           </div>
           <div className="space-y-4">
             {report.quick_wins.map((w, i) => (
               <div
                 key={i}
-                className="flex gap-4 bg-white/[0.03] border border-white/10 rounded-xl p-5 hover:border-indigo-500/20 hover:border-opacity-100 transition-all group"
+                className="flex gap-4 bg-white/[0.03] border border-white/10 rounded-xl p-5 hover:border-[#e8330a]/20 hover:border-opacity-100 transition-all group"
               >
-                <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-bold text-sm">
+                <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-[#e8330a]/20 border border-[#e8330a]/30 flex items-center justify-center text-indigo-400 font-bold text-sm">
                   {i + 1}
                 </div>
                 <div className="flex-1">
@@ -485,7 +485,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
         {report.business_outcomes && (
           <section>
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-white mb-1">Business Outcomes</h2>
+              <h2 className="text-xl font-bold text-[#18110a] mb-1">Business Outcomes</h2>
               <p className="text-slate-500 text-sm">Projected unit economics before and after fixing your ICP</p>
             </div>
             <div className="grid sm:grid-cols-2 gap-4 mb-4">
@@ -526,11 +526,11 @@ export default function ReportPage({ params }: { params: { id: string } }) {
 
             {/* Revenue opportunity */}
             {report.business_outcomes.monthly_revenue_opportunity && (
-              <div className="bg-indigo-950/30 border border-indigo-500/20 rounded-xl p-5">
+              <div className="bg-indigo-950/30 border border-[#e8330a]/20 rounded-xl p-5">
                 <div className="flex items-start gap-4">
                   <div className="flex-1">
                     <p className="text-[11px] font-bold uppercase tracking-wider text-indigo-400 mb-1">Monthly Revenue Opportunity</p>
-                    <p className="text-slate-300 text-sm leading-relaxed">{report.business_outcomes.monthly_revenue_opportunity}</p>
+                    <p className="text-[rgba(24,17,10,0.65)] text-sm leading-relaxed">{report.business_outcomes.monthly_revenue_opportunity}</p>
                   </div>
                 </div>
               </div>
@@ -544,7 +544,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
           {/* Blurred locked preview */}
           <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02]">
             <div className="blur-sm pointer-events-none select-none p-8 space-y-5 opacity-50">
-              <h3 className="text-white font-bold text-lg">Full Optimization Roadmap — Weeks 1–12</h3>
+              <h3 className="text-[#18110a] font-bold text-lg">Full Optimization Roadmap — Weeks 1–12</h3>
               {[
                 'Week 1–2: Rebuild ICP definition with firmographic and psychographic filters',
                 'Week 3–4: Restructure ad account with ICP-segmented campaign architecture',
@@ -554,26 +554,26 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                 'Week 11–12: A/B test value proposition variants against control',
               ].map((item, i) => (
                 <div key={i} className="flex gap-3 items-start">
-                  <div className="w-5 h-5 rounded-full bg-indigo-500/30 flex-shrink-0 mt-0.5" />
-                  <p className="text-slate-300 text-sm">{item}</p>
+                  <div className="w-5 h-5 rounded-full bg-[#e8330a]/30 flex-shrink-0 mt-0.5" />
+                  <p className="text-[rgba(24,17,10,0.65)] text-sm">{item}</p>
                 </div>
               ))}
               <div className="h-px bg-white/10 my-4" />
-              <p className="text-slate-400 text-xs">+ Monthly monitoring dashboards · Weekly performance snapshots · Quarterly deep-dive reports</p>
+              <p className="text-[rgba(24,17,10,0.5)] text-xs">+ Monthly monitoring dashboards · Weekly performance snapshots · Quarterly deep-dive reports</p>
             </div>
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0a0a0f]/60 to-[#0a0a0f]" />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#faf6ef]/60 to-[#faf6ef]" />
           </div>
 
           {/* Paywall card */}
           <div className="relative -mt-8 z-10">
-            <div className="bg-gradient-to-br from-[#13131f] to-[#0e0e1a] border border-indigo-500/20 rounded-2xl p-8 text-center shadow-2xl shadow-indigo-950/50">
+            <div className="bg-gradient-to-br from-[#13131f] to-[#0e0e1a] border border-[#e8330a]/20 rounded-2xl p-8 text-center shadow-2xl shadow-indigo-950/50">
               <span className="inline-block text-[11px] font-semibold uppercase tracking-widest text-indigo-400 bg-indigo-400/10 border border-indigo-400/20 px-3 py-1 rounded-full mb-5">
                 🔒 Unlock Full Access
               </span>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-3">
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-[#18110a] mb-3">
                 Unlock Your Full Optimization Roadmap
               </h2>
-              <p className="text-slate-400 text-sm max-w-xl mx-auto mb-2 leading-relaxed">
+              <p className="text-[rgba(24,17,10,0.5)] text-sm max-w-xl mx-auto mb-2 leading-relaxed">
                 Your report identified {report.breakdown.filter(b => b.score < 50).length} critical gaps costing you leads every day.
                 Get the complete week-by-week fix plan, monthly monitoring, and ongoing diagnostic updates.
               </p>
@@ -606,27 +606,27 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                     key={tier.name}
                     className={`relative rounded-xl p-5 text-left border transition-all ${
                       tier.highlight
-                        ? 'border-indigo-500 bg-indigo-600/10 shadow-lg shadow-indigo-900/30'
+                        ? 'border-[#e8330a] bg-[#e8330a]/10 shadow-lg shadow-indigo-900/30'
                         : 'border-white/10 bg-white/[0.03]'
                     }`}
                   >
                     {tier.highlight && (
                       <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                        <span className="text-[10px] font-bold uppercase tracking-widest bg-indigo-600 text-white px-3 py-1 rounded-full">
+                        <span className="text-[10px] font-bold uppercase tracking-widest bg-[#e8330a] text-[#18110a] px-3 py-1 rounded-full">
                           Most Popular
                         </span>
                       </div>
                     )}
                     <div className="mb-3">
-                      <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">{tier.name}</p>
+                      <p className="text-[rgba(24,17,10,0.5)] text-xs font-semibold uppercase tracking-wider mb-1">{tier.name}</p>
                       <div className="flex items-baseline gap-0.5 flex-wrap">
-                        <span className="text-2xl font-black text-white">{PRICES[tier.name]}</span>
+                        <span className="text-2xl font-black text-[#18110a]">{PRICES[tier.name]}</span>
                         <span className="text-slate-500 text-sm">/mo</span>
                       </div>
                     </div>
                     <ul className="space-y-1.5 mb-5">
                       {tier.features.map(f => (
-                        <li key={f} className="flex items-start gap-2 text-xs text-slate-400">
+                        <li key={f} className="flex items-start gap-2 text-xs text-[rgba(24,17,10,0.5)]">
                           <span className="text-indigo-400 flex-shrink-0 mt-px">✓</span>
                           {f}
                         </li>
@@ -636,8 +636,8 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                       onClick={() => openSubscribe(tier.name)}
                       className={`w-full py-2.5 rounded-lg text-sm font-semibold transition-all active:scale-95 ${
                         tier.highlight
-                          ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow shadow-indigo-600/30'
-                          : 'border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white'
+                          ? 'bg-[#e8330a] hover:bg-[#e8330a] text-[#18110a] shadow shadow-[#e8330a]/30'
+                          : 'border border-white/10 bg-white/5 text-[rgba(24,17,10,0.65)] hover:bg-white/10 hover:text-[#18110a]'
                       }`}
                     >
                       Subscribe
@@ -663,10 +663,10 @@ export default function ReportPage({ params }: { params: { id: string } }) {
             <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
 
             {/* Modal */}
-            <div className="relative w-full max-w-md bg-[#13131f] border border-indigo-500/20 rounded-2xl p-7 shadow-2xl shadow-indigo-950/60">
+            <div className="relative w-full max-w-md bg-[#fff] border border-[#e8330a]/20 rounded-2xl p-7 shadow-2xl shadow-indigo-950/60">
               <button
                 onClick={() => setShowModal(false)}
-                className="absolute top-4 right-4 text-slate-500 hover:text-white transition-colors text-xl leading-none"
+                className="absolute top-4 right-4 text-slate-500 hover:text-[#18110a] transition-colors text-xl leading-none"
               >
                 ✕
               </button>
@@ -675,8 +675,8 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                 {selectedTier} — {PRICES[selectedTier]}/mo
               </span>
 
-              <h3 className="text-xl font-bold text-white mb-1">Enter your email to continue</h3>
-              <p className="text-slate-400 text-sm mb-5">
+              <h3 className="text-xl font-bold text-[#18110a] mb-1">Enter your email to continue</h3>
+              <p className="text-[rgba(24,17,10,0.5)] text-sm mb-5">
                 Your receipt and subscription details will be sent here.
               </p>
 
@@ -687,7 +687,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                 onChange={e => setEmail(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') handleSubscribe() }}
                 placeholder="you@company.com"
-                className="w-full bg-white/5 border border-white/10 focus:border-indigo-500 rounded-xl px-4 py-3 text-white placeholder-slate-500 text-sm outline-none transition-colors mb-3"
+                className="w-full bg-white/5 border border-white/10 focus:border-[#e8330a] rounded-xl px-4 py-3 text-[#18110a] placeholder-slate-500 text-sm outline-none transition-colors mb-3"
               />
 
               {subscribeError && (
@@ -697,7 +697,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
               <button
                 onClick={handleSubscribe}
                 disabled={subscribing}
-                className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold transition-all active:scale-95 flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-xl bg-[#e8330a] hover:bg-[#e8330a] disabled:opacity-50 disabled:cursor-not-allowed text-[#18110a] text-sm font-semibold transition-all active:scale-95 flex items-center justify-center gap-2"
               >
                 {subscribing ? (
                   <>
@@ -723,13 +723,13 @@ export default function ReportPage({ params }: { params: { id: string } }) {
         <footer className="border-t border-white/10 pt-8 pb-4 text-center text-slate-600 text-xs">
           <span>ICP<span className="text-indigo-400/50">Diagnostic</span></span>
           <span className="mx-2">·</span>
-          <Link href="/" className="hover:text-slate-400 transition-colors">Back to Home</Link>
+          <Link href="/" className="hover:text-[rgba(24,17,10,0.5)] transition-colors">Back to Home</Link>
           <span className="mx-2">·</span>
-          <Link href="/questionnaire" className="hover:text-slate-400 transition-colors">Retake Diagnostic</Link>
+          <Link href="/questionnaire" className="hover:text-[rgba(24,17,10,0.5)] transition-colors">Retake Diagnostic</Link>
           <span className="mx-2">·</span>
-          <Link href="/privacy" className="hover:text-slate-400 transition-colors">Privacy</Link>
+          <Link href="/privacy" className="hover:text-[rgba(24,17,10,0.5)] transition-colors">Privacy</Link>
           <span className="mx-2">·</span>
-          <Link href="/terms" className="hover:text-slate-400 transition-colors">Terms</Link>
+          <Link href="/terms" className="hover:text-[rgba(24,17,10,0.5)] transition-colors">Terms</Link>
         </footer>
       </div>
     </div>

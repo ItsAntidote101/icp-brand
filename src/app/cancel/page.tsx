@@ -3,84 +3,107 @@
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Suspense } from 'react'
+import { XCircle, ArrowLeft, RefreshCw } from 'lucide-react'
+
+const Warm   = '#faf6ef'
+const Dark   = '#18110a'
+const Orange = '#e8330a'
+const Muted  = 'rgba(24,17,10,0.5)'
+const Border = 'rgba(24,17,10,0.12)'
+const font   = "'PolySans Median', -apple-system, system-ui, sans-serif"
+const fontB  = "'PolySans Neutral', -apple-system, system-ui, sans-serif"
 
 const REASON_MESSAGES: Record<string, string> = {
-  missing_reference:  'The payment reference was missing. No charge was made.',
-  payment_failed:     'Your payment could not be completed. No charge was made.',
-  Declined:           'Your card was declined. Please try a different payment method.',
+  missing_reference:    'The payment reference was missing. No charge was made.',
+  payment_failed:       'Your payment could not be completed. No charge was made.',
+  Declined:             'Your card was declined. Please try a different payment method.',
   'Insufficient Funds': 'Insufficient funds. Please try a different card or method.',
 }
 
 function CancelContent() {
-  const params = useSearchParams()
-  const reason = params.get('reason') ?? 'payment_failed'
+  const params  = useSearchParams()
+  const reason  = params.get('reason') ?? 'payment_failed'
   const message = REASON_MESSAGES[reason] ?? 'Your payment was not completed. No charge was made.'
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white flex flex-col items-center justify-center px-6 py-16">
-      <div className="max-w-lg w-full text-center">
+    <div style={{ minHeight: '100vh', background: Warm, color: Dark, fontFamily: fontB, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '48px 24px' }}>
+      <style>{`
+        @media (prefers-reduced-motion: reduce) {
+          *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+        }
+        .cancel-btn-back:hover { background: rgba(24,17,10,0.04) !important; }
+        .cancel-btn-retry:hover { opacity: 0.88; }
+      `}</style>
+
+      <div style={{ maxWidth: 520, width: '100%', textAlign: 'center' }}>
 
         {/* Icon */}
-        <div className="w-20 h-20 rounded-full bg-red-500/15 border border-red-500/30 flex items-center justify-center mx-auto mb-6">
-          <svg className="w-10 h-10 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+        <div style={{ width: 72, height: 72, border: '1.5px solid rgba(220,38,38,0.3)', background: 'rgba(220,38,38,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 28px' }}>
+          <XCircle size={32} color="#dc2626" />
         </div>
 
-        <span className="inline-block text-[11px] font-semibold uppercase tracking-widest text-red-400 bg-red-400/10 border border-red-400/20 px-3 py-1 rounded-full mb-4">
+        <span style={{ display: 'inline-block', fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#dc2626', background: 'rgba(220,38,38,0.08)', border: '1px solid rgba(220,38,38,0.2)', padding: '4px 14px', marginBottom: 20 }}>
           Payment Unsuccessful
         </span>
 
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-white mb-3">
+        <h1 style={{ fontFamily: font, fontSize: 'clamp(26px,5vw,38px)', fontWeight: 700, color: Dark, margin: '0 0 12px', letterSpacing: '-0.03em', lineHeight: 1.15 }}>
           Something went wrong
         </h1>
-        <p className="text-slate-400 text-base mb-8 leading-relaxed">
+        <p style={{ fontFamily: fontB, fontSize: 15, color: Muted, margin: '0 0 36px', lineHeight: 1.7 }}>
           {message}
         </p>
 
-        <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6 text-left mb-8 space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-2">
+        {/* Common fixes */}
+        <div style={{ border: `1.5px solid ${Border}`, background: '#fff', padding: '24px 28px', textAlign: 'left', marginBottom: 28 }}>
+          <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: Muted, margin: '0 0 14px' }}>
             Common fixes
           </p>
-          {[
-            'Check that your card details are correct and up to date',
-            'Make sure your card supports international transactions',
-            'Try a different card or use M-Pesa / mobile money',
-            'Contact your bank if the issue persists',
-          ].map(tip => (
-            <div key={tip} className="flex items-start gap-3 text-sm text-slate-400">
-              <span className="text-amber-400 flex-shrink-0 mt-px">→</span>
-              {tip}
-            </div>
-          ))}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {[
+              'Check that your card details are correct and up to date',
+              'Make sure your card supports international transactions',
+              'Try a different card or use M-Pesa',
+              'Contact your bank if the issue persists',
+            ].map(tip => (
+              <div key={tip} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                <span style={{ fontFamily: fontB, fontSize: 13, color: Orange, flexShrink: 0, marginTop: 2 }}>→</span>
+                <span style={{ fontFamily: fontB, fontSize: 14, color: Muted, lineHeight: 1.6 }}>{tip}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Payment logos */}
-        <div className="flex items-center justify-center gap-4 mb-8 flex-wrap">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20, marginBottom: 28, flexWrap: 'wrap' }}>
           {[
-            { src: '/images/logos/paystack-logo_1.png',                alt: 'Paystack',    h: 16 },
-            { src: '/images/logos/Visa_Inc._logo_(2014–2021).svg.png', alt: 'Visa',        h: 14 },
-            { src: '/images/logos/MasterCard_early_1990s_logo.svg.png', alt: 'Mastercard', h: 20 },
-            { src: '/images/logos/M-PESA_LOGO-01.svg.png',             alt: 'M-Pesa',      h: 16 },
+            { src: '/images/logos/paystack-logo_1.png',                 alt: 'Paystack',   h: 15 },
+            { src: '/images/logos/Visa_Inc._logo_(2014–2021).svg.png',  alt: 'Visa',       h: 13 },
+            { src: '/images/logos/MasterCard_early_1990s_logo.svg.png', alt: 'Mastercard', h: 18 },
+            { src: '/images/logos/M-PESA_LOGO-01.svg.png',              alt: 'M-Pesa',     h: 15 },
           ].map(({ src, alt, h }) => (
-            <img key={alt} src={src} alt={alt} style={{ height: h, objectFit: 'contain', opacity: 0.3, filter: 'brightness(10)' }} />
+            <img key={alt} src={src} alt={alt} style={{ height: h, objectFit: 'contain', opacity: 0.35 }} />
           ))}
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'stretch' }}>
           <button
+            className="cancel-btn-retry"
             onClick={() => window.history.back()}
-            className="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold transition-all active:scale-95"
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: Orange, color: '#fff', border: 'none', borderRadius: 6, padding: '14px 28px', fontFamily: font, fontSize: 15, fontWeight: 700, cursor: 'pointer', transition: 'opacity 0.15s' }}
           >
+            <RefreshCw size={15} />
             Try Again
           </button>
           <Link
             href="/"
-            className="px-6 py-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white text-sm font-semibold transition-all"
+            className="cancel-btn-back"
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: 'transparent', color: Dark, border: `1.5px solid ${Border}`, borderRadius: 6, padding: '13px 28px', fontFamily: font, fontSize: 14, fontWeight: 600, textDecoration: 'none', transition: 'background 0.15s' }}
           >
+            <ArrowLeft size={14} />
             Back to Home
           </Link>
         </div>
+
       </div>
     </div>
   )
@@ -89,8 +112,9 @@ function CancelContent() {
 export default function CancelPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
+      <div style={{ minHeight: '100vh', background: Warm, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+        <div style={{ width: 32, height: 32, border: `2px solid ${Orange}`, borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
       </div>
     }>
       <CancelContent />
