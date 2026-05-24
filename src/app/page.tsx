@@ -124,6 +124,7 @@ export default function Page() {
   const [mobileOpen,      setMobileOpen]      = useState(false)
   const [billingAnnual,   setBillingAnnual]   = useState(false)
   const [openFaq,         setOpenFaq]         = useState<number | null>(null)
+  const [activeTestimonial, setActiveTestimonial] = useState(0)
   const [calcBudget,      setCalcBudget]      = useState('')
   const [calcLeads,       setCalcLeads]       = useState('')
   const [calcCloseRate,   setCalcCloseRate]   = useState('')
@@ -688,72 +689,124 @@ export default function Page() {
       </section>
 
       {/* ── TESTIMONIAL ─────────────────────────────────────────────────── */}
-      <section id="results" style={{ background: '#fff', borderBottom: `1px solid ${Border}` }}>
-        <div className="container" style={{ paddingTop: 'clamp(48px,7vw,80px)', paddingBottom: 'clamp(48px,7vw,80px)' }}>
-          <p style={{ fontFamily: fontSerif, fontSize: 'clamp(22px,3.5vw,40px)', color: Text, fontWeight: 700, textAlign: 'center', margin: '0 0 48px', lineHeight: 1.2 }}>
-            <span style={{ color: Orange }}>Built for marketers</span> who are tired of burning budget.
-          </p>
+      {(() => {
+        const testimonials = [
+          {
+            company:   'GREENFIELD DIGITAL',
+            quote:     'I did not need a new campaign. I needed someone to tell me my landing page was broken. The diagnosis did that in 5 minutes, and gave me a ranked list of exactly what to fix first.',
+            name:      'James M.',
+            title:     'Marketing Manager, Nairobi',
+            stats:     [{ val: '14 to 3', label: 'Form fields cut after diagnosis' }, { val: '+12', label: 'Qualified leads in week one' }],
+            image:     '/images/Holder-2.png',
+          },
+          {
+            company:   'NOVA CONSULTING',
+            quote:     'We were spending KES 180,000 a month on ads and getting maybe four good leads. After the ICP fix, same budget, nineteen leads. The difference was just knowing who we were actually talking to.',
+            name:      'Aisha K.',
+            title:     'Head of Growth, Mombasa',
+            stats:     [{ val: '4x', label: 'Lead volume on same budget' }, { val: '61%', label: 'Reduction in cost per lead' }],
+            image:     '/images/Holder-3.png',
+          },
+          {
+            company:   'APEX FINSERV',
+            quote:     'The CAC analysis alone was worth it. We had no idea our LTV:CAC was sitting at 1.4:1. Now we are at 3.8:1 and the sales team finally has a clear picture of who to go after.',
+            name:      'David O.',
+            title:     'CEO, Apex Finserv',
+            stats:     [{ val: '1.4 to 3.8', label: 'LTV:CAC ratio improvement' }, { val: '38%', label: 'Lower customer acquisition cost' }],
+            image:     '/images/Holder-4.png',
+          },
+        ]
+        const t = testimonials[activeTestimonial]
+        const total = testimonials.length
+        return (
+          <section id="results" style={{ background: Warm, borderBottom: `1px solid ${Border}` }}>
+            <div className="container" style={{ paddingTop: 'clamp(56px,7vw,88px)', paddingBottom: 'clamp(56px,7vw,88px)' }}>
 
-          {/* Big testimonial card */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', border: `1px solid ${Border}`, borderRadius: 12, overflow: 'hidden' }} className="block md:grid">
-            {/* Left: quote + stats */}
-            <div style={{ borderRight: `1px solid ${Border}` }}>
-              <div style={{ padding: 'clamp(28px,4vw,48px)', borderBottom: `1px solid ${Border}` }}>
-                <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: Muted, margin: '0 0 20px' }}>James M. — Marketing Manager, Nairobi</p>
-                <p style={{ fontFamily: fontSerif, fontSize: 'clamp(18px,2.5vw,28px)', color: Text, lineHeight: 1.4, margin: 0 }}>
-                  "I did not need a new campaign. I needed someone to tell me my landing page was broken. The diagnosis did that in 5 minutes."
+              {/* Section header */}
+              <div style={{ textAlign: 'center', marginBottom: 52 }}>
+                <h2 style={{ fontFamily: fontSerif, fontSize: 'clamp(26px,4vw,48px)', fontWeight: 700, color: Text, margin: '0 0 14px', lineHeight: 1.1 }}>
+                  <span style={{ color: Orange }}>Built for B2B marketers,</span><br />from first-time founders to scaling teams.
+                </h2>
+                <p style={{ fontFamily: fontB, fontSize: 15, color: Muted, margin: 0, lineHeight: 1.6 }}>
+                  Real results from marketers who stopped guessing and started diagnosing.
                 </p>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderBottom: `1px solid ${Border}` }}>
-                {[['14 to 3', 'Form fields cut'], ['0 to 12', 'Leads in week one']].map(([num, label], i) => (
-                  <div key={i} style={{ padding: '24px 28px', borderRight: i === 0 ? `1px solid ${Border}` : 'none' }}>
-                    <p style={{ fontFamily: fontSerif, fontSize: 32, fontWeight: 700, color: Orange, margin: '0 0 4px' }}>{num}</p>
-                    <p style={{ fontFamily: fontB, fontSize: 13, color: Muted, margin: 0 }}>{label}</p>
+
+              {/* Testimonial card */}
+              <div style={{ border: `1px solid ${Border}`, borderRadius: 8, overflow: 'hidden', display: 'grid', gridTemplateColumns: '1fr 1fr', background: '#fff' }} className="block md:grid">
+
+                {/* Left: quote panel */}
+                <div style={{ display: 'flex', flexDirection: 'column', borderRight: `1px solid ${Border}` }}>
+
+                  {/* Company tag */}
+                  <div style={{ padding: '28px 36px 24px', borderBottom: `1px solid ${Border}` }}>
+                    <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.14em', color: Text, margin: 0 }}>{t.company}</p>
                   </div>
+
+                  {/* Quote */}
+                  <div style={{ padding: '32px 36px 28px', flex: 1 }}>
+                    <p style={{ fontFamily: fontSerif, fontSize: 40, color: Orange, lineHeight: 1, margin: '0 0 16px', fontWeight: 700 }}>"</p>
+                    <p style={{ fontFamily: fontSerif, fontSize: 'clamp(17px,2vw,22px)', color: Text, lineHeight: 1.55, margin: '0 0 28px' }}>
+                      {t.quote}
+                    </p>
+                    <p style={{ fontFamily: fontB, fontSize: 13, color: Muted, margin: 0, lineHeight: 1.5 }}>
+                      {t.name}, {t.title}
+                    </p>
+                  </div>
+
+                  {/* Stats */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderTop: `1px solid ${Border}` }}>
+                    {t.stats.map(({ val, label }, i) => (
+                      <div key={i} style={{ padding: '24px 28px', borderRight: i === 0 ? `1px solid ${Border}` : 'none' }}>
+                        <p style={{ fontFamily: fontSerif, fontSize: 'clamp(22px,2.5vw,32px)', fontWeight: 700, color: Orange, margin: '0 0 5px' }}>{val}</p>
+                        <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, margin: 0, lineHeight: 1.5 }}>{label}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* CTA row */}
+                  <div style={{ padding: '20px 28px', borderTop: `1px solid ${Border}` }}>
+                    <Link href="/questionnaire" style={{ display: 'inline-flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
+                      <span style={{ width: 36, height: 36, borderRadius: '50%', border: `1.5px solid ${Border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <ArrowRight size={15} color={Text} />
+                      </span>
+                      <span style={{ fontFamily: fontB, fontSize: 14, fontWeight: 600, color: Text }}>Get your free diagnosis</span>
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Right: image */}
+                <div style={{ position: 'relative', minHeight: 420, background: '#e8e0d8', overflow: 'hidden' }}>
+                  <Image
+                    src={t.image}
+                    alt={t.company}
+                    fill
+                    style={{ objectFit: 'cover', objectPosition: 'center' }}
+                  />
+                  {/* Company overlay */}
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(24,17,10,0.18)' }}>
+                    <p style={{ fontFamily: fontSerif, fontSize: 'clamp(18px,2.5vw,28px)', fontWeight: 700, color: '#fff', letterSpacing: '0.12em', textTransform: 'uppercase', textAlign: 'center', margin: 0, textShadow: '0 2px 12px rgba(0,0,0,0.3)' }}>
+                      {t.company}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Nav row */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10, marginTop: 24 }}>
+                <span style={{ fontFamily: fontB, fontSize: 13, color: Muted, marginRight: 8 }}>{activeTestimonial + 1} / {total}</span>
+                {[{ dir: -1, icon: <ArrowRight size={16} color={Text} style={{ transform: 'rotate(180deg)' }} /> }, { dir: 1, icon: <ArrowRight size={16} color={Text} /> }].map(({ dir, icon }, i) => (
+                  <button key={i} onClick={() => setActiveTestimonial(n => (n + dir + total) % total)}
+                    style={{ width: 40, height: 40, borderRadius: '50%', border: `1.5px solid ${Border}`, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                    {icon}
+                  </button>
                 ))}
               </div>
-              <div style={{ padding: 'clamp(20px,3vw,32px) clamp(20px,3vw,28px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', background: Warm, flexShrink: 0 }}>
-                    <Image src="/images/Holder-1.png" alt="James M." width={40} height={40} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  </div>
-                  <div>
-                    <p style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: Text, margin: 0 }}>James M.</p>
-                    <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, margin: 0 }}>Legal Services, Nairobi</p>
-                  </div>
-                </div>
-                <Link href="/questionnaire" className="btn-ghost" style={{ ...btnGhost, fontSize: 13, padding: '9px 16px' }}>
-                  Get your diagnosis <ArrowRight size={14} />
-                </Link>
-              </div>
-            </div>
 
-            {/* Right: stats grid */}
-            <div style={{ background: Warm, display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr' }}>
-              {[
-                { stat: '5 min', label: 'Average time to complete' },
-                { stat: '43%', label: 'Of waste from wrong audience' },
-                { stat: 'KES 47K', label: 'Average monthly waste found' },
-                { stat: '22', label: 'Questions, 3 layers, instant results' },
-              ].map(({ stat, label }, i) => (
-                <div key={i} style={{
-                  padding: 'clamp(20px,3vw,32px)',
-                  borderRight: i % 2 === 0 ? `1px solid ${Border}` : 'none',
-                  borderBottom: i < 2 ? `1px solid ${Border}` : 'none',
-                  display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
-                }}>
-                  <p style={{ fontFamily: fontSerif, fontSize: 'clamp(24px,3.5vw,40px)', fontWeight: 700, color: Text, margin: '0 0 6px' }}>{stat}</p>
-                  <p style={{ fontFamily: fontB, fontSize: 13, color: Muted, margin: 0 }}>{label}</p>
-                </div>
-              ))}
             </div>
-          </div>
-
-          <p style={{ fontFamily: fontB, fontSize: 13, color: Muted, textAlign: 'center', margin: '28px 0 0' }}>
-            {liveCount.toLocaleString()} marketers have diagnosed their ICP this month
-          </p>
-        </div>
-      </section>
+          </section>
+        )
+      })()}
 
       {/* ── BUSINESS OUTCOMES CALCULATOR ────────────────────────────────── */}
       <section id="calculator" style={{ background: Dark, borderBottom: `1px solid ${DarkBorder}` }}>
