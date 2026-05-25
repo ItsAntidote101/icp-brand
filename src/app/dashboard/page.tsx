@@ -1562,6 +1562,79 @@ function FunnelTab({ diag, hasReports, score, onUpgrade }: {
 
 // ─── Economics Tab ────────────────────────────────────────────────────────────
 
+function EconomicsKpiTile({
+  label, value, sub, accent, empty, emptyAction, emptyLabel,
+}: {
+  label: string; value?: React.ReactNode; sub?: string
+  accent?: string; empty?: boolean; emptyAction?: () => void; emptyLabel?: string
+}) {
+  return (
+    <div style={{
+      background: '#fff', borderRadius: 12, padding: '20px 20px 18px',
+      border: `1px solid ${Pborder}`,
+      display: 'flex', flexDirection: 'column', gap: 4,
+      boxShadow: '0 1px 8px rgba(201,192,177,0.15)',
+    }}>
+      <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: 0 }}>{label}</p>
+      {empty ? (
+        <>
+          <p style={{ fontFamily: font, fontSize: 22, fontWeight: 800, color: Pmuted, margin: 0, lineHeight: 1.1 }}>—</p>
+          {emptyAction && (
+            <button onClick={emptyAction} style={{ fontFamily: fontB, fontSize: 11, color: P, background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' as const, marginTop: 2, opacity: 0.65 }}>
+              {emptyLabel ?? 'Upgrade for this metric'}
+            </button>
+          )}
+        </>
+      ) : (
+        <>
+          <p style={{ fontFamily: font, fontSize: 22, fontWeight: 800, color: accent ?? P, margin: 0, lineHeight: 1.15 }}>{value}</p>
+          {sub && <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: 0, lineHeight: 1.4 }}>{sub}</p>}
+        </>
+      )}
+    </div>
+  )
+}
+
+function EconomicsBeforeAfterRow({
+  label, current, projected, currentColor, projectedColor,
+}: {
+  label: string; current?: string; projected?: string; currentColor?: string; projectedColor?: string
+}) {
+  const [expanded, setExpanded] = useState(false)
+  const currentShort  = current  && current.length  > 120 ? current.slice(0, 118) + '…'  : current
+  const projectedShort = projected && projected.length > 120 ? projected.slice(0, 118) + '…' : projected
+  const needsExpand = (current?.length ?? 0) > 120 || (projected?.length ?? 0) > 120
+
+  return (
+    <div>
+      <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.08em', color: Pmuted, margin: '0 0 10px' }}>{label}</p>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 24px 1fr', gap: 10, alignItems: 'start' }}>
+        <div style={{ background: '#fff8f8', borderRadius: 10, padding: '12px 14px' }}>
+          <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, color: currentColor ?? '#dc2626', margin: '0 0 4px', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>Now</p>
+          <p style={{ fontFamily: fontB, fontSize: 13, color: P, margin: 0, lineHeight: 1.6 }}>
+            {expanded ? current : currentShort}
+          </p>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: 28 }}>
+          <ArrowRight size={14} color={Pmuted} />
+        </div>
+        <div style={{ background: '#f0fdf4', borderRadius: 10, padding: '12px 14px' }}>
+          <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, color: projectedColor ?? '#16a34a', margin: '0 0 4px', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>After fixing</p>
+          <p style={{ fontFamily: fontB, fontSize: 13, color: '#15803d', margin: 0, lineHeight: 1.6 }}>
+            {expanded ? projected : projectedShort}
+          </p>
+        </div>
+      </div>
+      {needsExpand && (
+        <button onClick={() => setExpanded(e => !e)}
+          style={{ marginTop: 7, fontFamily: fontB, fontSize: 12, color: Pmuted, background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 4 }}>
+          {expanded ? <>Show less <ChevronUp size={11} /></> : <>Read full analysis <ChevronDown size={11} /></>}
+        </button>
+      )}
+    </div>
+  )
+}
+
 function EconomicsTab({ diag, hasReports, score, currency, onUpgrade }: {
   diag: DiagnosisData; hasReports: boolean; score: number | null; currency: string; onUpgrade: () => void
 }) {
@@ -1572,15 +1645,32 @@ function EconomicsTab({ diag, hasReports, score, currency, onUpgrade }: {
   const catScore = catData?.score ?? catBreakdownScore(diag, ['budget reallocation', 'channel efficiency'])
   const waste    = parseWaste(catData?.monthly_waste_estimate ?? diag.monthly_waste_estimate)
   const bo       = catData?.business_outcomes ?? diag.business_outcomes
-  const displayWaste = waste.amount > 0 ? convertAmount(waste.amount, waste.fromCurrency, currency) : waste.raw
+  const displayWaste = waste.amount > 0 ? convertAmount(waste.amount, waste.fromCurrency, currency) : null
+
+  const hasFinancialData = !!(bo?.cac_current || bo?.ltv_cac_current)
 
   if (!hasReports) return <NoDiagnosisPlaceholder tabName="Economics" />
+
+  // Extract a short LTV:CAC ratio string from the verbose text (e.g. "4.4:1" or "2.5:1")
+  function extractRatio(text: string | undefined): string | undefined {
+    if (!text) return undefined
+    const m = text.match(/(\d+\.?\d*)\s*:\s*1/)
+    return m ? `${m[1]}:1` : undefined
+  }
+
+  // Determine LTV:CAC health color
+  function ltvHealthColor(text: string | undefined): string {
+    const ratio = extractRatio(text)
+    if (!ratio) return P
+    const val = parseFloat(ratio)
+    return val >= 3 ? '#16a34a' : val >= 2 ? '#d97706' : '#dc2626'
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24, animation: 'fadeUp 0.4s ease both' }}>
       <CategoryTabHeader
         title="Economics"
-        subtitle="CAC, LTV:CAC ratio, monthly waste estimate and budget reallocation opportunities"
+        subtitle="CAC, LTV:CAC ratio, monthly waste and budget reallocation opportunities"
         score={catScore ?? score}
         icon={<DollarSign size={18} />}
       />
@@ -1589,79 +1679,96 @@ function EconomicsTab({ diag, hasReports, score, currency, onUpgrade }: {
         <p style={{ fontFamily: fontB, fontSize: 15, color: '#605d52', lineHeight: 1.7, margin: 0 }}>{catData.summary}</p>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 8px' }}>Estimated Monthly Waste</p>
-          <div style={{ fontFamily: font, fontSize: 44, fontWeight: 800, color: waste.amount > 0 ? '#ef4444' : P, lineHeight: 1, margin: '0 0 4px' }}>
-            {waste.amount > 0 ? displayWaste : waste.raw}
-          </div>
-          <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: 0 }}>per month</p>
-        </Card>
-
-        {bo?.cac_current ? (
-          <Card>
-            <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 16px' }}>Customer Acquisition Cost</p>
-            <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
-              <div>
-                <p style={{ fontFamily: fontB, fontSize: 12, color: '#dc2626', margin: '0 0 2px' }}>Current</p>
-                <p style={{ fontFamily: font, fontSize: 28, fontWeight: 800, color: P, margin: 0, lineHeight: 1.1 }}>{bo.cac_current}</p>
-              </div>
-              {bo.cac_projected && (
-                <>
-                  <div style={{ width: 1, background: Pborder, alignSelf: 'stretch', flexShrink: 0 }} />
-                  <div>
-                    <p style={{ fontFamily: fontB, fontSize: 12, color: '#16a34a', margin: '0 0 2px' }}>After fix</p>
-                    <p style={{ fontFamily: font, fontSize: 28, fontWeight: 800, color: '#16a34a', margin: 0, lineHeight: 1.1 }}>{bo.cac_projected}</p>
-                  </div>
-                </>
-              )}
-            </div>
-          </Card>
-        ) : (
-          <Card style={{ background: '#f8f4f0' }}>
-            <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 8px' }}>Customer Acquisition Cost</p>
-            <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, lineHeight: 1.6, margin: '0 0 12px' }}>CAC projections are generated in Pro and Agency diagnostic reports.</p>
-            <button onClick={onUpgrade} style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, color: P, background: 'none', border: 'none', cursor: 'pointer', padding: 0, opacity: 0.75 }}>Upgrade to Pro →</button>
-          </Card>
-        )}
+      {/* ── 4 KPI tiles ──────────────────────────────────────────────────────── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+        <EconomicsKpiTile
+          label="Monthly Waste"
+          value={displayWaste ?? (waste.raw !== '—' ? waste.raw : undefined)}
+          sub={displayWaste ? `Estimated ad spend lost to ICP mismatch` : undefined}
+          accent="#ef4444"
+          empty={!displayWaste && waste.raw === '—'}
+        />
+        <EconomicsKpiTile
+          label="Revenue Opportunity"
+          value={bo?.monthly_revenue_opportunity ? 'See analysis below' : undefined}
+          sub={bo?.monthly_revenue_opportunity ? 'Monthly upside from fixing your ICP' : undefined}
+          accent={Accent}
+          empty={!bo?.monthly_revenue_opportunity}
+          emptyAction={onUpgrade}
+          emptyLabel="Upgrade to unlock projections"
+        />
+        <EconomicsKpiTile
+          label="Current CAC"
+          value={bo?.cac_current ? 'See analysis below' : undefined}
+          sub={bo?.cac_current ? 'Customer acquisition cost estimate' : undefined}
+          accent={P}
+          empty={!bo?.cac_current}
+          emptyAction={onUpgrade}
+          emptyLabel="Upgrade for CAC analysis"
+        />
+        <EconomicsKpiTile
+          label="LTV : CAC Ratio"
+          value={extractRatio(bo?.ltv_cac_current)}
+          sub={bo?.ltv_cac_current
+            ? (extractRatio(bo.ltv_cac_current) && parseFloat(extractRatio(bo.ltv_cac_current)!) >= 3 ? 'Healthy (above 3:1 benchmark)' : 'Below 3:1 benchmark, needs attention')
+            : undefined}
+          accent={ltvHealthColor(bo?.ltv_cac_current)}
+          empty={!bo?.ltv_cac_current}
+          emptyAction={onUpgrade}
+          emptyLabel="Upgrade for LTV:CAC analysis"
+        />
       </div>
 
-      {(bo?.ltv_cac_current || bo?.monthly_revenue_opportunity) && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {bo?.ltv_cac_current && (
-            <Card>
-              <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 16px' }}>LTV : CAC Ratio</p>
-              <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
-                <div>
-                  <p style={{ fontFamily: fontB, fontSize: 12, color: '#d97706', margin: '0 0 2px' }}>Current</p>
-                  <p style={{ fontFamily: font, fontSize: 28, fontWeight: 800, color: P, margin: 0, lineHeight: 1.1 }}>{bo.ltv_cac_current}</p>
-                </div>
-                {bo.ltv_cac_projected && (
-                  <>
-                    <div style={{ width: 1, background: Pborder, alignSelf: 'stretch', flexShrink: 0 }} />
-                    <div>
-                      <p style={{ fontFamily: fontB, fontSize: 12, color: '#16a34a', margin: '0 0 2px' }}>After fix</p>
-                      <p style={{ fontFamily: font, fontSize: 28, fontWeight: 800, color: '#16a34a', margin: 0, lineHeight: 1.1 }}>{bo.ltv_cac_projected}</p>
-                    </div>
-                  </>
-                )}
-              </div>
-            </Card>
-          )}
-          {bo?.monthly_revenue_opportunity && (
-            <Card style={{ background: 'rgba(232,51,10,0.06)', border: `1px solid rgba(232,51,10,0.15)` }}>
-              <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Accent, margin: '0 0 8px' }}>Revenue Opportunity</p>
-              <p style={{ fontFamily: fontB, fontSize: 14, color: P, lineHeight: 1.65, margin: 0 }}>{bo.monthly_revenue_opportunity}</p>
-            </Card>
-          )}
-        </div>
+      {/* ── Financial projections: Before/After ─────────────────────────────── */}
+      {hasFinancialData && (
+        <Card>
+          <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 20px' }}>What fixing your ICP is worth</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            {bo?.cac_current && (
+              <EconomicsBeforeAfterRow
+                label="Customer Acquisition Cost"
+                current={bo.cac_current}
+                projected={bo.cac_projected}
+              />
+            )}
+            {bo?.cac_current && bo?.ltv_cac_current && (
+              <div style={{ height: 1, background: Pborder }} />
+            )}
+            {bo?.ltv_cac_current && (
+              <EconomicsBeforeAfterRow
+                label="LTV : CAC Ratio"
+                current={bo.ltv_cac_current}
+                projected={bo.ltv_cac_projected}
+                currentColor="#d97706"
+              />
+            )}
+          </div>
+        </Card>
       )}
 
+      {/* ── Revenue opportunity ──────────────────────────────────────────────── */}
+      {bo?.monthly_revenue_opportunity && (
+        <Card style={{ background: 'rgba(232,51,10,0.05)', border: `1px solid rgba(232,51,10,0.18)` }}>
+          <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Accent, margin: '0 0 10px' }}>Revenue Opportunity</p>
+          <p style={{ fontFamily: fontB, fontSize: 14, color: P, lineHeight: 1.7, margin: 0 }}>{bo.monthly_revenue_opportunity}</p>
+        </Card>
+      )}
+
+      {/* ── Waste detail ─────────────────────────────────────────────────────── */}
+      {waste.raw && waste.raw !== '—' && waste.raw.length > 20 && (
+        <Card>
+          <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 10px' }}>Waste Estimate Breakdown</p>
+          <p style={{ fontFamily: fontB, fontSize: 14, color: P, lineHeight: 1.7, margin: 0 }}>{waste.raw}</p>
+        </Card>
+      )}
+
+      {/* ── Budget efficiency breakdown bars ─────────────────────────────────── */}
       <Card>
-        <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 20px' }}>Budget Efficiency Breakdown</p>
+        <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 20px' }}>Budget Efficiency</p>
         <BreakdownBarsSection diag={diag} labels={['Budget Reallocation Opportunity', 'Channel Efficiency']} />
       </Card>
 
+      {/* ── Findings ─────────────────────────────────────────────────────────── */}
       <div>
         <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: '0 0 14px', letterSpacing: '-0.02em' }}>Economics Findings</p>
         <CategoryFindingsSection
@@ -1673,25 +1780,28 @@ function EconomicsTab({ diag, hasReports, score, currency, onUpgrade }: {
         )}
       </div>
 
+      {/* ── Quick wins ───────────────────────────────────────────────────────── */}
       <div>
-        <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: '0 0 14px', letterSpacing: '-0.02em' }}>Economics Quick Wins</p>
+        <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: '0 0 14px', letterSpacing: '-0.02em' }}>Budget Quick Wins</p>
         <CategoryWinsSection
           wins={wins.length > 0 ? wins : (diag.quick_wins ?? []).slice(0, 2)}
           emptyMessage="No budget-specific quick wins in this report."
         />
       </div>
 
+      {/* ── Benchmarks ───────────────────────────────────────────────────────── */}
       <Card style={{ background: '#f8f4f0' }}>
         <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 14px' }}>B2B Unit Economics Benchmarks</p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10 }}>
           {[
-            { label: 'Healthy LTV:CAC', value: '3:1 or higher', sub: 'Ideal: 5:1 for SaaS' },
-            { label: 'CAC Payback', value: '12 - 18 months', sub: 'Best-in-class under 12' },
-            { label: 'Budget Waste (avg)', value: '30 - 60%', sub: 'B2B teams with ICP drift' },
+            { label: 'Healthy LTV:CAC', value: '3:1 or above', sub: 'World-class is 5:1' },
+            { label: 'CAC Payback', value: 'Under 18 months', sub: 'Best-in-class under 12' },
+            { label: 'Budget Waste (avg)', value: '30 to 60%', sub: 'B2B teams with ICP drift' },
+            { label: 'Close Rate (B2B)', value: '5 to 15%', sub: 'Varies by deal size' },
           ].map(({ label, value, sub }) => (
             <div key={label} style={{ background: BgAlt, borderRadius: 8, padding: '12px 14px' }}>
-              <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: Pmuted, margin: '0 0 6px' }}>{label}</p>
-              <p style={{ fontFamily: font, fontSize: 15, fontWeight: 800, color: P, margin: '0 0 2px', lineHeight: 1.2 }}>{value}</p>
+              <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: Pmuted, margin: '0 0 5px' }}>{label}</p>
+              <p style={{ fontFamily: font, fontSize: 14, fontWeight: 800, color: P, margin: '0 0 2px', lineHeight: 1.2 }}>{value}</p>
               <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: 0 }}>{sub}</p>
             </div>
           ))}
