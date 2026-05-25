@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { Target, AlertTriangle, TrendingDown, BrainCircuit, Brain, Users, Eye, Zap, Shield, ArrowRight, Check, MapPin } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'About ICP Diagnostic — Built by Media Buyers, for Marketers',
+  title: 'About ICP Diagnostic, Built by Media Buyers, for Marketers',
   description: 'ICP Diagnostic was built by performance media buyers with $2M+ in ad spend managed. Learn about our team, our mission, and why we built the only ICP diagnostic platform built specifically for African and emerging markets.',
 }
 
@@ -136,7 +136,7 @@ export default function AboutPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6" style={{ marginTop: 56 }}>
 
-            {/* Card 1 — Lead Media Buyer */}
+            {/* Card 1, Lead Media Buyer */}
             <div style={{ background: Warm, border: `1.5px solid ${Border}`, padding: 32 }}>
               <div style={{ width: 64, height: 64, background: Dark, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <span style={{ fontFamily: font, fontWeight: 700, fontSize: 16, color: '#fff' }}>MB</span>
@@ -157,7 +157,7 @@ export default function AboutPage() {
               </div>
             </div>
 
-            {/* Card 2 — The Diagnostic Engine */}
+            {/* Card 2, The Diagnostic Engine */}
             <div style={{ background: Dark, padding: 32 }}>
               <div style={{ width: 64, height: 64, background: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <BrainCircuit size={28} color="#fff" />
@@ -174,7 +174,7 @@ export default function AboutPage() {
               </div>
             </div>
 
-            {/* Card 3 — The Intelligence System */}
+            {/* Card 3, The Intelligence System */}
             <div style={{ background: Warm, border: `1.5px solid ${Border}`, padding: 32 }}>
               <div style={{ width: 64, height: 64, background: 'rgba(201,192,177,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Brain size={28} color={Dark} />
@@ -191,7 +191,7 @@ export default function AboutPage() {
               </div>
             </div>
 
-            {/* Card 4 — Regional Advisors */}
+            {/* Card 4, Regional Advisors */}
             <div style={{ background: '#f8f4f0', border: `1.5px dashed ${Border}`, padding: 32 }}>
               <div style={{ width: 64, height: 64, background: 'rgba(201,192,177,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Users size={28} color={Muted} />
@@ -259,7 +259,7 @@ export default function AboutPage() {
             "Every business deserves to know exactly where their marketing is breaking, before they spend another shilling finding out the hard way."
           </p>
           <p style={{ fontFamily: fontB, fontSize: 16, color: 'rgba(255,255,255,0.35)', margin: '0 0 48px' }}>
-            — The ICP Diagnostic Team
+           , The ICP Diagnostic Team
           </p>
           <Link href="/questionnaire" style={{ fontFamily: font, fontWeight: 700, fontSize: 15, color: '#fff', background: Orange, padding: '16px 32px', borderRadius: 6, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
             Get Your Free Diagnosis

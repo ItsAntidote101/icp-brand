@@ -128,7 +128,7 @@ Return ONLY valid JSON with this exact structure (no markdown, no explanation):
   "userPosition": { "x": ${Math.min(95, Math.max(10, (profile.icpScore ?? 50) * 0.85))}, "y": ${Math.min(95, Math.max(10, profile.icpScore ?? 50))} }
 }
 
-Make benchmarks realistic for the ${profile.industry} industry in ${profile.region}. Adjust CTR, CPA, conversion rates to match industry norms. Insights must be specific to their industry and region — no generic advice.`
+Make benchmarks realistic for the ${profile.industry} industry in ${profile.region}. Adjust CTR, CPA, conversion rates to match industry norms. Insights must be specific to their industry and region, no generic advice. Do not use em dashes or en dashes anywhere in your output. Use commas, colons, or full stops instead.`
 
   const stream = anthropic.messages.stream({
     model: 'claude-opus-4-7',
@@ -142,7 +142,15 @@ Make benchmarks realistic for the ${profile.industry} industry in ${profile.regi
 
   // Strip markdown code fences if present
   const clean = raw.replace(/^```json\s*/m, '').replace(/^```\s*/m, '').replace(/```\s*$/m, '').trim()
-  return JSON.parse(clean)
+  const parsed = JSON.parse(clean)
+  // Sanitize any em/en dashes the AI produced
+  function stripDashes(v: unknown): unknown {
+    if (typeof v === 'string') return v.replace(/ — /g, ', ').replace(/— /g, ', ').replace(/—/g, '-').replace(/ – /g, ', ').replace(/–/g, '-')
+    if (Array.isArray(v)) return v.map(stripDashes)
+    if (v !== null && typeof v === 'object') { const o: Record<string,unknown>={}; for (const [k,val] of Object.entries(v as Record<string,unknown>)) o[k]=stripDashes(val); return o }
+    return v
+  }
+  return stripDashes(parsed) as Record<string, unknown>
 }
 
 async function answerQuestion(
@@ -164,7 +172,7 @@ Answer specifically for their industry and region. Include:
 2. 2-3 specific insights
 3. One clear recommendation
 
-Keep it under 300 words. Be specific — no generic advice. End with a list of data sources you referenced.
+Keep it under 300 words. Be specific, no generic advice. End with a list of data sources you referenced.
 
 Format:
 [Your answer here]
@@ -296,7 +304,7 @@ export async function POST(req: NextRequest) {
           .select('id')
 
         if (!updatedRows || updatedRows.length === 0) {
-          // Another request already incremented — treat as limit reached
+          // Another request already incremented, treat as limit reached
           const midnight = new Date(); midnight.setUTCHours(24, 0, 0, 0)
           return NextResponse.json({
             error:            'rate_limited',

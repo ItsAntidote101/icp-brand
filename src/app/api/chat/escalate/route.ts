@@ -51,12 +51,12 @@ export async function POST(req: NextRequest) {
       .maybeSingle()
 
     let score: number | null = null
-    let wasteEstimate = '—'
+    let wasteEstimate = '-'
     if (reportData?.report_summary) {
       try {
         const summary = JSON.parse(reportData.report_summary) as Record<string, unknown>
         score = (summary.overall_score ?? summary.health_score ?? null) as number | null
-        wasteEstimate = (summary.monthly_waste_estimate as string) ?? '—'
+        wasteEstimate = (summary.monthly_waste_estimate as string) ?? '-'
       } catch {
         // non-fatal
       }

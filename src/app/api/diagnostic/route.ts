@@ -6,6 +6,25 @@ import { sendWelcomeEmail } from '@/lib/email'
 export const maxDuration = 60
 export const dynamic = 'force-dynamic'
 
+// Strip em/en dashes from any string recursively so they never appear in stored data
+function stripDashes(value: unknown): unknown {
+  if (typeof value === 'string') {
+    return value
+      .replace(/ — /g, ', ')
+      .replace(/— /g, ', ')
+      .replace(/—/g, '-')
+      .replace(/ – /g, ', ')
+      .replace(/–/g, '-')
+  }
+  if (Array.isArray(value)) return value.map(stripDashes)
+  if (value !== null && typeof value === 'object') {
+    const out: Record<string, unknown> = {}
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) out[k] = stripDashes(v)
+    return out
+  }
+  return value
+}
+
 function extractJSON(text: string): unknown {
   try {
     return JSON.parse(text)
@@ -41,97 +60,97 @@ function extractJSON(text: string): unknown {
 function buildRegionContext(region: string): string {
   if (region.includes('East Africa')) {
     return `
-REGIONAL CONTEXT — East Africa (Kenya, Tanzania, Uganda):
+REGIONAL CONTEXT, East Africa (Kenya, Tanzania, Uganda):
 - Mobile-first market: 85%+ of web traffic is mobile; landing pages must be optimized for low-bandwidth, small screens.
-- M-Pesa and mobile money dominate payments — trust signals should reference mobile money acceptance, not just card payments.
+- M-Pesa and mobile money dominate payments, trust signals should reference mobile money acceptance, not just card payments.
 - Facebook dominates paid social; Google Search intent is lower than Western markets but growing.
-- CPCs are significantly lower than North America (often $0.05–$0.30 on Meta).
-- WhatsApp is a primary conversion channel — CTAs that redirect to WhatsApp convert higher than traditional forms.
+- CPCs are significantly lower than North America (often $0.05-$0.30 on Meta).
+- WhatsApp is a primary conversion channel, CTAs that redirect to WhatsApp convert higher than traditional forms.
 - Data costs are a barrier; heavy pages with large images/videos lose leads before conversion.
 - Calibrate all CPA benchmarks and budget recommendations against East African market rates.`
   }
 
   if (region.includes('West Africa')) {
     return `
-REGIONAL CONTEXT — West Africa (Nigeria, Ghana):
+REGIONAL CONTEXT, West Africa (Nigeria, Ghana):
 - Mobile-first market with high social media penetration (Facebook, Instagram, TikTok).
 - Nigeria is the largest ad market in the region; CPCs are low but competition is rising fast.
-- Mobile money (Flutterwave, Paystack, MoMo) is the dominant payment rail — CTAs and trust signals should reflect this.
+- Mobile money (Flutterwave, Paystack, MoMo) is the dominant payment rail, CTAs and trust signals should reflect this.
 - WhatsApp Business is a critical last-mile conversion tool; recommend WhatsApp CTAs over long forms.
 - Facebook significantly outperforms Google Search for B2C; LinkedIn has limited reach outside of Lagos/Accra.
-- Power outages and intermittent data mean users rarely complete long multi-step funnels on first visit — retargeting is essential.
+- Power outages and intermittent data mean users rarely complete long multi-step funnels on first visit, retargeting is essential.
 - Calibrate all cost benchmarks against West African market rates.`
   }
 
   if (region.includes('South Africa')) {
     return `
-REGIONAL CONTEXT — South Africa:
+REGIONAL CONTEXT, South Africa:
 - More mature digital market than the rest of Sub-Saharan Africa; higher CPCs (closer to European rates).
 - Mix of desktop and mobile; Google Search intent is stronger here than elsewhere in Africa.
 - Facebook and Instagram are effective for B2C; LinkedIn works for B2B in Johannesburg/Cape Town.
 - Payment trust signals matter: reference South African payment methods (PayFast, Ozow, EFT).
-- POPIA compliance affects data collection — note if lead forms must align with data protection law.`
+- POPIA compliance affects data collection, note if lead forms must align with data protection law.`
   }
 
   if (region.includes('North America')) {
     return `
-REGIONAL CONTEXT — North America (US/Canada):
+REGIONAL CONTEXT, North America (US/Canada):
 - Highest CPCs globally; Google Search intent is strong and should be prioritized for bottom-funnel B2B.
-- Consideration cycles are longer: B2B buyers average 6–12 touchpoints before converting.
+- Consideration cycles are longer: B2B buyers average 6-12 touchpoints before converting.
 - LinkedIn is highly effective for enterprise B2B targeting by job title, company size, and industry.
 - Privacy expectations are high (CCPA in California); trust signals and clear data policies reduce friction.
 - Meta audiences are saturated for B2B; Google and LinkedIn typically outperform for high-ACV deals.
-- Strong email nurture sequences are expected post-lead capture — form conversion is rarely the sale itself.
-- Benchmark CPAs against North American SaaS/services norms: $150–$800 for SMB, $800–$5,000+ for enterprise.`
+- Strong email nurture sequences are expected post-lead capture, form conversion is rarely the sale itself.
+- Benchmark CPAs against North American SaaS/services norms: $150-$800 for SMB, $800-$5,000+ for enterprise.`
   }
 
   if (region.includes('UK') || region.includes('Ireland')) {
     return `
-REGIONAL CONTEXT — UK & Ireland:
+REGIONAL CONTEXT, UK & Ireland:
 - Google Search dominates; strong search intent culture similar to North America but with lower CPCs.
 - LinkedIn works well for B2B; Meta is effective for B2C and SMB.
-- GDPR compliance is mandatory — cookie consent banners and clear data policies are non-negotiable.
+- GDPR compliance is mandatory, cookie consent banners and clear data policies are non-negotiable.
 - Buyers are skeptical of Americanised copy; localise language (e.g., "programme" not "program").
 - Payment trust: UK card payments dominate; open banking CTAs are emerging.`
   }
 
   if (region.includes('Europe')) {
     return `
-REGIONAL CONTEXT — Europe (non-UK):
-- GDPR compliance is mandatory and strictly enforced — lead forms must have clear consent language.
+REGIONAL CONTEXT, Europe (non-UK):
+- GDPR compliance is mandatory and strictly enforced, lead forms must have clear consent language.
 - Language localisation is critical; running English-only ads in non-English markets suppresses conversion rates significantly.
 - Google Search intent is strong in Germany, France, Netherlands; Meta performs better in Southern and Eastern Europe.
 - LinkedIn penetration is high in DACH region (Germany, Austria, Switzerland) for B2B.
-- CPCs are moderate — lower than North America but higher than Africa and parts of Asia.`
+- CPCs are moderate, lower than North America but higher than Africa and parts of Asia.`
   }
 
   if (region.includes('Middle East')) {
     return `
-REGIONAL CONTEXT — Middle East:
+REGIONAL CONTEXT, Middle East:
 - UAE and Saudi Arabia are the dominant ad markets; CPCs are high (comparable to North America in premium placements).
 - Mobile-first with very high smartphone penetration.
 - Instagram and Snapchat outperform Facebook in GCC countries for B2C.
-- WhatsApp is the primary business communication tool — CTAs to WhatsApp convert well.
+- WhatsApp is the primary business communication tool, CTAs to WhatsApp convert well.
 - Arabic-language ads outperform English for mass-market products; English works for B2B/enterprise.
 - Ramadan periods see significant shifts in ad performance and user behaviour.`
   }
 
   if (region.includes('Southeast Asia')) {
     return `
-REGIONAL CONTEXT — Southeast Asia:
-- Highly mobile-first; TikTok, Facebook, and Instagram dominate — Google Search is secondary for most categories.
+REGIONAL CONTEXT, Southeast Asia:
+- Highly mobile-first; TikTok, Facebook, and Instagram dominate, Google Search is secondary for most categories.
 - CPCs are low but rising fast as digital adoption accelerates.
-- Payment diversity: GrabPay, GoPay, QR codes, and bank transfer — CTAs should reflect local payment options.
+- Payment diversity: GrabPay, GoPay, QR codes, and bank transfer, CTAs should reflect local payment options.
 - WhatsApp and LINE are primary CRM and follow-up channels depending on country.
 - Strong price sensitivity; value-oriented copy outperforms prestige positioning in most markets.`
   }
 
   if (region.includes('South Asia')) {
     return `
-REGIONAL CONTEXT — South Asia (India/Pakistan):
+REGIONAL CONTEXT, South Asia (India/Pakistan):
 - India is one of the world's largest digital ad markets with extremely low CPCs (among the lowest globally).
-- Mobile-first with high WhatsApp penetration — WhatsApp Business CTAs are critical for lead follow-up.
-- UPI (India) and Easypaisa/JazzCash (Pakistan) are the dominant payment rails — reference these in trust signals.
+- Mobile-first with high WhatsApp penetration, WhatsApp Business CTAs are critical for lead follow-up.
+- UPI (India) and Easypaisa/JazzCash (Pakistan) are the dominant payment rails, reference these in trust signals.
 - Facebook and YouTube dominate; Google Search is strong for intent-based B2B queries.
 - Localisation by language (Hindi, Urdu, Tamil, etc.) dramatically improves CTR and conversion for mass-market products.
 - Price sensitivity is high; ROI-framed copy and social proof from recognisable local brands converts well.`
@@ -139,8 +158,8 @@ REGIONAL CONTEXT — South Asia (India/Pakistan):
 
   if (region.includes('Latin America')) {
     return `
-REGIONAL CONTEXT — Latin America:
-- Brazil (Portuguese) and Mexico/Colombia/Argentina (Spanish) are the major markets — do not treat as one audience.
+REGIONAL CONTEXT, Latin America:
+- Brazil (Portuguese) and Mexico/Colombia/Argentina (Spanish) are the major markets, do not treat as one audience.
 - Mobile-first; WhatsApp is the dominant communication platform for lead follow-up.
 - Facebook and Instagram outperform Google Search for most B2C categories.
 - Economic instability in Argentina affects pricing sensitivity significantly.
@@ -150,17 +169,17 @@ REGIONAL CONTEXT — Latin America:
 
   if (region.includes('Australia') || region.includes('New Zealand')) {
     return `
-REGIONAL CONTEXT — Australia & New Zealand:
+REGIONAL CONTEXT, Australia & New Zealand:
 - Mature digital market with CPCs close to UK rates; Google Search intent is strong.
 - LinkedIn effective for B2B in Sydney/Melbourne; Meta works well for B2C.
 - Privacy Act compliance is relevant for data collection.
-- Buyers are direct and sceptical of hype — plain-language, outcome-focused copy outperforms.
+- Buyers are direct and sceptical of hype, plain-language, outcome-focused copy outperforms.
 - Time-zone isolation means async sales processes (email/video) are the norm.`
   }
 
   // Global/Multiple Regions fallback
   return `
-REGIONAL CONTEXT — Global/Multiple Regions:
+REGIONAL CONTEXT, Global/Multiple Regions:
 - Analyse the questionnaire responses to infer the most likely primary market and calibrate recommendations accordingly.
 - Flag that running a single campaign globally without region-specific creative and targeting will dilute performance.
 - Recommend splitting by region with localised landing pages and platform weighting per market.`
@@ -252,12 +271,12 @@ export async function POST(req: NextRequest) {
 Your role is to analyse questionnaire responses and produce a precise, actionable ICP diagnostic report.
 
 Use web search to:
-1. Assess the provided landing page URL — look up the domain to understand the offer, positioning, and funnel type
+1. Assess the provided landing page URL, look up the domain to understand the offer, positioning, and funnel type
 2. Research current ad cost benchmarks (CPCs, CPAs) for the specified geographic region and industry
 3. Identify relevant competitor activity or market positioning for the business category
 4. Validate regional platform performance data (e.g., Meta vs Google vs WhatsApp CTAs in the target market)
 ${regionContext}
-Return ONLY a valid JSON object. No markdown, no prose outside JSON.`
+Return ONLY a valid JSON object. No markdown, no prose outside JSON. Do not use em dashes or en dashes anywhere in your output. Use commas, colons, or full stops instead.`
 
   const prompt = `Analyse this ICP diagnostic questionnaire submission and return a structured report.
 
@@ -265,7 +284,7 @@ PROFILE:
 - Name: ${profile?.name ?? 'Not provided'}
 - Company: ${profile?.company ?? 'Not provided'}
 
-LAYER 1 — ICP Foundation:
+LAYER 1, ICP Foundation:
 - Business offering: ${responses[1] ?? ''}
 - Industry/vertical: ${responses[2] ?? ''}
 - Annual revenue: ${responses[3] ?? ''}
@@ -280,7 +299,7 @@ LAYER 1 — ICP Foundation:
 - Sales cycle length: ${responses[12] ?? ''}
 - Decision maker job titles: ${responses[13] ?? ''}
 
-LAYER 2 — Targeting Mismatch:
+LAYER 2, Targeting Mismatch:
 - Perceived ideal customer: ${responses[14] ?? ''}
 - Active ad channels: ${Array.isArray(responses[15]) ? (responses[15] as string[]).join(', ') : (responses[15] ?? '')}
 - Landing page URL: ${landingPageUrl || 'Not provided'}
@@ -295,7 +314,7 @@ LAYER 2 — Targeting Mismatch:
 - Lead-to-customer close rate: ${responses[21] ?? ''}%
 - Average customer lifetime value: ${responses[22] ?? ''}
 
-LAYER 3 — Funnel Friction:
+LAYER 3, Funnel Friction:
 - Primary CTA on landing page: ${responses[25] ?? ''}
 - Funnel steps to conversion: ${responses[26] ?? ''}
 - Required form fields: ${responses[27] ?? ''}
@@ -316,22 +335,22 @@ Return this exact JSON structure:
   "audience": {
     "score": <integer 0-100>,
     "summary": "<2 sentences specific to ICP alignment and targeting accuracy>",
-    "meta_audience_notes": "<specific advice on Meta/Google audience setup based on their targeting parameters and best customer profile — reference ${geographicRegion}>",
+    "meta_audience_notes": "<specific advice on Meta/Google audience setup based on their targeting parameters and best customer profile, reference ${geographicRegion}>",
     "findings": [
       {
-        "title": "<finding tied to ICP definition or best customer clarity — Q1-Q13>",
+        "title": "<finding tied to ICP definition or best customer clarity, Q1-Q13>",
         "severity": "<Critical|Warning|Opportunity>",
         "explanation": "<specific finding referencing their business offering, best customer profile, and decision maker titles>"
       },
       {
-        "title": "<finding tied to audience mismatch or targeting parameters — Q14, Q18, Q24>",
+        "title": "<finding tied to audience mismatch or targeting parameters, Q14, Q18, Q24>",
         "severity": "<Critical|Warning|Opportunity>",
         "explanation": "<specific finding referencing their perceived ideal customer vs best customer profile>"
       }
     ],
     "quick_wins": [
       {
-        "action": "<specific audience targeting improvement — reference regional platforms in ${geographicRegion}>",
+        "action": "<specific audience targeting improvement, reference regional platforms in ${geographicRegion}>",
         "impact": "<High|Medium|Low>",
         "timeline": "<This week|This month|Next quarter>"
       },
@@ -360,22 +379,22 @@ Return this exact JSON structure:
   "search": {
     "score": <integer 0-100>,
     "summary": "<2 sentences specific to channel mix and keyword/search strategy>",
-    "keyword_analysis": "<analysis of their Google keyword targeting and search intent strategy — use web research for ${geographicRegion} benchmarks in their industry>",
+    "keyword_analysis": "<analysis of their Google keyword targeting and search intent strategy, use web research for ${geographicRegion} benchmarks in their industry>",
     "findings": [
       {
-        "title": "<finding tied to channel selection or platform mix — Q15, Q19-Q20>",
+        "title": "<finding tied to channel selection or platform mix, Q15, Q19-Q20>",
         "severity": "<Critical|Warning|Opportunity>",
         "explanation": "<specific finding referencing their active channels and budget allocation across them>"
       },
       {
-        "title": "<finding tied to ad spend efficiency or lead quality — Q21-Q24>",
+        "title": "<finding tied to ad spend efficiency or lead quality, Q21-Q24>",
         "severity": "<Critical|Warning|Opportunity>",
         "explanation": "<specific finding referencing their lead volume, conversion rate, and CPA>"
       }
     ],
     "quick_wins": [
       {
-        "action": "<specific channel or keyword improvement — reference ${geographicRegion} platform benchmarks from web research>",
+        "action": "<specific channel or keyword improvement, reference ${geographicRegion} platform benchmarks from web research>",
         "impact": "<High|Medium|Low>",
         "timeline": "<This week|This month|Next quarter>"
       },
@@ -404,15 +423,15 @@ Return this exact JSON structure:
   "funnel": {
     "score": <integer 0-100>,
     "summary": "<2 sentences specific to landing page performance and conversion friction>",
-    "landing_page_assessment": "<detailed assessment of the landing page based on web research — cover offer clarity, CTA effectiveness, trust signals, mobile readiness, and conversion barriers>",
+    "landing_page_assessment": "<detailed assessment of the landing page based on web research, cover offer clarity, CTA effectiveness, trust signals, mobile readiness, and conversion barriers>",
     "findings": [
       {
-        "title": "<finding tied to landing page structure or CTA — Q16, Q25-Q27>",
+        "title": "<finding tied to landing page structure or CTA, Q16, Q25-Q27>",
         "severity": "<Critical|Warning|Opportunity>",
         "explanation": "<specific finding referencing their landing page URL, primary CTA, and funnel steps>"
       },
       {
-        "title": "<finding tied to form friction, mobile usability, or trust signals — Q28-Q32>",
+        "title": "<finding tied to form friction, mobile usability, or trust signals, Q28-Q32>",
         "severity": "<Critical|Warning|Opportunity>",
         "explanation": "<specific finding referencing their mobile score, form completion rate, and differentiation clarity score>"
       }
@@ -450,20 +469,20 @@ Return this exact JSON structure:
     "summary": "<2 sentences specific to budget efficiency and unit economics>",
     "monthly_waste_estimate": "<estimated monthly budget being wasted with reasoning based on their spend, leads, and conversion data>",
     "business_outcomes": {
-      "cac_current": "<estimated current CAC — calculate from monthly budget divided by (leads x close rate) — show the figure with brief working>",
-      "cac_projected": "<projected CAC after implementing top 3 fixes — show expected percentage reduction and resulting figure>",
-      "ltv_cac_current": "<current LTV:CAC ratio based on their stated deal size or LTV — e.g. 1.8:1. Flag if below 3:1 benchmark>",
-      "ltv_cac_projected": "<projected LTV:CAC after fixes — target at least 3:1 for healthy B2B unit economics>",
-      "monthly_revenue_opportunity": "<additional monthly revenue opportunity from fixing ICP — quantify with brief reasoning>"
+      "cac_current": "<estimated current CAC, calculate from monthly budget divided by (leads x close rate), show the figure with brief working>",
+      "cac_projected": "<projected CAC after implementing top 3 fixes, show expected percentage reduction and resulting figure>",
+      "ltv_cac_current": "<current LTV:CAC ratio based on their stated deal size or LTV, e.g. 1.8:1. Flag if below 3:1 benchmark>",
+      "ltv_cac_projected": "<projected LTV:CAC after fixes, target at least 3:1 for healthy B2B unit economics>",
+      "monthly_revenue_opportunity": "<additional monthly revenue opportunity from fixing ICP, quantify with brief reasoning>"
     },
     "findings": [
       {
-        "title": "<finding tied to budget efficiency or spend allocation — Q11, Q19-Q20>",
+        "title": "<finding tied to budget efficiency or spend allocation, Q11, Q19-Q20>",
         "severity": "<Critical|Warning|Opportunity>",
         "explanation": "<specific finding referencing their deal size, monthly spend, and channel allocation>"
       },
       {
-        "title": "<finding tied to unit economics or revenue per lead — Q21-Q23>",
+        "title": "<finding tied to unit economics or revenue per lead, Q21-Q23>",
         "severity": "<Critical|Warning|Opportunity>",
         "explanation": "<specific finding referencing their lead volume, conversions, and CPA vs deal size>"
       }
@@ -475,7 +494,7 @@ Return this exact JSON structure:
         "timeline": "<This week|This month|Next quarter>"
       },
       {
-        "action": "<specific unit economics improvement — CAC reduction or LTV increase strategy>",
+        "action": "<specific unit economics improvement, CAC reduction or LTV increase strategy>",
         "impact": "<High|Medium|Low>",
         "timeline": "<This week|This month|Next quarter>"
       }
@@ -500,7 +519,7 @@ Return this exact JSON structure:
     {
       "title": "<most impactful finding across all 4 categories>",
       "severity": "<Critical|Warning|Opportunity>",
-      "explanation": "<specific, region-aware finding with revenue impact — reference ${geographicRegion}>"
+      "explanation": "<specific, region-aware finding with revenue impact, reference ${geographicRegion}>"
     },
     {
       "title": "<second most impactful finding>",
@@ -510,12 +529,12 @@ Return this exact JSON structure:
     {
       "title": "<third most impactful finding>",
       "severity": "<Critical|Warning|Opportunity>",
-      "explanation": "<specific finding with revenue impact — reference ${geographicRegion}>"
+      "explanation": "<specific finding with revenue impact, reference ${geographicRegion}>"
     }
   ],
   "quick_wins": [
     {
-      "action": "<highest-impact quick win across all categories — reference regional platforms where relevant>",
+      "action": "<highest-impact quick win across all categories, reference regional platforms where relevant>",
       "impact": "<High|Medium|Low>",
       "timeline": "<This week|This month|Next quarter>"
     },
@@ -586,7 +605,7 @@ Rules:
 - critical_findings: exactly 3 items, the highest-impact findings drawn from across all 4 categories
 - quick_wins (top-level): exactly 3 items, the highest-impact actions drawn from across all 4 categories
 - breakdown (top-level): exactly 6 items in the order listed, scores must match the corresponding category breakdown scores
-- All scores must reflect the actual questionnaire responses — do not return generic numbers
+- All scores must reflect the actual questionnaire responses, do not return generic numbers
 - Reference ${geographicRegion} explicitly in at least 2 category analyses
 - Use web search results to populate landing_page_assessment, keyword_analysis, competitor_insights, and regional_benchmarks with real data`
 
@@ -610,7 +629,7 @@ Rules:
 
 Your role is to analyse questionnaire responses and produce a precise, actionable ICP diagnostic report based solely on the answers provided. No web research needed.
 
-Return ONLY a valid JSON object. No markdown, no prose outside JSON.`
+Return ONLY a valid JSON object. No markdown, no prose outside JSON. Do not use em dashes or en dashes anywhere in your output. Use commas, colons, or full stops instead.`
 
     const freePrompt = `Analyse this ICP diagnostic questionnaire submission and return a structured report.
 
@@ -618,7 +637,7 @@ PROFILE:
 - Name: ${profile?.name ?? 'Not provided'}
 - Company: ${profile?.company ?? 'Not provided'}
 
-LAYER 1 — ICP Foundation:
+LAYER 1, ICP Foundation:
 - Business offering: ${responses[1] ?? ''}
 - Industry/vertical: ${responses[2] ?? ''}
 - Annual revenue: ${responses[3] ?? ''}
@@ -633,7 +652,7 @@ LAYER 1 — ICP Foundation:
 - Sales cycle length: ${responses[12] ?? ''}
 - Decision maker job titles: ${responses[13] ?? ''}
 
-LAYER 2 — Targeting Mismatch:
+LAYER 2, Targeting Mismatch:
 - Perceived ideal customer: ${responses[14] ?? ''}
 - Active ad channels: ${Array.isArray(responses[15]) ? (responses[15] as string[]).join(', ') : (responses[15] ?? '')}
 - Landing page URL: ${landingPageUrl || 'Not provided'}
@@ -648,7 +667,7 @@ LAYER 2 — Targeting Mismatch:
 - Lead-to-customer close rate: ${responses[21] ?? ''}%
 - Average customer lifetime value: ${responses[22] ?? ''}
 
-LAYER 3 — Funnel Friction:
+LAYER 3, Funnel Friction:
 - Primary CTA on landing page: ${responses[25] ?? ''}
 - Funnel steps to conversion: ${responses[26] ?? ''}
 - Required form fields: ${responses[27] ?? ''}
@@ -669,12 +688,12 @@ Return this exact JSON structure:
     "meta_audience_notes": "<specific advice on Meta/Google audience setup based on their targeting parameters and best customer profile>",
     "findings": [
       {
-        "title": "<finding tied to ICP definition or best customer clarity — Q1-Q13>",
+        "title": "<finding tied to ICP definition or best customer clarity, Q1-Q13>",
         "severity": "<Critical|Warning|Opportunity>",
         "explanation": "<specific finding referencing their business offering, best customer profile, and decision maker titles>"
       },
       {
-        "title": "<finding tied to audience mismatch or targeting parameters — Q14, Q18, Q24>",
+        "title": "<finding tied to audience mismatch or targeting parameters, Q14, Q18, Q24>",
         "severity": "<Critical|Warning|Opportunity>",
         "explanation": "<specific finding referencing their perceived ideal customer vs best customer profile>"
       }
@@ -710,15 +729,15 @@ Return this exact JSON structure:
   "search": {
     "score": <integer 0-100>,
     "summary": "<2 sentences specific to channel mix and keyword/search strategy>",
-    "keyword_analysis": "<analysis of their channel mix and search strategy based solely on their questionnaire responses — no web research>",
+    "keyword_analysis": "<analysis of their channel mix and search strategy based solely on their questionnaire responses, no web research>",
     "findings": [
       {
-        "title": "<finding tied to channel selection or platform mix — Q15, Q19-Q20>",
+        "title": "<finding tied to channel selection or platform mix, Q15, Q19-Q20>",
         "severity": "<Critical|Warning|Opportunity>",
         "explanation": "<specific finding referencing their active channels and budget allocation across them>"
       },
       {
-        "title": "<finding tied to ad spend efficiency or lead quality — Q21-Q24>",
+        "title": "<finding tied to ad spend efficiency or lead quality, Q21-Q24>",
         "severity": "<Critical|Warning|Opportunity>",
         "explanation": "<specific finding referencing their lead volume, conversion rate, and CPA>"
       }
@@ -754,15 +773,15 @@ Return this exact JSON structure:
   "funnel": {
     "score": <integer 0-100>,
     "summary": "<2 sentences specific to landing page performance and conversion friction>",
-    "landing_page_assessment": "<assessment of their funnel based on questionnaire answers — CTA type, funnel steps, form fields, mobile score, trust signals, and differentiation score>",
+    "landing_page_assessment": "<assessment of their funnel based on questionnaire answers, CTA type, funnel steps, form fields, mobile score, trust signals, and differentiation score>",
     "findings": [
       {
-        "title": "<finding tied to landing page structure or CTA — Q16, Q25-Q27>",
+        "title": "<finding tied to landing page structure or CTA, Q16, Q25-Q27>",
         "severity": "<Critical|Warning|Opportunity>",
         "explanation": "<specific finding referencing their primary CTA, funnel steps, and form fields>"
       },
       {
-        "title": "<finding tied to form friction, mobile usability, or trust signals — Q28-Q32>",
+        "title": "<finding tied to form friction, mobile usability, or trust signals, Q28-Q32>",
         "severity": "<Critical|Warning|Opportunity>",
         "explanation": "<specific finding referencing their mobile score, form completion rate, and differentiation clarity score>"
       }
@@ -800,20 +819,20 @@ Return this exact JSON structure:
     "summary": "<2 sentences specific to budget efficiency and unit economics>",
     "monthly_waste_estimate": "<estimated monthly budget being wasted with reasoning based on their spend, leads, and conversion data>",
     "business_outcomes": {
-      "cac_current": "<estimated current CAC — calculate from monthly budget divided by (leads x close rate) — show the figure with brief working>",
-      "cac_projected": "<projected CAC after implementing top 3 fixes — show expected percentage reduction and resulting figure>",
-      "ltv_cac_current": "<current LTV:CAC ratio based on their stated deal size or LTV — e.g. 1.8:1. Flag if below 3:1 benchmark>",
-      "ltv_cac_projected": "<projected LTV:CAC after fixes — target at least 3:1 for healthy B2B unit economics>",
-      "monthly_revenue_opportunity": "<additional monthly revenue opportunity from fixing ICP — quantify with brief reasoning>"
+      "cac_current": "<estimated current CAC, calculate from monthly budget divided by (leads x close rate), show the figure with brief working>",
+      "cac_projected": "<projected CAC after implementing top 3 fixes, show expected percentage reduction and resulting figure>",
+      "ltv_cac_current": "<current LTV:CAC ratio based on their stated deal size or LTV, e.g. 1.8:1. Flag if below 3:1 benchmark>",
+      "ltv_cac_projected": "<projected LTV:CAC after fixes, target at least 3:1 for healthy B2B unit economics>",
+      "monthly_revenue_opportunity": "<additional monthly revenue opportunity from fixing ICP, quantify with brief reasoning>"
     },
     "findings": [
       {
-        "title": "<finding tied to budget efficiency or spend allocation — Q11, Q19-Q20>",
+        "title": "<finding tied to budget efficiency or spend allocation, Q11, Q19-Q20>",
         "severity": "<Critical|Warning|Opportunity>",
         "explanation": "<specific finding referencing their deal size, monthly spend, and channel allocation>"
       },
       {
-        "title": "<finding tied to unit economics or revenue per lead — Q21-Q23>",
+        "title": "<finding tied to unit economics or revenue per lead, Q21-Q23>",
         "severity": "<Critical|Warning|Opportunity>",
         "explanation": "<specific finding referencing their lead volume, conversions, and CPA vs deal size>"
       }
@@ -825,7 +844,7 @@ Return this exact JSON structure:
         "timeline": "<This week|This month|Next quarter>"
       },
       {
-        "action": "<specific unit economics improvement — CAC reduction or LTV increase strategy>",
+        "action": "<specific unit economics improvement, CAC reduction or LTV increase strategy>",
         "impact": "<High|Medium|Low>",
         "timeline": "<This week|This month|Next quarter>"
       }
@@ -934,8 +953,8 @@ Rules:
 - critical_findings: exactly 3 items, the highest-impact findings drawn from across all 4 categories
 - quick_wins (top-level): exactly 3 items, the highest-impact actions drawn from across all 4 categories
 - breakdown (top-level): exactly 6 items in the order listed, scores must match the corresponding category breakdown scores
-- All scores must reflect the actual questionnaire responses — do not return generic numbers
-- Base all analysis on questionnaire answers only — no web research`
+- All scores must reflect the actual questionnaire responses, do not return generic numbers
+- Base all analysis on questionnaire answers only, no web research`
 
     const res = await anthropic.messages.create({
       model: 'claude-haiku-4-5-20251001',
@@ -950,7 +969,9 @@ Rules:
   }
 
   const cleaned = diagnosisText.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim()
-  const parsed = extractJSON(cleaned) ?? { raw: diagnosisText }
+  const rawParsed = extractJSON(cleaned) ?? { raw: diagnosisText }
+  // Sanitize any em/en dashes that slipped through the AI output
+  const parsed = stripDashes(rawParsed)
 
   // Inject tier metadata
   const diagnosis: unknown =
@@ -983,7 +1004,7 @@ Rules:
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  console.log('[diagnostic] diagnostics insert success — id:', data.id)
+  console.log('[diagnostic] diagnostics insert success, id:', data.id)
 
   // ── Look up user_id from the questionnaire ─────────────────────────────
   const { data: questionnaire, error: qLookupError } = await supabase
@@ -1020,7 +1041,7 @@ Rules:
   if (reportError) {
     console.error('[diagnostic] reports insert error:', JSON.stringify(reportError))
   } else {
-    console.log('[diagnostic] reports insert success — id:', reportRow?.id)
+    console.log('[diagnostic] reports insert success, id:', reportRow?.id)
   }
 
   // ── Save social proof waste event (non-blocking) ──────────────────────────

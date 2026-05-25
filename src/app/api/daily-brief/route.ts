@@ -59,7 +59,7 @@ Write 2-3 sentences as their daily brief. Rules:
 - If score has not changed in 14+ days, create urgency around the daily KES waste
 - If fixes completed > 0, acknowledge momentum
 - If new intelligence is available, mention it as a competitive edge opportunity
-- Tone: direct, expert, encouraging — like a good advisor, not a chatbot
+- Tone: direct, expert, encouraging, like a good advisor, not a chatbot
 - No em dashes, no en dashes, no bullet points, no headers, no emojis
 - Output only the 2-3 sentences, nothing else`
 

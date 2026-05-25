@@ -108,7 +108,7 @@ export async function GET(req: NextRequest) {
     isNewUser = true
     console.log('[auth/callback] new user created, id:', userId)
 
-    // Send welcome email and notify founder — fire and forget
+    // Send welcome email and notify founder, fire and forget
     void Promise.allSettled([
       sendAccountCreatedEmail({ to: email, name: fullName }),
       sendNewSignupToFounder({ userEmail: email, userName: fullName, source: 'google' }),
@@ -118,7 +118,7 @@ export async function GET(req: NextRequest) {
   response.cookies.set(sessionCookieOptions(createSessionToken(email, userId)))
   console.log('[auth/callback] icp_session set, redirecting to', next, 'isNewUser:', isNewUser)
 
-  // Always return the original response object — it already redirects to /dashboard
+  // Always return the original response object, it already redirects to /dashboard
   // (next defaults to '/dashboard') and carries all auth cookies (Supabase + icp_session).
   // Previously a new NextResponse was created for new users, which silently discarded cookies.
   return response

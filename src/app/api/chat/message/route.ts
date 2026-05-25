@@ -138,7 +138,7 @@ Score history: ${scoreTrend.map(x => `${x.date}: ${x.score}/100`).join(' → ') 
 
 === DIMENSION BREAKDOWN ===
 ${breakdown.length > 0
-  ? breakdown.map(b => `${b.label}: ${b.score}/100 — ${b.found}. Why it matters: ${b.why}`).join('\n')
+  ? breakdown.map(b => `${b.label}: ${b.score}/100, ${b.found}. Why it matters: ${b.why}`).join('\n')
   : 'No breakdown available yet'}
 
 === CRITICAL FINDINGS (unresolved) ===
@@ -148,7 +148,7 @@ ${findings.length > 0
 
 === QUICK WINS AVAILABLE ===
 ${quickWins.length > 0
-  ? quickWins.map((w, i) => `${i + 1}. ${w.action} — Expected impact: ${w.impact}${w.timeline ? ` (${w.timeline})` : ''}`).join('\n')
+  ? quickWins.map((w, i) => `${i + 1}. ${w.action}, Expected impact: ${w.impact}${w.timeline ? ` (${w.timeline})` : ''}`).join('\n')
   : 'No quick wins yet'}
 
 === USER ACTIVITY ON THE DASHBOARD ===
@@ -164,11 +164,11 @@ ${intelligence ? JSON.stringify(intelligence.briefing_data).slice(0, 500) : 'No 
 
 === HOW YOU MUST BEHAVE ===
 1. Always reference their actual numbers. Never give generic marketing advice.
-2. If they are on the Intelligence tab, they are probably looking for competitive context — lean into that.
+2. If they are on the Intelligence tab, they are probably looking for competitive context, lean into that.
 3. If their score has not moved in 14+ days, open with urgency around the daily KES waste.
 4. If they have completed fixes, acknowledge the progress and tell them what to do next.
 5. If they have not viewed the Intelligence tab, recommend it when relevant.
-6. Be specific about their findings by name. Do not say "your top finding" — say what it actually is.
+6. Be specific about their findings by name. Do not say "your top finding", say what it actually is.
 7. When you give recommendations, tie them to a specific score dimension and its impact.
 8. If they ask for ad copy, write it specifically for their ICP, region, and offer.
 9. Responses should be direct and concise: 3-5 sentences unless they ask for detail.
@@ -176,7 +176,7 @@ ${intelligence ? JSON.stringify(intelligence.briefing_data).slice(0, 500) : 'No 
 11. No em dashes, no en dashes. No opening with "Great question!" or "I'd be happy to help!"
 
 === ESCALATION ===
-If the conversation requires access to their actual ad account data, is complex enough to warrant a human strategy session, or the user seems frustrated, say exactly: "This is worth getting our team's eyes on. Want me to request a human review?" — then stop.`
+If the conversation requires access to their actual ad account data, is complex enough to warrant a human strategy session, or the user seems frustrated, say exactly: "This is worth getting our team's eyes on. Want me to request a human review?", then stop.`
 
     // Sanitize history
     const safeHistory = (Array.isArray(conversationHistory) ? conversationHistory : [])
@@ -196,7 +196,7 @@ If the conversation requires access to their actual ad account data, is complex 
         ...safeHistory,
         {
           role: 'user',
-          content: `${message}\n\n[Generate 3 follow-up question suggestions the user might want to ask next, based on their specific situation. Return them as a JSON array on the very last line of your response, formatted exactly like: SUGGESTIONS:["question 1","question 2","question 3"] — no newline after it, no extra text after it.]`,
+          content: `${message}\n\n[Generate 3 follow-up question suggestions the user might want to ask next, based on their specific situation. Return them as a JSON array on the very last line of your response, formatted exactly like: SUGGESTIONS:["question 1","question 2","question 3"], no newline after it, no extra text after it.]`,
         },
       ],
     })
@@ -206,10 +206,15 @@ If the conversation requires access to their actual ad account data, is complex 
       .map(b => b.text)
       .join('')
 
+    // Strip any em/en dashes from AI output
+    const sanitizedText = fullText
+      .replace(/ — /g, ', ').replace(/— /g, ', ').replace(/—/g, '-')
+      .replace(/ – /g, ', ').replace(/–/g, '-')
+
     // Extract suggestions from the last line
-    let reply = fullText
+    let reply = sanitizedText
     let suggestedQuestions: string[] = []
-    const sugMatch = fullText.match(/SUGGESTIONS:(\[.*?\])\s*$/)
+    const sugMatch = sanitizedText.match(/SUGGESTIONS:(\[.*?\])\s*$/)
     if (sugMatch) {
       try {
         suggestedQuestions = JSON.parse(sugMatch[1]) as string[]

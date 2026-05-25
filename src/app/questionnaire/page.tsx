@@ -33,7 +33,7 @@ const QUESTIONS: Question[] = [
     id: 3, layer: 1, layerName: 'ICP Foundation',
     question: 'What is the typical company size of your best customers?',
     type: 'radio',
-    options: ['Solopreneur / Freelancer', 'Small (2–20 employees)', 'Mid-market (21–200 employees)', 'Enterprise (201–1,000)', 'Large Enterprise (1,000+)'],
+    options: ['Solopreneur / Freelancer', 'Small (2-20 employees)', 'Mid-market (21-200 employees)', 'Enterprise (201-1,000)', 'Large Enterprise (1,000+)'],
   },
   {
     id: 4, layer: 1, layerName: 'ICP Foundation',
@@ -51,7 +51,7 @@ const QUESTIONS: Question[] = [
     id: 6, layer: 1, layerName: 'ICP Foundation',
     question: 'What is your average deal size?',
     type: 'radio',
-    options: ['Under $1,000', '$1,000–$5,000', '$5,000–$25,000', '$25,000–$100,000', '$100,000+'],
+    options: ['Under $1,000', '$1,000-$5,000', '$5,000-$25,000', '$25,000-$100,000', '$100,000+'],
   },
   {
     id: 7, layer: 1, layerName: 'ICP Foundation',
@@ -65,13 +65,13 @@ const QUESTIONS: Question[] = [
     id: 8, layer: 2, layerName: 'Targeting Mismatch',
     question: 'Describe who you currently believe your ideal customer is.',
     type: 'textarea',
-    placeholder: 'Be specific — company size, role, industry, annual budget, primary goal…',
+    placeholder: 'Be specific, company size, role, industry, annual budget, primary goal…',
   },
   {
     id: 9, layer: 2, layerName: 'Targeting Mismatch',
     question: 'Which ad channels are you currently running?',
     type: 'checkbox',
-    options: ['Meta (Facebook / Instagram)', 'Google Search', 'Google Display', 'YouTube', 'LinkedIn', 'TikTok', 'Twitter / X', 'Programmatic / Display', 'Retargeting only', 'None — all organic'],
+    options: ['Meta (Facebook / Instagram)', 'Google Search', 'Google Display', 'YouTube', 'LinkedIn', 'TikTok', 'Twitter / X', 'Programmatic / Display', 'Retargeting only', 'None, all organic'],
   },
   {
     id: 10, layer: 2, layerName: 'Targeting Mismatch',
@@ -100,7 +100,7 @@ const QUESTIONS: Question[] = [
   },
   {
     id: 12, layer: 2, layerName: 'Targeting Mismatch',
-    question: 'Describe your current ad targeting parameters — audiences, keywords, job titles, etc.',
+    question: 'Describe your current ad targeting parameters, audiences, keywords, job titles, etc.',
     type: 'textarea',
     placeholder: 'e.g. Lookalike of buyers, keyword "CRM software", job title "Marketing Manager"…',
   },
@@ -108,7 +108,7 @@ const QUESTIONS: Question[] = [
     id: 13, layer: 2, layerName: 'Targeting Mismatch',
     question: 'What is your total monthly ad spend across all channels?',
     type: 'radio',
-    options: ['Under $1,000', '$1,000–$5,000', '$5,000–$20,000', '$20,000–$100,000', '$100,000+'],
+    options: ['Under $1,000', '$1,000-$5,000', '$5,000-$20,000', '$20,000-$100,000', '$100,000+'],
   },
   {
     id: 14, layer: 2, layerName: 'Targeting Mismatch',
@@ -161,7 +161,7 @@ const QUESTIONS: Question[] = [
     id: 22, layer: 2, layerName: 'Targeting Mismatch',
     question: 'What is the average lifetime value of a paying customer to your business?',
     type: 'radio',
-    options: ['Under KES 10,000', 'KES 10,000–50,000', 'KES 50,000–200,000', 'KES 200,000–1,000,000', 'Over KES 1,000,000'],
+    options: ['Under KES 10,000', 'KES 10,000-50,000', 'KES 50,000-200,000', 'KES 200,000-1,000,000', 'Over KES 1,000,000'],
   },
 ]
 
@@ -353,7 +353,7 @@ function ScoreArc({ progress }: { progress: number }) {
       />
       {/* centre label */}
       <text x={cx} y={cy - 8} textAnchor="middle" fill="white" fontSize="26" fontWeight="700" fontFamily="system-ui">
-        {pct === 0 ? '—' : `${Math.round(pct * 100)}`}
+        {pct === 0 ? '-' : `${Math.round(pct * 100)}`}
       </text>
       <text x={cx} y={cy + 10} textAnchor="middle" fill="rgba(148,163,184,0.7)" fontSize="10" fontFamily="system-ui">
         {pct === 0 ? 'answer to begin' : pct < 1 ? '% complete' : 'analysing…'}
@@ -366,7 +366,7 @@ function ScoreArc({ progress }: { progress: number }) {
 
 function WelcomePanel({ diagCount }: { diagCount: number }) {
   const items = [
-    { label: 'ICP Health Score', sub: 'A 0–100 score showing targeting precision' },
+    { label: 'ICP Health Score', sub: 'A 0-100 score showing targeting precision' },
     { label: 'Critical findings', sub: 'Ranked by revenue impact, each with a fix' },
     { label: 'Monthly waste estimate', sub: 'KES value of budget going to wrong audience' },
     { label: 'CAC before and after', sub: 'Projected cost-per-customer after top fixes' },
@@ -406,7 +406,7 @@ function WelcomePanel({ diagCount }: { diagCount: number }) {
           </div>
         </div>
         <div className="space-y-2">
-          {['Audience mismatch costing KES 41,000/mo', 'Landing page CTA misaligned with ICP intent', 'Targeting too broad — 63% budget wasted'].map((line, i) => (
+          {['Audience mismatch costing KES 41,000/mo', 'Landing page CTA misaligned with ICP intent', 'Targeting too broad, 63% budget wasted'].map((line, i) => (
             <div key={i} className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-red-500/60 flex-shrink-0" />
               <p className="text-[11px] text-[#605d52] leading-snug">{line}</p>
@@ -462,21 +462,21 @@ function QuestionPanel({
       label: 'ICP Health Score',
       unit: '/ 100',
       state: !answered ? 'locked' : layer1Done ? 'ready' : 'scanning',
-      stateLabel: !answered ? '—' : layer1Done ? 'Foundation mapped' : 'Mapping profile…',
+      stateLabel: !answered ? '-' : layer1Done ? 'Foundation mapped' : 'Mapping profile…',
       color: 'text-[#e8330a]',
     },
     {
       label: 'Monthly Waste Estimate',
       unit: 'KES',
       state: !layer1Done ? 'locked' : layer2Done ? 'ready' : 'scanning',
-      stateLabel: !layer1Done ? '—' : layer2Done ? 'Spend data captured' : 'Estimating waste…',
+      stateLabel: !layer1Done ? '-' : layer2Done ? 'Spend data captured' : 'Estimating waste…',
       color: 'text-[#e8330a]',
     },
     {
       label: 'CAC Projection',
       unit: 'KES',
       state: !layer2Done ? 'locked' : layer3Pct > 0 ? 'ready' : 'scanning',
-      stateLabel: !layer2Done ? '—' : layer3Pct > 0 ? 'Funnel data captured' : 'Calculating CAC…',
+      stateLabel: !layer2Done ? '-' : layer3Pct > 0 ? 'Funnel data captured' : 'Calculating CAC…',
       color: 'text-[#e8330a]',
     },
   ]
@@ -649,7 +649,7 @@ function LayerCompleteScreen({
             className="mt-8 mb-8 inline-flex flex-col items-center gap-1 px-8 py-5 rounded border border-[#c5c0b1] bg-white">
             <span className="text-xs text-[#939084] uppercase tracking-widest font-semibold">XP Earned</span>
             <span className="text-4xl font-black text-[#e8330a] tabular-nums">+{countedXp}</span>
-            <span className="text-xs text-[#939084]">Keep going — diagnosis unlocks at 200 XP</span>
+            <span className="text-xs text-[#939084]">Keep going, diagnosis unlocks at 200 XP</span>
           </div>
 
           <div style={{ animation: ready ? 'fadeUp 0.4s 0.3s ease both' : 'none' }}
@@ -856,7 +856,7 @@ export default function QuestionnairePage() {
               Welcome
             </span>
             <h2 className="text-xl sm:text-2xl font-bold text-[#201515] mb-4 leading-snug">
-              Let&apos;s get started — tell us about yourself
+              Let&apos;s get started, tell us about yourself
             </h2>
             <div className="flex flex-wrap gap-2 mb-6">
               {['3 layers', '22 questions', '5 minutes', 'Instant results'].map(chip => (
@@ -924,7 +924,7 @@ export default function QuestionnairePage() {
                 Running Deep Diagnostic
               </div>
               <h2 className="text-2xl sm:text-3xl font-bold text-[#201515] mb-2">Analysing your ICP&hellip;</h2>
-              <p className="text-[#939084] text-sm">We are doing real research — this takes about 30 seconds</p>
+              <p className="text-[#939084] text-sm">We are doing real research, this takes about 30 seconds</p>
             </div>
 
             <div className="space-y-2.5">
@@ -1025,7 +1025,7 @@ export default function QuestionnairePage() {
               </div>
               <span className="text-xs text-[#939084] tabular-nums w-8 text-right">{overallPct}%</span>
             </div>
-            <p className="text-xs text-[#939084] mb-6">Layer {q.layer} of 3 — {q.layerName}</p>
+            <p className="text-xs text-[#939084] mb-6">Layer {q.layer} of 3, {q.layerName}</p>
           </div>
 
           {/* Question card */}
@@ -1057,7 +1057,7 @@ export default function QuestionnairePage() {
                   <span className="flex-shrink-0 mt-0.5 text-[#e8330a]">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
                   </span>
-                  <p className="flex-1 leading-snug">We found your site — some answers have been pre-filled. Review and edit if needed.</p>
+                  <p className="flex-1 leading-snug">We found your site, some answers have been pre-filled. Review and edit if needed.</p>
                   <button type="button" onClick={() => setUrlPreviewBanner(false)} className="flex-shrink-0 text-[#e8330a] hover:text-[#e8330a] transition-colors text-base leading-none">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M18 6 6 18M6 6l12 12"/></svg>
                   </button>
@@ -1096,7 +1096,7 @@ export default function QuestionnairePage() {
                 </p>
               )}
               {!isLast && !canProceed() && (
-                <p className="mt-3 text-xs text-[#939084]">Answer to continue — all questions help improve your diagnosis.</p>
+                <p className="mt-3 text-xs text-[#939084]">Answer to continue, all questions help improve your diagnosis.</p>
               )}
             </div>
           </div>

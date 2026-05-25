@@ -65,7 +65,7 @@ async function sendCalculatorEmail(to: string, wasteEstimate: number) {
   </td></tr>
 </table>
 
-<p style="margin:0 0 20px;color:#9ca3af;font-size:14px;line-height:1.7;">A full ICP diagnostic will tell you which of these is costing you the most — and exactly how to fix it.</p>
+<p style="margin:0 0 20px;color:#9ca3af;font-size:14px;line-height:1.7;">A full ICP diagnostic will tell you which of these is costing you the most, and exactly how to fix it.</p>
 
 <table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:28px;"><tr>
   <td style="background-color:#6366f1;border-radius:12px;">
@@ -75,7 +75,7 @@ async function sendCalculatorEmail(to: string, wasteEstimate: number) {
 
   const { error } = await resend.emails.send({
     from: FROM, to,
-    subject: `Your ad waste breakdown — KES ${formatted}/month`,
+    subject: `Your ad waste breakdown, KES ${formatted}/month`,
     html: base(content),
   })
   if (error) console.error('[lead-magnet] calculator email error:', JSON.stringify(error))
@@ -85,7 +85,7 @@ async function sendChecklistEmail(to: string) {
   const checklistUrl = `${BASE}/downloads/lp-checklist`
   const content = `
 <h1 style="margin:0 0 10px;color:#ffffff;font-size:24px;font-weight:800;line-height:1.2;letter-spacing:-0.5px;">Your Landing Page Friction Checklist</h1>
-<p style="margin:0 0 24px;color:#9ca3af;font-size:15px;line-height:1.7;">Your 27-point checklist is ready. Work through it and mark off each item — most marketers find at least 8 problems on their first pass.</p>
+<p style="margin:0 0 24px;color:#9ca3af;font-size:15px;line-height:1.7;">Your 27-point checklist is ready. Work through it and mark off each item, most marketers find at least 8 problems on their first pass.</p>
 
 <table role="presentation" cellpadding="0" cellspacing="0" style="margin-bottom:24px;"><tr>
   <td style="background-color:#6366f1;border-radius:12px;">
@@ -97,11 +97,11 @@ async function sendChecklistEmail(to: string) {
   <tr><td style="padding:20px 24px;">
     <p style="margin:0 0 12px;color:#a5b4fc;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;">What's inside</p>
     ${[
-      'Above the fold — 5 checkpoints',
-      'Form friction — 6 checkpoints',
-      'Trust signals — 5 checkpoints',
-      'Mobile experience — 5 checkpoints',
-      'Messaging clarity — 6 checkpoints',
+      'Above the fold, 5 checkpoints',
+      'Form friction, 6 checkpoints',
+      'Trust signals, 5 checkpoints',
+      'Mobile experience, 5 checkpoints',
+      'Messaging clarity, 6 checkpoints',
     ].map(f => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px;"><tr>
       <td style="width:18px;color:#6366f1;font-size:14px;vertical-align:top;">→</td>
       <td style="color:#e5e7eb;font-size:13px;padding-left:6px;">${f}</td>

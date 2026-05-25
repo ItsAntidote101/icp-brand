@@ -29,12 +29,12 @@ export async function POST(req: NextRequest) {
         .single()
 
       if (lookupError && lookupError.code !== 'PGRST116') {
-        // PGRST116 = row not found — expected for new users, not an error
+        // PGRST116 = row not found, expected for new users, not an error
         console.error('[questionnaire] users lookup error:', JSON.stringify(lookupError))
       }
 
       if (existing) {
-        // ── Existing user — only update safe profile fields ────────────────
+        // ── Existing user, only update safe profile fields ────────────────
         const { data: updated, error: updateError } = await supabase
           .from('users')
           .update({
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
           userId = updated?.id ?? null
         }
       } else {
-        // ── New user — insert with free/inactive defaults ──────────────────
+        // ── New user, insert with free/inactive defaults ──────────────────
         const insertPayload = {
           email:             profile.email,
           full_name:         profile.name    ?? null,

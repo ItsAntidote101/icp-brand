@@ -104,7 +104,7 @@ const ICON = {
 }
 
 // ─── Base template ────────────────────────────────────────────────────────────
-// internal: no icon, no login button — used for founder/admin notifications
+// internal: no icon, no login button, used for founder/admin notifications
 function base(content: string, opts: { loginBtn?: boolean } = { loginBtn: true }): string {
   const showLogin = opts.loginBtn !== false
   return `<!DOCTYPE html>
@@ -291,7 +291,7 @@ ${cta('Go to Your Dashboard', url)}`
 
   const { data, error } = await getResend().emails.send({
     from: FROM, to,
-    subject: `Welcome to ICP Diagnostic — Your ${tierLabel} dashboard is ready`,
+    subject: `Welcome to ICP Diagnostic, Your ${tierLabel} dashboard is ready`,
     html: base(content),
   })
   if (error) console.error('[email] subscription error:', JSON.stringify(error))
@@ -309,7 +309,7 @@ export async function sendReminderEmail({
 
   const scoreHtml = lastScore !== undefined
     ? lastScore >= 70
-      ? `Your last score was <strong style="color:#15803d;">${lastScore}/100</strong> — strong. Let us see if you have pushed it even higher.`
+      ? `Your last score was <strong style="color:#15803d;">${lastScore}/100</strong>, strong. Let us see if you have pushed it even higher.`
       : lastScore >= 40
         ? `Your last score was <strong style="color:#d97706;">${lastScore}/100</strong>. There is meaningful ground to recover.`
         : `Your last score was <strong style="color:#dc2626;">${lastScore}/100</strong>. A lot can change in 30 days.`
@@ -333,7 +333,7 @@ ${cta('Run New Diagnosis', url)}`
   return { data, error }
 }
 
-// ─── Email 4: Session request — founder notification ─────────────────────────
+// ─── Email 4: Session request, founder notification ─────────────────────────
 
 export async function sendSessionRequestToFounder({
   userName, userEmail, companyName, sessionFormat, preferredTime, notes, diagnostic,
@@ -380,7 +380,7 @@ ${notes ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="
   return { data, error }
 }
 
-// ─── Email 5: Session request — user confirmation ─────────────────────────────
+// ─── Email 5: Session request, user confirmation ─────────────────────────────
 
 export async function sendSessionConfirmationToUser({
   to, name,
@@ -414,7 +414,7 @@ ${infoCard([
   return { data, error }
 }
 
-// ─── Email 6: Cancellation — user confirmation ────────────────────────────────
+// ─── Email 6: Cancellation, user confirmation ────────────────────────────────
 
 export async function sendCancellationToUser({
   to, name, renewalDate,
@@ -446,7 +446,7 @@ ${securityBox(`<p style="margin:0;font-family:${font};font-size:14px;color:${Dar
 
   const { data, error } = await getResend().emails.send({
     from: FROM, to,
-    subject: 'Subscription cancelled — access continues until ' + accessUntil,
+    subject: 'Subscription cancelled, access continues until ' + accessUntil,
     html: base(content),
   })
   if (error) console.error('[email] cancel user error:', JSON.stringify(error))
@@ -454,7 +454,7 @@ ${securityBox(`<p style="margin:0;font-family:${font};font-size:14px;color:${Dar
   return { data, error }
 }
 
-// ─── Email 7: Cancellation — founder notification ─────────────────────────────
+// ─── Email 7: Cancellation, founder notification ─────────────────────────────
 
 export async function sendCancellationToFounder({
   userName, userEmail, companyName, reason, renewalDate,
@@ -494,7 +494,7 @@ ${heading('Cancellation alert', 28)}
   return { data, error }
 }
 
-// ─── Email 8a: Upgrade — user ─────────────────────────────────────────────────
+// ─── Email 8a: Upgrade, user ─────────────────────────────────────────────────
 
 export async function sendUpgradeToUser({
   to, name, oldTier, newTier, topUpKes, renewalDate,
@@ -533,7 +533,7 @@ ${cta('Go to Dashboard', 'https://idealicp.com/dashboard')}`
   return { data, error }
 }
 
-// ─── Email 8b: Upgrade — founder ─────────────────────────────────────────────
+// ─── Email 8b: Upgrade, founder ─────────────────────────────────────────────
 
 export async function sendUpgradeToFounder({
   userName, userEmail, companyName, oldTier, newTier, topUpKes, daysRemaining, renewalDate,
@@ -561,7 +561,7 @@ ${infoCard(rows.map(([l, v], i) => row(l, v, i === rows.length - 1)).join(''))}`
 
   const { data, error } = await getResend().emails.send({
     from: FROM, to: 'eugene@idealicp.com', replyTo: userEmail,
-    subject: `Upgrade: ${tierNames[oldTier] ?? oldTier} to ${tierNames[newTier] ?? newTier}${topUpKes > 0 ? ` — KES ${topUpKes.toLocaleString()} to collect` : ''} — ${companyName || userName}`,
+    subject: `Upgrade: ${tierNames[oldTier] ?? oldTier} to ${tierNames[newTier] ?? newTier}${topUpKes > 0 ? `, KES ${topUpKes.toLocaleString()} to collect` : ''}, ${companyName || userName}`,
     html: base(content, { loginBtn: false }),
   })
   if (error) console.error('[email] upgrade founder error:', JSON.stringify(error))
@@ -569,7 +569,7 @@ ${infoCard(rows.map(([l, v], i) => row(l, v, i === rows.length - 1)).join(''))}`
   return { data, error }
 }
 
-// ─── Email 8c: Downgrade scheduled — user ────────────────────────────────────
+// ─── Email 8c: Downgrade scheduled, user ────────────────────────────────────
 
 export async function sendDowngradeScheduledToUser({
   to, name, currentTier, newTier, effectiveDate,
@@ -605,7 +605,7 @@ ${cta('Go to Dashboard', 'https://idealicp.com/dashboard')}`
   return { data, error }
 }
 
-// ─── Email 8d: Downgrade scheduled — founder ─────────────────────────────────
+// ─── Email 8d: Downgrade scheduled, founder ─────────────────────────────────
 
 export async function sendDowngradeScheduledToFounder({
   userName, userEmail, companyName, currentTier, newTier, effectiveDate,
@@ -629,7 +629,7 @@ ${infoCard(rows.map(([l, v], i) => row(l, v, i === rows.length - 1)).join(''))}`
 
   const { data, error } = await getResend().emails.send({
     from: FROM, to: 'eugene@idealicp.com', replyTo: userEmail,
-    subject: `Downgrade scheduled: ${tierNames[currentTier] ?? currentTier} to ${tierNames[newTier] ?? newTier} on ${switchDate} — ${companyName || userName}`,
+    subject: `Downgrade scheduled: ${tierNames[currentTier] ?? currentTier} to ${tierNames[newTier] ?? newTier} on ${switchDate}, ${companyName || userName}`,
     html: base(content, { loginBtn: false }),
   })
   if (error) console.error('[email] downgrade founder error:', JSON.stringify(error))
@@ -637,7 +637,7 @@ ${infoCard(rows.map(([l, v], i) => row(l, v, i === rows.length - 1)).join(''))}`
   return { data, error }
 }
 
-// ─── Email 10: Paused — user ──────────────────────────────────────────────────
+// ─── Email 10: Paused, user ──────────────────────────────────────────────────
 
 export async function sendPausedToUser({
   to, name, resumeDate,
@@ -667,7 +667,7 @@ ${cta('Resume Early', 'https://idealicp.com/dashboard')}`
 
   const { data, error } = await getResend().emails.send({
     from: FROM, to,
-    subject: `Subscription paused — resumes ${resume}`,
+    subject: `Subscription paused, resumes ${resume}`,
     html: base(content),
   })
   if (error) console.error('[email] paused user error:', JSON.stringify(error))
@@ -675,7 +675,7 @@ ${cta('Resume Early', 'https://idealicp.com/dashboard')}`
   return { data, error }
 }
 
-// ─── Email 11: Paused — founder ───────────────────────────────────────────────
+// ─── Email 11: Paused, founder ───────────────────────────────────────────────
 
 export async function sendPausedToFounder({
   userName, userEmail, companyName, resumeDate,
@@ -741,7 +741,7 @@ export async function sendWeeklyIntelligenceEmail({
   const content = `
 ${ICON.brain}
 ${heading('Your Weekly Market Intelligence', 34)}
-${sub(`Hi ${first}, here is what moved in your market this week — ${weekLabel}.`)}
+${sub(`Hi ${first}, here is what moved in your market this week, ${weekLabel}.`)}
 
 <p style="margin:0 0 10px;color:${Dark};font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;font-family:${font};">3 things to know this week</p>
 ${infoCard(`<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${insightRows}</table>`)}
@@ -778,7 +778,7 @@ ${cta('View Full Briefing', 'https://idealicp.com/dashboard')}`
 
   const { data, error } = await getResend().emails.send({
     from: FROM, to,
-    subject: `Your weekly market intelligence — ${weekLabel}`,
+    subject: `Your weekly market intelligence, ${weekLabel}`,
     html: base(content),
   })
   if (error) console.error('[email] weekly intelligence error:', JSON.stringify(error))
@@ -786,7 +786,7 @@ ${cta('View Full Briefing', 'https://idealicp.com/dashboard')}`
   return { data, error }
 }
 
-// ─── Email 13: Escalation — founder notification ──────────────────────────────
+// ─── Email 13: Escalation, founder notification ──────────────────────────────
 
 export async function sendEscalationToFounder({
   userName, userEmail, companyName, tier, score, wasteEstimate,
@@ -823,7 +823,7 @@ ${note ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0
 
   const { data, error } = await getResend().emails.send({
     from: FROM, to: 'eugene@idealicp.com', replyTo: userEmail,
-    subject: `Escalation: ${companyName || userName} — ${urgency}`,
+    subject: `Escalation: ${companyName || userName}, ${urgency}`,
     html: base(content, { loginBtn: false }),
   })
   if (error) console.error('[email] escalation founder error:', JSON.stringify(error))
@@ -831,7 +831,7 @@ ${note ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0
   return { data, error }
 }
 
-// ─── Email 14: Escalation — user confirmation ─────────────────────────────────
+// ─── Email 14: Escalation, user confirmation ─────────────────────────────────
 
 export async function sendEscalationConfirmationToUser({
   to, name, tier, urgency,
@@ -875,7 +875,7 @@ ${cta('Go to Dashboard', 'https://idealicp.com/dashboard')}`
   return { data, error }
 }
 
-// ─── Email 15: Admin reply — user notification ────────────────────────────────
+// ─── Email 15: Admin reply, user notification ────────────────────────────────
 
 export async function sendAdminReplyToUser({
   to, name, reply, dashboardUrl,
@@ -943,7 +943,7 @@ ${cta('Run your free diagnostic', url)}`
   return { data, error }
 }
 
-// ─── New signup notification — founder ───────────────────────────────────────
+// ─── New signup notification, founder ───────────────────────────────────────
 
 export async function sendNewSignupToFounder({
   userEmail, userName, source,

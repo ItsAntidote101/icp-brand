@@ -131,7 +131,7 @@ export async function POST(req: NextRequest) {
         })
       }
 
-      // chargeKes === 0: upgrade on exact renewal day — activate immediately, no charge
+      // chargeKes === 0: upgrade on exact renewal day, activate immediately, no charge
       const { error: userErr } = await supabase
         .from('users')
         .update({ subscription_tier: newTier, scheduled_tier: null, scheduled_tier_date: null })

@@ -39,7 +39,7 @@ const FORMAT_HINTS: Record<CsvFormat, { label: string; cols: string; example: st
   },
   custom: {
     label: 'Custom CSV',
-    cols: 'Any columns — include campaign names, spend, and at least one performance metric',
+    cols: 'Any columns, include campaign names, spend, and at least one performance metric',
     example: 'Works with any platform. The more columns, the better the analysis.',
   },
 }
@@ -292,7 +292,7 @@ export default function CsvUploadPage() {
         {parsed && parsed.headers.length > 0 && !analysis && (
           <div className="bg-[rgba(201,192,177,0.18)] border border-[#c5c0b1] rounded overflow-hidden">
             <p className="text-xs text-[#939084] uppercase tracking-widest px-5 pt-4 pb-3 font-semibold border-b border-[rgba(201,192,177,0.3)]">
-              Preview — first 5 rows
+              Preview, first 5 rows
             </p>
             <div className="overflow-x-auto">
               <table className="text-xs w-full">
@@ -315,7 +315,7 @@ export default function CsvUploadPage() {
                     <tr key={i} className="border-b border-[rgba(201,192,177,0.3)] last:border-0">
                       {row.slice(0, 7).map((cell, j) => (
                         <td key={j} className="px-4 py-2.5 text-[#605d52] whitespace-nowrap max-w-[160px] truncate">
-                          {cell || '—'}
+                          {cell || '-'}
                         </td>
                       ))}
                     </tr>
@@ -459,7 +459,7 @@ export default function CsvUploadPage() {
             {'recommendations' in analysis && analysis.recommendations && analysis.recommendations.length > 0 && (
               <div className="bg-[rgba(201,192,177,0.18)] border border-[#c5c0b1] rounded p-6">
                 <p className="text-xs text-[#201515] uppercase tracking-widest font-semibold mb-5">
-                  Recommendations — ranked by revenue impact
+                  Recommendations, ranked by revenue impact
                 </p>
                 <div className="space-y-5">
                   {analysis.recommendations.map((rec, i) => (

@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
   const now            = new Date()
   const sevenDaysLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
 
-  console.log('[cron] monthly-reminder — range:', now.toISOString(), '→', sevenDaysLater.toISOString())
+  console.log('[cron] monthly-reminder, range:', now.toISOString(), '→', sevenDaysLater.toISOString())
 
   const { data: users, error: usersError } = await supabase
     .from('users')
@@ -72,7 +72,7 @@ export async function GET(req: NextRequest) {
 
   const sent   = results.filter(r => r.success).length
   const failed = results.filter(r => !r.success).length
-  console.log('[cron] done — sent:', sent, '| failed:', failed)
+  console.log('[cron] done, sent:', sent, '| failed:', failed)
 
   return NextResponse.json({ sent, failed, results }, { status: 200 })
 }

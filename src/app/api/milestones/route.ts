@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
       .from('quick_win_completions').select('id', { count: 'exact', head: true }).eq('user_id', user.id)
     if ((winCount ?? 0) >= 1 && !earned.has('quick_win')) toAward.push('quick_win')
 
-    // intelligence_reader: 5+ briefings viewed — approximate from last_seen_intelligence_at existing
+    // intelligence_reader: 5+ briefings viewed, approximate from last_seen_intelligence_at existing
     const { count: briefCount } = await supabase
       .from('intelligence_briefings').select('id', { count: 'exact', head: true }).eq('user_id', user.id)
     if ((briefCount ?? 0) >= 5 && !earned.has('intelligence_reader')) toAward.push('intelligence_reader')

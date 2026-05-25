@@ -105,7 +105,7 @@ function SuccessContent() {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20, marginBottom: 28, flexWrap: 'wrap' }}>
           {[
             { src: '/images/logos/paystack-logo_1.png',                 alt: 'Paystack',   h: 15 },
-            { src: '/images/logos/Visa_Inc._logo_(2014–2021).svg.png',  alt: 'Visa',       h: 13 },
+            { src: '/images/logos/Visa_Inc._logo_(2014-2021).svg.png',  alt: 'Visa',       h: 13 },
             { src: '/images/logos/MasterCard_early_1990s_logo.svg.png', alt: 'Mastercard', h: 18 },
             { src: '/images/logos/M-PESA_LOGO-01.svg.png',              alt: 'M-Pesa',     h: 15 },
           ].map(({ src, alt, h }) => (

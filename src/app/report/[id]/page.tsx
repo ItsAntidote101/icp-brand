@@ -65,13 +65,13 @@ const DEMO: ReportData = {
       title: 'ICP Definition Is Too Broad',
       severity: 'Critical',
       explanation:
-        "Your targeting spans multiple company sizes and industries — you're spending budget on audiences with fundamentally different buying triggers and no single message can convert them.",
+        "Your targeting spans multiple company sizes and industries, you're spending budget on audiences with fundamentally different buying triggers and no single message can convert them.",
     },
     {
       title: 'Ad-to-Landing Page Message Gap',
       severity: 'Critical',
       explanation:
-        'Your ads promise outcome-based ROI but your landing page leads with features — this mismatch kills purchase intent the moment the click lands.',
+        'Your ads promise outcome-based ROI but your landing page leads with features, this mismatch kills purchase intent the moment the click lands.',
     },
     {
       title: 'Form Friction Filtering Out Qualified Buyers',
@@ -85,13 +85,13 @@ const DEMO: ReportData = {
       label: 'ICP Alignment',
       score: 28,
       found: 'Targeting 4 different company sizes with identical creative and offer.',
-      why: 'Each segment has a different pain hierarchy — one message cannot convert all of them simultaneously.',
+      why: 'Each segment has a different pain hierarchy, one message cannot convert all of them simultaneously.',
     },
     {
       label: 'Targeting Accuracy',
       score: 41,
       found: 'Lookalike audiences built from a mixed customer base that includes churned accounts.',
-      why: "You're cloning your worst customers alongside your best — the algorithm has no signal to distinguish them.",
+      why: "You're cloning your worst customers alongside your best, the algorithm has no signal to distinguish them.",
     },
     {
       label: 'Channel Efficiency',
@@ -103,25 +103,25 @@ const DEMO: ReportData = {
       label: 'Funnel Friction Index',
       score: 22,
       found: '7-field lead form on mobile with no progress indicator and no trust signals above the fold.',
-      why: 'Every additional form field drops completion rate by an estimated 8–12% on mobile devices.',
+      why: 'Every additional form field drops completion rate by an estimated 8-12% on mobile devices.',
     },
     {
       label: 'Message to Market Fit',
       score: 38,
       found: 'Landing page headline focuses on features ("AI-powered") instead of outcomes ("cut churn by 30%").',
-      why: "Awareness-stage buyers don't know they need your feature — they know they have a problem.",
+      why: "Awareness-stage buyers don't know they need your feature, they know they have a problem.",
     },
     {
       label: 'Budget Reallocation Opportunity',
       score: 61,
-      found: 'Estimated 40–60% of monthly spend is reaching non-ICP audiences based on your targeting parameters.',
-      why: 'Reallocating to high-intent keywords and job-title targeting could reduce CPA by 35–50%.',
+      found: 'Estimated 40-60% of monthly spend is reaching non-ICP audiences based on your targeting parameters.',
+      why: 'Reallocating to high-intent keywords and job-title targeting could reduce CPA by 35-50%.',
     },
   ],
   quick_wins: [
     {
       action:
-        'Rebuild your lookalike audiences using only your top 20% customers by LTV — exclude all churned accounts from the seed list.',
+        'Rebuild your lookalike audiences using only your top 20% customers by LTV, exclude all churned accounts from the seed list.',
       impact: 'High',
     },
     {
@@ -131,7 +131,7 @@ const DEMO: ReportData = {
     },
     {
       action:
-        "Rewrite your headline to lead with the specific outcome your best customers achieved — not your product's technology or feature set.",
+        "Rewrite your headline to lead with the specific outcome your best customers achieved, not your product's technology or feature set.",
       impact: 'Medium',
     },
   ],
@@ -456,7 +456,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
         <section>
           <div className="mb-6">
             <h2 className="text-xl font-bold text-[#201515] mb-1">Quick Wins</h2>
-            <p className="text-[#939084] text-sm">3 actions you can implement this week — no agency required</p>
+            <p className="text-[#939084] text-sm">3 actions you can implement this week, no agency required</p>
           </div>
           <div className="space-y-4">
             {report.quick_wins.map((w, i) => (
@@ -544,14 +544,14 @@ export default function ReportPage({ params }: { params: { id: string } }) {
           {/* Blurred locked preview */}
           <div className="relative overflow-hidden rounded border border-[#c5c0b1] bg-[#f8f4f0]">
             <div className="blur-sm pointer-events-none select-none p-8 space-y-5 opacity-50">
-              <h3 className="text-[#201515] font-bold text-lg">Full Optimization Roadmap — Weeks 1–12</h3>
+              <h3 className="text-[#201515] font-bold text-lg">Full Optimization Roadmap, Weeks 1-12</h3>
               {[
-                'Week 1–2: Rebuild ICP definition with firmographic and psychographic filters',
-                'Week 3–4: Restructure ad account with ICP-segmented campaign architecture',
-                'Week 5–6: Rewrite landing page headline, sub-headline, and primary CTA',
-                'Week 7–8: Implement progressive form with conditional logic',
-                'Week 9–10: Launch new lookalike audiences and exclude non-ICP segments',
-                'Week 11–12: A/B test value proposition variants against control',
+                'Week 1-2: Rebuild ICP definition with firmographic and psychographic filters',
+                'Week 3-4: Restructure ad account with ICP-segmented campaign architecture',
+                'Week 5-6: Rewrite landing page headline, sub-headline, and primary CTA',
+                'Week 7-8: Implement progressive form with conditional logic',
+                'Week 9-10: Launch new lookalike audiences and exclude non-ICP segments',
+                'Week 11-12: A/B test value proposition variants against control',
               ].map((item, i) => (
                 <div key={i} className="flex gap-3 items-start">
                   <div className="w-5 h-5 rounded-full bg-[#e8330a]/30 flex-shrink-0 mt-0.5" />
@@ -672,7 +672,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
               </button>
 
               <span className="inline-block text-[10px] font-semibold uppercase tracking-widest text-[#e8330a] bg-[rgba(232,51,10,0.08)] border border-[rgba(232,51,10,0.2)] px-2.5 py-1 rounded-full mb-4">
-                {selectedTier} — {PRICES[selectedTier]}/mo
+                {selectedTier}, {PRICES[selectedTier]}/mo
               </span>
 
               <h3 className="text-xl font-bold text-[#201515] mb-1">Enter your email to continue</h3>

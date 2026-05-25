@@ -97,7 +97,8 @@ Rules:
 - underperformers: exactly 3 (fewer only if data has less than 3 campaigns)
 - audience_insights: 2-4 items
 - recommendations: exactly 3, ranked by revenue impact descending
-- Every number must come from the actual data — do not invent figures`,
+- Every number must come from the actual data, do not invent figures
+- Do not use em dashes or en dashes anywhere in your output. Use commas, colons, or full stops instead`,
       },
     ],
   })
@@ -106,14 +107,21 @@ Rules:
   const text = block.type === 'text' ? block.text : ''
   const stripped = text.replace(/^```(?:json)?\n?/i, '').replace(/\n?```$/i, '').trim()
 
+  function stripDashes(value: unknown): unknown {
+    if (typeof value === 'string') return value.replace(/ — /g, ', ').replace(/— /g, ', ').replace(/—/g, '-').replace(/ – /g, ', ').replace(/–/g, '-')
+    if (Array.isArray(value)) return value.map(stripDashes)
+    if (value !== null && typeof value === 'object') { const o: Record<string,unknown>={}; for (const [k,v] of Object.entries(value as Record<string,unknown>)) o[k]=stripDashes(v); return o }
+    return value
+  }
+
   let analysis: CsvAnalysis | { raw: string }
   try {
-    analysis = JSON.parse(stripped) as CsvAnalysis
+    analysis = stripDashes(JSON.parse(stripped)) as CsvAnalysis
   } catch {
     analysis = { raw: text }
   }
 
-  console.log('[csv-analysis] Claude response parsed — saving to diagnostics')
+  console.log('[csv-analysis] Claude response parsed, saving to diagnostics')
 
   // ── Look up user if email provided ────────────────────────────────────────
   let userId: string | null = null
@@ -141,7 +149,7 @@ Rules:
   if (saveError) {
     console.error('[csv-analysis] diagnostics insert error:', JSON.stringify(saveError))
   } else {
-    console.log('[csv-analysis] diagnostics insert success — id:', saved?.id)
+    console.log('[csv-analysis] diagnostics insert success, id:', saved?.id)
   }
 
   return NextResponse.json({ analysis, diagnosticId: saved?.id ?? null }, { status: 200 })

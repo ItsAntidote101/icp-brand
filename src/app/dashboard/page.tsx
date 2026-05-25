@@ -146,7 +146,7 @@ function greeting(name: string | null) {
 }
 
 function parseWaste(text: string | undefined): { fromCurrency: string; amount: number; raw: string } {
-  if (!text || text.startsWith('Upgrade')) return { fromCurrency: 'KES', amount: 0, raw: '—' }
+  if (!text || text.startsWith('Upgrade')) return { fromCurrency: 'KES', amount: 0, raw: '-' }
   const symMap: Record<string, string> = { '$': 'USD', '€': 'EUR', '£': 'GBP' }
   const m = text.match(/(KES|NGN|ZAR|USD|GBP|EUR|\$|€|£)\s*([\d,]+)/i)
   if (m) {
@@ -409,7 +409,7 @@ function ScoreHistoryWidget({ reports, latestReport, renewalDate, delay }: {
           <div style={{ background: BgAlt, borderRadius: 12, padding: '14px 18px', marginBottom: 18, display: 'inline-flex', alignItems: 'center', gap: 10 }}>
             <span style={{ fontFamily: fontB, fontSize: 12, color: Pmuted }}>Baseline</span>
             <span style={{ fontFamily: font, fontSize: 22, fontWeight: 800, color: P }}>{latestScore}<span style={{ fontSize: 13, fontWeight: 500, color: Pmuted }}>/100</span></span>
-            <span style={{ fontFamily: fontB, fontSize: 11, color: Pmuted }}>— {formatDate(latestReport.generated_at)}</span>
+            <span style={{ fontFamily: fontB, fontSize: 11, color: Pmuted }}>, {formatDate(latestReport.generated_at)}</span>
           </div>
         )}
         <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, lineHeight: 1.6, margin: '0 0 6px' }}>
@@ -462,7 +462,7 @@ function LandingPageWidget({ diag, delay, onUpgrade }: { diag: DiagnosisData; de
       <Card delay={delay}>
         <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: '0 0 12px' }}>Landing Page Assessment</p>
         <p style={{ fontFamily: fontB, fontSize: 14, color: '#605d52', lineHeight: 1.75, margin: '0 0 20px' }}>
-          Your landing page assessment will appear in your next report. Pro subscribers get a live AI review of their actual page — competitors, friction points, and conversion fixes.
+          Your landing page assessment will appear in your next report. Pro subscribers get a live AI review of their actual page, competitors, friction points, and conversion fixes.
         </p>
         <button onClick={onUpgrade}
           style={{ fontFamily: font, fontWeight: 600, fontSize: 13, color: P, background: 'none', border: 'none', cursor: 'pointer', padding: 0, opacity: 0.75 }}>
@@ -774,7 +774,7 @@ function WasteTicker({ diag, report, currency }: { diag: DiagnosisData; report: 
 
   const displayVal = waste.amount > 0
     ? convertAmount(Math.round(displayed), waste.fromCurrency, currency)
-    : '—'
+    : '-'
 
   return (
     <div style={{
@@ -1513,7 +1513,7 @@ function FunnelTab({ diag, hasReports, score, onUpgrade }: {
         <Card style={{ background: '#f8f4f0' }}>
           <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: '0 0 12px' }}>Landing Page Assessment</p>
           <p style={{ fontFamily: fontB, fontSize: 14, color: '#605d52', lineHeight: 1.75, margin: '0 0 16px' }}>
-            Your landing page assessment will appear in your next report. Pro subscribers get a live AI review of their actual page — competitors, friction points, and conversion fixes.
+            Your landing page assessment will appear in your next report. Pro subscribers get a live AI review of their actual page, competitors, friction points, and conversion fixes.
           </p>
           <button onClick={onUpgrade} style={{ fontFamily: font, fontWeight: 600, fontSize: 13, color: P, background: 'none', border: 'none', cursor: 'pointer', padding: 0, opacity: 0.75 }}>
             See what Pro includes →
@@ -1578,7 +1578,7 @@ function EconomicsKpiTile({
       <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: 0 }}>{label}</p>
       {empty ? (
         <>
-          <p style={{ fontFamily: font, fontSize: 22, fontWeight: 800, color: Pmuted, margin: 0, lineHeight: 1.1 }}>—</p>
+          <p style={{ fontFamily: font, fontSize: 22, fontWeight: 800, color: Pmuted, margin: 0, lineHeight: 1.1 }}>-</p>
           {emptyAction && (
             <button onClick={emptyAction} style={{ fontFamily: fontB, fontSize: 11, color: P, background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' as const, marginTop: 2, opacity: 0.65 }}>
               {emptyLabel ?? 'Upgrade for this metric'}
@@ -1683,10 +1683,10 @@ function EconomicsTab({ diag, hasReports, score, currency, onUpgrade }: {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
         <EconomicsKpiTile
           label="Monthly Waste"
-          value={displayWaste ?? (waste.raw !== '—' ? waste.raw : undefined)}
+          value={displayWaste ?? (waste.raw !== '-' ? waste.raw : undefined)}
           sub={displayWaste ? `Estimated ad spend lost to ICP mismatch` : undefined}
           accent="#ef4444"
-          empty={!displayWaste && waste.raw === '—'}
+          empty={!displayWaste && waste.raw === '-'}
         />
         <EconomicsKpiTile
           label="Revenue Opportunity"
@@ -1755,7 +1755,7 @@ function EconomicsTab({ diag, hasReports, score, currency, onUpgrade }: {
       )}
 
       {/* ── Waste detail ─────────────────────────────────────────────────────── */}
-      {waste.raw && waste.raw !== '—' && waste.raw.length > 20 && (
+      {waste.raw && waste.raw !== '-' && waste.raw.length > 20 && (
         <Card>
           <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 10px' }}>Waste Estimate Breakdown</p>
           <p style={{ fontFamily: fontB, fontSize: 14, color: P, lineHeight: 1.7, margin: 0 }}>{waste.raw}</p>
@@ -1926,7 +1926,7 @@ function AchievementModal({ achievement, onDismiss }: {
 function GetItDoneCard({ tier, onBook, onUpgrade }: { tier: string; onBook: () => void; onUpgrade?: () => void }) {
   const isAgency = tier === 'agency'
   const pills = [
-    { icon: <CheckCircle size={20} color="#fff" />, text: 'We review your diagnostic before the session — no briefing needed' },
+    { icon: <CheckCircle size={20} color="#fff" />, text: 'We review your diagnostic before the session, no briefing needed' },
     { icon: <Target     size={20} color="#fff" />, text: 'We implement your top 3 fixes with you live on the call' },
     { icon: <TrendingUp size={20} color="#fff" />, text: 'Follow-up report 30 days later to measure improvement' },
   ]
@@ -1996,11 +1996,11 @@ function BookingModal({
   const [step,    setStep]    = useState<BookingState>('form')
 
   const findings  = getFindings(diag)
-  const topFinding = findings[0]?.title ?? '—'
-  const waste      = diag.monthly_waste_estimate ?? '—'
+  const topFinding = findings[0]?.title ?? '-'
+  const waste      = diag.monthly_waste_estimate ?? '-'
 
   const brief = [
-    { label: 'ICP Health Score',         value: score !== null ? `${score}/100` : '—' },
+    { label: 'ICP Health Score',         value: score !== null ? `${score}/100` : '-' },
     { label: 'Estimated Monthly Waste',  value: waste },
     { label: 'Top Priority',             value: topFinding },
   ]
@@ -2104,7 +2104,7 @@ function BookingModal({
             <div style={{ marginBottom: 28 }}>
               <p style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, color: P, margin: '0 0 8px' }}>Anything specific you want us to focus on?</p>
               <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3}
-                placeholder="Optional — any context that would help us prepare"
+                placeholder="Optional, any context that would help us prepare"
                 style={{ width: '100%', fontFamily: fontB, fontSize: 14, color: P, background: '#fff', border: '1px solid #c5c0b1', borderRadius: 10, padding: '12px 16px', outline: 'none', resize: 'vertical', boxSizing: 'border-box' }} />
             </div>
 
@@ -2161,7 +2161,7 @@ function FirstRunDashboard({ user }: { user: UserData }) {
   const firstName  = user.full_name?.split(' ')[0] ?? null
   const isNewUser  = daysBetween(user.created_at) <= 1
   const reveals = [
-    { icon: <Zap size={18} color={P} />,         title: 'ICP Health Score',    body: 'A 0–100 score showing how well your targeting matches your best buyers.' },
+    { icon: <Zap size={18} color={P} />,         title: 'ICP Health Score',    body: 'A 0-100 score showing how well your targeting matches your best buyers.' },
     { icon: <AlertCircle size={18} color={P} />, title: 'Monthly Waste Estimate', body: 'How much budget is leaking to audiences that will never convert.' },
     { icon: <Check size={18} color={P} />,       title: '3 Quick Wins',         body: 'Specific, ranked actions you can implement this week to improve your score.' },
     { icon: <Target size={18} color={P} />,      title: 'Landing Page Review',  body: 'AI assessment of your page against your ICP and what to fix first.' },
@@ -2170,7 +2170,7 @@ function FirstRunDashboard({ user }: { user: UserData }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24, animation: 'fadeUp 0.4s ease both' }}>
 
-      {/* Hero CTA — full-width, impossible to miss */}
+      {/* Hero CTA, full-width, impossible to miss */}
       <div style={{
         background: 'linear-gradient(135deg,#201515 0%,#2d1e0a 100%)',
         borderRadius: 12, padding: 'clamp(28px,5vw,48px) clamp(24px,5vw,52px)',
@@ -2183,7 +2183,7 @@ function FirstRunDashboard({ user }: { user: UserData }) {
             {firstName ? `${firstName}, where is your ad budget actually going?` : 'Where is your ad budget actually going?'}
           </h2>
           <p style={{ fontFamily: fontB, fontSize: 15, color: 'rgba(255,255,255,0.65)', margin: 0, lineHeight: 1.65, maxWidth: 520 }}>
-            Most B2B teams waste 30–60% of their budget targeting people who will never buy. Your ICP diagnostic finds the leak, scores your targeting, and gives you a ranked fix list. Takes 5 minutes.
+            Most B2B teams waste 30-60% of their budget targeting people who will never buy. Your ICP diagnostic finds the leak, scores your targeting, and gives you a ranked fix list. Takes 5 minutes.
           </p>
         </div>
 
@@ -2225,7 +2225,7 @@ function FirstRunDashboard({ user }: { user: UserData }) {
         </div>
       </div>
 
-      {/* Progress rail — shows where they are in the 3-step journey */}
+      {/* Progress rail, shows where they are in the 3-step journey */}
       <div style={{ background: '#f8f4f0', borderRadius: 12, padding: '20px 24px', border: `1.5px solid ${Pborder}` }}>
         <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 16px' }}>Your journey</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -2326,7 +2326,7 @@ function ReportsTab({ reports, dataLoading }: { reports: ReportRow[]; dataLoadin
                         <p style={{ fontFamily: fontB, fontSize: 9, fontWeight: 600, textTransform: 'uppercase', color: Pmuted, margin: '2px 0 0' }}>/100</p>
                       </>
                     ) : (
-                      <span style={{ fontFamily: font, fontSize: 22, fontWeight: 700, color: Pmuted }}>—</span>
+                      <span style={{ fontFamily: font, fontSize: 22, fontWeight: 700, color: Pmuted }}>-</span>
                     )}
                   </div>
                   <div style={{ width: 1, height: 40, background: Pborder, flexShrink: 0 }} />
@@ -2419,7 +2419,7 @@ function CancellationModal({ user, score, reportCount, onClose, onCancelled, onU
       const res = await fetch('/api/subscription/cancel', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userEmail: user.email, reason: feedback ? `${reason} — ${feedback}` : reason }),
+        body: JSON.stringify({ userEmail: user.email, reason: feedback ? `${reason}, ${feedback}` : reason }),
       })
       if (!res.ok) throw new Error('Request failed')
       onCancelled()
@@ -2454,7 +2454,7 @@ function CancellationModal({ user, score, reportCount, onClose, onCancelled, onU
           <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: Pmuted, margin: '0 0 10px' }}>Your account at a glance</p>
           <div style={{ display: 'flex', gap: 24 }}>
             <div>
-              <p style={{ fontFamily: font, fontSize: 22, fontWeight: 700, color: P, margin: 0 }}>{score ?? '—'}</p>
+              <p style={{ fontFamily: font, fontSize: 22, fontWeight: 700, color: P, margin: 0 }}>{score ?? '-'}</p>
               <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '2px 0 0' }}>ICP Score</p>
             </div>
             <div>
@@ -2462,7 +2462,7 @@ function CancellationModal({ user, score, reportCount, onClose, onCancelled, onU
               <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '2px 0 0' }}>Diagnostics</p>
             </div>
             <div>
-              <p style={{ fontFamily: font, fontSize: 22, fontWeight: 700, color: P, margin: 0 }}>{user.renewal_date ? formatDate(user.renewal_date) : '—'}</p>
+              <p style={{ fontFamily: font, fontSize: 22, fontWeight: 700, color: P, margin: 0 }}>{user.renewal_date ? formatDate(user.renewal_date) : '-'}</p>
               <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '2px 0 0' }}>Access until</p>
             </div>
           </div>
@@ -2482,7 +2482,7 @@ function CancellationModal({ user, score, reportCount, onClose, onCancelled, onU
         {/* Retention: Too expensive */}
         {showRetentionExpensive && (
           <div style={{ background: 'rgba(232,51,10,0.06)', border: '1px solid rgba(232,51,10,0.18)', borderRadius: 8, padding: '16px 18px', marginBottom: 18 }}>
-            <p style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: P, margin: '0 0 4px' }}>Before you go — Starter plan is {convertAmount(6500, 'KES', 'KES')} / month</p>
+            <p style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: P, margin: '0 0 4px' }}>Before you go, Starter plan is {convertAmount(6500, 'KES', 'KES')} / month</p>
             <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 12px', lineHeight: 1.6 }}>Downgrade to Starter and keep running diagnostics at a fraction of the cost. No data is lost.</p>
             <button onClick={() => { onClose(); onUpgrade?.() }}
               style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, color: P, background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}>
@@ -2601,7 +2601,7 @@ function ChangePlanConfirmModal({ newTier, currentTier, renewalDate, onClose, on
   })()
   const renewalLabel = renewalDate
     ? new Date(renewalDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
-    : '—'
+    : '-'
 
   async function handleConfirm() {
     setLoading(true); setError('')
@@ -2653,11 +2653,11 @@ function ChangePlanConfirmModal({ newTier, currentTier, renewalDate, onClose, on
               </div>
               <div>
                 <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '0 0 2px', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>Current features stay active until</p>
-                <p style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: 0 }}>{renewalLabel || '—'}</p>
+                <p style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: 0 }}>{renewalLabel || '-'}</p>
               </div>
               <div>
                 <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '0 0 2px', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>{label} billing starts</p>
-                <p style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: 0 }}>{renewalLabel || '—'}</p>
+                <p style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: 0 }}>{renewalLabel || '-'}</p>
               </div>
             </>
           )}
@@ -3009,7 +3009,7 @@ function AccountTab({ user, currency, score, reportCount, reports, onSignOut, on
     } else {
       const switchDate = json.effectiveDate
         ? new Date(json.effectiveDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
-        : '—'
+        : '-'
       onUserUpdate({ scheduled_tier: newTier, scheduled_tier_date: json.effectiveDate })
       showToast(`Downgrade to ${TIER_LABEL[newTier]} scheduled for ${switchDate}.`)
     }
@@ -3029,9 +3029,9 @@ function AccountTab({ user, currency, score, reportCount, reports, onSignOut, on
   }
 
   const renewalInfo = () => {
-    if (isCancelled) return `Cancelled — access until ${user.renewal_date ? formatDate(user.renewal_date) : '—'}`
-    if (isPaused)    return `Paused — resumes ${user.paused_until ? formatDate(user.paused_until) : '—'}`
-    return user.renewal_date ? `Renews on ${formatDate(user.renewal_date)}` : '—'
+    if (isCancelled) return `Cancelled, access until ${user.renewal_date ? formatDate(user.renewal_date) : '-'}`
+    if (isPaused)    return `Paused, resumes ${user.paused_until ? formatDate(user.paused_until) : '-'}`
+    return user.renewal_date ? `Renews on ${formatDate(user.renewal_date)}` : '-'
   }
 
   return (
@@ -3107,9 +3107,9 @@ function AccountTab({ user, currency, score, reportCount, reports, onSignOut, on
           ) : (
             <div>
               {[
-                { label: 'Full name', value: user.full_name ?? '—' },
+                { label: 'Full name', value: user.full_name ?? '-' },
                 { label: 'Email',     value: user.email },
-                { label: 'Company',   value: user.company_name ?? '—' },
+                { label: 'Company',   value: user.company_name ?? '-' },
               ].map((row, i, arr) => (
                 <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: i < arr.length - 1 ? `1px solid ${Pborder}` : 'none' }}>
                   <span style={{ fontFamily: fontB, fontSize: 13, color: Pmuted }}>{row.label}</span>
@@ -3208,7 +3208,7 @@ function AccountTab({ user, currency, score, reportCount, reports, onSignOut, on
         </div>
       )}
 
-      {/* Change Plan Panel — slides open */}
+      {/* Change Plan Panel, slides open */}
       <div style={{ overflow: 'hidden', maxHeight: showChangePlan ? 900 : 0, opacity: showChangePlan ? 1 : 0, transition: 'max-height 0.35s ease, opacity 0.25s ease' }}>
         <div style={{ paddingTop: 4 }}>
           <p style={{ fontFamily: font, fontSize: 16, fontWeight: 600, color: P, margin: '0 0 16px', letterSpacing: '-0.01em' }}>Choose a plan</p>
@@ -3288,7 +3288,7 @@ function AccountTab({ user, currency, score, reportCount, reports, onSignOut, on
                       <td style={{ padding: '12px 12px' }}>
                         {row.invoice_url
                           ? <a href={row.invoice_url} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: P, textDecoration: 'none', fontWeight: 600 }}><FileDown size={13} />Download</a>
-                          : <span style={{ color: Pmuted }}>—</span>
+                          : <span style={{ color: Pmuted }}>-</span>
                         }
                       </td>
                     </tr>
@@ -3371,7 +3371,7 @@ function AccountTab({ user, currency, score, reportCount, reports, onSignOut, on
           <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: Pmuted, margin: '0 0 4px' }}>Data Management</p>
           <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 16px' }}>Download or permanently delete your account data.</p>
 
-          {/* Export — JSON */}
+          {/* Export, JSON */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 0', borderBottom: `1px solid ${Pborder}` }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               <span style={{ fontFamily: fontB, fontSize: 14, fontWeight: 600, color: P }}>Download my data</span>
@@ -3397,7 +3397,7 @@ function AccountTab({ user, currency, score, reportCount, reports, onSignOut, on
             </button>
           </div>
 
-          {/* Export — CSV diagnostic data */}
+          {/* Export, CSV diagnostic data */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 0', borderBottom: `1px solid ${Pborder}` }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               <span style={{ fontFamily: fontB, fontSize: 14, fontWeight: 600, color: P }}>Download diagnostic data (CSV)</span>
@@ -3704,7 +3704,7 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
   const [qError,          setQError]          = useState('')
   const [, setTick]                           = useState(0)
 
-  // Countdown tick — updates every 60s so displayed time stays fresh
+  // Countdown tick, updates every 60s so displayed time stays fresh
   useEffect(() => {
     const id = setInterval(() => setTick(t => t + 1), 60_000)
     return () => clearInterval(id)
@@ -3920,7 +3920,7 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
               </p>
             </div>
 
-            {/* Refresh button — 4 states */}
+            {/* Refresh button, 4 states */}
             {tier === 'free' ? (
               <button onClick={handleRefresh}
                 style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(248,247,255,0.12)', color: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 12, padding: '11px 22px', fontFamily: fontB, fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
@@ -4081,7 +4081,7 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
   const font  = "'PolySans Median', -apple-system, system-ui, sans-serif"
   const fontB = "'PolySans Neutral', -apple-system, system-ui, sans-serif"
 
-  const waste = diag?.monthly_waste_estimate ?? '—'
+  const waste = diag?.monthly_waste_estimate ?? '-'
   const firstName = user.full_name?.split(' ')[0] ?? 'there'
   const findings  = getFindings(diag)
   const topFinding = findings[0]
@@ -4292,7 +4292,7 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
               )
             })}
 
-            {/* Suggested pills — shown after the last AI message, hidden while loading */}
+            {/* Suggested pills, shown after the last AI message, hidden while loading */}
             {!loading && lastSuggestions.length > 0 && (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 4 }}>
                 {lastSuggestions.map(q => (
@@ -4865,7 +4865,7 @@ export default function DashboardPage() {
 
         <div style={{ padding: 'clamp(20px,4vw,32px) clamp(14px,4vw,40px) 100px' }}>
 
-        {/* Daily Brief — always visible when reports exist */}
+        {/* Daily Brief, always visible when reports exist */}
         {!dataLoading && hasReports && user && (
           <div style={{ marginBottom: 24 }}>
             <DailyBriefCard
@@ -4978,10 +4978,10 @@ export default function DashboardPage() {
                 {/* Score Journey */}
                 {score !== null && <ScoreJourneyWidget score={score} reports={reports} />}
 
-                {/* Business Outcomes — shown when data exists */}
+                {/* Business Outcomes, shown when data exists */}
                 <BusinessOutcomesWidget diag={diag} />
 
-                {/* Performance Breakdown — Pro+ */}
+                {/* Performance Breakdown, Pro+ */}
                 {isPro && score !== null && (
                   <PerformanceBreakdownWidget diag={diag} score={score} delay={200} />
                 )}
@@ -5037,20 +5037,20 @@ export default function DashboardPage() {
                   return null
                 })()}
 
-                {/* Findings — Free sees max 2 */}
+                {/* Findings, Free sees max 2 */}
                 <EnhancedFindingsSection diag={diag} report={latestReport} maxFindings={isStarter ? undefined : 2} onUpgrade={() => setShowUpgradeModal(true)} />
 
-                {/* Milestones — Starter+ */}
+                {/* Milestones, Starter+ */}
                 <UpgradeGate requiredTier="starter" currentTier={t} feature="Achievements" description="Unlock badges as you implement fixes, improve your score, and use the platform consistently." onUpgrade={() => setShowUpgradeModal(true)}>
                   <MilestonesSection milestones={milestones} />
                 </UpgradeGate>
 
-                {/* Score History — Starter+ */}
+                {/* Score History, Starter+ */}
                 <UpgradeGate requiredTier="starter" currentTier={t} feature="Score History" description="Track your ICP score trend across every diagnosis you run." onUpgrade={() => setShowUpgradeModal(true)}>
                   <ScoreHistoryWidget reports={reports} latestReport={latestReport} renewalDate={user.renewal_date ?? null} delay={0} />
                 </UpgradeGate>
 
-                {/* Campaign CSV — Pro+ */}
+                {/* Campaign CSV, Pro+ */}
                 <UpgradeGate requiredTier="pro" currentTier={t} feature="Campaign Data Analysis" description="Upload your Google Ads or Meta export for a media buyer breakdown of your actual spend." onUpgrade={() => setShowUpgradeModal(true)}>
                   <CampaignInsightsWidget delay={0} />
                 </UpgradeGate>

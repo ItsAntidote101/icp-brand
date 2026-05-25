@@ -50,7 +50,7 @@ export default function SocialProofToast() {
           return [...prev, ...fresh]
         })
       } catch {
-        // Non-fatal — silently skip
+        // Non-fatal, silently skip
       }
     }
     load()
@@ -76,7 +76,7 @@ export default function SocialProofToast() {
         attempts++
       }
 
-      // All shown in session — reset and pick first
+      // All shown in session, reset and pick first
       if (!ev) {
         shownIds.current.clear()
         ev = events[0]

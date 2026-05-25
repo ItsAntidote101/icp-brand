@@ -467,7 +467,7 @@ export default function Page() {
               {liveCount.toLocaleString()} marketers diagnosed this month. Free forever, no card needed.
             </p>
           </div>
-          {/* Right — hidden on mobile, visible on md+ */}
+          {/* Right, hidden on mobile, visible on md+ */}
           <div className="hidden md:flex" style={{ padding: 'clamp(48px,8vw,96px) clamp(20px,5vw,56px)', flexDirection: 'column', justifyContent: 'center', gap: 32, borderLeft: `1.5px solid ${Border}` }}>
             <p style={{ fontFamily: fontB, fontSize: 'clamp(16px,2vw,20px)', color: Muted, lineHeight: 1.7, margin: 0 }}>
               Most B2B teams waste 30 to 60 percent of their ad budget targeting people who will never buy. The ICP Diagnostic finds the exact misalignment, scores your targeting, and gives you a ranked fix list in 5 minutes.
@@ -485,7 +485,7 @@ export default function Page() {
               ))}
             </div>
           </div>
-          {/* Mobile stats strip — visible only on mobile */}
+          {/* Mobile stats strip, visible only on mobile */}
           <div className="md:hidden" style={{ display: 'flex', borderTop: `1.5px solid ${Border}` }}>
             {[
               { stat: '5 min', label: 'To complete' },
@@ -584,7 +584,7 @@ export default function Page() {
             </div>
           </div>
 
-          {/* Output pills panel — particle canvas + three ticker rows */}
+          {/* Output pills panel, particle canvas + three ticker rows */}
           {(() => {
             const pillStyle = (bg = 'rgba(255,255,255,0.9)'): React.CSSProperties => ({
               fontFamily: fontB, fontSize: 13, color: Dark, fontWeight: 600,
@@ -935,7 +935,7 @@ export default function Page() {
                   </div>
                 </div>
 
-                {/* Right: image — hidden on mobile */}
+                {/* Right: image, hidden on mobile */}
                 <div className="hidden md:block" style={{ position: 'relative', minHeight: 420, background: '#e8e0d8', overflow: 'hidden' }}>
                   <Image
                     src={t.image}
@@ -1212,7 +1212,7 @@ export default function Page() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
               {[
                 { src: '/images/logos/paystack-logo_1.png',                alt: 'Paystack',    h: 20 },
-                { src: '/images/logos/Visa_Inc._logo_(2014–2021).svg.png', alt: 'Visa',        h: 18 },
+                { src: '/images/logos/Visa_Inc._logo_(2014-2021).svg.png', alt: 'Visa',        h: 18 },
                 { src: '/images/logos/MasterCard_early_1990s_logo.svg.png', alt: 'Mastercard', h: 26 },
                 { src: '/images/logos/M-PESA_LOGO-01.svg.png',             alt: 'M-Pesa',      h: 20 },
               ].map(({ src, alt, h }) => (
@@ -1304,7 +1304,7 @@ export default function Page() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               {[
                 { src: '/images/logos/paystack-logo_1.png',                alt: 'Paystack',    h: 15 },
-                { src: '/images/logos/Visa_Inc._logo_(2014–2021).svg.png', alt: 'Visa',        h: 13 },
+                { src: '/images/logos/Visa_Inc._logo_(2014-2021).svg.png', alt: 'Visa',        h: 13 },
                 { src: '/images/logos/MasterCard_early_1990s_logo.svg.png', alt: 'Mastercard', h: 18 },
                 { src: '/images/logos/M-PESA_LOGO-01.svg.png',             alt: 'M-Pesa',      h: 15 },
               ].map(({ src, alt, h }) => (
