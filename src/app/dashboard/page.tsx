@@ -2518,8 +2518,8 @@ function ChangePlanConfirmModal({ newTier, currentTier, renewalDate, onClose, on
               </div>
               {!renewalDate ? (
                 <div>
-                  <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '0 0 2px', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>Billing starts</p>
-                  <p style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: 0 }}>Today, then monthly</p>
+                  <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '0 0 2px', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>Pay now via Paystack</p>
+                  <p style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: 0 }}>KES {priceKES.toLocaleString()} today, then monthly</p>
                 </div>
               ) : (
                 <div>
@@ -2529,7 +2529,7 @@ function ChangePlanConfirmModal({ newTier, currentTier, renewalDate, onClose, on
                   </p>
                   {topUpKes > 0 && (
                     <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '3px 0 0', lineHeight: 1.4 }}>
-                      Covers {days} remaining days. Full rate from {renewalLabel}.
+                      Covers {days} remaining days. Full rate from {renewalLabel}. You will be taken to Paystack to pay.
                     </p>
                   )}
                 </div>
@@ -2557,7 +2557,7 @@ function ChangePlanConfirmModal({ newTier, currentTier, renewalDate, onClose, on
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <button onClick={handleConfirm} disabled={loading}
             style={{ background: P, border: 'none', borderRadius: 12, padding: '13px 0', fontSize: 14, fontFamily: font, fontWeight: 600, color: '#fff', cursor: loading ? 'default' : 'pointer', opacity: loading ? 0.7 : 1 }}>
-            {loading ? 'Confirming…' : isUpgrade ? 'Confirm Upgrade' : 'Confirm Downgrade'}
+            {loading ? 'Redirecting to payment…' : isUpgrade ? 'Pay and Upgrade' : 'Confirm Downgrade'}
           </button>
           <button onClick={onClose}
             style={{ background: 'none', border: `1px solid ${Pborder}`, borderRadius: 12, padding: '12px 0', fontSize: 13, fontFamily: fontB, color: P, cursor: 'pointer' }}>
@@ -2606,8 +2606,18 @@ function InDashboardUpgradeModal({ user, onClose, onUpgraded }: {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userEmail: user.email, newTier: tier, oldTier: user.subscription_tier }),
       })
-      const json = await res.json() as { direction?: string; topUpKes?: number; effectiveDate?: string; error?: string }
+      const json = await res.json() as {
+        requiresPayment?: boolean; authorization_url?: string
+        direction?: string; topUpKes?: number; effectiveDate?: string; error?: string
+      }
       if (!res.ok) throw new Error(json.error ?? 'failed')
+
+      // Upgrade requires payment: send user to Paystack
+      if (json.requiresPayment && json.authorization_url) {
+        window.location.href = json.authorization_url
+        return
+      }
+
       setDone({ direction: json.direction ?? 'upgrade', tier, topUpKes: json.topUpKes, effectiveDate: json.effectiveDate })
       onUpgraded(json.direction === 'upgrade' ? tier : user.subscription_tier)
     } catch (e) {
@@ -2658,11 +2668,6 @@ function InDashboardUpgradeModal({ user, onClose, onUpgraded }: {
                 <p style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: '#15803d', margin: '0 0 4px' }}>
                   Upgraded to {TIER_LABEL[done.tier]}. Features active now.
                 </p>
-                {(done.topUpKes ?? 0) > 0 && (
-                  <p style={{ fontFamily: fontB, fontSize: 12, color: '#166534', margin: 0, lineHeight: 1.5 }}>
-                    A prorated invoice of KES {done.topUpKes?.toLocaleString()} for the remaining {daysLeft()} days will be sent to you shortly.
-                  </p>
-                )}
               </>
             ) : (
               <>
@@ -2757,9 +2762,9 @@ function InDashboardUpgradeModal({ user, onClose, onUpgraded }: {
                     {isUpgrade ? (
                       <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: 0, lineHeight: 1.5 }}>
                         {!user.renewal_date
-                          ? `Activates immediately. KES ${price.toLocaleString()} / month billed from today.`
+                          ? `You will pay KES ${price.toLocaleString()} now via Paystack to activate ${TIER_LABEL[tier]}. Your billing period starts today.`
                           : topUp > 0
-                            ? `KES ${topUp.toLocaleString()} due now (prorated for ${days} days remaining), then KES ${price.toLocaleString()} / month from ${renewalLabel()}.`
+                            ? `You will pay KES ${topUp.toLocaleString()} now via Paystack (prorated for ${days} days remaining), then KES ${price.toLocaleString()} / month from ${renewalLabel()}.`
                             : `Activates immediately. Next charge: KES ${price.toLocaleString()} on ${renewalLabel()}.`}
                       </p>
                     ) : isDowngrade ? (
@@ -2876,15 +2881,21 @@ function AccountTab({ user, currency, score, reportCount, reports, onSignOut, on
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userEmail: user.email, newTier, oldTier: user.subscription_tier }),
     })
-    const json = await res.json() as { direction?: string; topUpKes?: number; effectiveDate?: string; error?: string }
+    const json = await res.json() as {
+      requiresPayment?: boolean; authorization_url?: string
+      direction?: string; topUpKes?: number; effectiveDate?: string; error?: string
+    }
     if (!res.ok) throw new Error(json.error ?? 'failed')
+
+    // Upgrade requires payment: send user to Paystack
+    if (json.requiresPayment && json.authorization_url) {
+      window.location.href = json.authorization_url
+      return
+    }
 
     if (json.direction === 'upgrade') {
       onUserUpdate({ subscription_tier: newTier })
-      const topUpMsg = (json.topUpKes ?? 0) > 0
-        ? ` A prorated invoice of KES ${json.topUpKes?.toLocaleString()} will follow.`
-        : ''
-      showToast(`Upgraded to ${TIER_LABEL[newTier]}.${topUpMsg}`)
+      showToast(`Upgraded to ${TIER_LABEL[newTier]}.`)
     } else {
       const switchDate = json.effectiveDate
         ? new Date(json.effectiveDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })

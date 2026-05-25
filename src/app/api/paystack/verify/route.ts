@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { sendSubscriptionEmail } from '@/lib/email'
+import { sendSubscriptionEmail, sendUpgradeToUser, sendUpgradeToFounder } from '@/lib/email'
 
 export async function GET(req: NextRequest) {
   const reference = req.nextUrl.searchParams.get('reference') ?? req.nextUrl.searchParams.get('trxref')
@@ -32,13 +32,15 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(`${base}/cancel?reason=paystack_unreachable`)
   }
 
-  const data = verifyData.data as Record<string, unknown>
-  const customer = data.customer as { email: string }
-  const metadata = data.metadata as Record<string, string> | undefined
-  const email = customer.email
-  const tier  = metadata?.tier ?? 'Starter'
+  const txData   = verifyData.data as Record<string, unknown>
+  const customer = txData.customer as { email: string }
+  const metadata = txData.metadata as Record<string, string> | undefined
+  const email    = customer.email
+  const tier     = metadata?.tier ?? 'Starter'
 
-  // Update Supabase
+  // Amount actually charged (in KES, from Paystack cents)
+  const amountKes = Math.round(((txData.amount as number) ?? 0) / 100)
+
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
   if (!serviceKey) throw new Error('SUPABASE_SERVICE_ROLE_KEY is required')
   const supabase = createClient(
@@ -46,10 +48,10 @@ export async function GET(req: NextRequest) {
     serviceKey
   )
 
-  // Fetch existing user to preserve name and get id
+  // Fetch existing user
   const { data: existingUser, error: lookupError } = await supabase
     .from('users')
-    .select('id, full_name')
+    .select('id, full_name, company_name, renewal_date, subscription_tier')
     .eq('email', email)
     .single()
 
@@ -57,7 +59,89 @@ export async function GET(req: NextRequest) {
     console.warn('[verify] users lookup error:', lookupError)
   }
 
-  const renewalDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+  const isUpgrade    = metadata?.is_upgrade === 'true'
+  const upgradeType  = metadata?.upgrade_type as 'new_subscription' | 'proration' | undefined
+  const upgradeFrom  = metadata?.upgrade_from ?? existingUser?.subscription_tier ?? 'free'
+
+  // For proration upgrades, keep the existing renewal date unchanged.
+  // For new subscriptions (including free->paid), set renewal_date = now + 30 days.
+  const isProration  = isUpgrade && upgradeType === 'proration'
+  const renewalDate  = isProration
+    ? (metadata?.existing_renewal_date || existingUser?.renewal_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString())
+    : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+
+  const userId = existingUser?.id ?? null
+
+  if (isProration) {
+    // Paid upgrade: update tier only, keep renewal_date as-is
+    const { error: updateErr } = await supabase
+      .from('users')
+      .update({
+        subscription_tier:  tier.toLowerCase(),
+        billing_status:     'active',
+        scheduled_tier:     null,
+        scheduled_tier_date: null,
+        paystack_reference: reference,
+        updated_at:         new Date().toISOString(),
+      })
+      .eq('email', email)
+
+    if (updateErr) {
+      console.error('[verify] users proration upgrade error:', JSON.stringify(updateErr))
+    }
+
+    // Update subscriptions table
+    if (userId) {
+      await supabase
+        .from('subscriptions')
+        .update({ tier: tier.toLowerCase(), billing_status: 'active' })
+        .eq('user_id', userId)
+
+      // Record the upgrade payment in billing history
+      await supabase
+        .from('billing_history')
+        .insert({
+          user_id:    userId,
+          date:       new Date().toISOString(),
+          plan:       tier.toLowerCase(),
+          amount_kes: amountKes,
+          status:     'paid',
+        })
+    }
+
+    // Send upgrade confirmation emails (non-blocking)
+    const name = existingUser?.full_name ?? undefined
+    const company = existingUser?.company_name ?? undefined
+    const daysLeft = Math.max(0, Math.ceil(
+      (new Date(renewalDate).getTime() - Date.now()) / 86_400_000
+    ))
+
+    Promise.allSettled([
+      sendUpgradeToUser({
+        to:          email,
+        name:        name ?? '',
+        oldTier:     upgradeFrom,
+        newTier:     tier.toLowerCase(),
+        topUpKes:    amountKes,
+        renewalDate: renewalDate,
+      }),
+      sendUpgradeToFounder({
+        userName:      name ?? email,
+        userEmail:     email,
+        companyName:   company,
+        oldTier:       upgradeFrom,
+        newTier:       tier.toLowerCase(),
+        topUpKes:      amountKes,
+        daysRemaining: daysLeft,
+        renewalDate:   renewalDate,
+      }),
+    ]).catch(e => console.error('[verify] upgrade emails failed:', e))
+
+    const tierParam = encodeURIComponent(tier)
+    return NextResponse.redirect(`${base}/dashboard?upgrade=success&tier=${tierParam}`)
+  }
+
+  // New subscription (free->paid or first-time subscriber)
   const upsertPayload = {
     email,
     ...(existingUser?.full_name ? { full_name: existingUser.full_name } : {}),
@@ -78,12 +162,11 @@ export async function GET(req: NextRequest) {
     console.error('[verify] users upsert error:', JSON.stringify(upsertError))
   }
 
-  // ── Write to subscriptions table ───────────────────────────────────────
-  const userId = upsertData?.id ?? existingUser?.id ?? null
+  const newUserId = upsertData?.id ?? userId
 
-  if (userId) {
+  if (newUserId) {
     const subscriptionPayload = {
-      user_id:        userId,
+      user_id:        newUserId,
       tier:           tier.toLowerCase(),
       billing_status: 'active',
       renewal_date:   renewalDate,
@@ -99,18 +182,27 @@ export async function GET(req: NextRequest) {
     if (subError) {
       console.error('[verify] subscriptions insert error:', JSON.stringify(subError))
     }
+
+    // Record in billing_history
+    await supabase
+      .from('billing_history')
+      .insert({
+        user_id:    newUserId,
+        date:       new Date().toISOString(),
+        plan:       tier.toLowerCase(),
+        amount_kes: amountKes,
+        status:     'paid',
+      })
   }
 
-  // ── Fire subscription confirmation email (non-blocking) ──────────────────
-  if (renewalDate) {
-    sendSubscriptionEmail({
-      to: email,
-      name: existingUser?.full_name ?? undefined,
-      tier,
-      renewalDate,
-      baseUrl: base,
-    }).catch(e => console.error('[verify] subscription email failed:', e))
-  }
+  // Send subscription confirmation email (non-blocking)
+  sendSubscriptionEmail({
+    to:          email,
+    name:        existingUser?.full_name ?? undefined,
+    tier,
+    renewalDate,
+    baseUrl:     base,
+  }).catch(e => console.error('[verify] subscription email failed:', e))
 
   const tierParam  = encodeURIComponent(tier)
   const emailParam = encodeURIComponent(email)
