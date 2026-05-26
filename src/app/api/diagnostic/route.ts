@@ -1072,10 +1072,14 @@ Rules:
   }
 
   // extractJSON handles markdown code blocks internally; pass raw text directly
-  const rawParsed = extractJSON(diagnosisText) ?? { raw: diagnosisText }
-  console.log(`[diagnostic] extraction result: hasScore=${!!(rawParsed && typeof rawParsed === 'object' && ('overall_score' in rawParsed || 'health_score' in rawParsed))}`)
+  const rawParsed = extractJSON(diagnosisText)
+  if (!rawParsed) {
+    console.error(`[diagnostic] extractJSON FAILED — JSON parse returned null. diagnosisText length=${diagnosisText.length}, first200=${diagnosisText.slice(0, 200)}`)
+  }
+  const rawParsedOrFallback = rawParsed ?? { raw: diagnosisText }
+  console.log(`[diagnostic] extraction result: hasScore=${!!(rawParsed && typeof rawParsed === 'object' && ('overall_score' in rawParsed || 'health_score' in rawParsed))}, hasAudience=${'audience' in (rawParsed as Record<string,unknown> ?? {})}, hasSearch=${'search' in (rawParsed as Record<string,unknown> ?? {})}`)
   // Sanitize any em/en dashes that slipped through the AI output
-  const parsed = stripDashes(rawParsed)
+  const parsed = stripDashes(rawParsedOrFallback)
 
   // Inject tier metadata
   const diagnosis: unknown =
