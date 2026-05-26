@@ -938,8 +938,15 @@ export default function QuestionnairePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ questionnaireId: qData.id, responses: answers, profile }),
       })
-      const dData = await dRes.json()
-      if (!dRes.ok) throw new Error(dData.error || 'Failed to generate diagnostic')
+      let dData: Record<string, unknown> = {}
+      const contentType = dRes.headers.get('content-type') ?? ''
+      if (contentType.includes('application/json')) {
+        dData = await dRes.json()
+      } else {
+        const text = await dRes.text()
+        if (!dRes.ok) throw new Error(dRes.status === 504 ? 'The diagnostic is taking longer than expected. Please try again.' : (text.slice(0, 120) || 'Failed to generate diagnostic'))
+      }
+      if (!dRes.ok) throw new Error((dData.error as string) || (dData.message as string) || 'Failed to generate diagnostic')
 
       localStorage.setItem('dashboard_email', profile.email)
       if (profile.name) localStorage.setItem('dashboard_name', profile.name)

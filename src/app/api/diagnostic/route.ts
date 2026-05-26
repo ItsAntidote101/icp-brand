@@ -303,12 +303,10 @@ export async function POST(req: NextRequest) {
 
   const systemPrompt = `You are an expert ICP (Ideal Customer Profile) diagnostic analyst specialising in paid acquisition, funnel optimisation, and regional market strategy.
 
-You MUST use web_search before writing any section of your report. Perform ALL of the following searches in order:
-1. Search "${landingPageUrl || (profile?.company ?? '')} site review OR landing page" to assess the marketer's offer and positioning
-2. Search "${industry} advertising benchmarks CPC CPA ${geographicRegion} ${monthYear}"
-3. Search "${industry} competitors ${geographicRegion} digital marketing 2025"
-4. Search "${primaryChannel} algorithm update ${monthYear} ${industry}"
-5. Search "${geographicRegion} digital advertising market trends ${monthYear}"
+You MUST use web_search before writing your report. Perform these 3 searches:
+1. Search "${industry} advertising benchmarks CPC CPA ${geographicRegion} ${monthYear}"
+2. Search "${industry} competitors ${geographicRegion} digital marketing 2025"
+3. Search "${landingPageUrl ? landingPageUrl + ' landing page review' : geographicRegion + ' digital advertising trends ' + monthYear}"
 
 Use search results as your primary data source. Reference real company names, platform data, and cited figures. Generic or hypothetical numbers are not acceptable for a paid subscriber report.
 ${regionContext}
