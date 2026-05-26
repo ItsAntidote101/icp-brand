@@ -1616,7 +1616,7 @@ function BreakdownBarsSection({ diag, labels }: { diag: DiagnosisData; labels: s
   useEffect(() => { const t = setTimeout(() => setMounted(true), 120); return () => clearTimeout(t) }, [])
   const items = (diag.breakdown ?? []).filter(b => labels.includes(b.label))
   if (items.length === 0) {
-    return <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: 0 }}>Detailed breakdown available on Pro and above.</p>
+    return <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: 0 }}>No breakdown data in this report. Run a new diagnosis to generate detailed scores.</p>
   }
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>

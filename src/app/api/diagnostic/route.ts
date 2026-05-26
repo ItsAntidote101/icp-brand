@@ -307,7 +307,7 @@ Analyse the questionnaire data using your expert knowledge of the ${geographicRe
 ${regionContext}
 Return ONLY a valid JSON object. No markdown, no prose outside JSON. Do not use em dashes or en dashes anywhere in your output. Use commas, colons, or full stops instead.`
 
-  const prompt = `Analyse this ICP diagnostic questionnaire and return a structured report. Use web search results as your primary data source for all benchmarks, competitor mentions, and platform insights.
+  const prompt = `Analyse this ICP diagnostic questionnaire and return a structured report. Use your expert knowledge of the ${geographicRegion} market, the ${industry} industry, and paid acquisition benchmarks to populate all fields.
 
 MARKETER PROFILE:
 - Name: ${profile?.name ?? 'Not provided'}
@@ -348,8 +348,8 @@ PRE-COMPUTED METRICS (use these as the user's actual data in benchmarks):
 - Estimated monthly ad waste: ${monthlyWaste ? `${monthlyWaste} (35% of non-converting spend)` : 'Cannot compute'}
 - Revenue opportunity if ICP improved 15%: ${revenueOppty ? `${revenueOppty}` : 'Cannot compute'}
 
-${landingPageUrl ? `LANDING PAGE: You searched ${landingPageUrl} above. Reference your findings directly in landing_page_assessment with specific observations about the offer, CTA clarity, and conversion readiness.` : ''}
-Reference your search results for ${geographicRegion} benchmarks in the ${industry || 'relevant'} industry in all benchmark fields. Use real competitor names from search results in competitor_insights.
+${landingPageUrl ? `LANDING PAGE: ${landingPageUrl} was provided. Based on the URL domain and the business description above, assess likely offer clarity, CTA effectiveness, and conversion readiness in landing_page_assessment.` : ''}
+Use your knowledge of ${geographicRegion} benchmarks in the ${industry || 'relevant'} industry for all benchmark fields. Include realistic competitor names typical of this region and industry in competitor_insights.
 
 Return this exact JSON structure:
 {
@@ -675,7 +675,7 @@ Rules:
 - breakdown (top-level): exactly 6 items in the order listed, scores must match the corresponding category breakdown scores
 - All scores must reflect the actual questionnaire responses, do not return generic numbers
 - Reference ${geographicRegion} explicitly in at least 2 category analyses
-- Use web search results to populate landing_page_assessment, keyword_analysis, competitor_insights, and regional_benchmarks with real data
+- Use your expert knowledge to populate landing_page_assessment, keyword_analysis, competitor_insights, and regional_benchmarks with region-specific and industry-specific insights
 - Every quick_win (in all sections) must include platform, where, expectedImpact, and effort fields. Never use vague language like "your platform" -- always name the exact platform. The action must name the user's actual channels (${adChannels}), region (${geographicRegion}), and business model. The expectedImpact must reference real numbers from estimatedCpa (${estimatedCpa}), monthlyWaste (${monthlyWaste}), revenueOppty (${revenueOppty}), or ltvCacRatio (${ltvCacRatio}) where available`
 
   // ── Branched Claude call ──────────────────────────────────────────────────
@@ -683,8 +683,8 @@ Rules:
 
   if (isSubscriber) {
     const res = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 6000,
+      model: 'claude-sonnet-4-6',
+      max_tokens: 8000,
       system: systemPrompt,
       messages: [{ role: 'user', content: prompt }],
     })
@@ -1061,7 +1061,7 @@ Rules:
 
     const res = await anthropic.messages.create({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 4000,
+      max_tokens: 8000,
       system: freeSystemPrompt,
       messages: [{ role: 'user', content: freePrompt }],
     })
