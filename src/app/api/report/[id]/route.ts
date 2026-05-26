@@ -43,7 +43,9 @@ export async function GET(
   const reportPayload = {
     questionnaire_id: diagnostic.questionnaire_id ?? null,
     user_id:          userId,
-    report_summary:   diagnostic.diagnosis ?? null,
+    report_summary:   typeof diagnostic.diagnosis === 'string'
+      ? diagnostic.diagnosis
+      : JSON.stringify(diagnostic.diagnosis ?? null),
     generated_at:     new Date().toISOString(),
   }
 

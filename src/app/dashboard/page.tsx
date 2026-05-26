@@ -361,7 +361,11 @@ type DiagnosisData = {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-const parseDiagnosis = (s: string): DiagnosisData => { try { return JSON.parse(s) } catch { return {} } }
+const parseDiagnosis = (s: string | object | null | undefined): DiagnosisData => {
+  if (!s) return {}
+  if (typeof s === 'object') return s as DiagnosisData
+  try { return JSON.parse(s) } catch { return {} }
+}
 const getScore = (d: DiagnosisData): number | null => {
   const s = d.overall_score ?? d.health_score ?? null
   return typeof s === 'number' ? s : null
