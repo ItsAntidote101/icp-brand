@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
+import { useSession } from '@/hooks/useSession'
 import { Check, Minus, ArrowRight, Zap, BarChart2, FileText, Target, Brain, Users, Shield, TrendingDown } from 'lucide-react'
 
 // ── Design tokens (match landing page) ───────────────────────────────────────
@@ -213,6 +214,8 @@ const PAID_INCLUDES = [
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function PricingPage() {
+  const session = useSession()
+  const isLoggedIn = session.status === 'authenticated'
   const [annual, setAnnual] = useState(false)
 
   const displayPrice = (plan: typeof PLANS[0]) => {
@@ -257,7 +260,14 @@ export default function PricingPage() {
           </Link>
           <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
             <Link href="/" style={{ fontFamily: fontB, fontSize: 14, color: Muted, textDecoration: 'none' }}>Home</Link>
-            <Link href="/questionnaire" style={btnPrimary}>Get free diagnosis</Link>
+            {isLoggedIn ? (
+              <Link href="/dashboard" style={btnPrimary}>Dashboard</Link>
+            ) : (
+              <>
+                <Link href="/auth?tab=login" style={{ fontFamily: fontB, fontSize: 14, color: Muted, textDecoration: 'none' }}>Log in</Link>
+                <Link href="/questionnaire" style={btnPrimary}>Get free diagnosis</Link>
+              </>
+            )}
           </div>
         </div>
       </nav>

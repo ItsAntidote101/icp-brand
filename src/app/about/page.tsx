@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Target, AlertTriangle, TrendingDown, BrainCircuit, Brain, Users, Eye, Zap, Shield, ArrowRight, Check, MapPin } from 'lucide-react'
+import SessionNavButton from '@/components/SessionNavButton'
 
 export const metadata: Metadata = {
   title: 'About ICP Diagnostic, Built by Media Buyers, for Marketers',
@@ -46,7 +47,10 @@ export default function AboutPage() {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <Link href="/dashboard" className="hidden sm:block" style={{ fontFamily: fontB, fontSize: 14, color: 'rgba(255,255,255,0.65)', textDecoration: 'none' }}>Login</Link>
+            <SessionNavButton
+              loginStyle={{ fontFamily: fontB, fontSize: 14, color: 'rgba(255,255,255,0.65)', textDecoration: 'none' }}
+              dashboardStyle={{ fontFamily: font, fontWeight: 700, fontSize: 13, color: '#fff', background: Orange, padding: '10px 18px', borderRadius: 6, textDecoration: 'none', whiteSpace: 'nowrap' }}
+            />
             <Link href="/questionnaire" style={{ fontFamily: font, fontWeight: 700, fontSize: 13, color: '#fff', background: Orange, padding: '10px 18px', borderRadius: 6, textDecoration: 'none', whiteSpace: 'nowrap' }}>
               Get Free Diagnosis
             </Link>

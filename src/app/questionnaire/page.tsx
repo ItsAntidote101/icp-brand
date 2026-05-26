@@ -1123,6 +1123,11 @@ export default function QuestionnairePage() {
       <header className="border-b border-[#c5c0b1] px-6 py-4 flex items-center justify-between max-w-[1100px] mx-auto w-full">
         <a href="/" className="text-sm font-bold tracking-tight text-[#201515]">ICP<span className="text-[#e8330a]">Diagnostic</span></a>
         <div className="flex items-center gap-3">
+          {prefillIds.size > 0 && (
+            <a href="/dashboard" className="text-xs font-semibold text-[#939084] hover:text-[#201515] transition-colors">
+              Back to Dashboard
+            </a>
+          )}
           <XpBadge xp={xp} />
           <span className="text-xs text-[#939084] font-medium tabular-nums">Q{current + 1}/{totalQ}</span>
         </div>

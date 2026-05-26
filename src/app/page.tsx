@@ -8,6 +8,7 @@ import {
   Crosshair, Layout, TrendingDown, Eye, Plus,
 } from 'lucide-react'
 import SocialProofToast from '@/components/SocialProofToast'
+import { useSession } from '@/hooks/useSession'
 export const dynamic = 'force-static'
 
 // ── Zapier-style palette ──────────────────────────────────────────────────────
@@ -124,6 +125,8 @@ const btnGhostDark: React.CSSProperties = {
 }
 
 export default function Page() {
+  const session = useSession()
+  const isLoggedIn = session.status === 'authenticated'
   const [mobileOpen,      setMobileOpen]      = useState(false)
   const [billingAnnual,   setBillingAnnual]   = useState(false)
   const [openFaq,         setOpenFaq]         = useState<number | null>(null)
@@ -419,8 +422,14 @@ export default function Page() {
             ))}
           </div>
           <div className="hidden md:flex" style={{ gap: 10, alignItems: 'center' }}>
-            <Link href="/auth?tab=login" style={{ fontFamily: fontB, fontSize: 14, color: Muted, textDecoration: 'none', fontWeight: 500, padding: '8px 14px' }}>Log in</Link>
-            <Link href="/questionnaire" className="btn-primary" style={{ ...btnPrimary, fontSize: 14, padding: '9px 18px' }}>Get free diagnostic</Link>
+            {isLoggedIn ? (
+              <Link href="/dashboard" className="btn-primary" style={{ ...btnPrimary, fontSize: 14, padding: '9px 18px' }}>Dashboard</Link>
+            ) : (
+              <>
+                <Link href="/auth?tab=login" style={{ fontFamily: fontB, fontSize: 14, color: Muted, textDecoration: 'none', fontWeight: 500, padding: '8px 14px' }}>Log in</Link>
+                <Link href="/questionnaire" className="btn-primary" style={{ ...btnPrimary, fontSize: 14, padding: '9px 18px' }}>Get free diagnostic</Link>
+              </>
+            )}
           </div>
           <button className="md:hidden" onClick={() => setMobileOpen(o => !o)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
             {mobileOpen ? <X size={22} color={Text} /> : <Menu size={22} color={Text} />}
@@ -440,8 +449,14 @@ export default function Page() {
             )
           ))}
           <div style={{ marginTop: 32, display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <Link href="/questionnaire" onClick={() => setMobileOpen(false)} style={{ ...btnPrimary, justifyContent: 'center', fontSize: 17 }}>Get free diagnostic</Link>
-            <Link href="/auth?tab=login" onClick={() => setMobileOpen(false)} style={{ fontFamily: fontB, fontSize: 15, fontWeight: 500, color: Muted, textDecoration: 'none', textAlign: 'center', padding: '12px 0' }}>Log in</Link>
+            {isLoggedIn ? (
+              <Link href="/dashboard" onClick={() => setMobileOpen(false)} style={{ ...btnPrimary, justifyContent: 'center', fontSize: 17 }}>Go to Dashboard</Link>
+            ) : (
+              <>
+                <Link href="/questionnaire" onClick={() => setMobileOpen(false)} style={{ ...btnPrimary, justifyContent: 'center', fontSize: 17 }}>Get free diagnostic</Link>
+                <Link href="/auth?tab=login" onClick={() => setMobileOpen(false)} style={{ fontFamily: fontB, fontSize: 15, fontWeight: 500, color: Muted, textDecoration: 'none', textAlign: 'center', padding: '12px 0' }}>Log in</Link>
+              </>
+            )}
           </div>
         </div>
       )}
