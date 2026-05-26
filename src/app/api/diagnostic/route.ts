@@ -674,7 +674,8 @@ Rules:
 - breakdown (top-level): exactly 6 items in the order listed, scores must match the corresponding category breakdown scores
 - All scores must reflect the actual questionnaire responses, do not return generic numbers
 - Reference ${geographicRegion} explicitly in at least 2 category analyses
-- Use web search results to populate landing_page_assessment, keyword_analysis, competitor_insights, and regional_benchmarks with real data`
+- Use web search results to populate landing_page_assessment, keyword_analysis, competitor_insights, and regional_benchmarks with real data
+- Every quick_win (in all sections) must include platform, where, expectedImpact, and effort fields. Never use vague language like "your platform" -- always name the exact platform. The action must name the user's actual channels (${adChannels}), region (${geographicRegion}), and business model. The expectedImpact must reference real numbers from estimatedCpa (${estimatedCpa}), monthlyWaste (${monthlyWaste}), revenueOppty (${revenueOppty}), or ltvCacRatio (${ltvCacRatio}) where available`
 
   // ── Branched Claude call ──────────────────────────────────────────────────
   let diagnosisText: string
@@ -1054,7 +1055,8 @@ Rules:
 - quick_wins (top-level): exactly 3 items, the highest-impact actions drawn from across all 4 categories
 - breakdown (top-level): exactly 6 items in the order listed, scores must match the corresponding category breakdown scores
 - All scores must reflect the actual questionnaire responses, do not return generic numbers
-- Base all analysis on questionnaire answers only, no web research`
+- Base all analysis on questionnaire answers only, no web research
+- Every quick_win (in all sections) must include platform, where, expectedImpact, and effort fields. Never use vague language like "your platform" -- always name the exact platform. The action must name the user's actual channels, region (${geographicRegion}), and business model. The expectedImpact must reference actual numbers derived from their budget, lead volume, conversion rate, and deal size data provided above`
 
     const res = await anthropic.messages.create({
       model: 'claude-haiku-4-5-20251001',

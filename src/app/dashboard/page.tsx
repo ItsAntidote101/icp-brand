@@ -3703,7 +3703,14 @@ function InsightCard({ insight }: { insight: MarketInsight }) {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 6 }}>
             <p style={{ fontFamily: "'PolySans Median', system-ui", fontSize: 14, fontWeight: 700, color: '#201515', margin: 0, lineHeight: 1.3 }}>{insight.title}</p>
             <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-              {insight.source && <span style={{ fontFamily: "'PolySans Neutral', system-ui", fontSize: 10, fontWeight: 700, background: '#fffefb', color: '#605d52', padding: '2px 8px', borderRadius: 100, whiteSpace: 'nowrap' }}>{insight.source}</span>}
+              {insight.source && (
+                <span style={{ fontFamily: "'PolySans Neutral', system-ui", fontSize: 10, fontWeight: 700, background: '#fffefb', color: '#605d52', padding: '2px 8px', borderRadius: 100, whiteSpace: 'nowrap' }}>
+                  {insight.sourceUrl
+                    ? <a href={insight.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#605d52', textDecoration: 'underline', cursor: 'pointer' }}>{insight.source}</a>
+                    : insight.source
+                  }
+                </span>
+              )}
               <span style={{ fontFamily: "'PolySans Neutral', system-ui", fontSize: 10, color: '#939084' }}>{insight.timeLabel}</span>
             </div>
           </div>
@@ -3791,7 +3798,7 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
   const [rateLimitModal,    setRateLimitModal]    = useState<{ tier: string; nextAt: string; agencyLimit: boolean } | null>(null)
   const [question,          setQuestion]          = useState('')
   const [questionLoading,   setQuestionLoading]   = useState(false)
-  const [answers,           setAnswers]           = useState<{ q: string; a: string; sources?: string[] }[]>([])
+  const [answers,           setAnswers]           = useState<{ q: string; a: string; sources?: string[]; sourceUrls?: string[] }[]>([])
   const [qError,            setQError]            = useState('')
   const [refreshesToday,    setRefreshesToday]    = useState(0)
   const [, setTick]                               = useState(0)
@@ -3861,7 +3868,7 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
       })
       if (!res.ok) throw new Error('failed')
       const d = await res.json()
-      setAnswers(prev => [{ q, a: d.answer, sources: d.sources }, ...prev])
+      setAnswers(prev => [{ q, a: d.answer, sources: d.sources, sourceUrls: d.sourceUrls }, ...prev])
     } catch { setQError('Something went wrong. Please try again.') }
     finally { setQuestionLoading(false) }
   }
@@ -3954,9 +3961,15 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
               <p style={{ fontFamily: fontB, fontSize: 13, color: P, margin: 0, lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{a.a}</p>
               {a.sources && a.sources.length > 0 && (
                 <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-                  {a.sources.map(s => (
-                    <span key={s} style={{ fontFamily: fontB, fontSize: 10, background: 'rgba(201,192,177,0.3)', color: Pmuted, padding: '2px 8px', borderRadius: 100 }}>{s}</span>
-                  ))}
+                  {a.sources.map((s, si) => {
+                    const url = a.sourceUrls?.[si]
+                    const isUrl = url && url.startsWith('http')
+                    return isUrl
+                      ? <a key={s} href={url} target="_blank" rel="noopener noreferrer" style={{ fontFamily: fontB, fontSize: 10, background: 'rgba(201,192,177,0.3)', color: Pmuted, padding: '2px 8px', borderRadius: 100, textDecoration: 'underline', cursor: 'pointer' }}>{s}</a>
+                      : s.startsWith('http')
+                        ? <a key={s} href={s} target="_blank" rel="noopener noreferrer" style={{ fontFamily: fontB, fontSize: 10, background: 'rgba(201,192,177,0.3)', color: Pmuted, padding: '2px 8px', borderRadius: 100, textDecoration: 'underline', cursor: 'pointer' }}>{s}</a>
+                        : <span key={s} style={{ fontFamily: fontB, fontSize: 10, background: 'rgba(201,192,177,0.3)', color: Pmuted, padding: '2px 8px', borderRadius: 100 }}>{s}</span>
+                  })}
                 </div>
               )}
             </div>
