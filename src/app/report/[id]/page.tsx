@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 type Tier = 'Starter' | 'Pro' | 'Agency'
 
@@ -238,6 +239,7 @@ function LoadingSkeleton() {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function ReportPage({ params }: { params: { id: string } }) {
+  const router = useRouter()
   const [report, setReport] = useState<ReportData | null>(null)
   const [loading, setLoading] = useState(true)
   const [animate, setAnimate] = useState(false)
@@ -246,7 +248,26 @@ export default function ReportPage({ params }: { params: { id: string } }) {
   const [email, setEmail] = useState('')
   const [subscribing, setSubscribing] = useState(false)
   const [subscribeError, setSubscribeError] = useState('')
+  const [isSubscribed, setIsSubscribed] = useState(false)
   const emailRef = useRef<HTMLInputElement>(null)
+
+  // Check if user already has an active subscription — skip paywall if so
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then(r => r.ok ? r.json() : null)
+      .then((d: { status?: string; user?: { subscription_tier?: string; billing_status?: string } } | null) => {
+        if (d?.status === 'active' && d.user?.billing_status === 'active' && d.user?.subscription_tier !== 'free') {
+          setIsSubscribed(true)
+          // Store email so dashboard can pick it up, then redirect after a short pause
+          if (typeof window !== 'undefined' && d.user) {
+            const u = d.user as { email?: string }
+            if (u.email) localStorage.setItem('dashboard_email', u.email)
+          }
+          setTimeout(() => router.push('/dashboard'), 2500)
+        }
+      })
+      .catch(() => {})
+  }, [router])
 
   useEffect(() => {
     async function load() {
@@ -538,9 +559,28 @@ export default function ReportPage({ params }: { params: { id: string } }) {
           </section>
         )}
 
-        {/* ── SECTION 5 · Paywall ────────────────────────────────────────── */}
+        {/* ── SECTION 5 · Paywall or Dashboard CTA ───────────────────────── */}
         <section className="relative">
 
+        {isSubscribed ? (
+          /* Subscribed: redirect in progress, show confirmation */
+          <div className="bg-[#201515] border border-[#e8330a]/20 rounded p-10 text-center">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-[#e8330a]/15 border border-[#e8330a]/30 mb-5">
+              <svg viewBox="0 0 20 20" fill="currentColor" className="w-6 h-6 text-[#e8330a]">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-extrabold text-[#fffefb] mb-2">Report saved to your dashboard</h2>
+            <p className="text-[rgba(255,255,255,0.55)] text-sm mb-6">Taking you to your dashboard now...</p>
+            <Link
+              href="/dashboard"
+              className="inline-block bg-[#e8330a] text-[#fffefb] font-semibold text-sm px-8 py-3 rounded-lg"
+            >
+              Go to Dashboard
+            </Link>
+          </div>
+        ) : (
+          <>
           {/* Blurred locked preview */}
           <div className="relative overflow-hidden rounded border border-[#c5c0b1] bg-[#f8f4f0]">
             <div className="blur-sm pointer-events-none select-none p-8 space-y-5 opacity-50">
@@ -651,6 +691,8 @@ export default function ReportPage({ params }: { params: { id: string } }) {
               </p>
             </div>
           </div>
+          </>
+        )}
         </section>
 
         {/* ── Email / Subscribe Modal ─────────────────────────────────────── */}
