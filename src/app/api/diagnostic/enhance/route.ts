@@ -83,15 +83,52 @@ export async function POST(req: NextRequest) {
       : ((responses[9] as string) ?? '')
     const monthYear = new Date().toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
 
-    const systemPrompt = `You are an expert ICP diagnostic analyst. You have an existing diagnostic report generated from questionnaire data. Your task is to enhance it with real-time market research.
+    // Determine if we have a usable existing report to build on
+    const existingKeys = Object.keys(existingDiag).filter(k => !['raw', 'is_deep_research', 'is_enhanced'].includes(k))
+    const hasExistingReport = existingKeys.length > 3 && existingDiag.overall_score != null
 
-The business operates in ${industry} targeting ${geographicRegion}. Use web_search to find live data, then return a complete updated JSON report.
+    const systemPrompt = `You are an expert ICP (Ideal Customer Profile) diagnostic analyst specialising in paid acquisition, funnel optimisation, and regional market strategy.
+
+The business operates in ${industry} targeting ${geographicRegion}. Use web_search to find live data, then return a complete JSON diagnostic report.
 
 Return ONLY a valid JSON object. No markdown, no prose outside JSON. Do not use em dashes or en dashes anywhere in your output. Use commas, colons, or full stops instead.`
 
-    const existingDiagStr = JSON.stringify(existingDiag)
+    const existingDiagStr = hasExistingReport ? JSON.stringify(existingDiag) : null
 
-    const prompt = `Enhance this ICP diagnostic report with live web research.
+    // Build questionnaire context for full generation (used when no existing report)
+    const budgetNum = parseFloat(String(responses[13] ?? '').replace(/[^0-9.]/g, ''))
+    const leadsNum  = parseFloat(String(responses[14] ?? '').replace(/[^0-9.]/g, ''))
+    const ltvNum    = parseFloat(String(responses[22] ?? responses[6] ?? '').replace(/[^0-9.]/g, ''))
+    const closeNum  = parseFloat(String(responses[21] ?? '').replace(/[^0-9.]/g, ''))
+    const estimatedCpa = budgetNum > 0 && leadsNum > 0 ? (budgetNum / leadsNum).toFixed(0) : null
+    const ltvCacRatio  = estimatedCpa && ltvNum > 0 ? (ltvNum / parseFloat(estimatedCpa)).toFixed(1) : null
+    const monthlyWaste = estimatedCpa && budgetNum > 0 && closeNum > 0
+      ? ((budgetNum * (1 - closeNum / 100)) * 0.35).toFixed(0) : null
+    const revenueOppty = ltvNum > 0 && leadsNum > 0 && closeNum > 0
+      ? ((leadsNum * 0.15) * ltvNum).toFixed(0) : null
+
+    const questionnaireContext = `
+QUESTIONNAIRE DATA:
+- Business offering: ${responses[1] ?? ''}
+- Industry: ${industry}
+- Customer profile: ${responses[3] ?? responses[24] ?? ''}
+- Core problem customers had: ${responses[4] ?? ''}
+- Ad channels: ${adChannels || 'not specified'}
+- Landing page: ${landingPageUrl || 'not provided'}
+- Region: ${geographicRegion}
+- Monthly ad spend: ${responses[13] ?? ''}
+- Leads last 3 months: ${responses[14] ?? ''}
+- Conversion rate: ${responses[21] ?? ''}%
+- Average LTV: ${responses[22] ?? ''}
+- Mobile usability score: ${responses[18] ?? ''}/10
+- Differentiation clarity: ${responses[20] ?? ''}/10
+- Estimated CPA: ${estimatedCpa ?? 'unknown'}
+- LTV:CAC ratio: ${ltvCacRatio ?? 'unknown'}
+- Estimated monthly waste: ${monthlyWaste ?? 'unknown'}
+- Revenue opportunity (+15% ICP improvement): ${revenueOppty ?? 'unknown'}`
+
+    const prompt = hasExistingReport
+      ? `Enhance this ICP diagnostic report with live web research.
 
 EXISTING REPORT (from initial analysis):
 ${existingDiagStr}
@@ -103,19 +140,23 @@ CONTEXT:
 - Landing page: ${landingPageUrl || 'not provided'}
 
 REQUIRED SEARCHES (perform all 3 before writing):
-1. "${industry} advertising benchmarks CPC CPA ${geographicRegion} ${monthYear}" - use results to update regional_benchmarks and economics.business_outcomes
-2. "${industry} competitors ${geographicRegion} digital marketing 2025" - use results to update competitor_insights and relevant findings
-3. "${landingPageUrl ? landingPageUrl + ' landing page review' : geographicRegion + ' digital marketing trends ' + monthYear}" - use results to update landing_page_assessment
+1. "${industry} advertising benchmarks CPC CPA ${geographicRegion} ${monthYear}"
+2. "${industry} competitors ${geographicRegion} digital marketing 2025"
+3. "${landingPageUrl ? landingPageUrl + ' landing page review' : geographicRegion + ' digital marketing trends ' + monthYear}"
 
-After all 3 searches, return the COMPLETE updated JSON object. Update these fields with real data from searches:
-- regional_benchmarks: replace with actual CPC/CPA figures from search results, cite the source
-- competitor_insights: replace with real named competitors from search results
-- landing_page_assessment (in funnel section): update with real observations if URL was provided
-- executive_summary: incorporate any key real-world data points
-- is_enhanced: true
-- is_deep_research: true
+After all 3 searches, return the COMPLETE updated JSON. Update regional_benchmarks, competitor_insights, and landing_page_assessment with real data from searches. Keep all scores and structure from the existing report unless web data gives you clear reason to adjust. Set is_enhanced: true and is_deep_research: true.`
 
-Keep scores, structure, and all other fields from the existing report. Only update fields where web data provides genuinely better information than the initial analysis.`
+      : `Generate a complete ICP diagnostic report using questionnaire data and live web research.
+${questionnaireContext}
+
+REQUIRED SEARCHES (perform all 3 before writing):
+1. "${industry} advertising benchmarks CPC CPA ${geographicRegion} ${monthYear}"
+2. "${industry} competitors ${geographicRegion} digital marketing 2025"
+3. "${landingPageUrl ? landingPageUrl + ' landing page review' : geographicRegion + ' digital marketing trends ' + monthYear}"
+
+Return the complete JSON report structure with overall_score, executive_summary, audience, search, funnel, economics, critical_findings, quick_wins, breakdown, regional_benchmarks, competitor_insights, landing_page_assessment, monthly_waste_estimate, business_outcomes. Set is_enhanced: true and is_deep_research: true.
+
+Use real data from web searches for regional_benchmarks, competitor_insights, and landing_page_assessment. All scores and findings must reflect the actual questionnaire responses above.`
 
     console.log(`[enhance] starting enhancement for diagnostic ${diagnosticId}`)
 
