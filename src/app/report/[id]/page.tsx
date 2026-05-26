@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 
 type Tier = 'Starter' | 'Pro' | 'Agency'
 
@@ -239,7 +238,6 @@ function LoadingSkeleton() {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function ReportPage({ params }: { params: { id: string } }) {
-  const router = useRouter()
   const [report, setReport] = useState<ReportData | null>(null)
   const [loading, setLoading] = useState(true)
   const [animate, setAnimate] = useState(false)
@@ -258,10 +256,9 @@ export default function ReportPage({ params }: { params: { id: string } }) {
         if (res.ok) {
           const data = await res.json()
 
-          // If the API confirms the viewer is a subscriber, skip paywall and redirect
+          // If the API confirms the viewer is a subscriber, skip paywall
           if (data.isSubscribed) {
             setIsSubscribed(true)
-            setTimeout(() => router.push('/dashboard'), 2200)
           }
 
           const d = data.report?.diagnosis ?? {}
@@ -570,7 +567,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
               </svg>
             </div>
             <h2 className="text-2xl font-extrabold text-[#fffefb] mb-2">Report saved to your dashboard</h2>
-            <p className="text-[rgba(255,255,255,0.55)] text-sm mb-6">Taking you to your dashboard now...</p>
+            <p className="text-[rgba(255,255,255,0.55)] text-sm mb-6">Your full report is above. Head to your dashboard to see all reports.</p>
             <Link
               href="/dashboard"
               className="inline-block bg-[#e8330a] text-[#fffefb] font-semibold text-sm px-8 py-3 rounded-lg"
