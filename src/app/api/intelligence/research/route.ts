@@ -49,13 +49,19 @@ async function generateBriefing(profile: {
   industry: string; region: string; channels: string[]; budget: string; icpScore: number | null
 }): Promise<Record<string, unknown>> {
 
-  const prompt = `You are a competitive intelligence analyst for digital advertising. Generate a weekly intelligence briefing for this marketer:
+  const now = new Date()
+  const dayOfWeek = now.toLocaleDateString('en-GB', { weekday: 'long' })
+  const dateStr   = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+
+  const prompt = `You are a competitive intelligence analyst for digital advertising. Generate a market intelligence briefing for this marketer as of ${dayOfWeek}, ${dateStr}.
 
 Industry: ${profile.industry}
 Region: ${profile.region}
 Ad channels: ${profile.channels.join(', ') || 'not specified'}
 Monthly budget: ${profile.budget || 'not specified'}
 ICP Health Score: ${profile.icpScore ?? 'unknown'}/100
+
+For "timeLabel" on each insight, use REALISTIC relative timestamps that reflect when the underlying data/event actually occurred. Vary the labels so they feel like live intelligence, not template content. Examples: "2 days ago", "3 days ago", "Earlier this week", "Yesterday", "Last week", "5 hours ago", "4 days ago". Do NOT use "Now", "This week", or "Today" for all items. Stagger them so different insights have different recency labels.
 
 Return ONLY valid JSON with this exact structure (no markdown, no explanation):
 {
@@ -66,7 +72,7 @@ Return ONLY valid JSON with this exact structure (no markdown, no explanation):
       "title": "specific insight title with numbers if possible",
       "body": "2-3 sentence insight with specific details relevant to their industry and region",
       "source": "source name e.g. Google Trends",
-      "timeLabel": "This week",
+      "timeLabel": "3 days ago",
       "implication": null,
       "recommendation": null
     },
@@ -76,7 +82,7 @@ Return ONLY valid JSON with this exact structure (no markdown, no explanation):
       "title": "what competitors are doing",
       "body": "specific observation about competitor behavior in their market",
       "source": "Market Data",
-      "timeLabel": "This week",
+      "timeLabel": "Earlier this week",
       "implication": "specific implication for this marketer",
       "recommendation": null
     },
@@ -86,7 +92,7 @@ Return ONLY valid JSON with this exact structure (no markdown, no explanation):
       "title": "specific opportunity in their market",
       "body": "actionable opportunity with specifics",
       "source": null,
-      "timeLabel": "Now",
+      "timeLabel": "Yesterday",
       "implication": null,
       "recommendation": "specific action they should take"
     },
@@ -96,7 +102,7 @@ Return ONLY valid JSON with this exact structure (no markdown, no explanation):
       "title": "relevant platform or algorithm update",
       "body": "what changed and how it affects campaigns in their industry",
       "source": "Platform Update",
-      "timeLabel": "This week",
+      "timeLabel": "2 days ago",
       "implication": null,
       "recommendation": "specific action to take"
     },
@@ -106,7 +112,7 @@ Return ONLY valid JSON with this exact structure (no markdown, no explanation):
       "title": "second market movement insight",
       "body": "another relevant market shift",
       "source": "Industry Data",
-      "timeLabel": "This week",
+      "timeLabel": "4 days ago",
       "implication": "what this means for their campaigns",
       "recommendation": null
     }
@@ -237,10 +243,16 @@ export async function POST(req: NextRequest) {
         ? new Date(new Date(userData.last_refresh_at).getTime() + intervalHours * 3_600_000).toISOString()
         : null
 
+      const today = new Date().toISOString().split('T')[0]
+      const refreshCountToday = tier === 'agency' && userData.refresh_count_reset_date === today
+        ? (userData.refresh_count_today ?? 0)
+        : 0
+
       return NextResponse.json({
         briefing: latest ? { ...(latest.briefing_data as Record<string, unknown>), updatedAt: latest.research_date } : null,
         nextRefreshAvailable,
         tier,
+        refreshCountToday,
       })
     }
 
@@ -318,23 +330,51 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // Fetch questionnaire context
+      // Fetch questionnaire context — prefer named columns, fall back to numeric keys
       const { data: qData } = await supabase
         .from('questionnaire_responses')
         .select('data')
         .eq('email', email)
         .order('created_at', { ascending: false })
         .limit(1)
-        .single()
+        .maybeSingle()
 
       const qd: Record<string, string> = (qData?.data as Record<string, string>) ?? {}
       const profile = {
-        industry: qd.industry ?? qd.business_type ?? 'digital marketing',
-        region:   qd.region ?? qd.country ?? qd.location ?? 'Kenya',
-        channels: qd.ad_channels ? String(qd.ad_channels).split(',') : ['Meta', 'Google'],
+        industry: qd.industry ?? qd.business_type ?? '',
+        region:   qd.region ?? qd.country ?? qd.location ?? '',
+        channels: qd.ad_channels ? String(qd.ad_channels).split(',').map(s => s.trim()).filter(Boolean) : [] as string[],
         budget:   qd.monthly_budget ?? qd.budget ?? '',
         icpScore: null as number | null,
       }
+
+      // Fallback: read from questionnaires table (numeric keys) when named data is incomplete
+      if (!profile.industry || !profile.region) {
+        const { data: rawQ } = await supabase
+          .from('questionnaires')
+          .select('responses')
+          .eq('user_id', userData.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+
+        if (rawQ?.responses) {
+          const r = rawQ.responses as Record<string, unknown>
+          if (!profile.industry) profile.industry = (r[2] as string) ?? ''
+          if (!profile.region)   profile.region   = (r[11] as string) ?? ''
+          if (!profile.channels.length) {
+            profile.channels = Array.isArray(r[9])
+              ? (r[9] as string[])
+              : typeof r[9] === 'string' ? (r[9] as string).split(',').map((s: string) => s.trim()).filter(Boolean) : []
+          }
+          if (!profile.budget) profile.budget = (r[13] as string) ?? ''
+        }
+      }
+
+      // Final defaults if still empty
+      if (!profile.industry) profile.industry = 'digital marketing'
+      if (!profile.region)   profile.region   = 'Kenya'
+      if (!profile.channels.length) profile.channels = ['Meta', 'Google']
 
       // Get latest ICP score from reports
       const { data: latestReport } = await supabase
@@ -374,7 +414,11 @@ export async function POST(req: NextRequest) {
       await supabase.from('users').update(refreshCountUpdate).eq('id', userData.id)
 
       const nextAt = new Date(Date.now() + intervalHours * 3_600_000).toISOString()
-      return NextResponse.json({ briefing: { ...data, updatedAt: now }, nextRefreshAvailable: nextAt, tier })
+      const todayStr2 = now.split('T')[0]
+      const newCountToday = tier === 'agency'
+        ? (userData.refresh_count_reset_date === todayStr2 ? (userData.refresh_count_today ?? 0) + 1 : 1)
+        : 0
+      return NextResponse.json({ briefing: { ...data, updatedAt: now }, nextRefreshAvailable: nextAt, tier, refreshCountToday: newCountToday })
     }
 
     // ── QUESTION: rate-limit 5/day ─────────────────────────────────────────────
@@ -389,22 +433,46 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Daily question limit reached (5/day)' }, { status: 429 })
       }
 
-      const { data: qData } = await supabase
+      const { data: qData2 } = await supabase
         .from('questionnaire_responses')
         .select('data')
         .eq('email', email)
         .order('created_at', { ascending: false })
         .limit(1)
-        .single()
+        .maybeSingle()
 
-      const qd: Record<string, string> = (qData?.data as Record<string, string>) ?? {}
-      const profile = {
-        industry: qd.industry ?? qd.business_type ?? 'digital marketing',
-        region:   qd.region ?? qd.country ?? 'Kenya',
-        channels: qd.ad_channels ? String(qd.ad_channels).split(',') : ['Meta', 'Google'],
+      const qd2: Record<string, string> = (qData2?.data as Record<string, string>) ?? {}
+      const qProfile = {
+        industry: qd2.industry ?? qd2.business_type ?? '',
+        region:   qd2.region ?? qd2.country ?? '',
+        channels: qd2.ad_channels ? String(qd2.ad_channels).split(',').map((s: string) => s.trim()).filter(Boolean) : [] as string[],
       }
 
-      const { answer, sources } = await answerQuestion(question, profile)
+      if (!qProfile.industry || !qProfile.region) {
+        const { data: rawQ2 } = await supabase
+          .from('questionnaires')
+          .select('responses')
+          .eq('user_id', userData.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+
+        if (rawQ2?.responses) {
+          const r = rawQ2.responses as Record<string, unknown>
+          if (!qProfile.industry) qProfile.industry = (r[2] as string) ?? ''
+          if (!qProfile.region)   qProfile.region   = (r[11] as string) ?? ''
+          if (!qProfile.channels.length) {
+            qProfile.channels = Array.isArray(r[9])
+              ? (r[9] as string[])
+              : typeof r[9] === 'string' ? (r[9] as string).split(',').map((s: string) => s.trim()).filter(Boolean) : []
+          }
+        }
+      }
+      if (!qProfile.industry) qProfile.industry = 'digital marketing'
+      if (!qProfile.region)   qProfile.region   = 'Kenya'
+      if (!qProfile.channels.length) qProfile.channels = ['Meta', 'Google']
+
+      const { answer, sources } = await answerQuestion(question, qProfile)
 
       // Save question + answer
       await supabase.from('intelligence_questions').insert({

@@ -3710,22 +3710,36 @@ function CompetitiveRadar({ userPos, competitors }: { userPos: { x: number; y: n
   )
 }
 
-function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user: UserData; score: number | null; hasNewIntelligence: boolean; onUpgrade?: () => void }) {
-  const [briefing,        setBriefing]        = useState<IntelligenceBriefing | null>(null)
-  const [loading,         setLoading]         = useState(true)
-  const [refreshing,      setRefreshing]      = useState(false)
-  const [nextRefresh,     setNextRefresh]     = useState<string | null>(null)
-  const [refreshError,    setRefreshError]    = useState('')
-  const [rateLimitModal,  setRateLimitModal]  = useState<{ tier: string; nextAt: string; agencyLimit: boolean } | null>(null)
-  const [question,        setQuestion]        = useState('')
-  const [questionLoading, setQuestionLoading] = useState(false)
-  const [answers,         setAnswers]         = useState<{ q: string; a: string; sources?: string[] }[]>([])
-  const [qError,          setQError]          = useState('')
-  const [, setTick]                           = useState(0)
+function relativeTime(iso: string): string {
+  const diff  = Date.now() - new Date(iso).getTime()
+  const mins  = Math.floor(diff / 60_000)
+  const hours = Math.floor(diff / 3_600_000)
+  const days  = Math.floor(diff / 86_400_000)
+  if (mins  < 1)  return 'just now'
+  if (mins  < 60) return `${mins} minute${mins === 1 ? '' : 's'} ago`
+  if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`
+  if (days  === 1) return 'yesterday'
+  return `${days} days ago`
+}
 
-  // Countdown tick, updates every 60s so displayed time stays fresh
+function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user: UserData; score: number | null; hasNewIntelligence: boolean; onUpgrade?: () => void }) {
+  const [briefing,          setBriefing]          = useState<IntelligenceBriefing | null>(null)
+  const [loading,           setLoading]           = useState(true)
+  const [refreshing,        setRefreshing]        = useState(false)
+  const [nextRefresh,       setNextRefresh]       = useState<string | null>(null)
+  const [refreshError,      setRefreshError]      = useState('')
+  const [rateLimitModal,    setRateLimitModal]    = useState<{ tier: string; nextAt: string; agencyLimit: boolean } | null>(null)
+  const [question,          setQuestion]          = useState('')
+  const [questionLoading,   setQuestionLoading]   = useState(false)
+  const [answers,           setAnswers]           = useState<{ q: string; a: string; sources?: string[] }[]>([])
+  const [qError,            setQError]            = useState('')
+  const [refreshesToday,    setRefreshesToday]    = useState(0)
+  const [, setTick]                               = useState(0)
+  const refreshLock = useRef(false)
+
+  // 1-second tick for live countdown
   useEffect(() => {
-    const id = setInterval(() => setTick(t => t + 1), 60_000)
+    const id = setInterval(() => setTick(t => t + 1), 1_000)
     return () => clearInterval(id)
   }, [])
 
@@ -3735,17 +3749,23 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
       body: JSON.stringify({ email: user.email, type: 'fetch' }),
     })
       .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d) { setBriefing(d.briefing); setNextRefresh(d.nextRefreshAvailable) } })
+      .then(d => {
+        if (d) {
+          setBriefing(d.briefing)
+          setNextRefresh(d.nextRefreshAvailable)
+          if (typeof d.refreshCountToday === 'number') setRefreshesToday(d.refreshCountToday)
+        }
+      })
       .catch(() => null)
       .finally(() => setLoading(false))
   }, [user.email])
 
   async function handleRefresh() {
+    // Ref-based lock prevents double-fire before React re-renders the disabled state
+    if (refreshLock.current || refreshing) return
     const tier = user.subscription_tier
-    if (tier === 'free') {
-      onUpgrade?.()
-      return
-    }
+    if (tier === 'free') { onUpgrade?.(); return }
+    refreshLock.current = true
     setRefreshing(true)
     try {
       const res = await fetch('/api/intelligence/research', {
@@ -3756,6 +3776,7 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
         const d = await res.json()
         setBriefing(d.briefing)
         setNextRefresh(d.nextRefreshAvailable)
+        if (typeof d.refreshCountToday === 'number') setRefreshesToday(d.refreshCountToday)
       } else if (res.status === 429) {
         const d = await res.json()
         setRateLimitModal({ tier: d.tier ?? tier, nextAt: d.nextRefreshAt, agencyLimit: d.upgradeAvailable === false })
@@ -3764,8 +3785,10 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
     } catch {
       setRefreshError('Refresh failed. Please try again.')
       setTimeout(() => setRefreshError(''), 5000)
+    } finally {
+      setRefreshing(false)
+      refreshLock.current = false
     }
-    finally { setRefreshing(false) }
   }
 
   async function handleQuestion(q: string) {
@@ -3799,15 +3822,33 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
 
   const tier = user.subscription_tier as 'free' | 'starter' | 'pro' | 'agency'
 
-  const msRemaining   = nextRefresh ? Math.max(0, new Date(nextRefresh).getTime() - Date.now()) : 0
-  const hoursLeft     = Math.floor(msRemaining / 3_600_000)
-  const minsLeft      = Math.ceil((msRemaining % 3_600_000) / 60_000)
-  const canRefresh    = !nextRefresh || msRemaining === 0
+  const msRemaining = nextRefresh ? Math.max(0, new Date(nextRefresh).getTime() - Date.now()) : 0
+  const daysLeft    = Math.floor(msRemaining / 86_400_000)
+  const hoursLeft   = Math.floor((msRemaining % 86_400_000) / 3_600_000)
+  const minsLeft    = Math.floor((msRemaining % 3_600_000) / 60_000)
+  const secsLeft    = Math.floor((msRemaining % 60_000) / 1_000)
+  const canRefresh  = !nextRefresh || msRemaining === 0
+
+  const countdownStr = daysLeft > 0
+    ? `${daysLeft}d ${hoursLeft}h ${minsLeft}m ${secsLeft}s`
+    : hoursLeft > 0
+    ? `${hoursLeft}h ${minsLeft}m ${secsLeft}s`
+    : `${minsLeft}m ${secsLeft}s`
+
+  // Remaining refreshes per tier
+  const agencyRemaining = Math.max(0, 3 - refreshesToday)
+  const refreshesLabel = tier === 'agency'
+    ? `${refreshesToday} of 3 refreshes used today`
+    : tier === 'pro'
+    ? canRefresh ? '1 refresh available today' : 'Refresh used today'
+    : tier === 'starter'
+    ? canRefresh ? '1 refresh available this week' : 'Refresh used this week'
+    : ''
 
   const TIER_BADGE: Record<string, { label: string; color: string; icon: JSX.Element }> = {
     starter: { label: 'Starter: 1 refresh per week',   color: '#d97706', icon: <Clock size={12} /> },
     pro:     { label: 'Pro: 1 refresh per day',         color: P,         icon: <Clock size={12} /> },
-    agency:  { label: 'Agency: 3 refreshes per day',    color: '#22c55e', icon: <Zap  size={12} /> },
+    agency:  { label: `Agency: ${agencyRemaining} of 3 refreshes left today`, color: '#22c55e', icon: <Zap size={12} /> },
   }
   const tierBadge = TIER_BADGE[tier]
 
@@ -3934,7 +3975,7 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
               <h2 style={{ fontFamily: font, fontSize: 'clamp(20px,3vw,26px)', fontWeight: 700, color: '#fff', margin: '0 0 6px', letterSpacing: '-0.02em' }}>Your market this week.</h2>
               <p style={{ fontFamily: fontB, fontSize: 13, color: 'rgba(255,255,255,0.5)', margin: 0 }}>
                 {briefing?.updatedAt
-                  ? `Updated ${new Date(briefing.updatedAt).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}`
+                  ? `Updated ${relativeTime(briefing.updatedAt)}`
                   : 'No briefing yet'}
               </p>
             </div>
@@ -3962,28 +4003,33 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
               <button disabled
                 style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.45)', border: 'none', borderRadius: 12, padding: '11px 22px', fontFamily: fontB, fontSize: 13, fontWeight: 600, cursor: 'default', whiteSpace: 'nowrap', flexShrink: 0 }}>
                 <Clock size={14} />
-                {`Next refresh in ${hoursLeft}h ${minsLeft}m`}
+                {`Next refresh in ${countdownStr}`}
               </button>
             )}
           </div>
 
-          {/* Countdown display when rate-limited */}
+          {/* Live countdown display when rate-limited */}
           {!canRefresh && tier !== 'free' && (
             <div style={{ marginTop: 4 }}>
-              <p style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.45)', margin: '0 0 4px' }}>Research refreshes in:</p>
-              <p style={{ fontFamily: font, fontSize: 24, fontWeight: 700, color: '#fff', margin: 0, letterSpacing: '-0.02em' }}>
-                {hoursLeft}h {minsLeft}m
+              <p style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.45)', margin: '0 0 4px' }}>Next refresh available in:</p>
+              <p style={{ fontFamily: font, fontSize: 28, fontWeight: 700, color: '#fff', margin: 0, letterSpacing: '-0.03em', fontVariantNumeric: 'tabular-nums' }}>
+                {countdownStr}
               </p>
             </div>
           )}
 
-          {/* Tier badge + upgrade nudge */}
+          {/* Tier badge + remaining refreshes + upgrade nudge */}
           {tierBadge && (
-            <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
+            <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10 }}>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontFamily: fontB, fontSize: 11, fontWeight: 600, color: tierBadge.color, background: 'rgba(255,255,255,0.1)', border: `1px solid rgba(255,255,255,0.15)`, borderRadius: 100, padding: '3px 10px' }}>
                 {tierBadge.icon}
                 {tierBadge.label}
               </span>
+              {refreshesLabel && (
+                <span style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.08)', borderRadius: 100, padding: '3px 10px' }}>
+                  {refreshesLabel}
+                </span>
+              )}
               {tier !== 'agency' && (
                 <p style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: 0 }}>
                   Agency subscribers get 3 refreshes per day.{' '}
