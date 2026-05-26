@@ -1157,24 +1157,32 @@ Rules:
       .then(() => {}, (e: unknown) => console.error('[diagnostic] social-proof event failed:', e))
   }
 
-  // ── Fire welcome email (non-blocking) ─────────────────────────────────────
+  // ── Fire welcome email only on first-ever report ──────────────────────
   if (questionnaire?.user_id) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://idealicp.com'
 
     supabase
-      .from('users')
-      .select('email, full_name')
-      .eq('id', questionnaire.user_id)
-      .single()
-      .then(({ data: u }) => {
-        if (u?.email) {
-          sendWelcomeEmail({
-            to: u.email,
-            name: u.full_name ?? undefined,
-            reportId: data.id,
-            baseUrl: appUrl,
-          }).catch(e => console.error('[diagnostic] welcome email failed:', e))
-        }
+      .from('reports')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', questionnaire.user_id)
+      .then(({ count }) => {
+        // count includes the row we just inserted — only send on the first one
+        if ((count ?? 0) > 1) return
+        return supabase
+          .from('users')
+          .select('email, full_name')
+          .eq('id', questionnaire.user_id)
+          .single()
+          .then(({ data: u }) => {
+            if (u?.email) {
+              sendWelcomeEmail({
+                to: u.email,
+                name: u.full_name ?? undefined,
+                reportId: data.id,
+                baseUrl: appUrl,
+              }).catch(e => console.error('[diagnostic] welcome email failed:', e))
+            }
+          })
       })
   }
 
