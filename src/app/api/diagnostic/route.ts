@@ -26,35 +26,43 @@ function stripDashes(value: unknown): unknown {
 }
 
 function extractJSON(text: string): unknown {
-  try {
-    return JSON.parse(text)
-  } catch {
-    const start = text.indexOf('{')
-    const end = text.lastIndexOf('}')
-    if (start !== -1 && end !== -1) {
-      try {
-        return JSON.parse(text.slice(start, end + 1))
-      } catch {
-        let partial = text.slice(start)
-        let braces = 0
-        let brackets = 0
-        for (const char of partial) {
-          if (char === '{') braces++
-          if (char === '}') braces--
-          if (char === '[') brackets++
-          if (char === ']') brackets--
-        }
-        partial += ']'.repeat(Math.max(0, brackets))
-        partial += '}'.repeat(Math.max(0, braces))
-        try {
-          return JSON.parse(partial)
-        } catch {
-          return null
-        }
-      }
-    }
-    return null
+  // 1. Direct parse
+  try { return JSON.parse(text) } catch { /* continue */ }
+
+  // 2. ```json ... ``` code block anywhere in the text (most common with web_search responses)
+  const codeBlock = text.match(/```json\s*([\s\S]*?)```/)
+  if (codeBlock) {
+    try { return JSON.parse(codeBlock[1].trim()) } catch { /* continue */ }
   }
+
+  // 3. Any ``` ... ``` block
+  const anyBlock = text.match(/```\s*([\s\S]*?)```/)
+  if (anyBlock) {
+    try { return JSON.parse(anyBlock[1].trim()) } catch { /* continue */ }
+  }
+
+  // 4. Find outermost { ... } (skipping preamble text)
+  const start = text.indexOf('{')
+  const end   = text.lastIndexOf('}')
+  if (start !== -1 && end !== -1 && start < end) {
+    try { return JSON.parse(text.slice(start, end + 1)) } catch { /* continue */ }
+
+    // 5. Truncated JSON — try to close unclosed braces/brackets
+    let partial  = text.slice(start)
+    let braces   = 0
+    let brackets = 0
+    for (const char of partial) {
+      if (char === '{') braces++
+      if (char === '}') braces--
+      if (char === '[') brackets++
+      if (char === ']') brackets--
+    }
+    partial += ']'.repeat(Math.max(0, brackets))
+    partial += '}'.repeat(Math.max(0, braces))
+    try { return JSON.parse(partial) } catch { /* continue */ }
+  }
+
+  return null
 }
 
 function isEastAfrica(region: string): boolean {
@@ -683,7 +691,7 @@ Rules:
   if (isSubscriber) {
     const res = await anthropic.messages.create({
       model: 'claude-opus-4-7',
-      max_tokens: 7000,
+      max_tokens: 10000,
       system: systemPrompt,
       tools: [{ type: 'web_search_20250305' as const, name: 'web_search' }],
       messages: [{ role: 'user', content: prompt }],
@@ -1070,8 +1078,8 @@ Rules:
       .join('')
   }
 
-  const cleaned = diagnosisText.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim()
-  const rawParsed = extractJSON(cleaned) ?? { raw: diagnosisText }
+  // extractJSON handles markdown code blocks internally; pass raw text directly
+  const rawParsed = extractJSON(diagnosisText) ?? { raw: diagnosisText }
   // Sanitize any em/en dashes that slipped through the AI output
   const parsed = stripDashes(rawParsed)
 
