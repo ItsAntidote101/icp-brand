@@ -565,6 +565,11 @@ function DailyBriefCard({ diag, reports, score, hasIntelligence, onTabChange, us
   const prevScore  = reports.length >= 2 ? getScore(parseDiagnosis(reports[1].report_summary)) : null
   const delta      = score !== null && prevScore !== null ? score - prevScore : null
 
+  const dismissKey = `daily_brief_dismissed_${user.email}_${new Date().toISOString().slice(0, 10)}`
+  const [dismissed, setDismissed] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return !!localStorage.getItem(dismissKey)
+  })
   const [briefText, setBriefText] = useState<string>('')
   const [briefLoading, setBriefLoading] = useState(true)
 
@@ -620,6 +625,13 @@ function DailyBriefCard({ diag, reports, score, hasIntelligence, onTabChange, us
 
   const displayText = briefText || (!briefLoading ? fallbackText : '')
 
+  const handleDismiss = () => {
+    setDismissed(true)
+    localStorage.setItem(dismissKey, '1')
+  }
+
+  if (dismissed) return null
+
   // Since last visit feed items
   const feedItems = [
     hasIntelligence ? { color: '#22c55e', text: 'Intelligence updated', time: 'This week' } : null,
@@ -646,15 +658,22 @@ function DailyBriefCard({ diag, reports, score, hasIntelligence, onTabChange, us
   }
 
   return (
-    <div style={{ background: '#fff', borderRadius: 12, borderLeft: `4px solid ${statusColor}`, padding: '24px 32px', boxShadow: '0 2px 16px rgba(201,192,177,0.25)', animation: 'fadeUp 0.4s ease both' }}>
-      <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap' }}>
+    <div style={{ background: '#fff', borderRadius: 12, borderLeft: `4px solid ${statusColor}`, padding: '20px 24px', boxShadow: '0 2px 16px rgba(201,192,177,0.25)', animation: 'fadeUp 0.4s ease both' }}>
+      <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
         {/* Left: brief */}
-        <div style={{ flex: '1 1 300px', minWidth: 0 }}>
+        <div style={{ flex: '1 1 260px', minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
             <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: '#e8330a' }}>TODAY&apos;S BRIEF</span>
             <span style={{ fontFamily: fontB, fontSize: 12, color: Pmuted }}>
               {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
             </span>
+            <button
+              onClick={handleDismiss}
+              title="Dismiss for today"
+              style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: Pmuted, display: 'flex', alignItems: 'center', flexShrink: 0 }}
+            >
+              <X size={14} />
+            </button>
           </div>
           {briefLoading ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
@@ -669,9 +688,9 @@ function DailyBriefCard({ diag, reports, score, hasIntelligence, onTabChange, us
               Read This Week&apos;s Intelligence <ArrowRight size={14} />
             </button>
           ) : topFinding ? (
-            <a href="#findings" style={ctaStyle}>
+            <button onClick={() => onTabChange('audience')} style={ctaStyle}>
               Fix Top Finding <ArrowRight size={14} />
-            </a>
+            </button>
           ) : (
             <Link href="/questionnaire" style={ctaStyle}>
               Run New Diagnosis <ArrowRight size={14} />
@@ -749,7 +768,7 @@ function BusinessOutcomesWidget({ diag }: { diag: DiagnosisData }) {
   )
 }
 
-function WasteTicker({ diag, report, currency }: { diag: DiagnosisData; report: ReportRow; currency: string }) {
+function WasteTicker({ diag, report, currency, onTabChange }: { diag: DiagnosisData; report: ReportRow; currency: string; onTabChange: (tab: Tab) => void }) {
   const waste      = parseWaste(diag.monthly_waste_estimate)
   const perTick    = (waste.amount / 30 / 24 / 3600) / 10
   const daysSince  = daysBetween(report.generated_at)
@@ -793,9 +812,9 @@ function WasteTicker({ diag, report, currency }: { diag: DiagnosisData; report: 
       <p style={{ fontFamily: fontB, fontSize: 13, color: 'rgba(255,255,255,0.6)', margin: '0 0 4px' }}>
         and counting. Fix your top finding to stop the leak.
       </p>
-      <a href="#findings" style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.8)', textDecoration: 'underline', cursor: 'pointer' }}>
+      <button onClick={() => onTabChange('audience')} style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.8)', textDecoration: 'underline', cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>
         See What To Fix →
-      </a>
+      </button>
     </div>
   )
 }
@@ -4865,8 +4884,8 @@ export default function DashboardPage() {
 
         <div style={{ padding: 'clamp(20px,4vw,32px) clamp(14px,4vw,40px) 100px' }}>
 
-        {/* Daily Brief, always visible when reports exist */}
-        {!dataLoading && hasReports && user && (
+        {/* Daily Brief, overview tab only */}
+        {activeTab === 'overview' && !dataLoading && hasReports && user && (
           <div style={{ marginBottom: 24 }}>
             <DailyBriefCard
               diag={diag}
@@ -4965,7 +4984,7 @@ export default function DashboardPage() {
 
 
                 {/* Real-time waste ticker */}
-                <WasteTicker diag={diag} report={latestReport} currency={currency} />
+                <WasteTicker diag={diag} report={latestReport} currency={currency} onTabChange={setActiveTab} />
 
                 {/* Score + Streak */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
