@@ -5,9 +5,11 @@ import { useRouter } from 'next/navigation'
 
 // Questions that are stable across re-diagnoses and can be pre-filled.
 // Excluded (always fresh): Q9 ad channels, Q12 targeting, Q13 spend, Q14 leads, Q15 lead quality, Q18 mobile, Q20 differentiation, Q21 close rate
-const STABLE_QUESTION_IDS = new Set([1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 16, 17, 19, 22])
+const STABLE_QUESTION_IDS = new Set([1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 16, 17, 19, 22, 23, 24, 25, 26])
 
 type QuestionType = 'text' | 'url' | 'textarea' | 'select' | 'radio' | 'checkbox' | 'number' | 'slider' | 'yesno'
+
+type Answers = Record<number, string | string[] | number>
 
 interface Question {
   id: number
@@ -17,33 +19,57 @@ interface Question {
   type: QuestionType
   options?: string[]
   placeholder?: string
+  showIf?: (answers: Answers) => boolean
 }
 
 const QUESTIONS: Question[] = [
-  // Layer 1 · ICP Foundation (7 questions)
+  // Layer 1 - ICP Foundation
   {
     id: 1, layer: 1, layerName: 'ICP Foundation',
-    question: 'What does your business do? Describe your core service or product offering.',
+    question: 'What does your business do? Describe your core product or service offering.',
     type: 'text',
-    placeholder: 'e.g. We help SaaS companies reduce churn through AI-powered customer success…',
+    placeholder: 'e.g. We help SaaS companies reduce churn through AI-powered customer success...',
   },
   {
     id: 2, layer: 1, layerName: 'ICP Foundation',
     question: 'What industry or vertical do you operate in?',
     type: 'select',
-    options: ['SaaS / Software', 'E-commerce / Retail', 'Professional Services', 'Healthcare', 'Finance / Fintech', 'Real Estate', 'Education / EdTech', 'Manufacturing', 'Marketing / Advertising', 'Other'],
+    options: ['SaaS / Software', 'E-commerce / Retail', 'Professional Services', 'Healthcare', 'Finance / Fintech', 'Real Estate', 'Education / EdTech', 'Manufacturing', 'Marketing / Advertising', 'Consumer Goods / FMCG', 'Other'],
   },
+  {
+    id: 23, layer: 1, layerName: 'ICP Foundation',
+    question: 'How does your business primarily make sales?',
+    type: 'radio',
+    options: [
+      'B2B - We sell to other businesses',
+      'E-commerce / DTC - We sell products directly to consumers online',
+      'B2C Services - We sell services directly to individual consumers',
+      'SaaS / Subscription - We sell software or recurring digital access',
+      'Local / In-person - Customers visit us or we visit them',
+      'Marketplace / Platform - We connect buyers and sellers',
+    ],
+  },
+  // B2B only: company size
   {
     id: 3, layer: 1, layerName: 'ICP Foundation',
     question: 'What is the typical company size of your best customers?',
     type: 'radio',
     options: ['Solopreneur / Freelancer', 'Small (2-20 employees)', 'Mid-market (21-200 employees)', 'Enterprise (201-1,000)', 'Large Enterprise (1,000+)'],
+    showIf: isB2B,
+  },
+  // B2C only: customer demographics
+  {
+    id: 24, layer: 1, layerName: 'ICP Foundation',
+    question: 'Describe your ideal customer. Who are they as a person?',
+    type: 'textarea',
+    placeholder: 'e.g. Women aged 28-45, household income KES 150k+/month, interested in wellness, primarily shop on mobile...',
+    showIf: isB2C,
   },
   {
     id: 4, layer: 1, layerName: 'ICP Foundation',
-    question: 'What was the core problem your best customers had before working with you?',
+    question: 'What core problem or desire did your best customers have before working with you?',
     type: 'textarea',
-    placeholder: 'Describe the pain in their words, not yours…',
+    placeholder: 'Describe it in their words, not yours...',
   },
   {
     id: 5, layer: 1, layerName: 'ICP Foundation',
@@ -51,25 +77,45 @@ const QUESTIONS: Question[] = [
     type: 'radio',
     options: ['Paid ads', 'Organic search / SEO', 'Referral / word of mouth', 'Social media (organic)', 'Cold outreach', 'Events / conferences', 'Partnership or agency'],
   },
+  // B2B only: deal size
   {
     id: 6, layer: 1, layerName: 'ICP Foundation',
-    question: 'What is your average deal size?',
+    question: 'What is your average deal size per client?',
     type: 'radio',
     options: ['Under $1,000', '$1,000-$5,000', '$5,000-$25,000', '$25,000-$100,000', '$100,000+'],
+    showIf: isB2B,
   },
+  // B2C only: average order/transaction value
+  {
+    id: 25, layer: 1, layerName: 'ICP Foundation',
+    question: 'What is your average order or transaction value per customer?',
+    type: 'radio',
+    options: ['Under KES 1,000', 'KES 1,000-5,000', 'KES 5,000-20,000', 'KES 20,000-100,000', 'KES 100,000+'],
+    showIf: isB2C,
+  },
+  // B2B only: job titles
   {
     id: 7, layer: 1, layerName: 'ICP Foundation',
     question: 'What job titles hold the final buying decision at your best customer accounts?',
     type: 'text',
-    placeholder: 'e.g. VP of Marketing, Founder / CEO, Head of Operations…',
+    placeholder: 'e.g. VP of Marketing, Founder / CEO, Head of Operations...',
+    showIf: isB2B,
+  },
+  // B2C only: purchase triggers
+  {
+    id: 26, layer: 1, layerName: 'ICP Foundation',
+    question: 'What typically triggers a purchase decision for your best customers?',
+    type: 'textarea',
+    placeholder: 'e.g. Seasonal events, a specific life milestone, price drop, seeing a review, influencer recommendation...',
+    showIf: isB2C,
   },
 
-  // Layer 2 · Targeting Mismatch (8 questions)
+  // Layer 2 - Targeting Mismatch
   {
     id: 8, layer: 2, layerName: 'Targeting Mismatch',
     question: 'Describe who you currently believe your ideal customer is.',
     type: 'textarea',
-    placeholder: 'Be specific, company size, role, industry, annual budget, primary goal…',
+    placeholder: 'Be specific: demographics, goals, pain points, where they spend time online...',
   },
   {
     id: 9, layer: 2, layerName: 'Targeting Mismatch',
@@ -104,9 +150,9 @@ const QUESTIONS: Question[] = [
   },
   {
     id: 12, layer: 2, layerName: 'Targeting Mismatch',
-    question: 'Describe your current ad targeting parameters, audiences, keywords, job titles, etc.',
+    question: 'Describe your current ad targeting setup. What audiences, interests, or keywords are you using?',
     type: 'textarea',
-    placeholder: 'e.g. Lookalike of buyers, keyword "CRM software", job title "Marketing Manager"…',
+    placeholder: 'e.g. Lookalike of buyers, interest "fitness", keyword "accounting software", retargeting past visitors...',
   },
   {
     id: 13, layer: 2, layerName: 'Targeting Mismatch',
@@ -116,50 +162,20 @@ const QUESTIONS: Question[] = [
   },
   {
     id: 14, layer: 2, layerName: 'Targeting Mismatch',
-    question: 'How many leads did you generate in the last 3 months?',
+    question: 'How many new paying customers or qualified leads did you acquire in the last 3 months?',
     type: 'number',
-    placeholder: 'Total leads across all channels',
+    placeholder: 'Total across all channels',
   },
   {
     id: 15, layer: 2, layerName: 'Targeting Mismatch',
-    question: 'Do the leads you are currently generating match the profile of your best customers?',
+    question: 'Do the people responding to your ads match the profile of your best customers?',
     type: 'yesno',
-  },
-
-  // Layer 3 · Funnel Friction (5 questions)
-  {
-    id: 16, layer: 3, layerName: 'Funnel Friction',
-    question: 'What is the primary call-to-action on your main landing page?',
-    type: 'text',
-    placeholder: 'e.g. "Book a Free Call", "Start Free Trial", "Get a Quote"…',
-  },
-  {
-    id: 17, layer: 3, layerName: 'Funnel Friction',
-    question: 'What form fields do you currently require from leads?',
-    type: 'textarea',
-    placeholder: 'e.g. First name, Email, Phone, Company name, Monthly budget…',
-  },
-  {
-    id: 18, layer: 3, layerName: 'Funnel Friction',
-    question: 'How easy is your landing page to use on a mobile device?',
-    type: 'slider',
-  },
-  {
-    id: 19, layer: 3, layerName: 'Funnel Friction',
-    question: 'What trust signals do you currently show on your landing page?',
-    type: 'textarea',
-    placeholder: 'e.g. Client logos, testimonials, case study results, money-back guarantee…',
-  },
-  {
-    id: 20, layer: 3, layerName: 'Funnel Friction',
-    question: 'How clearly does your landing page communicate why you are different from every alternative?',
-    type: 'slider',
   },
   {
     id: 21, layer: 2, layerName: 'Targeting Mismatch',
-    question: 'What percentage of your qualified leads convert into paying customers?',
+    question: 'What percentage of interested prospects or visitors convert into paying customers?',
     type: 'number',
-    placeholder: 'e.g. 12 (for 12%)',
+    placeholder: 'e.g. 3 (for 3%)',
   },
   {
     id: 22, layer: 2, layerName: 'Targeting Mismatch',
@@ -167,10 +183,49 @@ const QUESTIONS: Question[] = [
     type: 'radio',
     options: ['Under KES 10,000', 'KES 10,000-50,000', 'KES 50,000-200,000', 'KES 200,000-1,000,000', 'Over KES 1,000,000'],
   },
+
+  // Layer 3 - Funnel Friction
+  {
+    id: 16, layer: 3, layerName: 'Funnel Friction',
+    question: 'What is the primary call-to-action on your main landing or product page?',
+    type: 'text',
+    placeholder: 'e.g. "Book a Free Call", "Add to Cart", "Start Free Trial", "Get a Quote"...',
+  },
+  {
+    id: 17, layer: 3, layerName: 'Funnel Friction',
+    question: 'What must a customer do or provide before completing a purchase or booking?',
+    type: 'textarea',
+    placeholder: 'e.g. Fill a 5-field form, create an account, call for pricing, 3-step checkout, upload documents...',
+  },
+  {
+    id: 18, layer: 3, layerName: 'Funnel Friction',
+    question: 'How easy is your landing or product page to use on a mobile device?',
+    type: 'slider',
+  },
+  {
+    id: 19, layer: 3, layerName: 'Funnel Friction',
+    question: 'What trust signals do you currently show on your landing or product page?',
+    type: 'textarea',
+    placeholder: 'e.g. Customer reviews, client logos, testimonials, case study results, money-back guarantee, certifications...',
+  },
+  {
+    id: 20, layer: 3, layerName: 'Funnel Friction',
+    question: 'How clearly does your page communicate why you are different from every alternative?',
+    type: 'slider',
+  },
 ]
 
-const LAYER_STARTS  = [0, 7, 17]
-const LAYER_LENGTHS = [7, 10, 5]
+function isB2B(answers: Answers): boolean {
+  const m = answers[23] as string | undefined
+  return !!m && m.startsWith('B2B')
+}
+function isB2C(answers: Answers): boolean {
+  const m = answers[23] as string | undefined
+  return !!m && !m.startsWith('B2B')
+}
+function getVisibleQuestions(answers: Answers): Question[] {
+  return QUESTIONS.filter(q => !q.showIf || q.showIf(answers))
+}
 
 const XP_PER_Q = 10
 
@@ -186,14 +241,12 @@ const LAYER_UNLOCK: Record<1 | 2, { next: string; description: string }> = {
 }
 
 const LOADING_STEPS = [
-  { label: 'Saving your answers…',               sublabel: 'Storing your responses securely',        duration: 2000     },
-  { label: 'Visiting your landing page…',         sublabel: 'Analysing your funnel and offer',        duration: 5000     },
-  { label: 'Researching industry benchmarks…',    sublabel: 'Finding CPC/CPA data for your region',   duration: 10000    },
-  { label: 'Analysing your competitors…',         sublabel: 'Mapping the competitive landscape',      duration: 10000    },
-  { label: 'Generating your diagnostic report…',  sublabel: 'Compiling findings and recommendations', duration: Infinity },
+  { label: 'Saving your answers...',               sublabel: 'Storing your responses securely',        duration: 2000     },
+  { label: 'Visiting your landing page...',         sublabel: 'Analysing your funnel and offer',        duration: 5000     },
+  { label: 'Researching industry benchmarks...',    sublabel: 'Finding CPC/CPA data for your region',   duration: 10000    },
+  { label: 'Analysing your competitors...',         sublabel: 'Mapping the competitive landscape',      duration: 10000    },
+  { label: 'Generating your diagnostic report...',  sublabel: 'Compiling findings and recommendations', duration: Infinity },
 ]
-
-type Answers = Record<number, string | string[] | number>
 
 // ── Input components ──────────────────────────────────────────────────────────
 
@@ -222,7 +275,7 @@ function SelectInput({ value, onChange, options }: { value: string; onChange: (v
   return (
     <select value={value} onChange={e => onChange(e.target.value)}
       className="w-full bg-[#fff] border border-[#c5c0b1] focus:border-[#e8330a] rounded px-4 py-3.5 text-[#201515] text-base outline-none transition-colors cursor-pointer appearance-none">
-      <option value="" disabled>Select an option…</option>
+      <option value="" disabled>Select an option...</option>
       {options.map(o => <option key={o} value={o}>{o}</option>)}
     </select>
   )
@@ -331,7 +384,7 @@ function ScoreArc({ progress }: { progress: number }) {
   const r   = 72
   const cx  = 100
   const cy  = 92
-  const arc = Math.PI * r        // half-circle circumference ≈ 226
+  const arc = Math.PI * r        // half-circle circumference ~226
   const pct = Math.min(1, Math.max(0, progress))
   const offset = arc * (1 - pct)
 
@@ -360,7 +413,7 @@ function ScoreArc({ progress }: { progress: number }) {
         {pct === 0 ? '-' : `${Math.round(pct * 100)}`}
       </text>
       <text x={cx} y={cy + 10} textAnchor="middle" fill="rgba(148,163,184,0.7)" fontSize="10" fontFamily="system-ui">
-        {pct === 0 ? 'answer to begin' : pct < 1 ? '% complete' : 'analysing…'}
+        {pct === 0 ? 'answer to begin' : pct < 1 ? '% complete' : 'analysing...'}
       </text>
     </svg>
   )
@@ -445,42 +498,52 @@ function QuestionPanel({
   answers,
   current,
   diagCount,
+  layer1Count,
+  layer2Count,
+  layer3Count,
+  layer1Done,
+  layer2Done,
 }: {
   answers: Answers
   current: number
   diagCount: number
+  layer1Count: number
+  layer2Count: number
+  layer3Count: number
+  layer1Done: boolean
+  layer2Done: boolean
 }) {
-  const totalQ      = QUESTIONS.length
+  const totalQ      = layer1Count + layer2Count + layer3Count
   const answered    = Object.keys(answers).length
   const progress    = answered / totalQ
 
-  const layer1Done  = current >= LAYER_STARTS[1]
-  const layer2Done  = current >= LAYER_STARTS[2]
+  const layer2Start = layer1Count
+  const layer3Start = layer1Count + layer2Count
 
-  const layer1Pct   = Math.min(1, Math.max(0, current < LAYER_STARTS[1] ? (current - LAYER_STARTS[0]) / LAYER_LENGTHS[0] : 1))
-  const layer2Pct   = Math.min(1, Math.max(0, current < LAYER_STARTS[1] ? 0 : current < LAYER_STARTS[2] ? (current - LAYER_STARTS[1]) / LAYER_LENGTHS[1] : 1))
-  const layer3Pct   = Math.min(1, Math.max(0, current < LAYER_STARTS[2] ? 0 : (current - LAYER_STARTS[2]) / LAYER_LENGTHS[2]))
+  const layer1Pct   = Math.min(1, Math.max(0, current < layer2Start ? (current - 0) / layer1Count : 1))
+  const layer2Pct   = Math.min(1, Math.max(0, current < layer2Start ? 0 : current < layer3Start ? (current - layer2Start) / layer2Count : 1))
+  const layer3Pct   = Math.min(1, Math.max(0, current < layer3Start ? 0 : (current - layer3Start) / layer3Count))
 
   const metrics = [
     {
       label: 'ICP Health Score',
       unit: '/ 100',
       state: !answered ? 'locked' : layer1Done ? 'ready' : 'scanning',
-      stateLabel: !answered ? '-' : layer1Done ? 'Foundation mapped' : 'Mapping profile…',
+      stateLabel: !answered ? '-' : layer1Done ? 'Foundation mapped' : 'Mapping profile...',
       color: 'text-[#e8330a]',
     },
     {
       label: 'Monthly Waste Estimate',
       unit: 'KES',
       state: !layer1Done ? 'locked' : layer2Done ? 'ready' : 'scanning',
-      stateLabel: !layer1Done ? '-' : layer2Done ? 'Spend data captured' : 'Estimating waste…',
+      stateLabel: !layer1Done ? '-' : layer2Done ? 'Spend data captured' : 'Estimating waste...',
       color: 'text-[#e8330a]',
     },
     {
       label: 'CAC Projection',
       unit: 'KES',
       state: !layer2Done ? 'locked' : layer3Pct > 0 ? 'ready' : 'scanning',
-      stateLabel: !layer2Done ? '-' : layer3Pct > 0 ? 'Funnel data captured' : 'Calculating CAC…',
+      stateLabel: !layer2Done ? '-' : layer3Pct > 0 ? 'Funnel data captured' : 'Calculating CAC...',
       color: 'text-[#e8330a]',
     },
   ]
@@ -732,7 +795,7 @@ export default function QuestionnairePage() {
           setPrefillBanner(true)
           setStep('questions')
         } else if (p.name && p.email && p.company) {
-          // Has account but no previous answers — skip welcome (profile is known)
+          // Has account but no previous answers -- skip welcome (profile is known)
           setStep('questions')
         }
       })
@@ -745,20 +808,33 @@ export default function QuestionnairePage() {
     return () => clearTimeout(t)
   }, [current])
 
-  const q          = QUESTIONS[current]
-  const totalQ     = QUESTIONS.length
-  const layerIdx   = q.layer - 1
-  const layerStart = LAYER_STARTS[layerIdx]
-  const layerLen   = LAYER_LENGTHS[layerIdx]
+  const visible_qs = getVisibleQuestions(answers)
+  const q          = visible_qs[current]
+  const totalQ     = visible_qs.length
+  const isLast     = current === visible_qs.length - 1
+
+  const layer1Vis  = visible_qs.filter(vq => vq.layer === 1)
+  const layer2Vis  = visible_qs.filter(vq => vq.layer === 2)
+  const layer3Vis  = visible_qs.filter(vq => vq.layer === 3)
+  const layer1Start = 0
+  const layer2Start = layer1Vis.length
+  const layer3Start = layer1Vis.length + layer2Vis.length
+  const layerStarts  = [layer1Start, layer2Start, layer3Start]
+  const layerLengths = [layer1Vis.length, layer2Vis.length, layer3Vis.length]
+
+  const layerIdx   = q ? q.layer - 1 : 0
+  const layerStart = layerStarts[layerIdx]
+  const layerLen   = layerLengths[layerIdx]
   const posInLayer = current - layerStart + 1
   const overallPct = Math.round(((current + 1) / totalQ) * 100)
 
-  const rawAnswer = answers[q.id]
+  const rawAnswer = q ? answers[q.id] : undefined
   const textVal   = (rawAnswer as string)   ?? ''
   const arrVal    = (rawAnswer as string[]) ?? []
   const numVal    = typeof rawAnswer === 'number' ? rawAnswer : 5
 
   const canProceed = (): boolean => {
+    if (!q) return false
     const a = answers[q.id]
     if (q.type === 'checkbox') return Array.isArray(a) && a.length > 0
     if (q.type === 'slider')   return true
@@ -768,8 +844,17 @@ export default function QuestionnairePage() {
   }
 
   const setAnswer = useCallback((val: string | string[] | number) => {
-    setAnswers(prev => ({ ...prev, [q.id]: val }))
-  }, [q.id])
+    setAnswers(prev => {
+      const updated = { ...prev, [q.id]: val }
+      if (q.id === 23) {
+        const nowB2B = (val as string).startsWith('B2B')
+        const b2bOnly = [3, 6, 7]
+        const b2cOnly = [24, 25, 26]
+        ;(nowB2B ? b2cOnly : b2bOnly).forEach(id => delete updated[id])
+      }
+      return updated
+    })
+  }, [q?.id])
 
   const handleUrlBlur = useCallback(async () => {
     const url = (answers[10] as string) ?? ''
@@ -787,18 +872,18 @@ export default function QuestionnairePage() {
   }, [answers])
 
   useEffect(() => {
-    if (q.type === 'slider' && answers[q.id] === undefined) {
+    if (q && q.type === 'slider' && answers[q.id] === undefined) {
       setAnswers(prev => ({ ...prev, [q.id]: 5 }))
     }
-  }, [q.id, q.type, answers])
+  }, [q?.id, q?.type, answers])
 
   const navigate = (dir: 'next' | 'back') => {
     setVisible(false)
     setTimeout(() => {
       if (dir === 'next') {
         const nextIdx = current + 1
-        if (nextIdx < totalQ) {
-          const nextLayer = QUESTIONS[nextIdx].layer
+        if (nextIdx < visible_qs.length) {
+          const nextLayer = visible_qs[nextIdx].layer
           if (nextLayer !== q.layer && (q.layer === 1 || q.layer === 2)) {
             setLayerDone(q.layer as 1 | 2)
             return
@@ -858,8 +943,6 @@ export default function QuestionnairePage() {
     }
   }
 
-  const isLast = current === totalQ - 1
-
   const layerColors = {
     bar:    { 1: 'bg-[#e8330a]',        2: 'bg-[#e8330a]',        3: 'bg-[#e8330a]'        },
     text:   { 1: 'text-[#e8330a]',      2: 'text-[#e8330a]',      3: 'text-[#e8330a]'      },
@@ -885,7 +968,7 @@ export default function QuestionnairePage() {
 
   // ── Layer completion screen ──────────────────────────────────────────────
   if (layerDone !== null) {
-    const xpEarned = LAYER_STARTS[layerDone] * XP_PER_Q + LAYER_LENGTHS[layerDone] * XP_PER_Q
+    const xpEarned = Object.keys(answers).length * XP_PER_Q
     return <LayerCompleteScreen layer={layerDone} xpEarned={xpEarned} onContinue={handleLayerContinue} />
   }
 
@@ -1174,7 +1257,16 @@ export default function QuestionnairePage() {
 
         {/* Right: live report preview panel */}
         <aside className="hidden lg:flex flex-col w-[320px] flex-shrink-0 border-l border-[#c5c0b1] overflow-y-auto">
-          <QuestionPanel answers={answers} current={current} diagCount={diagCount} />
+          <QuestionPanel
+            answers={answers}
+            current={current}
+            diagCount={diagCount}
+            layer1Count={layer1Vis.length}
+            layer2Count={layer2Vis.length}
+            layer3Count={layer3Vis.length}
+            layer1Done={current >= layer2Start}
+            layer2Done={current >= layer3Start}
+          />
         </aside>
       </div>
     </div>

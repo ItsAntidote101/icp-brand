@@ -12,7 +12,7 @@ const supabase = createClient(
 // Questions whose answers are stable enough to pre-fill on re-diagnosis.
 // Dynamic questions (9, 12, 13, 14, 15, 18, 20, 21) are intentionally excluded
 // so the user always re-enters current spend, leads, and performance metrics.
-const STABLE_IDS = new Set([1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 16, 17, 19, 22])
+const STABLE_IDS = new Set([1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 16, 17, 19, 22, 23, 24, 25, 26])
 
 export async function GET() {
   const session = await getSession()
