@@ -3,6 +3,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 
+// Questions that are stable across re-diagnoses and can be pre-filled.
+// Excluded (always fresh): Q9 ad channels, Q12 targeting, Q13 spend, Q14 leads, Q15 lead quality, Q18 mobile, Q20 differentiation, Q21 close rate
+const STABLE_QUESTION_IDS = new Set([1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 16, 17, 19, 22])
+
 type QuestionType = 'text' | 'url' | 'textarea' | 'select' | 'radio' | 'checkbox' | 'number' | 'slider' | 'yesno'
 
 interface Question {
@@ -675,19 +679,29 @@ function LayerCompleteScreen({
 
 interface Profile { name: string; email: string; company: string }
 
+type PrefillPayload = {
+  prefill: {
+    profile: Profile
+    answers: Record<string, unknown>
+  } | null
+}
+
 export default function QuestionnairePage() {
   const router = useRouter()
-  const [step,        setStep]        = useState<'welcome' | 'questions'>('welcome')
-  const [profile,     setProfile]     = useState<Profile>({ name: '', email: '', company: '' })
-  const [current,     setCurrent]     = useState(0)
-  const [answers,     setAnswers]     = useState<Answers>({})
-  const [visible,     setVisible]     = useState(false)
-  const [submitting,  setSubmitting]  = useState(false)
-  const [apiError,    setApiError]    = useState('')
-  const [loadingStep, setLoadingStep] = useState(0)
-  const [layerDone,   setLayerDone]   = useState<null | 1 | 2>(null)
+  const [step,          setStep]          = useState<'welcome' | 'questions'>('welcome')
+  const [profile,       setProfile]       = useState<Profile>({ name: '', email: '', company: '' })
+  const [current,       setCurrent]       = useState(0)
+  const [answers,       setAnswers]       = useState<Answers>({})
+  const [prefillIds,    setPrefillIds]    = useState<Set<number>>(new Set())
+  const [prefillBanner, setPrefillBanner] = useState(false)
+  const [prefillReady,  setPrefillReady]  = useState(false)
+  const [visible,       setVisible]       = useState(false)
+  const [submitting,    setSubmitting]    = useState(false)
+  const [apiError,      setApiError]      = useState('')
+  const [loadingStep,   setLoadingStep]   = useState(0)
+  const [layerDone,     setLayerDone]     = useState<null | 1 | 2>(null)
   const [urlPreviewBanner, setUrlPreviewBanner] = useState(false)
-  const [diagCount,   setDiagCount]   = useState(9400)
+  const [diagCount,     setDiagCount]     = useState(9400)
   const timerRefs = useRef<ReturnType<typeof setTimeout>[]>([])
 
   const xp = Object.keys(answers).length * XP_PER_Q
@@ -698,6 +712,32 @@ export default function QuestionnairePage() {
       .then(r => r.ok ? r.json() : null)
       .then((d: { count?: number } | null) => { if (d?.count) setDiagCount(d.count) })
       .catch(() => {})
+  }, [])
+
+  // Pre-fill from last diagnosis for returning authenticated users
+  useEffect(() => {
+    fetch('/api/questionnaire/last-answers')
+      .then(r => r.ok ? r.json() : null)
+      .then((d: PrefillPayload | null) => {
+        if (!d?.prefill) return
+        const { profile: p, answers: a } = d.prefill
+        // Pre-fill profile if we have the data
+        if (p.name || p.email || p.company) {
+          setProfile({ name: p.name, email: p.email, company: p.company })
+        }
+        // If they have previous answers, skip welcome and pre-fill stable questions
+        if (Object.keys(a).length > 0 && p.name && p.email && p.company) {
+          setAnswers(a as Answers)
+          setPrefillIds(new Set(Object.keys(a).map(Number)))
+          setPrefillBanner(true)
+          setStep('questions')
+        } else if (p.name && p.email && p.company) {
+          // Has account but no previous answers — skip welcome (profile is known)
+          setStep('questions')
+        }
+      })
+      .catch(() => {})
+      .finally(() => setPrefillReady(true))
   }, [])
 
   useEffect(() => {
@@ -830,6 +870,18 @@ export default function QuestionnairePage() {
     profile.name.trim().length > 0 &&
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profile.email) &&
     profile.company.trim().length > 0
+
+  // ── Prefill loading (prevents flash of welcome screen for returning users) ──
+  if (!prefillReady) {
+    return (
+      <div className="min-h-screen bg-[#fffefb] flex items-center justify-center">
+        <svg className="animate-spin w-6 h-6 text-[#e8330a]" viewBox="0 0 24 24" fill="none">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+        </svg>
+      </div>
+    )
+  }
 
   // ── Layer completion screen ──────────────────────────────────────────────
   if (layerDone !== null) {
@@ -1032,10 +1084,28 @@ export default function QuestionnairePage() {
           <div className="flex-1 px-6 pb-16">
             <div className="transition-all duration-150" style={{ opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(12px)' }}>
 
-              <div className={`inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest mb-4 px-2.5 py-1 rounded-full border ${layerColors.border[q.layer]} ${layerColors.text[q.layer]} bg-white`}>
-                <span>Q{q.id}</span>
-                <span className="text-[#201515]/20">·</span>
-                <span>{q.layerName}</span>
+              {prefillBanner && (
+                <div className="mb-5 flex items-start gap-3 px-4 py-3 rounded border border-[#c5c0b1] bg-[rgba(201,192,177,0.18)] text-sm text-[#605d52]">
+                  <svg className="flex-shrink-0 mt-0.5 w-3.5 h-3.5 text-[#939084]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                  <p className="flex-1 leading-snug text-xs">Some answers are pre-filled from your last diagnosis. Review each one and update anything that has changed.</p>
+                  <button type="button" onClick={() => setPrefillBanner(false)} className="flex-shrink-0 text-[#939084] hover:text-[#605d52] transition-colors">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M18 6 6 18M6 6l12 12"/></svg>
+                  </button>
+                </div>
+              )}
+
+              <div className="flex items-center gap-2 mb-4">
+                <div className={`inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest px-2.5 py-1 rounded-full border ${layerColors.border[q.layer]} ${layerColors.text[q.layer]} bg-white`}>
+                  <span>Q{q.id}</span>
+                  <span className="text-[#201515]/20">·</span>
+                  <span>{q.layerName}</span>
+                </div>
+                {prefillIds.has(q.id) && answers[q.id] !== undefined && (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-widest px-2.5 py-1 rounded-full border border-[#c5c0b1] text-[#939084] bg-white">
+                    <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    Pre-filled
+                  </span>
+                )}
               </div>
 
               <h2 className="text-xl sm:text-2xl font-bold text-[#201515] mb-6 leading-snug">{q.question}</h2>
