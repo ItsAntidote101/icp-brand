@@ -4909,6 +4909,8 @@ export default function DashboardPage() {
   const [intelligenceSeenThisSession, setIntelligenceSeenThisSession] = useState(false)
   const [reportsError,    setReportsError]    = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
+  const [qRegion,   setQRegion]   = useState('')
+  const [qIndustry, setQIndustry] = useState('')
   const [showHelp,          setShowHelp]          = useState(false)
 
   // Load currency preference on mount
@@ -4976,6 +4978,18 @@ export default function DashboardPage() {
     if (stored) verifyEmail(stored)
     else verifySession()
   }, [verifyEmail, verifySession, router])
+
+  // Load questionnaire profile for accurate buyer assignment
+  useEffect(() => {
+    if (!user?.email) return
+    fetch('/api/user/profile')
+      .then(r => r.ok ? r.json() : null)
+      .then((d: { region?: string; industry?: string } | null) => {
+        if (d?.region)   setQRegion(d.region)
+        if (d?.industry) setQIndustry(d.industry)
+      })
+      .catch(() => {})
+  }, [user?.email])
 
   useEffect(() => {
     if (!user?.email) return
@@ -5053,9 +5067,9 @@ export default function DashboardPage() {
   const prevScore = reports.length >= 2 ? getScore(parseDiagnosis(reports[1].report_summary)) : null
   const scoreDeltaMain = score !== null && prevScore !== null ? score - prevScore : null
 
-  // Derive assigned media buyer from user's region/industry in their latest diagnosis
-  const userRegion   = (diag.audience?.breakdown?.find(b => b.label === 'ICP Alignment')?.found ?? '') || ''
-  const userIndustry = (diag.search?.keyword_analysis ?? '') || ''
+  // questionnaire-sourced values take priority; fall back to diagnosis fields if not yet loaded
+  const userRegion   = qRegion   || (diag.audience?.breakdown?.find(b => b.label === 'ICP Alignment')?.found ?? '') || ''
+  const userIndustry = qIndustry || (diag.search?.keyword_analysis ?? '') || ''
   const assignedBuyer = user ? getAssignedBuyer(userRegion, userIndustry, user.subscription_tier) : MEDIA_BUYERS[0]
 
   const notifications: { id: string; icon: React.ReactNode; text: string; sub: string; color: string; action?: () => void }[] = []
