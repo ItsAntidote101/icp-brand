@@ -610,7 +610,7 @@ Rules:
 
   if (isSubscriber) {
     const res = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-opus-4-7',
       max_tokens: 7000,
       system: systemPrompt,
       tools: [{ type: 'web_search_20250305' as const, name: 'web_search' }],

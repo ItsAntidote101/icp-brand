@@ -3967,7 +3967,7 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
 
         {/* Weekly Briefing header card */}
         <div style={{ background: 'linear-gradient(135deg,#201515 0%,#2d1e0a 100%)', borderRadius: 12, padding: 'clamp(24px,4vw,36px) clamp(20px,5vw,40px)' }}>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20, justifyContent: 'space-between', alignItems: 'center', marginBottom: tierBadge || !canRefresh ? 16 : 0 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20, justifyContent: 'space-between', alignItems: 'center', marginBottom: tier !== 'free' ? 0 : 0 }}>
             <div>
               <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, background: 'rgba(255,255,255,0.2)', color: '#fff', padding: '3px 12px', borderRadius: 100, letterSpacing: '0.1em', textTransform: 'uppercase', display: 'inline-block', marginBottom: 12 }}>
                 Weekly Intelligence Briefing
@@ -4003,39 +4003,54 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
               <button disabled
                 style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.45)', border: 'none', borderRadius: 12, padding: '11px 22px', fontFamily: fontB, fontSize: 13, fontWeight: 600, cursor: 'default', whiteSpace: 'nowrap', flexShrink: 0 }}>
                 <Clock size={14} />
-                {`Next refresh in ${countdownStr}`}
+                Not yet available
               </button>
             )}
           </div>
 
-          {/* Live countdown display when rate-limited */}
-          {!canRefresh && tier !== 'free' && (
-            <div style={{ marginTop: 4 }}>
-              <p style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.45)', margin: '0 0 4px' }}>Next refresh available in:</p>
-              <p style={{ fontFamily: font, fontSize: 28, fontWeight: 700, color: '#fff', margin: 0, letterSpacing: '-0.03em', fontVariantNumeric: 'tabular-nums' }}>
-                {countdownStr}
-              </p>
-            </div>
-          )}
+          {/* Always-visible refresh status block for paid tiers */}
+          {tier !== 'free' && (
+            <div style={{ marginTop: 16, display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'flex-start', justifyContent: 'space-between' }}>
+              {/* Countdown or ready indicator */}
+              <div>
+                {canRefresh ? (
+                  <>
+                    <p style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.45)', margin: '0 0 3px', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Refresh status</p>
+                    <p style={{ fontFamily: font, fontSize: 20, fontWeight: 700, color: '#22c55e', margin: 0, letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: 7 }}>
+                      <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', display: 'inline-block', flexShrink: 0 }} />
+                      Ready to refresh
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.45)', margin: '0 0 3px', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Next refresh in</p>
+                    <p style={{ fontFamily: font, fontSize: 28, fontWeight: 700, color: '#fff', margin: 0, letterSpacing: '-0.03em', fontVariantNumeric: 'tabular-nums' }}>
+                      {countdownStr}
+                    </p>
+                  </>
+                )}
+              </div>
 
-          {/* Tier badge + remaining refreshes + upgrade nudge */}
-          {tierBadge && (
-            <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10 }}>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontFamily: fontB, fontSize: 11, fontWeight: 600, color: tierBadge.color, background: 'rgba(255,255,255,0.1)', border: `1px solid rgba(255,255,255,0.15)`, borderRadius: 100, padding: '3px 10px' }}>
-                {tierBadge.icon}
-                {tierBadge.label}
-              </span>
-              {refreshesLabel && (
-                <span style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.08)', borderRadius: 100, padding: '3px 10px' }}>
-                  {refreshesLabel}
-                </span>
-              )}
-              {tier !== 'agency' && (
-                <p style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: 0 }}>
-                  Agency subscribers get 3 refreshes per day.{' '}
-                  <button onClick={onUpgrade} style={{ color: '#e8330a', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: fontB, fontSize: 12 }}>Upgrade</button>
-                </p>
-              )}
+              {/* Tier badge + remaining count */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5 }}>
+                {tierBadge && (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontFamily: fontB, fontSize: 11, fontWeight: 600, color: tierBadge.color, background: 'rgba(255,255,255,0.1)', border: `1px solid rgba(255,255,255,0.15)`, borderRadius: 100, padding: '3px 10px' }}>
+                    {tierBadge.icon}
+                    {tierBadge.label}
+                  </span>
+                )}
+                {refreshesLabel && (
+                  <span style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>
+                    {refreshesLabel}
+                  </span>
+                )}
+                {tier !== 'agency' && (
+                  <p style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.35)', margin: 0, textAlign: 'right' }}>
+                    Agency gets 3 refreshes/day.{' '}
+                    <button onClick={onUpgrade} style={{ color: '#e8330a', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: fontB, fontSize: 11 }}>Upgrade</button>
+                  </p>
+                )}
+              </div>
             </div>
           )}
           {refreshError && (
