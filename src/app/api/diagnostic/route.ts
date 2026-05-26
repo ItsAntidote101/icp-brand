@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import Anthropic from '@anthropic-ai/sdk'
 import { sendWelcomeEmail } from '@/lib/email'
 
-export const maxDuration = 60
+export const maxDuration = 120
 export const dynamic = 'force-dynamic'
 
 // Strip em/en dashes from any string recursively so they never appear in stored data
@@ -271,23 +271,44 @@ export async function POST(req: NextRequest) {
 
   const landingPageUrl: string = (responses[10] as string) ?? ''
   const geographicRegion: string = (responses[11] as string) ?? 'Global/Multiple Regions'
+  const industry: string = (responses[2] as string) ?? ''
+  const adChannels: string = Array.isArray(responses[9]) ? (responses[9] as string[]).join(', ') : ((responses[9] as string) ?? '')
+  const monthYear = new Date().toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
+
+  // Pre-compute derived metrics to give Claude real numbers
+  const budgetNum = parseFloat(String(responses[13] ?? '').replace(/[^0-9.]/g, ''))
+  const leadsNum  = parseFloat(String(responses[14] ?? '').replace(/[^0-9.]/g, ''))
+  const ltvNum    = parseFloat(String(responses[22] ?? responses[6] ?? responses[25] ?? '').replace(/[^0-9.]/g, ''))
+  const closeNum  = parseFloat(String(responses[21] ?? '').replace(/[^0-9.]/g, ''))
+
+  const estimatedCpa    = budgetNum > 0 && leadsNum > 0 ? (budgetNum / leadsNum).toFixed(0) : null
+  const ltvCacRatio     = estimatedCpa && ltvNum > 0 ? (ltvNum / parseFloat(estimatedCpa)).toFixed(1) : null
+  const monthlyWaste    = estimatedCpa && budgetNum > 0 && closeNum > 0
+    ? ((budgetNum * (1 - closeNum / 100)) * 0.35).toFixed(0)
+    : null
+  const revenueOppty    = ltvNum > 0 && leadsNum > 0 && closeNum > 0
+    ? ((leadsNum * 0.15) * ltvNum).toFixed(0)
+    : null
+
   const regionContext = buildRegionContext(geographicRegion)
+  const primaryChannel = adChannels.split(',')[0]?.trim() || 'Meta'
 
   const systemPrompt = `You are an expert ICP (Ideal Customer Profile) diagnostic analyst specialising in paid acquisition, funnel optimisation, and regional market strategy.
 
-Your role is to analyse questionnaire responses and produce a precise, actionable ICP diagnostic report.
+You MUST use web_search before writing any section of your report. Perform ALL of the following searches in order:
+1. Search "${landingPageUrl || (profile?.company ?? '')} site review OR landing page" to assess the marketer's offer and positioning
+2. Search "${industry} advertising benchmarks CPC CPA ${geographicRegion} ${monthYear}"
+3. Search "${industry} competitors ${geographicRegion} digital marketing 2025"
+4. Search "${primaryChannel} algorithm update ${monthYear} ${industry}"
+5. Search "${geographicRegion} digital advertising market trends ${monthYear}"
 
-Use web search to:
-1. Assess the provided landing page URL, look up the domain to understand the offer, positioning, and funnel type
-2. Research current ad cost benchmarks (CPCs, CPAs) for the specified geographic region and industry
-3. Identify relevant competitor activity or market positioning for the business category
-4. Validate regional platform performance data (e.g., Meta vs Google vs WhatsApp CTAs in the target market)
+Use search results as your primary data source. Reference real company names, platform data, and cited figures. Generic or hypothetical numbers are not acceptable for a paid subscriber report.
 ${regionContext}
 Return ONLY a valid JSON object. No markdown, no prose outside JSON. Do not use em dashes or en dashes anywhere in your output. Use commas, colons, or full stops instead.`
 
-  const prompt = `Analyse this ICP diagnostic questionnaire submission and return a structured report.
+  const prompt = `Analyse this ICP diagnostic questionnaire and return a structured report. Use web search results as your primary data source for all benchmarks, competitor mentions, and platform insights.
 
-PROFILE:
+MARKETER PROFILE:
 - Name: ${profile?.name ?? 'Not provided'}
 - Company: ${profile?.company ?? 'Not provided'}
 
@@ -303,7 +324,7 @@ LAYER 1, ICP Foundation:
 
 LAYER 2, Targeting Mismatch:
 - Perceived ideal customer: ${responses[8] ?? ''}
-- Active ad channels: ${Array.isArray(responses[9]) ? (responses[9] as string[]).join(', ') : (responses[9] ?? '')}
+- Active ad channels: ${adChannels || 'Not specified'}
 - Landing page URL: ${landingPageUrl || 'Not provided'}
 - Target region: ${geographicRegion}
 - Current targeting parameters: ${responses[12] ?? ''}
@@ -320,8 +341,14 @@ LAYER 3, Funnel Friction:
 - Trust signals: ${responses[19] ?? ''}
 - Differentiation clarity score: ${responses[20] ?? ''}/10
 
-${landingPageUrl ? `Use web search to look up ${landingPageUrl} and assess the landing page structure, offer clarity, and conversion readiness. Reference it directly in your landing_page_assessment.` : ''}
-Use web search to find current CPC/CPA benchmarks for ${geographicRegion} in the ${(responses[2] as string) ?? 'relevant'} industry.
+PRE-COMPUTED METRICS (use these as the user's actual data in benchmarks):
+- Estimated CPA: ${estimatedCpa ? `${estimatedCpa} (calculated from budget / leads)` : 'Cannot compute: missing budget or leads data'}
+- LTV:CAC ratio: ${ltvCacRatio ? `${ltvCacRatio}:1` : 'Cannot compute'}
+- Estimated monthly ad waste: ${monthlyWaste ? `${monthlyWaste} (35% of non-converting spend)` : 'Cannot compute'}
+- Revenue opportunity if ICP improved 15%: ${revenueOppty ? `${revenueOppty}` : 'Cannot compute'}
+
+${landingPageUrl ? `LANDING PAGE: You searched ${landingPageUrl} above. Reference your findings directly in landing_page_assessment with specific observations about the offer, CTA clarity, and conversion readiness.` : ''}
+Reference your search results for ${geographicRegion} benchmarks in the ${industry || 'relevant'} industry in all benchmark fields. Use real competitor names from search results in competitor_insights.
 
 Return this exact JSON structure:
 {
