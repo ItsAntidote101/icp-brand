@@ -36,6 +36,260 @@ function convertAmount(amount: number, fromCurrency: string, toCurrency: string)
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Tab = 'overview' | 'audience' | 'search' | 'funnel' | 'economics' | 'intelligence' | 'reports' | 'account'
 
+// ─── Media Buyer Roster ───────────────────────────────────────────────────────
+
+type MediaBuyer = {
+  name:         string
+  firstName:    string
+  title:        string
+  speciality:   string
+  regions:      string[]
+  industries:   string[]
+  avatarColor:  string
+  initials:     string
+  yearsExp:     number
+  bio:          string
+  calLink:      string
+}
+
+const MEDIA_BUYERS: MediaBuyer[] = [
+  {
+    name: 'Eugene Kariuki', firstName: 'Eugene', initials: 'EK', avatarColor: '#201515',
+    title: 'B2B Media Buyer', speciality: 'B2B SaaS, Fintech, East Africa paid acquisition',
+    regions: ['Kenya', 'Uganda', 'Tanzania', 'East Africa'],
+    industries: ['SaaS', 'Fintech', 'B2B', 'Technology'],
+    yearsExp: 7,
+    bio: '7 years running Meta and Google for B2B SaaS and fintech companies across East Africa. Specialist in M-Pesa-integrated funnels and WhatsApp lead qualification.',
+    calLink: 'https://calendly.com/idealicp/eugene-review',
+  },
+  {
+    name: 'Aisha Mensah', firstName: 'Aisha', initials: 'AM', avatarColor: '#7c3aed',
+    title: 'E-commerce Media Buyer', speciality: 'DTC, e-commerce, West Africa performance',
+    regions: ['West Africa (Nigeria, Ghana)', 'Nigeria', 'Ghana'],
+    industries: ['E-commerce', 'DTC', 'Retail', 'FMCG', 'Consumer'],
+    yearsExp: 6,
+    bio: '6 years scaling DTC and e-commerce brands in Nigeria and Ghana. Built Meta Shopping and Google Performance Max campaigns generating 4x+ ROAS for over 40 brands.',
+    calLink: 'https://calendly.com/idealicp/aisha-review',
+  },
+  {
+    name: 'David Osei', firstName: 'David', initials: 'DO', avatarColor: '#0369a1',
+    title: 'Growth Media Buyer', speciality: 'B2B services, professional services, Southern Africa',
+    regions: ['South Africa', 'Global/Multiple Regions'],
+    industries: ['Professional Services', 'Consulting', 'Finance', 'Insurance', 'B2B Services'],
+    yearsExp: 8,
+    bio: '8 years in B2B lead generation for professional services firms. Managed LinkedIn and Google budgets from KES 50,000 to KES 2M per month across South Africa and global markets.',
+    calLink: 'https://calendly.com/idealicp/david-review',
+  },
+  {
+    name: 'Grace Nakato', firstName: 'Grace', initials: 'GN', avatarColor: '#065f46',
+    title: 'Local & SME Media Buyer', speciality: 'Local businesses, healthcare, education, SMEs',
+    regions: ['Kenya', 'Uganda', 'Tanzania'],
+    industries: ['Healthcare', 'Education', 'Local Services', 'Hospitality', 'Real Estate'],
+    yearsExp: 5,
+    bio: '5 years growing local and SME brands in East Africa. Expert in Google Local, Meta lead ads, and low-budget high-efficiency campaigns for businesses under KES 200,000/month.',
+    calLink: 'https://calendly.com/idealicp/grace-review',
+  },
+  {
+    name: 'Marcus Webb', firstName: 'Marcus', initials: 'MW', avatarColor: '#9a3412',
+    title: 'International Media Buyer', speciality: 'UK, Europe, North America B2B and SaaS',
+    regions: ['UK & Ireland', 'Europe (non-UK)', 'North America (US/Canada)', 'Middle East', 'Southeast Asia', 'South Asia (India/Pakistan)', 'Latin America', 'Australia & New Zealand'],
+    industries: [],
+    yearsExp: 9,
+    bio: '9 years managing international paid acquisition for B2B and SaaS companies across the UK, Europe, and North America. Specialist in multi-market funnel optimisation and LinkedIn ABM.',
+    calLink: 'https://calendly.com/idealicp/marcus-review',
+  },
+]
+
+function getAssignedBuyer(region: string, industry: string, tier: string): MediaBuyer {
+  const reg = region ?? ''
+  const ind = industry ?? ''
+
+  // Find by region match first
+  const byRegion = MEDIA_BUYERS.filter(b =>
+    b.regions.some(r => reg.includes(r) || r.includes(reg))
+  )
+
+  if (byRegion.length === 1) return byRegion[0]
+
+  // Narrow by industry if multiple region matches
+  if (byRegion.length > 1) {
+    const byIndustry = byRegion.find(b =>
+      b.industries.length === 0 || b.industries.some(i => ind.toLowerCase().includes(i.toLowerCase()))
+    )
+    if (byIndustry) return byIndustry
+    return byRegion[0]
+  }
+
+  // Default: Eugene for paid tiers, Marcus for international
+  if (tier === 'agency' || tier === 'pro') return MEDIA_BUYERS[0]
+  return MEDIA_BUYERS[4]
+}
+
+// ─── Buyer Avatar ─────────────────────────────────────────────────────────────
+
+function BuyerAvatar({ buyer, size = 36 }: { buyer: MediaBuyer; size?: number }) {
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: '50%',
+      background: buyer.avatarColor, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      flexShrink: 0,
+    }}>
+      <span style={{ fontFamily: "'PolySans Neutral', system-ui", fontSize: size * 0.33, fontWeight: 700, color: '#fff', letterSpacing: '0.02em' }}>
+        {buyer.initials}
+      </span>
+    </div>
+  )
+}
+
+// ─── Buyer Profile Card ───────────────────────────────────────────────────────
+
+function BuyerProfileCard({ buyer, tier, region, industry }: {
+  buyer: MediaBuyer; tier: string; region?: string; industry?: string
+}) {
+  const font  = "'PolySans Median', -apple-system, system-ui, sans-serif"
+  const fontB = "'PolySans Neutral', -apple-system, system-ui, sans-serif"
+  const P     = '#201515'
+  const Pmuted  = '#939084'
+  const Pborder = 'rgba(201,192,177,0.3)'
+  const BgAlt   = '#fffefb'
+  const Accent  = '#e8330a'
+
+  const canBook = tier === 'pro' || tier === 'agency'
+  const tierLabel = tier === 'agency' ? 'Agency' : tier === 'pro' ? 'Pro' : tier === 'starter' ? 'Starter' : 'Free'
+
+  return (
+    <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 8px rgba(201,192,177,0.18)' }}>
+      {/* Header */}
+      <div style={{ background: 'linear-gradient(135deg,#201515 0%,#2d1e0a 100%)', padding: '20px 24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <BuyerAvatar buyer={buyer} size={48} />
+          <div>
+            <p style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: '#fff', margin: '0 0 2px' }}>{buyer.name}</p>
+            <p style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.6)', margin: 0 }}>{buyer.title}</p>
+          </div>
+          <span style={{ marginLeft: 'auto', fontFamily: fontB, fontSize: 10, fontWeight: 700, background: 'rgba(255,255,255,0.15)', color: '#fff', padding: '3px 10px', borderRadius: 100, letterSpacing: '0.08em', textTransform: 'uppercase' as const }}>
+            Your buyer
+          </span>
+        </div>
+      </div>
+
+      {/* Body */}
+      <div style={{ padding: '20px 24px' }}>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' }}>
+          <span style={{ fontFamily: fontB, fontSize: 11, background: BgAlt, color: Pmuted, border: `1px solid ${Pborder}`, borderRadius: 100, padding: '3px 10px' }}>
+            {buyer.yearsExp} years experience
+          </span>
+          {(region || buyer.regions[0]) && (
+            <span style={{ fontFamily: fontB, fontSize: 11, background: BgAlt, color: Pmuted, border: `1px solid ${Pborder}`, borderRadius: 100, padding: '3px 10px' }}>
+              {region ?? buyer.regions[0]}
+            </span>
+          )}
+        </div>
+
+        <p style={{ fontFamily: fontB, fontSize: 13, color: '#605d52', lineHeight: 1.65, margin: '0 0 20px' }}>{buyer.bio}</p>
+
+        <div style={{ background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 12, padding: '12px 16px', marginBottom: 16 }}>
+          <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.08em', color: Pmuted, margin: '0 0 4px' }}>Speciality</p>
+          <p style={{ fontFamily: fontB, fontSize: 13, color: P, margin: 0 }}>{buyer.speciality}</p>
+        </div>
+
+        {canBook ? (
+          <a href={buyer.calLink} target="_blank" rel="noopener noreferrer"
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: P, color: '#fff', border: 'none', borderRadius: 12, padding: '12px 0', fontFamily: fontB, fontSize: 13, fontWeight: 600, textDecoration: 'none', width: '100%' }}>
+            <Users size={14} />
+            Book a review call with {buyer.firstName}
+          </a>
+        ) : (
+          <div style={{ background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 12, padding: '14px 16px', textAlign: 'center' as const }}>
+            <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '0 0 8px' }}>
+              {tierLabel} plan includes chat access only. Upgrade to Pro to book a live review call with {buyer.firstName}.
+            </p>
+            <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 600, color: Accent, margin: 0 }}>Pro: KES 13,000/mo includes monthly call</p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function MonthlyCheckinCard({ user, buyer }: { user: UserData; buyer: MediaBuyer }) {
+  const font    = "'PolySans Median', -apple-system, system-ui, sans-serif"
+  const fontB   = "'PolySans Neutral', -apple-system, system-ui, sans-serif"
+  const P       = '#201515'
+  const Pmuted  = '#939084'
+  const Pborder = 'rgba(201,192,177,0.3)'
+
+  type CheckinData = { id?: string; message: string; buyer_name: string; buyer_initials: string; created_at: string }
+  const [checkin,  setCheckin]  = useState<CheckinData | null>(null)
+  const [loading,  setLoading]  = useState(true)
+  const [expanded, setExpanded] = useState(false)
+
+  useEffect(() => {
+    if (user.subscription_tier === 'free') { setLoading(false); return }
+    const cacheKey = `monthly_checkin_${user.email}_${new Date().toISOString().slice(0, 7)}`
+    const cached = typeof window !== 'undefined' ? localStorage.getItem(cacheKey) : null
+    if (cached) { try { setCheckin(JSON.parse(cached)); setLoading(false); return } catch {/* noop */} }
+
+    fetch('/api/monthly-checkin')
+      .then(r => r.ok ? r.json() : null)
+      .then(j => {
+        if (j?.checkin) {
+          setCheckin(j.checkin)
+          if (typeof window !== 'undefined') localStorage.setItem(cacheKey, JSON.stringify(j.checkin))
+        } else if (j?.checkin === null) {
+          // Generate one
+          fetch('/api/monthly-checkin', { method: 'POST' })
+            .then(r => r.ok ? r.json() : null)
+            .then(j2 => {
+              if (j2?.checkin) {
+                setCheckin(j2.checkin)
+                if (typeof window !== 'undefined') localStorage.setItem(cacheKey, JSON.stringify(j2.checkin))
+              }
+            })
+            .catch(() => {/* noop */})
+        }
+      })
+      .catch(() => {/* noop */})
+      .finally(() => setLoading(false))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user.email, user.subscription_tier])
+
+  if (user.subscription_tier === 'free' || loading || !checkin) return null
+
+  const monthLabel = new Date().toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
+
+  return (
+    <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 8px rgba(201,192,177,0.15)', animation: 'fadeUp 0.4s ease both' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+        <BuyerAvatar buyer={buyer} size={34} />
+        <div style={{ flex: 1 }}>
+          <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: '#e8330a', margin: '0 0 1px' }}>Monthly Check-in</p>
+          <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: 0 }}>From {checkin.buyer_name} · {monthLabel}</p>
+        </div>
+      </div>
+
+      <p style={{ fontFamily: font, fontSize: 14, color: '#605d52', lineHeight: 1.7, margin: 0, display: expanded ? 'block' : '-webkit-box', WebkitLineClamp: expanded ? undefined : 3, WebkitBoxOrient: expanded ? undefined : 'vertical' as const, overflow: expanded ? 'visible' : 'hidden' }}>
+        {checkin.message}
+      </p>
+
+      {!expanded && checkin.message.length > 240 && (
+        <button onClick={() => setExpanded(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fontB, fontSize: 12, color: P, fontWeight: 600, padding: '6px 0 0', display: 'block', textDecoration: 'underline' }}>
+          Read full message
+        </button>
+      )}
+
+      {(user.subscription_tier === 'pro' || user.subscription_tier === 'agency') && (
+        <a href={buyer.calLink} target="_blank" rel="noopener noreferrer"
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 7, marginTop: 16, background: P, color: '#fff', borderRadius: 10, padding: '9px 16px', fontFamily: fontB, fontSize: 12, fontWeight: 600, textDecoration: 'none' }}>
+          <Users size={12} />
+          Book a call with {buyer.firstName}
+        </a>
+      )}
+    </div>
+  )
+}
+
+
 type UserData = {
   id: string; email: string; full_name: string | null
   company_name: string | null; subscription_tier: string
@@ -592,9 +846,10 @@ function CampaignInsightsWidget({ delay }: { delay: number }) {
 
 // ─── New Overview Components ──────────────────────────────────────────────────
 
-function DailyBriefCard({ diag, reports, score, hasIntelligence, onTabChange, user }: {
+function DailyBriefCard({ diag, reports, score, hasIntelligence, onTabChange, user, buyer }: {
   diag: DiagnosisData; reports: ReportRow[]; score: number | null
   hasIntelligence: boolean; onTabChange: (tab: Tab) => void; user: UserData
+  buyer: MediaBuyer
 }) {
   const findings   = getFindings(diag)
   const topFinding = findings[0]
@@ -701,11 +956,12 @@ function DailyBriefCard({ diag, reports, score, hasIntelligence, onTabChange, us
       <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
         {/* Left: brief */}
         <div style={{ flex: '1 1 260px', minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
-            <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: '#e8330a' }}>TODAY&apos;S BRIEF</span>
-            <span style={{ fontFamily: fontB, fontSize: 12, color: Pmuted }}>
-              {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-            </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+            <BuyerAvatar buyer={buyer} size={30} />
+            <div>
+              <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: '#e8330a' }}>From {buyer.firstName}</span>
+              <span style={{ fontFamily: fontB, fontSize: 11, color: Pmuted }}> · {new Date().toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
+            </div>
             <button
               onClick={handleDismiss}
               title="Dismiss for today"
@@ -2975,11 +3231,11 @@ function InDashboardUpgradeModal({ user, onClose, onUpgraded }: {
   )
 }
 
-function AccountTab({ user, currency, score, reportCount, reports, onSignOut, onCancelled, onUserUpdate, showToast, onUpgrade }: {
+function AccountTab({ user, currency, score, reportCount, reports, onSignOut, onCancelled, onUserUpdate, showToast, onUpgrade, buyer }: {
   user: UserData; currency: string; score: number | null; reportCount: number; reports: ReportRow[]
   onSignOut: () => void; onCancelled: () => void
   onUserUpdate: (u: Partial<UserData>) => void; showToast: (msg: string) => void
-  onUpgrade?: () => void
+  onUpgrade?: () => void; buyer?: MediaBuyer
 }) {
   const [showChangePlan,       setShowChangePlan]       = useState(false)
   const [showPauseModal,       setShowPauseModal]       = useState(false)
@@ -3196,6 +3452,42 @@ function AccountTab({ user, currency, score, reportCount, reports, onSignOut, on
             </div>
           )}
         </Card>
+
+        {/* Assigned Media Buyer */}
+        {buyer && (
+          <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 8px rgba(201,192,177,0.18)' }}>
+            <div style={{ background: 'linear-gradient(135deg,#201515 0%,#2d1e0a 100%)', padding: '16px 20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <BuyerAvatar buyer={buyer} size={40} />
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: '#fff', margin: '0 0 1px' }}>{buyer.name}</p>
+                  <p style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.6)', margin: 0 }}>{buyer.title}</p>
+                </div>
+                <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, background: 'rgba(255,255,255,0.15)', color: '#fff', padding: '2px 8px', borderRadius: 100, letterSpacing: '0.08em', textTransform: 'uppercase' as const, whiteSpace: 'nowrap' as const }}>
+                  Your buyer
+                </span>
+              </div>
+            </div>
+            <div style={{ padding: '16px 20px' }}>
+              <p style={{ fontFamily: fontB, fontSize: 12, color: '#605d52', lineHeight: 1.55, margin: '0 0 14px' }}>{buyer.bio}</p>
+              {(user.subscription_tier === 'pro' || user.subscription_tier === 'agency') ? (
+                <a href={buyer.calLink} target="_blank" rel="noopener noreferrer"
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, background: '#201515', color: '#fff', borderRadius: 10, padding: '11px 0', fontFamily: fontB, fontSize: 13, fontWeight: 600, textDecoration: 'none', width: '100%' }}>
+                  <Users size={13} />
+                  Book a call with {buyer.firstName}
+                </a>
+              ) : (
+                <div style={{ background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 10, padding: '12px 14px', display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                  <Lock size={13} color={Pmuted} style={{ flexShrink: 0, marginTop: 1 }} />
+                  <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: 0, lineHeight: 1.5 }}>
+                    Live call access is available on Pro and Agency plans.{' '}
+                    {onUpgrade && <button onClick={onUpgrade} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fontB, fontSize: 12, color: '#201515', fontWeight: 600, padding: 0, textDecoration: 'underline' }}>Upgrade to unlock.</button>}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Sign out */}
         <button onClick={onSignOut}
@@ -4761,6 +5053,11 @@ export default function DashboardPage() {
   const prevScore = reports.length >= 2 ? getScore(parseDiagnosis(reports[1].report_summary)) : null
   const scoreDeltaMain = score !== null && prevScore !== null ? score - prevScore : null
 
+  // Derive assigned media buyer from user's region/industry in their latest diagnosis
+  const userRegion   = (diag.audience?.breakdown?.find(b => b.label === 'ICP Alignment')?.found ?? '') || ''
+  const userIndustry = (diag.search?.keyword_analysis ?? '') || ''
+  const assignedBuyer = user ? getAssignedBuyer(userRegion, userIndustry, user.subscription_tier) : MEDIA_BUYERS[0]
+
   const notifications: { id: string; icon: React.ReactNode; text: string; sub: string; color: string; action?: () => void }[] = []
   if (hasNewIntelligence)
     notifications.push({ id: 'intel', icon: <Brain size={15} />, text: 'New intelligence briefing ready', sub: 'This week', color: '#22c55e', action: () => { setShowNotifications(false); setActiveTab('intelligence') } })
@@ -5041,9 +5338,10 @@ export default function DashboardPage() {
 
         <div style={{ padding: 'clamp(20px,4vw,32px) clamp(14px,4vw,40px) 100px' }}>
 
-        {/* Daily Brief, overview tab only */}
+        {/* Monthly Check-in + Daily Brief, overview tab only */}
         {activeTab === 'overview' && !dataLoading && hasReports && user && (
-          <div style={{ marginBottom: 24 }}>
+          <div style={{ marginBottom: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <MonthlyCheckinCard user={user} buyer={assignedBuyer} />
             <DailyBriefCard
               diag={diag}
               reports={reports}
@@ -5051,6 +5349,7 @@ export default function DashboardPage() {
               hasIntelligence={hasNewIntelligence}
               onTabChange={setActiveTab}
               user={user}
+              buyer={assignedBuyer}
             />
           </div>
         )}
@@ -5231,8 +5530,11 @@ export default function DashboardPage() {
                   <CampaignInsightsWidget delay={0} />
                 </UpgradeGate>
 
-                {/* Get It Done */}
-                <GetItDoneCard tier={t} onBook={() => setShowModal(true)} onUpgrade={() => setShowUpgradeModal(true)} />
+                {/* Your Media Buyer */}
+                <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
+                  <GetItDoneCard tier={t} onBook={() => setShowModal(true)} onUpgrade={() => setShowUpgradeModal(true)} />
+                  <BuyerProfileCard buyer={assignedBuyer} tier={t} region={userRegion || undefined} industry={userIndustry || undefined} />
+                </div>
               </div>
               )
             })()}
@@ -5262,6 +5564,7 @@ export default function DashboardPage() {
             onUserUpdate={update => setUser(prev => prev ? { ...prev, ...update } : prev)}
             showToast={msg => { setCancelToast(msg); setTimeout(() => setCancelToast(''), 5000) }}
             onUpgrade={() => setShowUpgradeModal(true)}
+            buyer={assignedBuyer}
           />
         )}
         </div>{/* end inner padding div */}
