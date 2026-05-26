@@ -164,7 +164,7 @@ You have access to web_search. You MUST perform the following searches before wr
 4. Search "${profile.channels[0] ?? 'Meta'} algorithm update ${monthYear}"
 ${profile.landingPage ? `5. Search "${profile.landingPage}" to understand their offer and landing page positioning` : ''}
 
-Use the search results as your primary data source. Only fall back to training knowledge for context you cannot find via search. Cite real sources in the "source" field. Do not use em dashes or en dashes. Use commas, colons, or full stops instead.`
+Use the search results as your primary data source. Only fall back to training knowledge for context you cannot find via search. Cite real sources in the "source" field. Include the actual URL you found in sourceUrl for each insight. These will be shown to users as clickable verification links. If you could not find a URL for a specific insight, set sourceUrl to null. Do not use em dashes or en dashes. Use commas, colons, or full stops instead.`
 
   const userPrompt = `Generate a market intelligence briefing as of ${dayOfWeek}, ${dateStr} for this marketer.
 
@@ -205,6 +205,7 @@ Return ONLY valid JSON with no markdown fences:
       "title": "<specific title with numbers from web research>",
       "body": "<2-3 sentences with specific data from search results, no generic statements>",
       "source": "<actual publication or dataset name from search>",
+      "sourceUrl": "<actual URL from your web search results, or null if not found>",
       "timeLabel": "<realistic relative timestamp>",
       "implication": null,
       "recommendation": null
@@ -215,6 +216,7 @@ Return ONLY valid JSON with no markdown fences:
       "title": "<what named competitor(s) in ${profile.region} are doing>",
       "body": "<specific observation with real company or campaign details from web research>",
       "source": "<actual source>",
+      "sourceUrl": "<actual URL from your web search results, or null if not found>",
       "timeLabel": "<realistic relative timestamp>",
       "implication": "<specific implication for this marketer given their product and audience>",
       "recommendation": null
@@ -225,6 +227,7 @@ Return ONLY valid JSON with no markdown fences:
       "title": "<specific, named opportunity in the ${profile.industry} market in ${profile.region}>",
       "body": "<actionable opportunity with specifics: platform, audience segment, estimated cost or reach>",
       "source": "<actual source or null>",
+      "sourceUrl": "<actual URL from your web search results, or null if not found>",
       "timeLabel": "<realistic relative timestamp>",
       "implication": null,
       "recommendation": "<specific action: what to do, where, targeting parameters>"
@@ -235,6 +238,7 @@ Return ONLY valid JSON with no markdown fences:
       "title": "<specific algorithm or policy update on ${profile.channels[0] ?? 'Meta'} or Google>",
       "body": "<what changed, when it was announced, how it affects ${profile.industry} campaigns>",
       "source": "<platform blog, press release, or trade publication>",
+      "sourceUrl": "<actual URL from your web search results, or null if not found>",
       "timeLabel": "<realistic relative timestamp>",
       "implication": null,
       "recommendation": "<specific campaign adjustment to make>"
@@ -245,6 +249,7 @@ Return ONLY valid JSON with no markdown fences:
       "title": "<second market movement specific to ${profile.industry} in ${profile.region}>",
       "body": "<another market shift with specific numbers or named entities>",
       "source": "<actual source>",
+      "sourceUrl": "<actual URL from your web search results, or null if not found>",
       "timeLabel": "<realistic relative timestamp>",
       "implication": "<what this means for their campaigns given their budget and channels>",
       "recommendation": null
@@ -264,7 +269,12 @@ Return ONLY valid JSON with no markdown fences:
     { "label": "<real competitor name>", "x": <integer>, "y": <integer> },
     { "label": "<real competitor name>", "x": <integer>, "y": <integer> }
   ],
-  "userPosition": { "x": ${Math.min(95, Math.max(10, (profile.icpScore ?? 50) * 0.85))}, "y": ${Math.min(95, Math.max(10, profile.icpScore ?? 50))} }
+  "userPosition": { "x": ${Math.min(95, Math.max(10, (profile.icpScore ?? 50) * 0.85))}, "y": ${Math.min(95, Math.max(10, profile.icpScore ?? 50))} },
+  "researchSources": [
+    { "title": "<page title from search result>", "url": "<actual URL from search>", "query": "<what you searched for>" },
+    { "title": "<page title from search result>", "url": "<actual URL from search>", "query": "<what you searched for>" },
+    { "title": "<page title from search result>", "url": "<actual URL from search>", "query": "<what you searched for>" }
+  ]
 }`
 
   const res = await anthropic.messages.create({
@@ -286,7 +296,7 @@ Return ONLY valid JSON with no markdown fences:
 async function answerQuestion(
   question: string,
   profile: FullProfile,
-): Promise<{ answer: string; sources: string[] }> {
+): Promise<{ answer: string; sources: string[]; sourceUrls: string[] }> {
 
   const systemPrompt = `You are a competitive intelligence analyst specialising in digital advertising in ${profile.region}.
 
@@ -311,7 +321,8 @@ Search for current data specific to their industry and region. Answer with:
 3. One clear, actionable recommendation
 
 Keep under 350 words. End with:
-Sources: [comma-separated list of actual sources you searched]`
+Sources: [comma-separated list of actual source names you searched]
+SourceURLs: [comma-separated list of actual URLs you found, in the same order as Sources, or blank if no URL available]`
 
   const res = await anthropic.messages.create({
     model:      'claude-sonnet-4-6',
@@ -322,13 +333,18 @@ Sources: [comma-separated list of actual sources you searched]`
   })
 
   const text   = res.content.filter(b => b.type === 'text').map(b => (b as { type: 'text'; text: string }).text).join('')
-  const parts  = text.split(/\nSources:\s*/i)
-  const answer = (parts[0] ?? text).trim()
-  const sources = parts[1]
-    ? parts[1].split(',').map(s => s.trim()).filter(Boolean)
+  const partsS = text.split(/\nSources:\s*/i)
+  const answer = (partsS[0] ?? text).trim()
+  const afterSources = partsS[1] ?? ''
+  const partsU = afterSources.split(/\nSourceURLs:\s*/i)
+  const sources = partsU[0]
+    ? partsU[0].split(',').map(s => s.trim()).filter(Boolean)
+    : []
+  const sourceUrls = partsU[1]
+    ? partsU[1].split(',').map(s => s.trim()).filter(Boolean)
     : []
 
-  return { answer, sources }
+  return { answer, sources, sourceUrls }
 }
 
 // ─── Shared questionnaire data loader ────────────────────────────────────────
@@ -568,7 +584,7 @@ export async function POST(req: NextRequest) {
       }
 
       const profile = await loadFullProfile(userData.id, email, icpScore, userData.company_name ?? '')
-      const { answer, sources } = await answerQuestion(question, profile)
+      const { answer, sources, sourceUrls } = await answerQuestion(question, profile)
 
       await supabase.from('intelligence_questions').insert({
         user_id:  userData.id,
@@ -583,7 +599,7 @@ export async function POST(req: NextRequest) {
         questions_reset_date: today,
       }).eq('id', userData.id)
 
-      return NextResponse.json({ answer, sources })
+      return NextResponse.json({ answer, sources, sourceUrls })
     }
 
     return NextResponse.json({ error: 'Invalid type' }, { status: 400 })

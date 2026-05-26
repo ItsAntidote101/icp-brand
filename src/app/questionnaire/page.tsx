@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from '@/hooks/useSession'
 
 // Questions that are stable across re-diagnoses and can be pre-filled.
 // Excluded (always fresh): Q9 ad channels, Q12 targeting, Q13 spend, Q14 leads, Q15 lead quality, Q18 mobile, Q20 differentiation, Q21 close rate
@@ -753,7 +754,9 @@ type PrefillPayload = {
 
 export default function QuestionnairePage() {
   const router = useRouter()
+  const { status } = useSession()
   const [step,          setStep]          = useState<'welcome' | 'questions'>('welcome')
+  const [showGate,      setShowGate]      = useState(false)
   const [profile,       setProfile]       = useState<Profile>({ name: '', email: '', company: '' })
   const [current,       setCurrent]       = useState(0)
   const [answers,       setAnswers]       = useState<Answers>({})
@@ -880,6 +883,11 @@ export default function QuestionnairePage() {
   }, [q?.id, q?.type, answers])
 
   const navigate = (dir: 'next' | 'back') => {
+    if (dir === 'next' && current === 10 && status === 'unauthenticated') {
+      setVisible(false)
+      setTimeout(() => setShowGate(true), 160)
+      return
+    }
     setVisible(false)
     setTimeout(() => {
       if (dir === 'next') {
@@ -964,6 +972,57 @@ export default function QuestionnairePage() {
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
         </svg>
+      </div>
+    )
+  }
+
+  // ── Signup gate (unauthenticated users after question 10) ───────────────
+  if (showGate && status === 'unauthenticated') {
+    return (
+      <div className="min-h-screen bg-[#fffefb] text-[#201515] flex flex-col">
+        <style>{`@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }`}</style>
+
+        <header className="border-b border-[#c5c0b1] px-6 py-4 flex items-center justify-between max-w-[1100px] mx-auto w-full">
+          <a href="/" className="text-sm font-bold tracking-tight text-[#201515]">ICP<span className="text-[#e8330a]">Diagnostic</span></a>
+          <XpBadge xp={xp} />
+        </header>
+
+        <div className="flex-1 flex flex-col items-center justify-center px-6 pb-16">
+          <div className="w-full max-w-md text-center">
+
+            <div className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest mb-6 px-3 py-1.5 rounded-full border border-[#e8330a]/40 text-[#e8330a] bg-white">
+              Almost there
+            </div>
+
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#201515] mb-4 leading-snug">
+              You&rsquo;re halfway there.
+            </h2>
+
+            <p className="text-[#605d52] text-sm mb-8 leading-relaxed max-w-sm mx-auto">
+              Create a free account to save your progress and get your full ICP diagnosis. No credit card needed.
+            </p>
+
+            <div className="flex flex-col gap-3 items-center mb-6">
+              <a
+                href="/auth?tab=signup"
+                className="w-full sm:w-auto sm:min-w-[240px] inline-flex items-center justify-center px-8 py-3.5 rounded bg-[#e8330a] text-[#201515] text-sm font-semibold shadow-lg shadow-[#e8330a]/25 hover:opacity-90 transition-all active:scale-95"
+              >
+                Create free account
+              </a>
+              <a
+                href="/auth?tab=login"
+                className="text-sm text-[#605d52] hover:text-[#201515] underline transition-colors"
+              >
+                Sign in
+              </a>
+            </div>
+
+            <p className="text-xs text-[#939084]">
+              Your answers so far are saved in this session.
+            </p>
+
+          </div>
+        </div>
       </div>
     )
   }

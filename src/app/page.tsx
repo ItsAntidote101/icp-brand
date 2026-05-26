@@ -897,6 +897,21 @@ export default function Page() {
           <section id="results" style={{ background: Warm, borderBottom: `1.5px solid ${Border}` }}>
             <div className="container" style={{ paddingTop: 'clamp(56px,7vw,88px)', paddingBottom: 'clamp(56px,7vw,88px)' }}>
 
+              {/* Aggregate stats bar */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0, border: `1.5px solid ${Border}`, borderRadius: 0, marginBottom: 52, background: '#fff', overflow: 'hidden' }} className="grid-cols-2 md:grid-cols-4">
+                {[
+                  { val: '+23 pts', label: 'Average ICP score improvement in 60 days' },
+                  { val: '61%', label: 'Average reduction in cost per lead after first fix' },
+                  { val: '3.8:1', label: 'Average LTV:CAC ratio after 90 days on platform' },
+                  { val: '11 days', label: 'Median time to first measurable result' },
+                ].map(({ val, label }, i) => (
+                  <div key={i} style={{ padding: 'clamp(20px,3vw,32px) clamp(16px,2.5vw,28px)', borderRight: i < 3 ? `1.5px solid ${Border}` : 'none', borderBottom: `1.5px solid ${Border}` }}>
+                    <p style={{ fontFamily: fontSerif, fontSize: 'clamp(22px,2.5vw,34px)', fontWeight: 700, color: Orange, margin: '0 0 6px' }}>{val}</p>
+                    <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, margin: 0, lineHeight: 1.5 }}>{label}</p>
+                  </div>
+                ))}
+              </div>
+
               {/* Section header */}
               <div style={{ textAlign: 'center', marginBottom: 52 }}>
                 <h2 style={{ fontFamily: fontSerif, fontSize: 'clamp(26px,4vw,48px)', fontWeight: 700, color: Text, margin: '0 0 14px', lineHeight: 1.1 }}>

@@ -57,7 +57,15 @@ type ReportRow = {
 }
 
 type Finding  = { title: string; severity: string; explanation: string }
-type QuickWin = { action: string; impact: string; timeline?: string }
+type QuickWin = {
+  action:         string
+  impact:         string
+  timeline?:      string
+  platform?:      string
+  where?:         string
+  expectedImpact?: string
+  effort?:        string
+}
 
 type BreakdownItem = { label: string; score: number; found: string; why: string }
 
@@ -431,9 +439,24 @@ function ScoreHistoryWidget({ reports, latestReport, renewalDate, delay }: {
     return { date: formatDate(r.generated_at), score: getScore(d) ?? 0 }
   })
 
+  const first   = chartData[0]?.score ?? 0
+  const last    = chartData[chartData.length - 1]?.score ?? 0
+  const delta   = last - first
+  const deltaColor = delta >= 10 ? '#22c55e' : delta >= 1 ? '#f59e0b' : delta < 0 ? '#ef4444' : Pmuted
+  const deltaLabel = delta > 0 ? `+${delta} pts` : delta < 0 ? `${delta} pts` : 'No change'
+  const daySpan = chartData.length >= 2
+    ? Math.round((new Date(reports[0].generated_at).getTime() - new Date(reports[reports.length - 1].generated_at).getTime()) / 86_400_000)
+    : 0
+
   return (
     <Card delay={delay}>
-      <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: '0 0 18px' }}>Score History</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+        <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: 0 }}>Score History</p>
+        <div style={{ textAlign: 'right' }}>
+          <span style={{ fontFamily: font, fontSize: 22, fontWeight: 800, color: deltaColor }}>{deltaLabel}</span>
+          {daySpan > 0 && <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '2px 0 0' }}>over {daySpan} days</p>}
+        </div>
+      </div>
       <ResponsiveContainer width="100%" height={160}>
         <AreaChart data={chartData} margin={{ top: 4, right: 0, bottom: 0, left: 0 }}>
           <defs>
@@ -450,6 +473,22 @@ function ScoreHistoryWidget({ reports, latestReport, renewalDate, delay }: {
           />
         </AreaChart>
       </ResponsiveContainer>
+      {delta >= 10 && (
+        <div style={{ marginTop: 12, background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: '8px 14px', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <TrendingUp size={14} color="#16a34a" />
+          <span style={{ fontFamily: fontB, fontSize: 12, color: '#15803d' }}>
+            Strong improvement. Your targeting is getting more precise.
+          </span>
+        </div>
+      )}
+      {delta < 0 && (
+        <div style={{ marginTop: 12, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10, padding: '8px 14px', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <AlertCircle size={14} color="#dc2626" />
+          <span style={{ fontFamily: fontB, fontSize: 12, color: '#b91c1c' }}>
+            Score dropped. Run a new diagnosis to identify what shifted.
+          </span>
+        </div>
+      )}
     </Card>
   )
 }
@@ -1006,13 +1045,32 @@ function EnhancedQuickWinsWidget({ diag, user, onStreakUpdate, maxWins = 3, repo
               {saving === i && <div style={{ width: 8, height: 8, borderRadius: '50%', border: '2px solid #939084', borderTopColor: P, animation: 'spin 0.6s linear infinite' }} />}
             </button>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', background: impactBg(w.impact), color: impactColor(w.impact), padding: '2px 8px', borderRadius: 100, display: 'inline-block', marginBottom: 5 }}>
-                {w.impact}
-              </span>
-              <p style={{ fontFamily: fontB, fontSize: 13, color: checked[i] ? Pmuted : P, margin: '0 0 4px', lineHeight: 1.4, textDecoration: checked[i] ? 'line-through' : 'none', transition: 'all 0.2s' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 6 }}>
+                <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', background: impactBg(w.impact), color: impactColor(w.impact), padding: '2px 8px', borderRadius: 100 }}>
+                  {w.impact} impact
+                </span>
+                {w.platform && (
+                  <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 600, background: 'rgba(201,192,177,0.25)', color: Pmuted, padding: '2px 8px', borderRadius: 100 }}>
+                    {w.platform}
+                  </span>
+                )}
+                {w.effort && (
+                  <span style={{ fontFamily: fontB, fontSize: 10, color: Pmuted, background: 'rgba(201,192,177,0.15)', padding: '2px 8px', borderRadius: 100 }}>
+                    {w.effort}
+                  </span>
+                )}
+              </div>
+              <p style={{ fontFamily: fontB, fontSize: 13, color: checked[i] ? Pmuted : P, margin: '0 0 4px', lineHeight: 1.55, textDecoration: checked[i] ? 'line-through' : 'none', transition: 'all 0.2s' }}>
                 {w.action}
               </p>
-              <p style={{ fontFamily: fontB, fontSize: 12, color: '#d97706', margin: 0 }}>{impactLabel(w.impact)}</p>
+              {w.where && !checked[i] && (
+                <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '0 0 4px', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ opacity: 0.6 }}>Where:</span> {w.where}
+                </p>
+              )}
+              <p style={{ fontFamily: fontB, fontSize: 12, color: '#d97706', margin: 0 }}>
+                {w.expectedImpact ?? impactLabel(w.impact)}
+              </p>
             </div>
           </div>
 
@@ -3558,6 +3616,7 @@ type MarketInsight = {
   title: string
   body: string
   source?: string
+  sourceUrl?: string | null
   timeLabel: string
   implication?: string
   recommendation?: string
@@ -3581,6 +3640,7 @@ type IntelligenceBriefing = {
   benchmarks: IntelBenchmark[]
   competitorPositions: CompetitorPos[]
   userPosition: { x: number; y: number }
+  researchSources?: Array<{ title: string; url: string; query: string }>
 }
 
 function BenchmarkTrack({ name, userValue, industryAvg, top10, unit, higherIsBetter }: IntelBenchmark) {
