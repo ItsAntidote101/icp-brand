@@ -303,7 +303,7 @@ export async function POST(req: NextRequest) {
 
   const systemPrompt = `You are an expert ICP (Ideal Customer Profile) diagnostic analyst specialising in paid acquisition, funnel optimisation, and regional market strategy.
 
-Analyse the questionnaire data using your expert knowledge of the ${geographicRegion} market in the ${industry} sector. Base all benchmarks, competitor analysis, and regional insights on your training knowledge. A second live-research enhancement pass will layer in real-time web data after this initial report is delivered.
+Analyse the questionnaire data using your expert knowledge of the ${geographicRegion} market and ${industry} sector. Provide precise, data-grounded benchmarks, competitor insights, and actionable recommendations calibrated to this specific region and industry.
 ${regionContext}
 Return ONLY a valid JSON object. No markdown, no prose outside JSON. Do not use em dashes or en dashes anywhere in your output. Use commas, colons, or full stops instead.`
 
@@ -682,11 +682,9 @@ Rules:
   let diagnosisText: string
 
   if (isSubscriber) {
-    // Fast initial report — Haiku, no web search, returns in ~5-8s
-    // The report page triggers /api/diagnostic/enhance for the live-research upgrade
     const res = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 6000,
+      model: 'claude-sonnet-4-6',
+      max_tokens: 8000,
       system: systemPrompt,
       messages: [{ role: 'user', content: prompt }],
     })
@@ -694,7 +692,7 @@ Rules:
       .filter(block => block.type === 'text')
       .map(block => (block as { type: 'text'; text: string }).text)
       .join('')
-    console.log(`[diagnostic] subscriber initial diagnosisText length=${diagnosisText.length}`)
+    console.log(`[diagnostic] subscriber diagnosisText length=${diagnosisText.length}`)
   } else {
     const freeSystemPrompt = `You are an expert ICP (Ideal Customer Profile) diagnostic analyst.
 
@@ -1085,7 +1083,6 @@ Rules:
       ? {
           ...(parsed as Record<string, unknown>),
           is_deep_research: isSubscriber,
-          is_enhanced: false,
           ...(!isSubscriber && {
             landing_page_assessment: 'Upgrade to subscriber for live landing page assessment',
             competitor_insights:     'Upgrade to subscriber for competitor research',

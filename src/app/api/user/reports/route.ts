@@ -30,11 +30,35 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ reports: [] }, { status: 200 })
   }
 
-  const { data: reports } = await supabase
+  // Primary: reports directly linked by user_id
+  const { data: directReports } = await supabase
     .from('reports')
     .select('id, questionnaire_id, report_summary, generated_at')
     .eq('user_id', user.id)
     .order('generated_at', { ascending: false })
 
-  return NextResponse.json({ reports: reports ?? [] }, { status: 200 })
+  // Fallback: catch reports where user_id was null at insert time by going via questionnaires
+  const { data: userQs } = await supabase
+    .from('questionnaires')
+    .select('id')
+    .eq('user_id', user.id)
+
+  const qIds = (userQs ?? []).map((q: { id: string }) => q.id)
+  let indirect: typeof directReports = []
+  if (qIds.length > 0) {
+    const { data } = await supabase
+      .from('reports')
+      .select('id, questionnaire_id, report_summary, generated_at')
+      .in('questionnaire_id', qIds)
+      .order('generated_at', { ascending: false })
+    indirect = data ?? []
+  }
+
+  // Merge and deduplicate, newest first
+  const seen = new Set<string>()
+  const reports = [...(directReports ?? []), ...indirect]
+    .filter(r => { if (seen.has(r.id)) return false; seen.add(r.id); return true })
+    .sort((a, b) => new Date(b.generated_at).getTime() - new Date(a.generated_at).getTime())
+
+  return NextResponse.json({ reports }, { status: 200 })
 }

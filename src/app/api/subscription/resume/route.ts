@@ -29,6 +29,20 @@ export async function POST(req: NextRequest) {
       .eq('email', userEmail)
       .single()
 
+    if (!userData) return NextResponse.json({ error: 'User not found' }, { status: 404 })
+
+    // Verify there is an actual paused subscription before resuming — prevents
+    // free or inactive users from calling this endpoint to gain active status
+    const { data: sub } = await supabase
+      .from('subscriptions')
+      .select('billing_status, subscription_tier')
+      .eq('user_id', userData.id)
+      .maybeSingle()
+
+    if (!sub || sub.billing_status !== 'paused') {
+      return NextResponse.json({ error: 'No paused subscription found' }, { status: 400 })
+    }
+
     const { error: userErr } = await supabase
       .from('users')
       .update({ billing_status: 'active', paused_until: null })
@@ -39,7 +53,7 @@ export async function POST(req: NextRequest) {
     const { error: subErr } = await supabase
       .from('subscriptions')
       .update({ billing_status: 'active', paused_until: null })
-      .eq('user_id', userData?.id)
+      .eq('user_id', userData.id)
 
     if (subErr) console.error('[resume] subscriptions error:', JSON.stringify(subErr))
 
