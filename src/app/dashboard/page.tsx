@@ -368,7 +368,9 @@ const parseDiagnosis = (s: string | object | null | undefined): DiagnosisData =>
 }
 const getScore = (d: DiagnosisData): number | null => {
   const s = d.overall_score ?? d.health_score ?? null
-  return typeof s === 'number' ? s : null
+  if (typeof s === 'number') return s
+  if (typeof s === 'string') { const n = parseInt(s, 10); return isNaN(n) ? null : n }
+  return null
 }
 const getFindings = (d: DiagnosisData): Finding[] => d.critical_findings ?? d.findings ?? []
 const formatDate = (iso: string) =>

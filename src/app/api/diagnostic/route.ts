@@ -696,10 +696,13 @@ Rules:
       tools: [{ type: 'web_search_20250305' as const, name: 'web_search' }],
       messages: [{ role: 'user', content: prompt }],
     })
+    const blockTypes = res.content.map(b => b.type).join(', ')
+    console.log(`[diagnostic] stop_reason=${res.stop_reason} blocks=[${blockTypes}]`)
     diagnosisText = res.content
       .filter(block => block.type === 'text')
       .map(block => (block as { type: 'text'; text: string }).text)
       .join('')
+    console.log(`[diagnostic] diagnosisText length=${diagnosisText.length} starts=${diagnosisText.slice(0, 120)}`)
   } else {
     const freeSystemPrompt = `You are an expert ICP (Ideal Customer Profile) diagnostic analyst.
 
@@ -1080,6 +1083,7 @@ Rules:
 
   // extractJSON handles markdown code blocks internally; pass raw text directly
   const rawParsed = extractJSON(diagnosisText) ?? { raw: diagnosisText }
+  console.log(`[diagnostic] extraction result: hasScore=${!!(rawParsed && typeof rawParsed === 'object' && ('overall_score' in rawParsed || 'health_score' in rawParsed))}`)
   // Sanitize any em/en dashes that slipped through the AI output
   const parsed = stripDashes(rawParsed)
 
