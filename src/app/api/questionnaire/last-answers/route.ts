@@ -20,7 +20,7 @@ export async function GET() {
 
   const { data: user } = await supabase
     .from('users')
-    .select('full_name, email, company_name')
+    .select('id, full_name, email, company_name')
     .eq('email', session.email)
     .single()
 
@@ -33,18 +33,18 @@ export async function GET() {
   }
 
   const { data: lastQ } = await supabase
-    .from('questionnaire_responses')
-    .select('data')
-    .eq('email', session.email)
+    .from('questionnaires')
+    .select('responses')
+    .eq('user_id', user.id)
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle()
 
-  if (!lastQ?.data) {
+  if (!lastQ?.responses) {
     return NextResponse.json({ prefill: { profile, answers: {} } })
   }
 
-  const raw = lastQ.data as Record<string, unknown>
+  const raw = lastQ.responses as Record<string, unknown>
   const stableAnswers: Record<string, unknown> = {}
   for (const [key, val] of Object.entries(raw)) {
     if (STABLE_IDS.has(Number(key))) stableAnswers[key] = val

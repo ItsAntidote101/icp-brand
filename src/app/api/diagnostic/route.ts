@@ -262,8 +262,8 @@ export async function POST(req: NextRequest) {
   }
   console.log(`[diagnostic] isSubscriber=${isSubscriber}`)
 
-  const landingPageUrl: string = (responses[16] as string) ?? ''
-  const geographicRegion: string = (responses[17] as string) ?? 'Global/Multiple Regions'
+  const landingPageUrl: string = (responses[10] as string) ?? ''
+  const geographicRegion: string = (responses[11] as string) ?? 'Global/Multiple Regions'
   const regionContext = buildRegionContext(geographicRegion)
 
   const systemPrompt = `You are an expert ICP (Ideal Customer Profile) diagnostic analyst specialising in paid acquisition, funnel optimisation, and regional market strategy.
@@ -287,42 +287,31 @@ PROFILE:
 LAYER 1, ICP Foundation:
 - Business offering: ${responses[1] ?? ''}
 - Industry/vertical: ${responses[2] ?? ''}
-- Annual revenue: ${responses[3] ?? ''}
-- Team size: ${responses[4] ?? ''}
-- Regions served: ${responses[5] ?? ''}
-- Best customer company size: ${responses[6] ?? ''}
-- Best customer industry: ${responses[7] ?? ''}
-- Problem best customers had: ${responses[8] ?? ''}
-- How best customers found you: ${responses[9] ?? ''}
-- Why best customers stay loyal: ${responses[10] ?? ''}
-- Average deal size: ${responses[11] ?? ''}
-- Sales cycle length: ${responses[12] ?? ''}
-- Decision maker job titles: ${responses[13] ?? ''}
+- Business model: ${responses[23] ?? 'Not specified'}
+- Customer profile: ${responses[3] ?? responses[24] ?? ''}
+- Core problem customers had: ${responses[4] ?? ''}
+- How best customers discovered them: ${responses[5] ?? ''}
+- Deal size or average order value: ${responses[6] ?? responses[25] ?? ''}
+- Decision maker or purchase trigger: ${responses[7] ?? responses[26] ?? ''}
 
 LAYER 2, Targeting Mismatch:
-- Perceived ideal customer: ${responses[14] ?? ''}
-- Active ad channels: ${Array.isArray(responses[15]) ? (responses[15] as string[]).join(', ') : (responses[15] ?? '')}
+- Perceived ideal customer: ${responses[8] ?? ''}
+- Active ad channels: ${Array.isArray(responses[9]) ? (responses[9] as string[]).join(', ') : (responses[9] ?? '')}
 - Landing page URL: ${landingPageUrl || 'Not provided'}
 - Target region: ${geographicRegion}
-- Current targeting parameters: ${responses[18] ?? ''}
-- Monthly ad spend: ${responses[19] ?? ''}
-- Budget allocation across channels: ${responses[20] ?? ''}
-- Leads generated (last 3 months): ${responses[21] ?? ''}
-- Conversions (last 3 months): ${responses[22] ?? ''}
-- Current CPA: ${responses[23] ?? ''}
-- Leads match best customer profile: ${responses[24] ?? ''}
-- Lead-to-customer close rate: ${responses[21] ?? ''}%
+- Current targeting parameters: ${responses[12] ?? ''}
+- Monthly ad spend: ${responses[13] ?? ''}
+- New customers/leads last 3 months: ${responses[14] ?? ''}
+- Ads match best customer profile: ${responses[15] ?? ''}
+- Conversion/close rate: ${responses[21] ?? ''}%
 - Average customer lifetime value: ${responses[22] ?? ''}
 
 LAYER 3, Funnel Friction:
-- Primary CTA on landing page: ${responses[25] ?? ''}
-- Funnel steps to conversion: ${responses[26] ?? ''}
-- Required form fields: ${responses[27] ?? ''}
-- Mobile usability score: ${responses[28] ?? ''}/10
-- Form completion rate: ${responses[29] ?? ''}%
-- Tested reducing form fields: ${responses[30] ?? ''}
-- Trust signals on page: ${responses[31] ?? ''}
-- Differentiation clarity score: ${responses[32] ?? ''}/10
+- Primary CTA: ${responses[16] ?? ''}
+- Steps/friction before purchase: ${responses[17] ?? ''}
+- Mobile usability score: ${responses[18] ?? ''}/10
+- Trust signals: ${responses[19] ?? ''}
+- Differentiation clarity score: ${responses[20] ?? ''}/10
 
 ${landingPageUrl ? `Use web search to look up ${landingPageUrl} and assess the landing page structure, offer clarity, and conversion readiness. Reference it directly in your landing_page_assessment.` : ''}
 Use web search to find current CPC/CPA benchmarks for ${geographicRegion} in the ${(responses[2] as string) ?? 'relevant'} industry.
@@ -338,12 +327,12 @@ Return this exact JSON structure:
     "meta_audience_notes": "<specific advice on Meta/Google audience setup based on their targeting parameters and best customer profile, reference ${geographicRegion}>",
     "findings": [
       {
-        "title": "<finding tied to ICP definition or best customer clarity, Q1-Q13>",
+        "title": "<finding tied to ICP definition or best customer clarity, Q1, Q2, Q23, Q3/Q24, Q4, Q5, Q6/Q25, Q7/Q26, Q8>",
         "severity": "<Critical|Warning|Opportunity>",
         "explanation": "<specific finding referencing their business offering, best customer profile, and decision maker titles>"
       },
       {
-        "title": "<finding tied to audience mismatch or targeting parameters, Q14, Q18, Q24>",
+        "title": "<finding tied to audience mismatch or targeting parameters, Q8, Q9, Q12, Q15>",
         "severity": "<Critical|Warning|Opportunity>",
         "explanation": "<specific finding referencing their perceived ideal customer vs best customer profile>"
       }
@@ -364,13 +353,13 @@ Return this exact JSON structure:
       {
         "label": "ICP Alignment",
         "score": <integer 0-100>,
-        "found": "<1 sentence: what you found about their ICP definition based on Q1-Q13>",
+        "found": "<1 sentence: what you found about their ICP definition based on Q1, Q2, Q23, Q3/Q24, Q4, Q5, Q6/Q25, Q7/Q26, Q8>",
         "why": "<1 sentence: why this costs them revenue>"
       },
       {
         "label": "Targeting Accuracy",
         "score": <integer 0-100>,
-        "found": "<1 sentence: what you found about their targeting parameters based on Q14, Q18>",
+        "found": "<1 sentence: what you found about their targeting parameters based on Q9, Q12, Q15>",
         "why": "<1 sentence: why this costs them revenue>"
       }
     ]
@@ -382,12 +371,12 @@ Return this exact JSON structure:
     "keyword_analysis": "<analysis of their Google keyword targeting and search intent strategy, use web research for ${geographicRegion} benchmarks in their industry>",
     "findings": [
       {
-        "title": "<finding tied to channel selection or platform mix, Q15, Q19-Q20>",
+        "title": "<finding tied to channel selection or platform mix, Q9, Q12, Q13>",
         "severity": "<Critical|Warning|Opportunity>",
         "explanation": "<specific finding referencing their active channels and budget allocation across them>"
       },
       {
-        "title": "<finding tied to ad spend efficiency or lead quality, Q21-Q24>",
+        "title": "<finding tied to ad spend efficiency or lead quality, Q13, Q14, Q21, Q22>",
         "severity": "<Critical|Warning|Opportunity>",
         "explanation": "<specific finding referencing their lead volume, conversion rate, and CPA>"
       }
@@ -426,14 +415,14 @@ Return this exact JSON structure:
     "landing_page_assessment": "<detailed assessment of the landing page based on web research, cover offer clarity, CTA effectiveness, trust signals, mobile readiness, and conversion barriers>",
     "findings": [
       {
-        "title": "<finding tied to landing page structure or CTA, Q16, Q25-Q27>",
+        "title": "<finding tied to landing page structure or CTA, Q10, Q16>",
         "severity": "<Critical|Warning|Opportunity>",
         "explanation": "<specific finding referencing their landing page URL, primary CTA, and funnel steps>"
       },
       {
-        "title": "<finding tied to form friction, mobile usability, or trust signals, Q28-Q32>",
+        "title": "<finding tied to form friction, mobile usability, or trust signals, Q17, Q18, Q19, Q20>",
         "severity": "<Critical|Warning|Opportunity>",
-        "explanation": "<specific finding referencing their mobile score, form completion rate, and differentiation clarity score>"
+        "explanation": "<specific finding referencing their mobile score (Q18) and differentiation clarity score (Q20)"
       }
     ],
     "quick_wins": [
@@ -477,12 +466,12 @@ Return this exact JSON structure:
     },
     "findings": [
       {
-        "title": "<finding tied to budget efficiency or spend allocation, Q11, Q19-Q20>",
+        "title": "<finding tied to budget efficiency or spend allocation, Q13, Q14>",
         "severity": "<Critical|Warning|Opportunity>",
         "explanation": "<specific finding referencing their deal size, monthly spend, and channel allocation>"
       },
       {
-        "title": "<finding tied to unit economics or revenue per lead, Q21-Q23>",
+        "title": "<finding tied to unit economics or revenue per lead, Q21, Q22>",
         "severity": "<Critical|Warning|Opportunity>",
         "explanation": "<specific finding referencing their lead volume, conversions, and CPA vs deal size>"
       }
@@ -640,42 +629,31 @@ PROFILE:
 LAYER 1, ICP Foundation:
 - Business offering: ${responses[1] ?? ''}
 - Industry/vertical: ${responses[2] ?? ''}
-- Annual revenue: ${responses[3] ?? ''}
-- Team size: ${responses[4] ?? ''}
-- Regions served: ${responses[5] ?? ''}
-- Best customer company size: ${responses[6] ?? ''}
-- Best customer industry: ${responses[7] ?? ''}
-- Problem best customers had: ${responses[8] ?? ''}
-- How best customers found you: ${responses[9] ?? ''}
-- Why best customers stay loyal: ${responses[10] ?? ''}
-- Average deal size: ${responses[11] ?? ''}
-- Sales cycle length: ${responses[12] ?? ''}
-- Decision maker job titles: ${responses[13] ?? ''}
+- Business model: ${responses[23] ?? 'Not specified'}
+- Customer profile: ${responses[3] ?? responses[24] ?? ''}
+- Core problem customers had: ${responses[4] ?? ''}
+- How best customers discovered them: ${responses[5] ?? ''}
+- Deal size or average order value: ${responses[6] ?? responses[25] ?? ''}
+- Decision maker or purchase trigger: ${responses[7] ?? responses[26] ?? ''}
 
 LAYER 2, Targeting Mismatch:
-- Perceived ideal customer: ${responses[14] ?? ''}
-- Active ad channels: ${Array.isArray(responses[15]) ? (responses[15] as string[]).join(', ') : (responses[15] ?? '')}
+- Perceived ideal customer: ${responses[8] ?? ''}
+- Active ad channels: ${Array.isArray(responses[9]) ? (responses[9] as string[]).join(', ') : (responses[9] ?? '')}
 - Landing page URL: ${landingPageUrl || 'Not provided'}
 - Target region: ${geographicRegion}
-- Current targeting parameters: ${responses[18] ?? ''}
-- Monthly ad spend: ${responses[19] ?? ''}
-- Budget allocation across channels: ${responses[20] ?? ''}
-- Leads generated (last 3 months): ${responses[21] ?? ''}
-- Conversions (last 3 months): ${responses[22] ?? ''}
-- Current CPA: ${responses[23] ?? ''}
-- Leads match best customer profile: ${responses[24] ?? ''}
-- Lead-to-customer close rate: ${responses[21] ?? ''}%
+- Current targeting parameters: ${responses[12] ?? ''}
+- Monthly ad spend: ${responses[13] ?? ''}
+- New customers/leads last 3 months: ${responses[14] ?? ''}
+- Ads match best customer profile: ${responses[15] ?? ''}
+- Conversion/close rate: ${responses[21] ?? ''}%
 - Average customer lifetime value: ${responses[22] ?? ''}
 
 LAYER 3, Funnel Friction:
-- Primary CTA on landing page: ${responses[25] ?? ''}
-- Funnel steps to conversion: ${responses[26] ?? ''}
-- Required form fields: ${responses[27] ?? ''}
-- Mobile usability score: ${responses[28] ?? ''}/10
-- Form completion rate: ${responses[29] ?? ''}%
-- Tested reducing form fields: ${responses[30] ?? ''}
-- Trust signals on page: ${responses[31] ?? ''}
-- Differentiation clarity score: ${responses[32] ?? ''}/10
+- Primary CTA: ${responses[16] ?? ''}
+- Steps/friction before purchase: ${responses[17] ?? ''}
+- Mobile usability score: ${responses[18] ?? ''}/10
+- Trust signals: ${responses[19] ?? ''}
+- Differentiation clarity score: ${responses[20] ?? ''}/10
 
 Return this exact JSON structure:
 {
@@ -688,12 +666,12 @@ Return this exact JSON structure:
     "meta_audience_notes": "<specific advice on Meta/Google audience setup based on their targeting parameters and best customer profile>",
     "findings": [
       {
-        "title": "<finding tied to ICP definition or best customer clarity, Q1-Q13>",
+        "title": "<finding tied to ICP definition or best customer clarity, Q1, Q2, Q23, Q3/Q24, Q4, Q5, Q6/Q25, Q7/Q26, Q8>",
         "severity": "<Critical|Warning|Opportunity>",
         "explanation": "<specific finding referencing their business offering, best customer profile, and decision maker titles>"
       },
       {
-        "title": "<finding tied to audience mismatch or targeting parameters, Q14, Q18, Q24>",
+        "title": "<finding tied to audience mismatch or targeting parameters, Q8, Q9, Q12, Q15>",
         "severity": "<Critical|Warning|Opportunity>",
         "explanation": "<specific finding referencing their perceived ideal customer vs best customer profile>"
       }
@@ -714,13 +692,13 @@ Return this exact JSON structure:
       {
         "label": "ICP Alignment",
         "score": <integer 0-100>,
-        "found": "<1 sentence: what you found about their ICP definition based on Q1-Q13>",
+        "found": "<1 sentence: what you found about their ICP definition based on Q1, Q2, Q23, Q3/Q24, Q4, Q5, Q6/Q25, Q7/Q26, Q8>",
         "why": "<1 sentence: why this costs them revenue>"
       },
       {
         "label": "Targeting Accuracy",
         "score": <integer 0-100>,
-        "found": "<1 sentence: what you found about their targeting parameters based on Q14, Q18>",
+        "found": "<1 sentence: what you found about their targeting parameters based on Q9, Q12, Q15>",
         "why": "<1 sentence: why this costs them revenue>"
       }
     ]
@@ -732,12 +710,12 @@ Return this exact JSON structure:
     "keyword_analysis": "<analysis of their channel mix and search strategy based solely on their questionnaire responses, no web research>",
     "findings": [
       {
-        "title": "<finding tied to channel selection or platform mix, Q15, Q19-Q20>",
+        "title": "<finding tied to channel selection or platform mix, Q9, Q12, Q13>",
         "severity": "<Critical|Warning|Opportunity>",
         "explanation": "<specific finding referencing their active channels and budget allocation across them>"
       },
       {
-        "title": "<finding tied to ad spend efficiency or lead quality, Q21-Q24>",
+        "title": "<finding tied to ad spend efficiency or lead quality, Q13, Q14, Q21, Q22>",
         "severity": "<Critical|Warning|Opportunity>",
         "explanation": "<specific finding referencing their lead volume, conversion rate, and CPA>"
       }
@@ -776,14 +754,14 @@ Return this exact JSON structure:
     "landing_page_assessment": "<assessment of their funnel based on questionnaire answers, CTA type, funnel steps, form fields, mobile score, trust signals, and differentiation score>",
     "findings": [
       {
-        "title": "<finding tied to landing page structure or CTA, Q16, Q25-Q27>",
+        "title": "<finding tied to landing page structure or CTA, Q10, Q16>",
         "severity": "<Critical|Warning|Opportunity>",
         "explanation": "<specific finding referencing their primary CTA, funnel steps, and form fields>"
       },
       {
-        "title": "<finding tied to form friction, mobile usability, or trust signals, Q28-Q32>",
+        "title": "<finding tied to form friction, mobile usability, or trust signals, Q17, Q18, Q19, Q20>",
         "severity": "<Critical|Warning|Opportunity>",
-        "explanation": "<specific finding referencing their mobile score, form completion rate, and differentiation clarity score>"
+        "explanation": "<specific finding referencing their mobile score (Q18) and differentiation clarity score (Q20)"
       }
     ],
     "quick_wins": [
@@ -827,12 +805,12 @@ Return this exact JSON structure:
     },
     "findings": [
       {
-        "title": "<finding tied to budget efficiency or spend allocation, Q11, Q19-Q20>",
+        "title": "<finding tied to budget efficiency or spend allocation, Q13, Q14>",
         "severity": "<Critical|Warning|Opportunity>",
         "explanation": "<specific finding referencing their deal size, monthly spend, and channel allocation>"
       },
       {
-        "title": "<finding tied to unit economics or revenue per lead, Q21-Q23>",
+        "title": "<finding tied to unit economics or revenue per lead, Q21, Q22>",
         "severity": "<Critical|Warning|Opportunity>",
         "explanation": "<specific finding referencing their lead volume, conversions, and CPA vs deal size>"
       }

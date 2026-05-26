@@ -94,6 +94,28 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Internal error' }, { status: 500 })
     }
 
+    // Write named fields to questionnaire_responses for AI context (non-blocking)
+    if (profile?.email) {
+      const namedData = {
+        industry:         answers[2] ?? null,
+        business_type:    answers[2] ?? null,
+        region:           answers[11] ?? null,
+        country:          answers[11] ?? null,
+        ad_channels:      Array.isArray(answers[9]) ? (answers[9] as string[]).join(', ') : (answers[9] ?? null),
+        monthly_budget:   answers[13] ?? null,
+        budget:           answers[13] ?? null,
+        target_audience:  answers[8] ?? null,
+        icp_description:  answers[8] ?? null,
+        product_service:  answers[1] ?? null,
+        offer:            answers[1] ?? null,
+        business_model:   answers[23] ?? null,
+      }
+      supabase
+        .from('questionnaire_responses')
+        .upsert({ email: profile.email, data: namedData, created_at: new Date().toISOString() }, { onConflict: 'email' })
+        .then(() => {}, (e: unknown) => console.error('[questionnaire] questionnaire_responses upsert failed:', e))
+    }
+
     const res = NextResponse.json({ id: data.id, message: 'Questionnaire saved' }, { status: 201 })
     if (profile?.email && userId) {
       res.cookies.set(sessionCookieOptions(createSessionToken(profile.email, userId)))
