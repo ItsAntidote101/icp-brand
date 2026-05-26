@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import Link from 'next/link'
 
 type Tier = 'Starter' | 'Pro' | 'Agency'
@@ -237,6 +237,20 @@ function LoadingSkeleton() {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
+function mapDiagnosis(d: Record<string, unknown>): ReportData {
+  return {
+    company: DEMO.company,
+    date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+    health_score: (d.overall_score ?? d.health_score ?? DEMO.health_score) as number,
+    findings: (d.critical_findings ?? d.findings ?? DEMO.findings) as ReportData['findings'],
+    breakdown: (d.breakdown ?? DEMO.breakdown) as ReportData['breakdown'],
+    quick_wins: (d.quick_wins ?? DEMO.quick_wins) as ReportData['quick_wins'],
+    business_outcomes: (d.business_outcomes ?? undefined) as ReportData['business_outcomes'],
+    executive_summary: (d.executive_summary ?? undefined) as string | undefined,
+    monthly_waste_estimate: (d.monthly_waste_estimate ?? undefined) as string | undefined,
+  }
+}
+
 export default function ReportPage({ params }: { params: { id: string } }) {
   const [report, setReport] = useState<ReportData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -247,7 +261,36 @@ export default function ReportPage({ params }: { params: { id: string } }) {
   const [subscribing, setSubscribing] = useState(false)
   const [subscribeError, setSubscribeError] = useState('')
   const [isSubscribed, setIsSubscribed] = useState(false)
+  const [enhancing, setEnhancing] = useState(false)
+  const [enhanceDone, setEnhanceDone] = useState(false)
   const emailRef = useRef<HTMLInputElement>(null)
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const pollCount = useRef(0)
+
+  const startPolling = useCallback((diagnosticId: string) => {
+    pollCount.current = 0
+    pollRef.current = setInterval(async () => {
+      pollCount.current++
+      if (pollCount.current > 36) { // 3 min timeout
+        clearInterval(pollRef.current!)
+        setEnhancing(false)
+        return
+      }
+      try {
+        const r = await fetch(`/api/report/${params.id}`)
+        if (!r.ok) return
+        const data = await r.json()
+        const d = data.report?.diagnosis ?? {}
+        if (d.is_enhanced === true) {
+          clearInterval(pollRef.current!)
+          setEnhancing(false)
+          setEnhanceDone(true)
+          setReport(mapDiagnosis(d))
+          setTimeout(() => setEnhanceDone(false), 4000)
+        }
+      } catch { /* non-fatal */ }
+    }, 5000)
+  }, [params.id])
 
   useEffect(() => {
     async function load() {
@@ -256,26 +299,23 @@ export default function ReportPage({ params }: { params: { id: string } }) {
         if (res.ok) {
           const data = await res.json()
 
-          // If the API confirms the viewer is a subscriber, skip paywall
-          if (data.isSubscribed) {
-            setIsSubscribed(true)
-          }
+          if (data.isSubscribed) setIsSubscribed(true)
 
           const d = data.report?.diagnosis ?? {}
-          // Map Claude's field names to the frontend model
-          // overall_score is the canonical name; health_score is legacy
-          // critical_findings is the canonical name; findings is legacy
-          setReport({
-            company: DEMO.company,
-            date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-            health_score: d.overall_score ?? d.health_score ?? DEMO.health_score,
-            findings: d.critical_findings ?? d.findings ?? DEMO.findings,
-            breakdown: d.breakdown ?? DEMO.breakdown,
-            quick_wins: d.quick_wins ?? DEMO.quick_wins,
-            business_outcomes: d.business_outcomes ?? undefined,
-            executive_summary: d.executive_summary ?? undefined,
-            monthly_waste_estimate: d.monthly_waste_estimate ?? undefined,
-          })
+          setReport(mapDiagnosis(d))
+
+          // Trigger live-research enhancement for subscriber reports not yet enhanced
+          if (d.is_deep_research === true && d.is_enhanced === false) {
+            const diagnosticId: string = data.report?.id ?? ''
+            setEnhancing(true)
+            // Fire-and-forget: server continues even if user navigates away
+            fetch('/api/diagnostic/enhance', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ diagnosticId }),
+            }).catch(() => {})
+            startPolling(diagnosticId)
+          }
         } else {
           setReport(DEMO)
         }
@@ -287,7 +327,8 @@ export default function ReportPage({ params }: { params: { id: string } }) {
       }
     }
     load()
-  }, [params.id])
+    return () => { if (pollRef.current) clearInterval(pollRef.current) }
+  }, [params.id, startPolling])
 
   // Focus email input when modal opens
   useEffect(() => {
@@ -349,6 +390,17 @@ export default function ReportPage({ params }: { params: { id: string } }) {
       </nav>
 
       <div className="max-w-5xl mx-auto px-6 py-12 space-y-12">
+
+        {/* ── Enhancement banner ─────────────────────────────────────────── */}
+        {enhancing && (
+          <div className="flex items-center gap-3 bg-[rgba(232,51,10,0.06)] border border-[rgba(232,51,10,0.2)] rounded-lg px-4 py-3 no-print">
+            <svg className="animate-spin h-3.5 w-3.5 text-[#e8330a] flex-shrink-0" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+            </svg>
+            <p className="text-[#e8330a] text-xs font-medium">Fetching live benchmarks and competitor data for your market. This report will update automatically when complete.</p>
+          </div>
+        )}
 
         {/* ── SECTION 1 · Header ─────────────────────────────────────────── */}
         <section className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-8 pb-10 border-b border-[#c5c0b1]">
@@ -770,6 +822,37 @@ export default function ReportPage({ params }: { params: { id: string } }) {
           <Link href="/terms" className="hover:text-[#605d52] transition-colors">Terms</Link>
         </footer>
       </div>
+
+      {/* Live research in-progress toast */}
+      {enhancing && (
+        <div className="fixed bottom-6 right-6 z-50 bg-[#201515] border border-[#e8330a]/30 rounded-xl px-5 py-4 shadow-2xl max-w-[280px] animate-in slide-in-from-bottom-4">
+          <div className="flex items-start gap-3">
+            <svg className="animate-spin h-4 w-4 text-[#e8330a] flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+            </svg>
+            <div>
+              <p className="text-[#fffefb] text-xs font-semibold leading-tight">Fetching live market data</p>
+              <p className="text-[rgba(255,255,255,0.45)] text-[11px] mt-1 leading-relaxed">Researching real benchmarks and competitors for your region. Your report will update automatically.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Enhancement complete toast */}
+      {enhanceDone && (
+        <div className="fixed bottom-6 right-6 z-50 bg-[#0d2818] border border-emerald-700/40 rounded-xl px-5 py-4 shadow-2xl max-w-[280px]">
+          <div className="flex items-center gap-3">
+            <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-emerald-400 flex-shrink-0">
+              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
+            <div>
+              <p className="text-emerald-300 text-xs font-semibold">Live research complete</p>
+              <p className="text-[rgba(255,255,255,0.45)] text-[11px] mt-0.5">Report updated with real market data.</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
