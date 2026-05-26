@@ -3794,14 +3794,15 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
   const [loading,           setLoading]           = useState(true)
   const [refreshing,        setRefreshing]        = useState(false)
   const [nextRefresh,       setNextRefresh]       = useState<string | null>(null)
-  const [refreshError,      setRefreshError]      = useState('')
-  const [rateLimitModal,    setRateLimitModal]    = useState<{ tier: string; nextAt: string; agencyLimit: boolean } | null>(null)
-  const [question,          setQuestion]          = useState('')
-  const [questionLoading,   setQuestionLoading]   = useState(false)
-  const [answers,           setAnswers]           = useState<{ q: string; a: string; sources?: string[]; sourceUrls?: string[] }[]>([])
-  const [qError,            setQError]            = useState('')
-  const [refreshesToday,    setRefreshesToday]    = useState(0)
-  const [, setTick]                               = useState(0)
+  const [refreshError,         setRefreshError]         = useState('')
+  const [rateLimitModal,       setRateLimitModal]       = useState<{ tier: string; nextAt: string; agencyLimit: boolean } | null>(null)
+  const [question,             setQuestion]             = useState('')
+  const [questionLoading,      setQuestionLoading]      = useState(false)
+  const [answers,              setAnswers]              = useState<{ q: string; a: string; sources?: string[]; sourceUrls?: string[] }[]>([])
+  const [qError,               setQError]               = useState('')
+  const [refreshesToday,       setRefreshesToday]       = useState(0)
+  const [showResearchSources,  setShowResearchSources]  = useState(false)
+  const [, setTick]                                     = useState(0)
   const refreshLock = useRef(false)
 
   // 1-second tick for live countdown
@@ -4128,6 +4129,28 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
           )}
           {refreshError && (
             <p style={{ fontFamily: fontB, fontSize: 12, color: '#ef4444', margin: '8px 0 0' }}>{refreshError}</p>
+          )}
+          {briefing?.researchSources && briefing.researchSources.length > 0 && (
+            <div style={{ marginTop: 14 }}>
+              <button
+                onClick={() => setShowResearchSources(v => !v)}
+                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
+                <span style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.45)', textDecoration: 'underline' }}>
+                  {showResearchSources ? 'Hide research sources' : 'View research sources'}
+                </span>
+                <span style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>{showResearchSources ? '▲' : '▼'}</span>
+              </button>
+              {showResearchSources && (
+                <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 5 }}>
+                  {briefing.researchSources.slice(0, 4).map((src, i) => (
+                    <a key={i} href={src.url} target="_blank" rel="noopener noreferrer"
+                      style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.6)', textDecoration: 'underline', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {src.title || src.url}
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
         </div>
 
