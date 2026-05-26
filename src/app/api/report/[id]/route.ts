@@ -59,5 +59,20 @@ export async function GET(
     console.error('[report] reports upsert error:', JSON.stringify(reportError))
   }
 
-  return NextResponse.json({ report: diagnostic }, { status: 200 })
+  // ── Check if the session owner is an active subscriber ────────────────
+  let viewerIsSubscribed = false
+  if (session) {
+    const { data: viewer } = await supabase
+      .from('users')
+      .select('subscription_tier, billing_status')
+      .eq('email', session.email)
+      .single()
+    viewerIsSubscribed = !!(
+      viewer &&
+      viewer.billing_status === 'active' &&
+      viewer.subscription_tier !== 'free'
+    )
+  }
+
+  return NextResponse.json({ report: diagnostic, isSubscribed: viewerIsSubscribed }, { status: 200 })
 }

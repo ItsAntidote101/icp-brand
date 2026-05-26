@@ -251,30 +251,19 @@ export default function ReportPage({ params }: { params: { id: string } }) {
   const [isSubscribed, setIsSubscribed] = useState(false)
   const emailRef = useRef<HTMLInputElement>(null)
 
-  // Check if user already has an active subscription — skip paywall if so
-  useEffect(() => {
-    fetch('/api/auth/me')
-      .then(r => r.ok ? r.json() : null)
-      .then((d: { status?: string; user?: { subscription_tier?: string; billing_status?: string } } | null) => {
-        if (d?.status === 'active' && d.user?.billing_status === 'active' && d.user?.subscription_tier !== 'free') {
-          setIsSubscribed(true)
-          // Store email so dashboard can pick it up, then redirect after a short pause
-          if (typeof window !== 'undefined' && d.user) {
-            const u = d.user as { email?: string }
-            if (u.email) localStorage.setItem('dashboard_email', u.email)
-          }
-          setTimeout(() => router.push('/dashboard'), 2500)
-        }
-      })
-      .catch(() => {})
-  }, [router])
-
   useEffect(() => {
     async function load() {
       try {
         const res = await fetch(`/api/report/${params.id}`)
         if (res.ok) {
           const data = await res.json()
+
+          // If the API confirms the viewer is a subscriber, skip paywall and redirect
+          if (data.isSubscribed) {
+            setIsSubscribed(true)
+            setTimeout(() => router.push('/dashboard'), 2200)
+          }
+
           const d = data.report?.diagnosis ?? {}
           // Map Claude's field names to the frontend model
           // overall_score is the canonical name; health_score is legacy
@@ -338,6 +327,13 @@ export default function ReportPage({ params }: { params: { id: string } }) {
 
   return (
     <div className="min-h-screen bg-[#fffefb] text-[#201515]">
+      <style>{`
+        @media print {
+          nav, .no-print { display: none !important; }
+          body { background: #fff !important; }
+          * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+      `}</style>
 
       {/* Nav */}
       <nav className="border-b border-[#c5c0b1] px-6 py-4 flex items-center justify-between max-w-5xl mx-auto">
@@ -346,7 +342,10 @@ export default function ReportPage({ params }: { params: { id: string } }) {
         </Link>
         <div className="flex items-center gap-4">
           <span className="text-xs text-[#939084]">Report ID: {params.id.slice(0, 8)}…</span>
-          <button className="text-xs font-medium border border-[#c5c0b1] px-3 py-1.5 rounded-lg text-[#605d52] hover:border-white/20 hover:text-[#201515] transition-colors">
+          <button
+            onClick={() => window.print()}
+            className="text-xs font-medium border border-[#c5c0b1] px-3 py-1.5 rounded-lg text-[#605d52] hover:border-[#201515] hover:text-[#201515] transition-colors"
+          >
             Download PDF
           </button>
         </div>
@@ -560,7 +559,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
         )}
 
         {/* ── SECTION 5 · Paywall or Dashboard CTA ───────────────────────── */}
-        <section className="relative">
+        <section className="relative no-print">
 
         {isSubscribed ? (
           /* Subscribed: redirect in progress, show confirmation */
