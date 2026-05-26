@@ -268,7 +268,7 @@ Return ONLY valid JSON with no markdown fences:
 }`
 
   const res = await anthropic.messages.create({
-    model:      'claude-opus-4-7',
+    model:      'claude-sonnet-4-6',
     max_tokens: 4000,
     system:     systemPrompt,
     tools:      [{ type: 'web_search_20250305' as const, name: 'web_search' }],
@@ -314,7 +314,7 @@ Keep under 350 words. End with:
 Sources: [comma-separated list of actual sources you searched]`
 
   const res = await anthropic.messages.create({
-    model:      'claude-opus-4-7',
+    model:      'claude-sonnet-4-6',
     max_tokens: 1200,
     system:     systemPrompt,
     tools:      [{ type: 'web_search_20250305' as const, name: 'web_search' }],
