@@ -21,11 +21,13 @@ export async function POST(req: NextRequest) {
     let userId: string | null = null
 
     if (profile?.email) {
+      const normalizedEmail = profile.email.trim().toLowerCase()
+
       // ── Check whether the user already exists ──────────────────────────
       const { data: existing, error: lookupError } = await supabase
         .from('users')
         .select('id')
-        .eq('email', profile.email)
+        .eq('email', normalizedEmail)
         .single()
 
       if (lookupError && lookupError.code !== 'PGRST116') {
@@ -42,7 +44,7 @@ export async function POST(req: NextRequest) {
             company_name: profile.company ?? null,
             updated_at:   new Date().toISOString(),
           })
-          .eq('email', profile.email)
+          .eq('email', normalizedEmail)
           .select('id')
           .single()
 
@@ -54,7 +56,7 @@ export async function POST(req: NextRequest) {
       } else {
         // ── New user, insert with free/inactive defaults ──────────────────
         const insertPayload = {
-          email:             profile.email,
+          email:             normalizedEmail,
           full_name:         profile.name    ?? null,
           company_name:      profile.company ?? null,
           subscription_tier: 'free',
@@ -110,15 +112,16 @@ export async function POST(req: NextRequest) {
         offer:            answers[1] ?? null,
         business_model:   answers[23] ?? null,
       }
+      const normalizedEmail = profile.email.trim().toLowerCase()
       supabase
         .from('questionnaire_responses')
-        .upsert({ email: profile.email, data: namedData, created_at: new Date().toISOString() }, { onConflict: 'email' })
+        .upsert({ email: normalizedEmail, data: namedData, created_at: new Date().toISOString() }, { onConflict: 'email' })
         .then(() => {}, (e: unknown) => console.error('[questionnaire] questionnaire_responses upsert failed:', e))
     }
 
     const res = NextResponse.json({ id: data.id, message: 'Questionnaire saved' }, { status: 201 })
     if (profile?.email && userId) {
-      res.cookies.set(sessionCookieOptions(createSessionToken(profile.email, userId)))
+      res.cookies.set(sessionCookieOptions(createSessionToken(profile.email.trim().toLowerCase(), userId)))
     }
     return res
   } catch (err) {

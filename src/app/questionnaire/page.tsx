@@ -948,7 +948,7 @@ export default function QuestionnairePage() {
       }
       if (!dRes.ok) throw new Error((dData.error as string) || (dData.message as string) || 'Failed to generate diagnostic')
 
-      localStorage.setItem('dashboard_email', profile.email)
+      localStorage.setItem('dashboard_email', profile.email.trim().toLowerCase())
       if (profile.name) localStorage.setItem('dashboard_name', profile.name)
       router.push(`/report/${dData.id}`)
     } catch (err) {
