@@ -57,17 +57,24 @@ function extractJSON(text: string): unknown {
   }
 }
 
+function isEastAfrica(region: string): boolean {
+  return region === 'Kenya' || region === 'Tanzania' || region === 'Uganda' || region.includes('East Africa')
+}
+
 function buildRegionContext(region: string): string {
-  if (region.includes('East Africa')) {
+  if (isEastAfrica(region)) {
+    const countryNote = (region === 'Kenya' || region === 'Tanzania' || region === 'Uganda')
+      ? `\n- Focus all analysis specifically on ${region}: local CPCs, platform mix, and consumer behaviour for ${region} only.`
+      : ''
     return `
-REGIONAL CONTEXT, East Africa (Kenya, Tanzania, Uganda):
-- Mobile-first market: 85%+ of web traffic is mobile; landing pages must be optimized for low-bandwidth, small screens.
-- M-Pesa and mobile money dominate payments, trust signals should reference mobile money acceptance, not just card payments.
-- Facebook dominates paid social; Google Search intent is lower than Western markets but growing.
-- CPCs are significantly lower than North America (often $0.05-$0.30 on Meta).
-- WhatsApp is a primary conversion channel, CTAs that redirect to WhatsApp convert higher than traditional forms.
-- Data costs are a barrier; heavy pages with large images/videos lose leads before conversion.
-- Calibrate all CPA benchmarks and budget recommendations against East African market rates.`
+REGIONAL CONTEXT, ${region}:${countryNote}
+- Mobile-first market: 85%+ of web traffic is mobile; landing pages must be optimised for low-bandwidth, small screens.
+- M-Pesa (Kenya), Airtel Money (Tanzania/Uganda), and mobile money dominate payments. Trust signals must reference mobile money acceptance, not just card payments.
+- Facebook dominates paid social; Google Search intent is lower than Western markets but growing fast.
+- CPCs are significantly lower than North America (often $0.05-$0.30 on Meta, $0.10-$0.50 on Google).
+- WhatsApp is a primary conversion channel; CTAs that redirect to WhatsApp convert higher than traditional forms.
+- Data costs are a barrier; heavy pages with large images or videos lose leads before conversion.
+- Calibrate all CPA benchmarks and budget recommendations specifically against ${region} market rates.`
   }
 
   if (region.includes('West Africa')) {

@@ -330,7 +330,7 @@ export async function POST(req: NextRequest) {
       const qd: Record<string, string> = (qData?.data as Record<string, string>) ?? {}
       const profile = {
         industry: qd.industry ?? qd.business_type ?? 'digital marketing',
-        region:   qd.region ?? qd.country ?? qd.location ?? 'East Africa',
+        region:   qd.region ?? qd.country ?? qd.location ?? 'Kenya',
         channels: qd.ad_channels ? String(qd.ad_channels).split(',') : ['Meta', 'Google'],
         budget:   qd.monthly_budget ?? qd.budget ?? '',
         icpScore: null as number | null,
@@ -400,7 +400,7 @@ export async function POST(req: NextRequest) {
       const qd: Record<string, string> = (qData?.data as Record<string, string>) ?? {}
       const profile = {
         industry: qd.industry ?? qd.business_type ?? 'digital marketing',
-        region:   qd.region ?? qd.country ?? 'East Africa',
+        region:   qd.region ?? qd.country ?? 'Kenya',
         channels: qd.ad_channels ? String(qd.ad_channels).split(',') : ['Meta', 'Google'],
       }
 

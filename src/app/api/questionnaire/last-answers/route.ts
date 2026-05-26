@@ -46,8 +46,21 @@ export async function GET() {
 
   const raw = lastQ.responses as Record<string, unknown>
   const stableAnswers: Record<string, unknown> = {}
+
+  // Valid Q11 region options after the EA split (old combined value no longer valid)
+  const VALID_REGIONS = new Set([
+    'Kenya', 'Tanzania', 'Uganda',
+    'West Africa (Nigeria, Ghana)', 'South Africa',
+    'North America (US/Canada)', 'UK & Ireland', 'Europe (non-UK)',
+    'Middle East', 'Southeast Asia', 'South Asia (India/Pakistan)',
+    'Latin America', 'Australia & New Zealand', 'Global/Multiple Regions',
+  ])
+
   for (const [key, val] of Object.entries(raw)) {
-    if (STABLE_IDS.has(Number(key))) stableAnswers[key] = val
+    if (!STABLE_IDS.has(Number(key))) continue
+    // Drop legacy region value so user picks a specific country on re-diagnosis
+    if (Number(key) === 11 && typeof val === 'string' && !VALID_REGIONS.has(val)) continue
+    stableAnswers[key] = val
   }
 
   return NextResponse.json({ prefill: { profile, answers: stableAnswers } })

@@ -122,7 +122,7 @@ You are not a support agent. You are a practitioner. You think in terms of conve
 Name: ${user.full_name ?? 'Unknown'}
 Company: ${user.company_name ?? 'Unknown'}
 Industry: ${qd.industry ?? qd.business_type ?? 'not specified'}
-Region: ${qd.region ?? qd.country ?? 'East Africa'}
+Region: ${qd.region ?? qd.country ?? 'Kenya'}
 Monthly ad budget: KES ${qd.monthly_budget ?? qd.budget ?? 'not specified'}
 Ad channels: ${Array.isArray(qd.ad_channels) ? (qd.ad_channels as string[]).join(', ') : (qd.ad_channels ?? 'not specified')}
 Target audience: ${qd.target_audience ?? qd.icp_description ?? 'not specified'}

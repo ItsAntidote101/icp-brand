@@ -123,7 +123,7 @@ export async function GET(req: NextRequest) {
 
       const profile = {
         industry: qd.industry ?? qd.business_type ?? 'digital marketing',
-        region:   qd.region   ?? qd.country       ?? 'East Africa',
+        region:   qd.region   ?? qd.country       ?? 'Kenya',
         channels: qd.ad_channels ? String(qd.ad_channels).split(',') : ['Meta', 'Google'],
         budget:   qd.monthly_budget ?? qd.budget  ?? '',
         icpScore,
