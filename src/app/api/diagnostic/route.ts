@@ -655,17 +655,8 @@ Return this exact JSON structure:
       "why": "<copy from economics.breakdown[0].why>"
     }
   ],
-  "landing_page_assessment": "<copy of funnel.landing_page_assessment>",
-  "competitor_insights": "<brief note on competitive landscape in this region/industry based on web research>",
-  "regional_benchmarks": "<current CPC/CPA benchmarks for ${geographicRegion} in this category based on web research>",
-  "monthly_waste_estimate": "<copy of economics.monthly_waste_estimate>",
-  "business_outcomes": {
-    "cac_current": "<copy of economics.business_outcomes.cac_current>",
-    "cac_projected": "<copy of economics.business_outcomes.cac_projected>",
-    "ltv_cac_current": "<copy of economics.business_outcomes.ltv_cac_current>",
-    "ltv_cac_projected": "<copy of economics.business_outcomes.ltv_cac_projected>",
-    "monthly_revenue_opportunity": "<copy of economics.business_outcomes.monthly_revenue_opportunity>"
-  }
+  "competitor_insights": "<1-2 sentences on the competitive landscape in this region/industry>",
+  "regional_benchmarks": "<1-2 sentences on current CPC/CPA benchmarks for ${geographicRegion} in this category>"
 }
 
 Rules:
@@ -676,6 +667,7 @@ Rules:
 - All scores must reflect the actual questionnaire responses, do not return generic numbers
 - Reference ${geographicRegion} explicitly in at least 2 category analyses
 - Use your expert knowledge to populate landing_page_assessment, keyword_analysis, competitor_insights, and regional_benchmarks with region-specific and industry-specific insights
+- Keep all text fields concise: findings explanations max 2 sentences, quick_win actions max 2 sentences, summaries max 2 sentences
 - Every quick_win (in all sections) must include platform, where, expectedImpact, and effort fields. Never use vague language like "your platform" -- always name the exact platform. The action must name the user's actual channels (${adChannels}), region (${geographicRegion}), and business model. The expectedImpact must reference real numbers from estimatedCpa (${estimatedCpa}), monthlyWaste (${monthlyWaste}), revenueOppty (${revenueOppty}), or ltvCacRatio (${ltvCacRatio}) where available`
 
   // ── Branched Claude call ──────────────────────────────────────────────────
@@ -684,7 +676,7 @@ Rules:
   if (isSubscriber) {
     const res = await anthropic.messages.create({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 8000,
+      max_tokens: 8192,
       system: systemPrompt,
       messages: [{ role: 'user', content: prompt }],
     })
@@ -1039,15 +1031,6 @@ Return this exact JSON structure:
       "why": "<copy from economics.breakdown[0].why>"
     }
   ],
-  "landing_page_assessment": "<copy of funnel.landing_page_assessment>",
-  "monthly_waste_estimate": "<copy of economics.monthly_waste_estimate>",
-  "business_outcomes": {
-    "cac_current": "<copy of economics.business_outcomes.cac_current>",
-    "cac_projected": "<copy of economics.business_outcomes.cac_projected>",
-    "ltv_cac_current": "<copy of economics.business_outcomes.ltv_cac_current>",
-    "ltv_cac_projected": "<copy of economics.business_outcomes.ltv_cac_projected>",
-    "monthly_revenue_opportunity": "<copy of economics.business_outcomes.monthly_revenue_opportunity>"
-  }
 }
 
 Rules:
@@ -1057,11 +1040,12 @@ Rules:
 - breakdown (top-level): exactly 6 items in the order listed, scores must match the corresponding category breakdown scores
 - All scores must reflect the actual questionnaire responses, do not return generic numbers
 - Base all analysis on questionnaire answers only, no web research
+- Keep all text fields concise: findings explanations max 2 sentences, quick_win actions max 2 sentences, summaries max 2 sentences
 - Every quick_win (in all sections) must include platform, where, expectedImpact, and effort fields. Never use vague language like "your platform" -- always name the exact platform. The action must name the user's actual channels, region (${geographicRegion}), and business model. The expectedImpact must reference actual numbers derived from their budget, lead volume, conversion rate, and deal size data provided above`
 
     const res = await anthropic.messages.create({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 8000,
+      max_tokens: 8192,
       system: freeSystemPrompt,
       messages: [{ role: 'user', content: freePrompt }],
     })

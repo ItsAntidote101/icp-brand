@@ -555,7 +555,7 @@ function HealthScoreWidget({ diag, report, delay }: { diag: DiagnosisData; repor
 }
 
 function MonthlyWasteWidget({ diag, currency, delay }: { diag: DiagnosisData; currency: string; delay: number }) {
-  const waste = parseWaste(diag.monthly_waste_estimate)
+  const waste = parseWaste(diag.monthly_waste_estimate ?? diag.economics?.monthly_waste_estimate)
   const fs    = getFindings(diag)
   const topF  = fs.find(f => f.severity === 'Critical') ?? fs[0]
 
@@ -771,7 +771,7 @@ function LandingPageWidget({ diag, delay, onUpgrade }: { diag: DiagnosisData; de
     )
   }
 
-  const text = diag.landing_page_assessment ?? ''
+  const text = diag.landing_page_assessment ?? diag.funnel?.landing_page_assessment ?? ''
   return (
     <Card delay={delay}>
       <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: '0 0 12px' }}>Your Landing Page</p>
@@ -860,7 +860,7 @@ function DailyBriefCard({ diag, reports, score, hasIntelligence, onTabChange, us
   const findings   = getFindings(diag)
   const topFinding = findings[0]
   const secondF    = findings[1]
-  const waste      = parseWaste(diag.monthly_waste_estimate)
+  const waste      = parseWaste(diag.monthly_waste_estimate ?? diag.economics?.monthly_waste_estimate)
   const daysSince  = reports[0] ? daysBetween(reports[0].generated_at) : 0
   const prevScore  = reports.length >= 2 ? getScore(parseDiagnosis(reports[1].report_summary)) : null
   const delta      = score !== null && prevScore !== null ? score - prevScore : null
@@ -1019,7 +1019,7 @@ function DailyBriefCard({ diag, reports, score, hasIntelligence, onTabChange, us
 }
 
 function BusinessOutcomesWidget({ diag }: { diag: DiagnosisData }) {
-  const bo = diag.business_outcomes
+  const bo = diag.business_outcomes ?? diag.economics?.business_outcomes
   if (!bo || (!bo.cac_current && !bo.ltv_cac_current)) return null
 
   return (
@@ -1070,7 +1070,7 @@ function BusinessOutcomesWidget({ diag }: { diag: DiagnosisData }) {
 }
 
 function WasteTicker({ diag, report, currency, onTabChange }: { diag: DiagnosisData; report: ReportRow; currency: string; onTabChange: (tab: Tab) => void }) {
-  const waste      = parseWaste(diag.monthly_waste_estimate)
+  const waste      = parseWaste(diag.monthly_waste_estimate ?? diag.economics?.monthly_waste_estimate)
   const perTick    = (waste.amount / 30 / 24 / 3600) / 10
   const daysSince  = daysBetween(report.generated_at)
   const startAmt   = Math.round((waste.amount / 30) * daysSince)
@@ -2361,7 +2361,7 @@ function BookingModal({
 
   const findings  = getFindings(diag)
   const topFinding = findings[0]?.title ?? '-'
-  const waste      = diag.monthly_waste_estimate ?? '-'
+  const waste      = diag.monthly_waste_estimate ?? diag.economics?.monthly_waste_estimate ?? '-'
 
   const brief = [
     { label: 'ICP Health Score',         value: score !== null ? `${score}/100` : '-' },
