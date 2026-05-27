@@ -753,41 +753,6 @@ function ScoreHistoryWidget({ reports, latestReport, renewalDate, delay }: {
   )
 }
 
-function LandingPageWidget({ diag, delay, onUpgrade }: { diag: DiagnosisData; delay: number; onUpgrade?: () => void }) {
-  const [expanded, setExpanded] = useState(false)
-
-  if (!diag.is_deep_research) {
-    return (
-      <Card delay={delay}>
-        <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: '0 0 12px' }}>Landing Page Assessment</p>
-        <p style={{ fontFamily: fontB, fontSize: 14, color: '#605d52', lineHeight: 1.75, margin: '0 0 20px' }}>
-          Your landing page assessment will appear in your next report. Pro subscribers get a live AI review of their actual page, competitors, friction points, and conversion fixes.
-        </p>
-        <button onClick={onUpgrade}
-          style={{ fontFamily: font, fontWeight: 600, fontSize: 13, color: P, background: 'none', border: 'none', cursor: 'pointer', padding: 0, opacity: 0.75 }}>
-          See what Pro includes →
-        </button>
-      </Card>
-    )
-  }
-
-  const text = diag.landing_page_assessment ?? diag.funnel?.landing_page_assessment ?? ''
-  return (
-    <Card delay={delay}>
-      <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: '0 0 12px' }}>Your Landing Page</p>
-      <p style={{ fontFamily: fontB, fontSize: 14, color: '#605d52', lineHeight: 1.75, margin: 0,
-        ...(!expanded ? { display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as React.CSSProperties : {}) }}>
-        {text}
-      </p>
-      {text.length > 200 && (
-        <button onClick={() => setExpanded(e => !e)}
-          style={{ marginTop: 10, fontFamily: fontB, fontSize: 13, color: P, background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 4, opacity: 0.7 }}>
-          {expanded ? <>Show less <ChevronUp size={13} /></> : <>Read more <ChevronDown size={13} /></>}
-        </button>
-      )}
-    </Card>
-  )
-}
 
 function NextDiagnosisWidget({ lastReport, renewalDate, delay }: { lastReport: ReportRow; renewalDate: string | null; delay: number }) {
   const nextDate = renewalDate
@@ -1829,8 +1794,8 @@ function SearchTab({ diag, hasReports, score, onUpgrade }: {
 
 // ─── Funnel Tab ───────────────────────────────────────────────────────────────
 
-function FunnelTab({ diag, hasReports, score, onUpgrade }: {
-  diag: DiagnosisData; hasReports: boolean; score: number | null; onUpgrade: () => void
+function FunnelTab({ diag, hasReports, score, isSubscribed, buyer, onUpgrade }: {
+  diag: DiagnosisData; hasReports: boolean; score: number | null; isSubscribed: boolean; buyer: MediaBuyer; onUpgrade: () => void
 }) {
   const catData  = diag.funnel
   const keywords = ['landing page', 'cta', 'form', 'conversion', 'funnel', 'mobile', 'friction', 'copy', 'message', 'headline', 'above the fold', 'checkout', 'signup', 'trust', 'lead']
@@ -1860,7 +1825,7 @@ function FunnelTab({ diag, hasReports, score, onUpgrade }: {
         <BreakdownBarsSection diag={diag} labels={['Funnel Friction Index', 'Message to Market Fit']} />
       </Card>
 
-      {lpText ? (
+      {lpText && (
         <Card>
           <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: '0 0 12px' }}>Landing Page Assessment</p>
           <p style={{ fontFamily: fontB, fontSize: 14, color: '#605d52', lineHeight: 1.75, margin: 0,
@@ -1873,14 +1838,34 @@ function FunnelTab({ diag, hasReports, score, onUpgrade }: {
             </button>
           )}
         </Card>
+      )}
+
+      {isSubscribed ? (
+        <Card style={{ background: '#f8f4f0' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+            <BuyerAvatar buyer={buyer} size={44} />
+            <div style={{ flex: 1 }}>
+              <p style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: P, margin: '0 0 4px' }}>
+                Book a Landing Page Review with {buyer.firstName}
+              </p>
+              <p style={{ fontFamily: fontB, fontSize: 13, color: '#605d52', lineHeight: 1.6, margin: '0 0 16px' }}>
+                Get {buyer.firstName} to review your actual page — offer clarity, CTA, trust signals, and conversion friction — on a 30-minute call.
+              </p>
+              <a href={buyer.calLink} target="_blank" rel="noopener noreferrer"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: P, color: '#fff', textDecoration: 'none', fontFamily: font, fontWeight: 600, fontSize: 13, padding: '10px 20px', borderRadius: 10 }}>
+                Book a free 30-min review <ArrowRight size={14} />
+              </a>
+            </div>
+          </div>
+        </Card>
       ) : (
         <Card style={{ background: '#f8f4f0' }}>
-          <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: '0 0 12px' }}>Landing Page Assessment</p>
+          <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: '0 0 12px' }}>Landing Page Review</p>
           <p style={{ fontFamily: fontB, fontSize: 14, color: '#605d52', lineHeight: 1.75, margin: '0 0 16px' }}>
-            Your landing page assessment will appear in your next report. Pro subscribers get a live AI review of their actual page, competitors, friction points, and conversion fixes.
+            Pro subscribers get a dedicated media buyer to review their actual landing page — offer clarity, CTA effectiveness, trust signals, and conversion fixes.
           </p>
-          <button onClick={onUpgrade} style={{ fontFamily: font, fontWeight: 600, fontSize: 13, color: P, background: 'none', border: 'none', cursor: 'pointer', padding: 0, opacity: 0.75 }}>
-            See what Pro includes →
+          <button onClick={onUpgrade} style={{ fontFamily: font, fontWeight: 600, fontSize: 13, background: Accent, color: '#fff', border: 'none', cursor: 'pointer', padding: '10px 20px', borderRadius: 10 }}>
+            Upgrade to Pro →
           </button>
         </Card>
       )}
@@ -5596,7 +5581,7 @@ export default function DashboardPage() {
           : <LockedTabOverlay tabName="Search and Channels" description="Understand which channels are wasting your budget and which are underinvested. Includes keyword analysis, channel efficiency score, and reallocation quick wins." onUpgrade={() => setShowUpgradeModal(true)} />
         )}
         {activeTab === 'funnel' && (isSubscribed
-          ? <FunnelTab diag={diag} hasReports={hasReports} score={score} onUpgrade={() => setShowUpgradeModal(true)} />
+          ? <FunnelTab diag={diag} hasReports={hasReports} score={score} isSubscribed={isSubscribed} buyer={assignedBuyer} onUpgrade={() => setShowUpgradeModal(true)} />
           : <LockedTabOverlay tabName="Funnel and Landing Page" description="Find out exactly where your funnel is losing buyers. Includes landing page assessment, friction index, CTA analysis, and trust signal audit." onUpgrade={() => setShowUpgradeModal(true)} />
         )}
         {activeTab === 'economics' && (isSubscribed
