@@ -359,7 +359,6 @@ Return this exact JSON structure:
   "audience": {
     "score": <integer 0-100>,
     "summary": "<2 sentences specific to ICP alignment and targeting accuracy>",
-    "meta_audience_notes": "<specific advice on Meta/Google audience setup based on their targeting parameters and best customer profile, reference ${geographicRegion}>",
     "findings": [
       {
         "title": "<finding tied to ICP definition or best customer clarity, Q1, Q2, Q23, Q3/Q24, Q4, Q5, Q6/Q25, Q7/Q26, Q8>",
@@ -374,20 +373,20 @@ Return this exact JSON structure:
     ],
     "quick_wins": [
       {
-        "action": "<exact step-by-step action: go to X platform > Y section > do Z specific change, referencing the user's actual channels (${adChannels}), region (${geographicRegion}), and business model (B2B/B2C)>",
-        "platform": "<exact platform name from their channels, e.g. Meta Ads Manager | Google Ads | LinkedIn Campaign Manager | TikTok Ads | WhatsApp Business | Landing page | CRM | Email>",
-        "where": "<exact location in the tool, e.g. 'Audiences tab > Saved Audiences', 'Campaigns > Ad Set level', 'Google Analytics > Audiences'>",
-        "expectedImpact": "<specific number derived from their actual data using estimatedCpa (${estimatedCpa}), monthlyWaste (${monthlyWaste}), revenueOppty (${revenueOppty}) -- e.g. 'Based on your estimated CPA and budget, expect 15-20% CPA reduction' or 'Could recover a portion of monthly waste'>",
-        "effort": "<Low (under 30 min) | Medium (1-3 hours) | High (1-2 days)>",
+        "action": "<1 sentence: what to do, naming the exact platform and step>",
+        "platform": "<platform name>",
+        "where": "<location in tool>",
+        "expectedImpact": "<specific number or % improvement>",
+        "effort": "<Low|Medium|High>",
         "impact": "<High|Medium|Low>",
         "timeline": "<This week|This month|Next quarter>"
       },
       {
-        "action": "<exact step-by-step ICP definition or persona refinement action naming the specific platform and section>",
-        "platform": "<exact platform name>",
-        "where": "<exact location in the tool>",
-        "expectedImpact": "<specific projected outcome referencing their actual data>",
-        "effort": "<Low (under 30 min) | Medium (1-3 hours) | High (1-2 days)>",
+        "action": "<1 sentence: what to do, naming the exact platform and step>",
+        "platform": "<platform name>",
+        "where": "<location in tool>",
+        "expectedImpact": "<specific number or % improvement>",
+        "effort": "<Low|Medium|High>",
         "impact": "<High|Medium|Low>",
         "timeline": "<This week|This month|Next quarter>"
       }
@@ -411,7 +410,6 @@ Return this exact JSON structure:
   "search": {
     "score": <integer 0-100>,
     "summary": "<2 sentences specific to channel mix and keyword/search strategy>",
-    "keyword_analysis": "<analysis of their Google keyword targeting and search intent strategy, use web research for ${geographicRegion} benchmarks in their industry>",
     "findings": [
       {
         "title": "<finding tied to channel selection or platform mix, Q9, Q12, Q13>",
@@ -426,20 +424,20 @@ Return this exact JSON structure:
     ],
     "quick_wins": [
       {
-        "action": "<exact step-by-step channel or keyword improvement: go to X platform > Y section > do Z, referencing ${geographicRegion} platform benchmarks from web research and the user's actual channels (${adChannels})>",
-        "platform": "<exact platform name from their channels, e.g. Meta Ads Manager | Google Ads | LinkedIn Campaign Manager | TikTok Ads>",
-        "where": "<exact location in the tool, e.g. 'Campaigns > Ad Set level > Placements', 'Google Ads > Keywords tab > Add negative keywords'>",
-        "expectedImpact": "<specific projected outcome referencing their actual spend and monthlyWaste (${monthlyWaste})>",
-        "effort": "<Low (under 30 min) | Medium (1-3 hours) | High (1-2 days)>",
+        "action": "<1 sentence: what to do, naming the exact platform and step>",
+        "platform": "<platform name>",
+        "where": "<location in tool>",
+        "expectedImpact": "<specific number or % improvement>",
+        "effort": "<Low|Medium|High>",
         "impact": "<High|Medium|Low>",
         "timeline": "<This week|This month|Next quarter>"
       },
       {
-        "action": "<exact step-by-step budget reallocation action between specific named channels based on their mix>",
-        "platform": "<exact platform name being adjusted>",
-        "where": "<exact location in the tool>",
-        "expectedImpact": "<specific projected outcome using their actual budget data and estimatedCpa (${estimatedCpa})>",
-        "effort": "<Low (under 30 min) | Medium (1-3 hours) | High (1-2 days)>",
+        "action": "<1 sentence: what to do, naming the exact platform and step>",
+        "platform": "<platform name>",
+        "where": "<location in tool>",
+        "expectedImpact": "<specific number or % improvement>",
+        "effort": "<Low|Medium|High>",
         "impact": "<High|Medium|Low>",
         "timeline": "<This week|This month|Next quarter>"
       }
@@ -478,20 +476,20 @@ Return this exact JSON structure:
     ],
     "quick_wins": [
       {
-        "action": "<exact step-by-step landing page or CTA improvement: go to X tool > Y section > make Z specific change, based on landing page assessment findings>",
-        "platform": "<exact platform name: Landing page | CRM | Email | WhatsApp Business>",
-        "where": "<exact location, e.g. 'Homepage hero section', 'Lead capture form', 'Above-the-fold CTA button'>",
-        "expectedImpact": "<specific projected conversion lift referencing their actual lead volume and revenueOppty (${revenueOppty})>",
-        "effort": "<Low (under 30 min) | Medium (1-3 hours) | High (1-2 days)>",
+        "action": "<1 sentence: what to do, naming the exact platform and step>",
+        "platform": "<platform name>",
+        "where": "<location in tool>",
+        "expectedImpact": "<specific number or % improvement>",
+        "effort": "<Low|Medium|High>",
         "impact": "<High|Medium|Low>",
         "timeline": "<This week|This month|Next quarter>"
       },
       {
-        "action": "<exact step-by-step form simplification or trust signal addition with the specific element to add or remove>",
-        "platform": "<exact platform name: Landing page | CRM | Email>",
-        "where": "<exact location in the page or tool>",
-        "expectedImpact": "<specific projected drop-off reduction or conversion improvement based on their data>",
-        "effort": "<Low (under 30 min) | Medium (1-3 hours) | High (1-2 days)>",
+        "action": "<1 sentence: what to do, naming the exact platform and step>",
+        "platform": "<platform name>",
+        "where": "<location in tool>",
+        "expectedImpact": "<specific number or % improvement>",
+        "effort": "<Low|Medium|High>",
         "impact": "<High|Medium|Low>",
         "timeline": "<This week|This month|Next quarter>"
       }
@@ -537,20 +535,20 @@ Return this exact JSON structure:
     ],
     "quick_wins": [
       {
-        "action": "<exact step-by-step budget reallocation action naming the specific platforms and the exact percentage or amount to shift, referencing their actual channels (${adChannels})>",
-        "platform": "<exact platform name being adjusted, e.g. Meta Ads Manager | Google Ads>",
-        "where": "<exact location in the tool, e.g. 'Campaigns tab > Budget column', 'Billing & Payments > Budget settings'>",
-        "expectedImpact": "<specific projected saving or CPA reduction using their actual monthlyWaste (${monthlyWaste}) and estimatedCpa (${estimatedCpa})>",
-        "effort": "<Low (under 30 min) | Medium (1-3 hours) | High (1-2 days)>",
+        "action": "<1 sentence: what to do, naming the exact platform and step>",
+        "platform": "<platform name>",
+        "where": "<location in tool>",
+        "expectedImpact": "<specific number or % improvement>",
+        "effort": "<Low|Medium|High>",
         "impact": "<High|Medium|Low>",
         "timeline": "<This week|This month|Next quarter>"
       },
       {
-        "action": "<exact step-by-step unit economics improvement: CAC reduction or LTV increase, naming the specific tool and setting to change>",
-        "platform": "<exact platform name: Meta Ads Manager | Google Ads | CRM | Email>",
-        "where": "<exact location in the tool>",
-        "expectedImpact": "<specific projected CAC or LTV improvement referencing their ltvCacRatio (${ltvCacRatio}) and revenueOppty (${revenueOppty})>",
-        "effort": "<Low (under 30 min) | Medium (1-3 hours) | High (1-2 days)>",
+        "action": "<1 sentence: what to do, naming the exact platform and step>",
+        "platform": "<platform name>",
+        "where": "<location in tool>",
+        "expectedImpact": "<specific number or % improvement>",
+        "effort": "<Low|Medium|High>",
         "impact": "<High|Medium|Low>",
         "timeline": "<This week|This month|Next quarter>"
       }
@@ -590,29 +588,29 @@ Return this exact JSON structure:
   ],
   "quick_wins": [
     {
-      "action": "<exact step-by-step highest-impact action: go to X platform > Y section > do Z specific change, referencing user's actual channels (${adChannels}), region (${geographicRegion}), and business model>",
-      "platform": "<exact platform name: Meta Ads Manager | Google Ads | LinkedIn Campaign Manager | TikTok Ads | WhatsApp Business | Landing page | CRM | Email>",
-      "where": "<exact location in the tool, specific enough to navigate without thinking>",
-      "expectedImpact": "<specific number derived from their actual data: use estimatedCpa (${estimatedCpa}), monthlyWaste (${monthlyWaste}), revenueOppty (${revenueOppty}), ltvCacRatio (${ltvCacRatio})>",
-      "effort": "<Low (under 30 min) | Medium (1-3 hours) | High (1-2 days)>",
+      "action": "<1 sentence: what to do, naming the exact platform and step>",
+      "platform": "<platform name>",
+      "where": "<location in tool>",
+      "expectedImpact": "<specific number or % improvement>",
+      "effort": "<Low|Medium|High>",
       "impact": "<High|Medium|Low>",
       "timeline": "<This week|This month|Next quarter>"
     },
     {
-      "action": "<exact step-by-step second highest-impact action naming the specific platform and section>",
-      "platform": "<exact platform name>",
-      "where": "<exact location in the tool>",
-      "expectedImpact": "<specific projected outcome referencing their actual data>",
-      "effort": "<Low (under 30 min) | Medium (1-3 hours) | High (1-2 days)>",
+      "action": "<1 sentence: what to do, naming the exact platform and step>",
+      "platform": "<platform name>",
+      "where": "<location in tool>",
+      "expectedImpact": "<specific number or % improvement>",
+      "effort": "<Low|Medium|High>",
       "impact": "<High|Medium|Low>",
       "timeline": "<This week|This month|Next quarter>"
     },
     {
-      "action": "<exact step-by-step third highest-impact action naming the specific platform and section>",
-      "platform": "<exact platform name>",
-      "where": "<exact location in the tool>",
-      "expectedImpact": "<specific projected outcome referencing their actual data>",
-      "effort": "<Low (under 30 min) | Medium (1-3 hours) | High (1-2 days)>",
+      "action": "<1 sentence: what to do, naming the exact platform and step>",
+      "platform": "<platform name>",
+      "where": "<location in tool>",
+      "expectedImpact": "<specific number or % improvement>",
+      "effort": "<Low|Medium|High>",
       "impact": "<High|Medium|Low>",
       "timeline": "<This week|This month|Next quarter>"
     }
@@ -667,7 +665,7 @@ Rules:
 - All scores must reflect the actual questionnaire responses, do not return generic numbers
 - Reference ${geographicRegion} explicitly in at least 2 category analyses
 - Use your expert knowledge to populate landing_page_assessment, keyword_analysis, competitor_insights, and regional_benchmarks with region-specific and industry-specific insights
-- Keep all text fields concise: findings explanations max 2 sentences, quick_win actions max 2 sentences, summaries max 2 sentences
+- Keep ALL text fields to 1 sentence maximum. No exceptions.
 - Every quick_win (in all sections) must include platform, where, expectedImpact, and effort fields. Never use vague language like "your platform" -- always name the exact platform. The action must name the user's actual channels (${adChannels}), region (${geographicRegion}), and business model. The expectedImpact must reference real numbers from estimatedCpa (${estimatedCpa}), monthlyWaste (${monthlyWaste}), revenueOppty (${revenueOppty}), or ltvCacRatio (${ltvCacRatio}) where available`
 
   // ── Branched Claude call ──────────────────────────────────────────────────
@@ -735,7 +733,6 @@ Return this exact JSON structure:
   "audience": {
     "score": <integer 0-100>,
     "summary": "<2 sentences specific to ICP alignment and targeting accuracy>",
-    "meta_audience_notes": "<specific advice on Meta/Google audience setup based on their targeting parameters and best customer profile>",
     "findings": [
       {
         "title": "<finding tied to ICP definition or best customer clarity, Q1, Q2, Q23, Q3/Q24, Q4, Q5, Q6/Q25, Q7/Q26, Q8>",
@@ -750,20 +747,20 @@ Return this exact JSON structure:
     ],
     "quick_wins": [
       {
-        "action": "<exact step-by-step audience targeting improvement: go to X platform > Y section > do Z specific change, referencing the user's actual channels and region (${geographicRegion})>",
-        "platform": "<exact platform name from their channels, e.g. Meta Ads Manager | Google Ads | LinkedIn Campaign Manager | TikTok Ads>",
-        "where": "<exact location in the tool, e.g. 'Audiences tab > Saved Audiences', 'Campaigns > Ad Set level'>",
-        "expectedImpact": "<specific projected outcome derived from their actual data>",
-        "effort": "<Low (under 30 min) | Medium (1-3 hours) | High (1-2 days)>",
+        "action": "<1 sentence: what to do, naming the exact platform and step>",
+        "platform": "<platform name>",
+        "where": "<location in tool>",
+        "expectedImpact": "<specific number or % improvement>",
+        "effort": "<Low|Medium|High>",
         "impact": "<High|Medium|Low>",
         "timeline": "<This week|This month|Next quarter>"
       },
       {
-        "action": "<exact step-by-step ICP definition or persona refinement action naming the specific platform and section>",
-        "platform": "<exact platform name>",
-        "where": "<exact location in the tool>",
-        "expectedImpact": "<specific projected outcome based on their questionnaire data>",
-        "effort": "<Low (under 30 min) | Medium (1-3 hours) | High (1-2 days)>",
+        "action": "<1 sentence: what to do, naming the exact platform and step>",
+        "platform": "<platform name>",
+        "where": "<location in tool>",
+        "expectedImpact": "<specific number or % improvement>",
+        "effort": "<Low|Medium|High>",
         "impact": "<High|Medium|Low>",
         "timeline": "<This week|This month|Next quarter>"
       }
@@ -787,7 +784,6 @@ Return this exact JSON structure:
   "search": {
     "score": <integer 0-100>,
     "summary": "<2 sentences specific to channel mix and keyword/search strategy>",
-    "keyword_analysis": "<analysis of their channel mix and search strategy based solely on their questionnaire responses, no web research>",
     "findings": [
       {
         "title": "<finding tied to channel selection or platform mix, Q9, Q12, Q13>",
