@@ -5423,8 +5423,41 @@ export default function DashboardPage() {
               const daysSinceDiag = latestReport ? daysBetween(latestReport.generated_at) : 999
               const reDiagThreshold = t === 'agency' ? 7 : t === 'pro' ? 14 : 30
 
+              const dataQualityFlag = (
+                (typeof diag.landing_page_assessment === 'string' && diag.landing_page_assessment.toLowerCase().includes('test or placeholder')) ||
+                (typeof diag.funnel?.landing_page_assessment === 'string' && diag.funnel.landing_page_assessment.toLowerCase().includes('test or placeholder')) ||
+                (typeof diag.executive_summary === 'string' && (
+                  diag.executive_summary.toLowerCase().includes('implausible') ||
+                  diag.executive_summary.toLowerCase().includes('anomaly') ||
+                  diag.executive_summary.toLowerCase().includes('test or placeholder')
+                ))
+              )
+
               return (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+
+                {/* Data quality warning: AI detected fake/suspicious input */}
+                {dataQualityFlag && (
+                  <div style={{ background: '#fffbeb', border: '1px solid rgba(217,119,6,0.35)', borderLeft: '4px solid #d97706', borderRadius: '0 12px 12px 0', padding: '16px 20px', display: 'flex', gap: 14, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', flex: 1 }}>
+                      <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(217,119,6,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
+                        <AlertCircle size={15} color="#d97706" />
+                      </div>
+                      <div>
+                        <p style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: '#92400e', margin: '0 0 3px' }}>
+                          Data quality issue detected
+                        </p>
+                        <p style={{ fontFamily: fontB, fontSize: 12, color: '#b45309', margin: 0, lineHeight: 1.5 }}>
+                          Your last report contains a test or placeholder URL, or implausible values. Results may not reflect your real business. Re-run with accurate data for a reliable diagnosis.
+                        </p>
+                      </div>
+                    </div>
+                    <Link href="/questionnaire"
+                      style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, background: '#d97706', color: '#fff', padding: '9px 18px', borderRadius: 9, textDecoration: 'none', whiteSpace: 'nowrap' as const, flexShrink: 0, alignSelf: 'center' }}>
+                      Re-run Diagnosis →
+                    </Link>
+                  </div>
+                )}
 
                 {/* Re-diagnosis nudge: score may have drifted */}
                 {daysSinceDiag > reDiagThreshold && (

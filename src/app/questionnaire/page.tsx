@@ -768,7 +768,8 @@ export default function QuestionnairePage() {
   const [apiError,      setApiError]      = useState('')
   const [loadingStep,   setLoadingStep]   = useState(0)
   const [layerDone,     setLayerDone]     = useState<null | 1 | 2>(null)
-  const [urlPreviewBanner, setUrlPreviewBanner] = useState(false)
+  const [urlVerifyStatus, setUrlVerifyStatus] = useState<'idle' | 'checking' | 'verified' | 'failed'  >('idle')
+  const [urlVerifyTitle, setUrlVerifyTitle] = useState('')
   const [urlWarning, setUrlWarning] = useState(false)
   const [diagCount,     setDiagCount]     = useState(9400)
   const timerRefs = useRef<ReturnType<typeof setTimeout>[]>([])
@@ -846,10 +847,18 @@ export default function QuestionnairePage() {
     if (q.type === 'slider')   return true
     if (q.type === 'yesno' || q.type === 'radio' || q.type === 'select') return typeof a === 'string' && a.length > 0
     if (q.type === 'number')   return typeof a === 'string' && a.length > 0
+    if (q.type === 'url') {
+      if (typeof a !== 'string' || !a.trim()) return false
+      if (urlWarning) return false
+      if (urlVerifyStatus === 'checking') return false
+      if (urlVerifyStatus === 'failed') return false
+      return true
+    }
     return typeof a === 'string' && a.trim().length > 0
   }
 
   const setAnswer = useCallback((val: string | string[] | number) => {
+    if (q.id === 10) { setUrlVerifyStatus('idle'); setUrlVerifyTitle(''); setUrlWarning(false) }
     setAnswers(prev => {
       const updated = { ...prev, [q.id]: val }
       if (q.id === 23) {
@@ -871,25 +880,29 @@ export default function QuestionnairePage() {
 
   const handleUrlBlur = useCallback(async () => {
     const url = (answers[10] as string) ?? ''
-    if (!url) return
+    if (!url) { setUrlVerifyStatus('idle'); return }
 
     // Check for suspicious/placeholder URLs
     const lower = url.toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '')
     const isSuspicious = SUSPICIOUS_DOMAINS.some(d => lower === d || lower.startsWith(d + '/'))
     setUrlWarning(isSuspicious)
-    if (isSuspicious) return
+    if (isSuspicious) { setUrlVerifyStatus('idle'); return }
 
-    if (!url.startsWith('http')) return
+    if (!url.startsWith('http')) { setUrlVerifyStatus('idle'); return }
+
+    setUrlVerifyStatus('checking')
+    setUrlVerifyTitle('')
     try {
-      const res  = await fetch(`/api/fetch-url-preview?url=${encodeURIComponent(url)}`)
-      if (!res.ok) return
+      const res = await fetch(`/api/fetch-url-preview?url=${encodeURIComponent(url)}`)
+      if (!res.ok) { setUrlVerifyStatus('failed'); return }
       const data = await res.json() as { title?: string; description?: string; h1?: string }
       const prefill = data.description || data.h1 || data.title || ''
+      setUrlVerifyTitle(data.title || '')
+      setUrlVerifyStatus('verified')
       if (prefill && !answers[1]) {
         setAnswers(prev => ({ ...prev, [1]: prefill }))
-        setUrlPreviewBanner(true)
       }
-    } catch { /* non-fatal */ }
+    } catch { setUrlVerifyStatus('failed') }
   }, [answers])
 
   useEffect(() => {
@@ -1295,26 +1308,37 @@ export default function QuestionnairePage() {
               </div>
 
               {urlWarning && (
-                <div className="mb-6 flex items-start gap-3 px-4 py-3 rounded border border-amber-400/40 bg-amber-50 text-sm text-amber-800">
+                <div className="mb-4 flex items-start gap-3 px-4 py-3 rounded border border-amber-400/40 bg-amber-50 text-sm text-amber-800">
                   <span className="flex-shrink-0 mt-0.5">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                   </span>
-                  <p className="flex-1 leading-snug">That looks like a test or placeholder URL. Please enter your real landing page for an accurate diagnosis — the AI will assess your actual page.</p>
-                  <button type="button" onClick={() => setUrlWarning(false)} className="flex-shrink-0 text-amber-600 hover:text-amber-800 transition-colors text-base leading-none">
+                  <p className="flex-1 leading-snug">That looks like a test or placeholder URL. Please enter your real landing page for an accurate diagnosis.</p>
+                  <button type="button" onClick={() => setUrlWarning(false)} className="flex-shrink-0 text-amber-600 hover:text-amber-800 transition-colors">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M18 6 6 18M6 6l12 12"/></svg>
                   </button>
                 </div>
               )}
 
-              {urlPreviewBanner && (
-                <div className="mb-6 flex items-start gap-3 px-4 py-3 rounded border border-[#e8330a]/30 bg-[#e8330a]/10 text-sm text-[#e8330a]">
-                  <span className="flex-shrink-0 mt-0.5 text-[#e8330a]">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+              {!urlWarning && urlVerifyStatus === 'checking' && (
+                <div className="mb-4 flex items-center gap-2 px-4 py-2 rounded border border-[#c5c0b1]/40 bg-[#f5f0e8]/60 text-sm text-[#605d52]">
+                  <svg className="animate-spin" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                  <span>Verifying site…</span>
+                </div>
+              )}
+
+              {!urlWarning && urlVerifyStatus === 'verified' && (
+                <div className="mb-4 flex items-center gap-2 px-4 py-2 rounded border border-green-400/40 bg-green-50 text-sm text-green-700">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}><path d="M20 6 9 17l-5-5"/></svg>
+                  <span className="flex-1 truncate">Site verified{urlVerifyTitle ? ` — ${urlVerifyTitle}` : ''}. Some answers have been pre-filled — review and edit if needed.</span>
+                </div>
+              )}
+
+              {!urlWarning && urlVerifyStatus === 'failed' && (
+                <div className="mb-4 flex items-start gap-3 px-4 py-3 rounded border border-amber-400/40 bg-amber-50 text-sm text-amber-800">
+                  <span className="flex-shrink-0 mt-0.5">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                   </span>
-                  <p className="flex-1 leading-snug">We found your site, some answers have been pre-filled. Review and edit if needed.</p>
-                  <button type="button" onClick={() => setUrlPreviewBanner(false)} className="flex-shrink-0 text-[#e8330a] hover:text-[#e8330a] transition-colors text-base leading-none">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M18 6 6 18M6 6l12 12"/></svg>
-                  </button>
+                  <p className="flex-1 leading-snug">We couldn&apos;t reach this site. Check the URL is correct and publicly accessible, then try again.</p>
                 </div>
               )}
 
