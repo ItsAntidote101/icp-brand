@@ -670,113 +670,9 @@ Rules:
 - Keep all text fields concise: findings explanations max 2 sentences, quick_win actions max 2 sentences, summaries max 2 sentences
 - Every quick_win (in all sections) must include platform, where, expectedImpact, and effort fields. Never use vague language like "your platform" -- always name the exact platform. The action must name the user's actual channels (${adChannels}), region (${geographicRegion}), and business model. The expectedImpact must reference real numbers from estimatedCpa (${estimatedCpa}), monthlyWaste (${monthlyWaste}), revenueOppty (${revenueOppty}), or ltvCacRatio (${ltvCacRatio}) where available`
 
-  // ── STUB: hardcoded diagnostic for pipeline testing ──────────────────────
-  // TODO: replace with real Claude call once dashboard rendering is confirmed
-  const STUB_DIAGNOSIS = {
-    overall_score: 42,
-    executive_summary: `Your ICP targeting shows a significant mismatch between your best customers and who you are actually reaching with paid ads in ${geographicRegion}. Fixing audience definition and landing page alignment could recover an estimated ${monthlyWaste ?? 'significant'} in monthly wasted spend.`,
-    audience: {
-      score: 38,
-      summary: "ICP definition is vague and targeting parameters are too broad, driving up CPA.",
-      meta_audience_notes: "Narrow your Meta saved audience to job titles and interests that match your best customers.",
-      findings: [
-        { title: "ICP definition lacks specificity", severity: "Critical", explanation: "Your best customer profile is not clearly differentiated from your broader targeting, causing budget dilution." },
-        { title: "Targeting parameters too broad", severity: "Warning", explanation: "Current ad set audiences include users unlikely to convert, raising your effective CPA above benchmark." }
-      ],
-      quick_wins: [
-        { action: "Go to Meta Ads Manager > Audiences > Create Saved Audience and narrow by job title and interests matching your best customer profile.", platform: "Meta Ads Manager", where: "Audiences tab > Saved Audiences", expectedImpact: `Estimated 15-20% CPA reduction from ${estimatedCpa ?? 'current'} baseline.`, effort: "Low (under 30 min)", impact: "High", timeline: "This week" },
-        { action: "Create a lookalike audience from your top 100 customers in Meta Ads Manager > Audiences > Create Lookalike.", platform: "Meta Ads Manager", where: "Audiences tab > Create Lookalike Audience", expectedImpact: "Lookalike audiences typically outperform interest targeting by 30-40% on conversion rate.", effort: "Low (under 30 min)", impact: "High", timeline: "This week" }
-      ],
-      breakdown: [
-        { label: "ICP Alignment", score: 35, found: "Best customer profile is not documented in targeting parameters.", why: "Broad audiences waste budget on non-converters." },
-        { label: "Targeting Accuracy", score: 41, found: "Current targeting includes too many unqualified segments.", why: "Lower quality leads raise CPA and reduce close rate." }
-      ]
-    },
-    search: {
-      score: 45,
-      summary: "Channel mix is concentrated without testing, and keyword strategy is not aligned with buyer intent.",
-      keyword_analysis: "Search intent keywords are not matched to funnel stage, leading to top-funnel clicks on bottom-funnel budgets.",
-      findings: [
-        { title: "Single-channel concentration risk", severity: "Warning", explanation: "Relying on one primary channel without testing alternatives limits scale and creates performance fragility." },
-        { title: "Ad spend efficiency below benchmark", severity: "Critical", explanation: `Estimated CPA of ${estimatedCpa ?? 'current level'} exceeds the ${geographicRegion} benchmark for this category.` }
-      ],
-      quick_wins: [
-        { action: `Go to ${adChannels || 'Meta Ads Manager'} > Campaigns > Ad Set level > Placements and disable low-performing placements using 7-day cost data.`, platform: adChannels?.split(',')[0]?.trim() || "Meta Ads Manager", where: "Campaigns > Ad Set level > Placements", expectedImpact: `Could reduce estimated monthly waste from current level.`, effort: "Low (under 30 min)", impact: "High", timeline: "This week" },
-        { action: "Add negative keywords in Google Ads > Keywords tab > Negative Keywords to exclude irrelevant search terms from your campaign.", platform: "Google Ads", where: "Keywords tab > Negative Keywords list", expectedImpact: "Removing irrelevant traffic typically improves CTR by 10-15% and reduces wasted spend.", effort: "Medium (1-3 hours)", impact: "Medium", timeline: "This week" }
-      ],
-      breakdown: [
-        { label: "Channel Efficiency", score: 40, found: "Primary channel not optimised for cost per acquisition vs regional benchmarks.", why: "Inefficient channel allocation raises overall blended CPA." },
-        { label: "Message to Market Fit", score: 50, found: "Ad creative and copy do not clearly address the core problem your product solves.", why: "Low message-market fit reduces CTR and conversion rate." }
-      ]
-    },
-    funnel: {
-      score: 48,
-      summary: "Landing page has friction points that are dropping conversion rate below potential.",
-      landing_page_assessment: "Based on the business description and funnel answers, the landing page likely has too many steps before a clear CTA and lacks specific trust signals for the target market.",
-      findings: [
-        { title: "Too many steps before conversion", severity: "Warning", explanation: "Each additional step in the funnel reduces conversion rate by approximately 20-30%." },
-        { title: "Trust signals insufficient for market", severity: "Warning", explanation: `The ${geographicRegion} market requires specific local trust signals that may be missing from the current page.` }
-      ],
-      quick_wins: [
-        { action: "Go to your landing page homepage hero section and move the primary CTA above the fold with a single clear action button.", platform: "Landing page", where: "Homepage hero section > Above-the-fold CTA", expectedImpact: "Above-fold CTAs typically improve conversion rate by 15-25%.", effort: "Low (under 30 min)", impact: "High", timeline: "This week" },
-        { action: "Add social proof (client logos, testimonials, or case study numbers) directly below the hero section on your landing page.", platform: "Landing page", where: "Below hero section > Trust signals row", expectedImpact: "Trust signals reduce bounce rate and improve lead form completion by 10-20%.", effort: "Medium (1-3 hours)", impact: "Medium", timeline: "This week" }
-      ],
-      breakdown: [
-        { label: "Funnel Friction Index", score: 45, found: "Multiple steps before conversion with no progressive commitment triggers.", why: "High friction reduces conversion rate and raises effective CPA." },
-        { label: "Message to Market Fit", score: 50, found: "Landing page messaging does not mirror the ad creative that drove the click.", why: "Message discontinuity between ad and landing page kills conversion." }
-      ]
-    },
-    economics: {
-      score: 40,
-      summary: "Unit economics are under pressure with LTV:CAC ratio below the 3:1 benchmark.",
-      monthly_waste_estimate: monthlyWaste ? `Estimated ${monthlyWaste} in monthly spend wasted on non-converting traffic (35% of non-converting budget).` : "Insufficient data to compute exact waste estimate.",
-      business_outcomes: {
-        cac_current: estimatedCpa ? `Estimated current CAC: ${estimatedCpa} (budget / leads).` : "Insufficient data.",
-        cac_projected: "Projected 20-30% CAC reduction after implementing top 3 fixes.",
-        ltv_cac_current: ltvCacRatio ? `Current LTV:CAC ratio: ${ltvCacRatio}:1. ${parseFloat(ltvCacRatio) < 3 ? 'Below the 3:1 benchmark.' : 'At or above benchmark.'}` : "Insufficient data.",
-        ltv_cac_projected: "Target LTV:CAC of 3:1 or above after ICP fixes.",
-        monthly_revenue_opportunity: revenueOppty ? `Estimated additional monthly revenue of ${revenueOppty} if ICP conversion improves 15%.` : "Insufficient data to compute."
-      },
-      findings: [
-        { title: "Budget allocation not optimised across channels", severity: "Critical", explanation: "Spend concentration in low-efficiency placements is compressing margins and reducing overall ROAS." },
-        { title: "LTV:CAC ratio below 3:1 benchmark", severity: "Warning", explanation: "Current unit economics leave insufficient margin for sustainable paid growth without improving either LTV or reducing CAC." }
-      ],
-      quick_wins: [
-        { action: `Go to ${adChannels?.split(',')[0]?.trim() || 'Meta Ads Manager'} > Campaigns tab > Budget column and reallocate 20% of spend from lowest-performing ad sets to top-performing ones.`, platform: adChannels?.split(',')[0]?.trim() || "Meta Ads Manager", where: "Campaigns tab > Budget column", expectedImpact: `Based on your estimated monthly waste, reallocating ${monthlyWaste ?? 'wasted spend'} could improve blended ROAS by 15-25%.`, effort: "Low (under 30 min)", impact: "High", timeline: "This week" },
-        { action: "Implement a post-conversion email sequence via your CRM to increase repeat purchase rate and improve LTV within the first 90 days.", platform: "CRM", where: "Automation > Post-purchase sequence", expectedImpact: "A 3-email onboarding sequence typically increases 90-day LTV by 10-20%.", effort: "High (1-2 days)", impact: "High", timeline: "This month" }
-      ],
-      breakdown: [
-        { label: "Budget Reallocation Opportunity", score: 38, found: "Budget spread across placements without performance-based reallocation.", why: "Non-optimised budget distribution means lower-performing placements absorb spend that should go to winners." },
-        { label: "Channel Efficiency", score: 40, found: "Cost per acquisition above regional benchmark for this category.", why: "Above-benchmark CPA compresses margin and slows reinvestment capacity." }
-      ]
-    },
-    critical_findings: [
-      { title: "ICP definition too vague to target profitably", severity: "Critical", explanation: `Without a precise ICP, your ad spend in ${geographicRegion} reaches too broad an audience, driving CPAs above the sustainable threshold for your deal size.` },
-      { title: "Estimated monthly ad waste exceeds safe threshold", severity: "Critical", explanation: `Based on your budget and lead data, an estimated ${monthlyWaste ?? 'significant portion'} of monthly spend is wasted on non-converting traffic.` },
-      { title: "Landing page friction reducing conversion rate", severity: "Warning", explanation: "Multiple friction points before the primary conversion action are suppressing lead volume relative to ad spend." }
-    ],
-    quick_wins: [
-      { action: "Narrow your Meta saved audience to match your top customer profile by job title, interests, and behaviour in Meta Ads Manager > Audiences.", platform: "Meta Ads Manager", where: "Audiences tab > Saved Audiences", expectedImpact: `Expected 15-20% CPA reduction from ${estimatedCpa ?? 'current'} baseline within 2 weeks.`, effort: "Low (under 30 min)", impact: "High", timeline: "This week" },
-      { action: "Move the primary CTA above the fold on your landing page and reduce the number of form fields to 3 or fewer.", platform: "Landing page", where: "Homepage hero section > Lead capture form", expectedImpact: "Above-fold CTA and simplified form typically lift conversion rate by 20-30%.", effort: "Low (under 30 min)", impact: "High", timeline: "This week" },
-      { action: `Pause the lowest-performing ad sets in ${adChannels?.split(',')[0]?.trim() || 'your primary channel'} and reallocate budget to top 2 performers.`, platform: adChannels?.split(',')[0]?.trim() || "Meta Ads Manager", where: "Campaigns tab > Ad Sets > Sort by CPA", expectedImpact: `Reallocating from low-performers could recover estimated ${monthlyWaste ?? 'wasted spend'} per month.`, effort: "Low (under 30 min)", impact: "High", timeline: "This week" }
-    ],
-    breakdown: [
-      { label: "ICP Alignment", score: 35, found: "Best customer profile is not documented in targeting parameters.", why: "Broad audiences waste budget on non-converters." },
-      { label: "Targeting Accuracy", score: 41, found: "Current targeting includes too many unqualified segments.", why: "Lower quality leads raise CPA and reduce close rate." },
-      { label: "Channel Efficiency", score: 40, found: "Primary channel not optimised for cost per acquisition vs regional benchmarks.", why: "Inefficient channel allocation raises overall blended CPA." },
-      { label: "Funnel Friction Index", score: 45, found: "Multiple steps before conversion with no progressive commitment triggers.", why: "High friction reduces conversion rate and raises effective CPA." },
-      { label: "Message to Market Fit", score: 50, found: "Ad creative and copy do not clearly address the core problem your product solves.", why: "Low message-market fit reduces CTR and conversion rate." },
-      { label: "Budget Reallocation Opportunity", score: 38, found: "Budget spread across placements without performance-based reallocation.", why: "Non-optimised budget distribution means lower-performing placements absorb spend that should go to winners." }
-    ],
-    competitor_insights: `The ${geographicRegion} market in the ${industry || 'relevant'} sector has several established players. Differentiation through ICP precision and landing page clarity is the key lever available to challengers.`,
-    regional_benchmarks: `In ${geographicRegion}, typical CPCs range from $0.05-0.50 on Meta and $0.10-0.80 on Google depending on industry. CPA benchmarks vary by deal size.`,
-    is_deep_research: isSubscriber,
-  }
+  // ── Branched Claude call ──────────────────────────────────────────────────
+  let diagnosisText: string
 
-  const diagnosisText = JSON.stringify(STUB_DIAGNOSIS)
-  console.log('[diagnostic] STUB mode: using hardcoded diagnosis, length=', diagnosisText.length)
-
-  if (false) { // eslint-disable-line
   if (isSubscriber) {
     const res = await anthropic.messages.create({
       model: 'claude-haiku-4-5-20251001',
@@ -784,12 +680,11 @@ Rules:
       system: systemPrompt,
       messages: [{ role: 'user', content: prompt }],
     })
-    const subText = res.content
+    diagnosisText = res.content
       .filter(block => block.type === 'text')
       .map(block => (block as { type: 'text'; text: string }).text)
       .join('')
-    console.log(`[diagnostic] subscriber diagnosisText length=${subText.length}`)
-    void subText
+    console.log(`[diagnostic] subscriber diagnosisText length=${diagnosisText.length}`)
   } else {
     const freeSystemPrompt = `You are an expert ICP (Ideal Customer Profile) diagnostic analyst.
 
@@ -1154,14 +1049,11 @@ Rules:
       system: freeSystemPrompt,
       messages: [{ role: 'user', content: freePrompt }],
     })
-    const freeText = res.content
+    diagnosisText = res.content
       .filter(block => block.type === 'text')
       .map(block => (block as { type: 'text'; text: string }).text)
       .join('')
-    // diagnosisText already set by STUB above; this branch is unreachable
-    void freeText
   }
-  } // end if(false) stub wrapper
 
   // extractJSON handles markdown code blocks internally; pass raw text directly
   const rawParsed = extractJSON(diagnosisText)
