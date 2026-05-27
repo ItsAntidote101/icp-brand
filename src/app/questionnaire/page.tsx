@@ -769,6 +769,7 @@ export default function QuestionnairePage() {
   const [loadingStep,   setLoadingStep]   = useState(0)
   const [layerDone,     setLayerDone]     = useState<null | 1 | 2>(null)
   const [urlPreviewBanner, setUrlPreviewBanner] = useState(false)
+  const [urlWarning, setUrlWarning] = useState(false)
   const [diagCount,     setDiagCount]     = useState(9400)
   const timerRefs = useRef<ReturnType<typeof setTimeout>[]>([])
 
@@ -861,9 +862,24 @@ export default function QuestionnairePage() {
     })
   }, [q?.id])
 
+  const SUSPICIOUS_DOMAINS = [
+    'test.com', 'test.co', 'example.com', 'example.org', 'example.net',
+    'localhost', 'placeholder.com', 'yoursite.com', 'mysite.com', 'website.com',
+    'demo.com', 'abc.com', 'xyz.com', 'foo.com', 'bar.com', 'sample.com',
+    'fake.com', 'url.com', 'site.com', 'domain.com', 'testsite.com', 'mywebsite.com',
+  ]
+
   const handleUrlBlur = useCallback(async () => {
     const url = (answers[10] as string) ?? ''
-    if (!url || !url.startsWith('http')) return
+    if (!url) return
+
+    // Check for suspicious/placeholder URLs
+    const lower = url.toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '')
+    const isSuspicious = SUSPICIOUS_DOMAINS.some(d => lower === d || lower.startsWith(d + '/'))
+    setUrlWarning(isSuspicious)
+    if (isSuspicious) return
+
+    if (!url.startsWith('http')) return
     try {
       const res  = await fetch(`/api/fetch-url-preview?url=${encodeURIComponent(url)}`)
       if (!res.ok) return
@@ -1277,6 +1293,18 @@ export default function QuestionnairePage() {
                 {q.type === 'slider'   && <SliderInput   value={numVal}  onChange={setAnswer} question={q.question} />}
                 {q.type === 'yesno'    && <YesNoInput    value={textVal} onChange={setAnswer} />}
               </div>
+
+              {urlWarning && (
+                <div className="mb-6 flex items-start gap-3 px-4 py-3 rounded border border-amber-400/40 bg-amber-50 text-sm text-amber-800">
+                  <span className="flex-shrink-0 mt-0.5">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                  </span>
+                  <p className="flex-1 leading-snug">That looks like a test or placeholder URL. Please enter your real landing page for an accurate diagnosis — the AI will assess your actual page.</p>
+                  <button type="button" onClick={() => setUrlWarning(false)} className="flex-shrink-0 text-amber-600 hover:text-amber-800 transition-colors text-base leading-none">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M18 6 6 18M6 6l12 12"/></svg>
+                  </button>
+                </div>
+              )}
 
               {urlPreviewBanner && (
                 <div className="mb-6 flex items-start gap-3 px-4 py-3 rounded border border-[#e8330a]/30 bg-[#e8330a]/10 text-sm text-[#e8330a]">
