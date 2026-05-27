@@ -218,7 +218,7 @@ export async function POST(req: NextRequest) {
   const email: string = (profile?.email as string) ?? ''
 
   // ── Subscription check + monthly diagnosis limit ─────────────────────────
-  const MONTHLY_LIMITS: Record<string, number> = { free: 1, starter: 2, pro: 5, agency: Infinity }
+  const MONTHLY_LIMITS: Record<string, number> = { free: 1, starter: 3, pro: 20, agency: Infinity }
 
   let isSubscriber = false
   if (email) {
