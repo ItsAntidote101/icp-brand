@@ -968,3 +968,345 @@ ${infoCard(rows.map(([l, v], i) => row(l, v, i === rows.length - 1)).join(''))}`
   else console.log('[email] new-signup founder sent id:', data?.id)
   return { data, error }
 }
+
+// ─── Email 20: Stale diagnosis alert ─────────────────────────────────────────
+
+export async function sendStaleDiagnosisEmail({
+  to, name, daysSince, tier, lastScore, baseUrl,
+}: {
+  to: string; name?: string; daysSince: number; tier: string
+  lastScore?: number; baseUrl?: string
+}) {
+  const url   = `${baseUrl ?? 'https://idealicp.com'}/questionnaire`
+  const first = name?.split(' ')[0] ?? 'there'
+  const threshold = tier === 'agency' ? 7 : tier === 'pro' ? 14 : 30
+  const scoreContext = lastScore !== undefined
+    ? lastScore >= 70
+      ? `Your ICP score of <strong style="color:#15803d;">${lastScore}/100</strong> is strong — keep it fresh.`
+      : lastScore >= 40
+        ? `Your ICP score of <strong style="color:#d97706;">${lastScore}/100</strong> has room to improve. New data could push it higher.`
+        : `Your ICP score of <strong style="color:#dc2626;">${lastScore}/100</strong> needs attention. A lot changes in ${daysSince} days.`
+    : `Time to see where your ICP stands today.`
+
+  const content = `
+${ICON.calendar}
+${heading('Your ICP is overdue for a check-up', 36)}
+${sub(`Hi ${first}, your last diagnosis was <strong>${daysSince} days ago</strong>. ${scoreContext}`)}
+${infoCard(`
+<p style="margin:0 0 10px;color:${Dark};font-size:15px;font-weight:700;font-family:${font};">What can shift in ${daysSince} days</p>
+${[
+  'Platform algorithm updates change your reach and CPC',
+  'Competitor positioning and ad creative shifts',
+  'Audience behaviour and buying signals evolve',
+  'Your own product/market fit assumptions may need recalibrating',
+].map(t => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:8px;"><tr>
+  <td style="width:20px;padding-top:2px;vertical-align:top;"><span style="color:${Orange};font-size:13px;font-weight:700;">&#8594;</span></td>
+  <td><p style="margin:0;color:${Muted};font-size:13px;line-height:1.5;font-family:${font};">${t}</p></td>
+</tr></table>`).join('')}`)}
+<p style="margin:0 0 10px;color:${Dark};font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;font-family:${font};">Your ${tier.charAt(0).toUpperCase() + tier.slice(1)} plan includes</p>
+${securityBox(`<p style="margin:0;color:${Muted};font-size:14px;line-height:1.6;font-family:${font};">A fresh diagnosis every <strong style="color:${Dark};">${threshold} days</strong> is included in your plan. Takes under 5 minutes. Gives you a new score, updated quick wins, and a recalibrated market position.</p>`)}
+${cta('Run New Diagnosis', url)}`
+
+  const { data, error } = await getResend().emails.send({
+    from: FROM, to,
+    subject: `Your ICP diagnosis is ${daysSince} days old — time for a refresh`,
+    html: base(content),
+  })
+  if (error) console.error('[email] stale-diagnosis error:', JSON.stringify(error))
+  else console.log('[email] stale-diagnosis sent id:', data?.id, 'to:', to)
+  return { data, error }
+}
+
+// ─── Email 21: Score drop alert ────────────────────────────────────────────────
+
+export async function sendScoreDropAlertEmail({
+  to, name, previousScore, currentScore, topFinding, baseUrl,
+}: {
+  to: string; name?: string; previousScore: number; currentScore: number
+  topFinding?: string; baseUrl?: string
+}) {
+  const url   = `${baseUrl ?? 'https://idealicp.com'}/dashboard`
+  const first = name?.split(' ')[0] ?? 'there'
+  const drop  = previousScore - currentScore
+  const sev   = drop >= 15 ? 'Critical' : drop >= 8 ? 'Warning' : 'Attention needed'
+  const sevColor = drop >= 15 ? '#dc2626' : drop >= 8 ? '#d97706' : '#d97706'
+
+  const content = `
+${ICON.alert}
+${heading(`Your ICP score dropped ${drop} points`, 36)}
+${sub(`Hi ${first}, your latest diagnosis shows your ICP score fell from <strong style="color:${sevColor};">${previousScore}</strong> to <strong style="color:${sevColor};">${currentScore}/100</strong>.`)}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:rgba(220,38,38,0.05);border:1.5px solid rgba(220,38,38,0.2);border-radius:4px;margin-bottom:20px;">
+  <tr><td style="padding:20px 24px;">
+    <p style="margin:0 0 4px;color:${sevColor};font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;font-family:${font};">${sev}</p>
+    <p style="margin:0;color:${Dark};font-size:15px;font-weight:700;font-family:${font};">Score: ${previousScore} &#8594; ${currentScore} (-${drop} pts)</p>
+  </td></tr>
+</table>
+${topFinding ? `
+<p style="margin:0 0 10px;color:${Dark};font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;font-family:${font};">Primary cause identified</p>
+${infoCard(`<p style="margin:0;color:${Dark};font-size:14px;line-height:1.6;font-family:${font};">${escapeHtml(topFinding)}</p>`)}` : ''}
+<p style="margin:0 0 10px;color:${Dark};font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;font-family:${font};">What to do now</p>
+${securityBox(`<p style="margin:0;color:${Muted};font-size:14px;line-height:1.6;font-family:${font};">Open your dashboard to review the full findings and quick wins. Your media buyer has identified the highest-leverage fix — implementing it this week can recover most of the drop.</p>`)}
+${cta('Review My Dashboard', url)}`
+
+  const { data, error } = await getResend().emails.send({
+    from: FROM, to,
+    subject: `Your ICP score dropped ${drop} points — here is what happened`,
+    html: base(content),
+  })
+  if (error) console.error('[email] score-drop error:', JSON.stringify(error))
+  else console.log('[email] score-drop sent id:', data?.id, 'to:', to)
+  return { data, error }
+}
+
+// ─── Email 22: Intelligence briefing nudge ────────────────────────────────────
+
+export async function sendIntelligenceNudgeEmail({
+  to, name, weekOf, topInsight, baseUrl,
+}: {
+  to: string; name?: string; weekOf: string; topInsight?: string; baseUrl?: string
+}) {
+  const url       = `${baseUrl ?? 'https://idealicp.com'}/dashboard`
+  const first     = name?.split(' ')[0] ?? 'there'
+  const weekLabel = new Date(weekOf).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+
+  const content = `
+${ICON.brain}
+${heading('Your intelligence brief is waiting', 36)}
+${sub(`Hi ${first}, your weekly market intelligence for the week of ${weekLabel} is ready — and you have not checked it yet.`)}
+${topInsight ? `
+<p style="margin:0 0 10px;color:${Dark};font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;font-family:${font};">This week's top signal</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:rgba(245,158,11,0.07);border:1.5px solid rgba(245,158,11,0.25);border-radius:4px;margin-bottom:20px;">
+  <tr><td style="padding:20px 24px;">
+    <p style="margin:0;color:#92400e;font-size:14px;line-height:1.6;font-family:${font};">${escapeHtml(topInsight)}</p>
+  </td></tr>
+</table>` : ''}
+${infoCard(`
+<p style="margin:0 0 12px;color:${Dark};font-size:14px;font-weight:600;font-family:${font};">This week's briefing includes</p>
+${['Competitor moves in your region and industry', 'Platform algorithm and policy changes', 'Benchmark comparisons: your CPA vs industry average', 'One specific action you should take this week'].map(item => `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-bottom:8px;"><tr>
+  <td style="width:18px;padding-top:2px;vertical-align:top;color:${Orange};font-size:13px;font-weight:700;font-family:${font};">&#8594;</td>
+  <td><p style="margin:0;color:${Muted};font-size:13px;line-height:1.5;font-family:${font};">${item}</p></td>
+</tr></table>`).join('')}`)}
+${cta('Read My Briefing', url)}`
+
+  const { data, error } = await getResend().emails.send({
+    from: FROM, to,
+    subject: `You have not read your market briefing — here is what you are missing`,
+    html: base(content),
+  })
+  if (error) console.error('[email] intel-nudge error:', JSON.stringify(error))
+  else console.log('[email] intel-nudge sent id:', data?.id, 'to:', to)
+  return { data, error }
+}
+
+// ─── Email 23: Post-diagnosis 48h follow-up ───────────────────────────────────
+
+export async function sendPostDiagnosis48hEmail({
+  to, name, score, topFinding, topAction, baseUrl,
+}: {
+  to: string; name?: string; score?: number
+  topFinding?: string; topAction?: string; baseUrl?: string
+}) {
+  const url   = `${baseUrl ?? 'https://idealicp.com'}/dashboard`
+  const first = name?.split(' ')[0] ?? 'there'
+  const scoreHtml = score !== undefined
+    ? score >= 70
+      ? `You scored <strong style="color:#15803d;">${score}/100</strong> — excellent position.`
+      : score >= 40
+        ? `You scored <strong style="color:#d97706;">${score}/100</strong> — there is a clear path to improve.`
+        : `You scored <strong style="color:#dc2626;">${score}/100</strong> — your dashboard has the exact steps to fix this.`
+    : `Your full results are in your dashboard.`
+
+  const content = `
+${ICON.check}
+${heading('48 hours ago you ran your diagnosis', 36)}
+${sub(`Hi ${first}, ${scoreHtml} Have you had a chance to review your findings?`)}
+${topFinding ? `
+<p style="margin:0 0 10px;color:${Dark};font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;font-family:${font};">Your most critical finding</p>
+${infoCard(`<p style="margin:0;color:${Dark};font-size:14px;line-height:1.6;font-family:${font};">${escapeHtml(topFinding)}</p>`)}` : ''}
+${topAction ? `
+<p style="margin:0 0 10px;color:${Dark};font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;font-family:${font};">Your #1 quick win (take this this week)</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:rgba(34,197,94,0.07);border:1.5px solid rgba(34,197,94,0.2);border-radius:4px;margin-bottom:20px;">
+  <tr><td style="padding:20px 24px;">
+    <p style="margin:0;color:#166534;font-size:14px;line-height:1.6;font-family:${font};">&rarr; ${escapeHtml(topAction)}</p>
+  </td></tr>
+</table>` : ''}
+${securityBox(`<p style="margin:0;color:${Muted};font-size:14px;line-height:1.6;font-family:${font};">The highest-leverage work happens in the first 7 days. Your media buyer has ranked your fixes by impact — the ones at the top can move your score by 5-10 points this week alone.</p>`)}
+${cta('Review My Dashboard', url)}`
+
+  const { data, error } = await getResend().emails.send({
+    from: FROM, to,
+    subject: `48 hours later — have you actioned your #1 quick win?`,
+    html: base(content),
+  })
+  if (error) console.error('[email] 48h-followup error:', JSON.stringify(error))
+  else console.log('[email] 48h-followup sent id:', data?.id, 'to:', to)
+  return { data, error }
+}
+
+// ─── Email 24: Post-diagnosis 7-day follow-up with score prediction ───────────
+
+export async function sendPostDiagnosis7dEmail({
+  to, name, score, topQuickWin, predictedGain, completedCount, baseUrl,
+}: {
+  to: string; name?: string; score?: number; topQuickWin?: string
+  predictedGain?: number; completedCount?: number; baseUrl?: string
+}) {
+  const url   = `${baseUrl ?? 'https://idealicp.com'}/dashboard`
+  const first = name?.split(' ')[0] ?? 'there'
+  const done  = completedCount ?? 0
+  const predictedScore = (score && predictedGain) ? Math.min(100, score + predictedGain) : null
+
+  const statusBlock = done === 0
+    ? securityBox(`<p style="margin:0;color:${Muted};font-size:14px;line-height:1.6;font-family:${font};">It looks like you have not started on your quick wins yet. No judgment — but every day you wait, your budget keeps burning at the same inefficiency rate your diagnostic measured.</p>`)
+    : infoCard(`<p style="margin:0;color:${Dark};font-size:14px;line-height:1.6;font-family:${font};">You have completed <strong>${done} quick win${done > 1 ? 's' : ''}</strong> since your diagnosis. That is real progress.</p>`)
+
+  const content = `
+${ICON.chart}
+${heading('It has been 7 days since your diagnosis', 36)}
+${sub(`Hi ${first}, one week ago you ran your ICP diagnostic${score !== undefined ? ` and scored ${score}/100` : ''}. Here is where things stand.`)}
+${statusBlock}
+${(topQuickWin && predictedGain && predictedScore) ? `
+<p style="margin:0 0 10px;color:${Dark};font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;font-family:${font};">Score prediction: what is possible this month</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1.5px solid ${Border};border-radius:4px;margin-bottom:20px;">
+  <tr>
+    <td style="padding:20px 24px;border-right:1px solid ${BorderLight};text-align:center;">
+      <p style="margin:0;color:${Muted};font-size:12px;text-transform:uppercase;letter-spacing:0.07em;font-family:${font};">Current score</p>
+      <p style="margin:6px 0 0;color:#d97706;font-size:32px;font-weight:800;font-family:${font};line-height:1;">${score ?? '?'}</p>
+    </td>
+    <td style="padding:20px 24px;text-align:center;">
+      <p style="margin:0;color:${Muted};font-size:12px;text-transform:uppercase;letter-spacing:0.07em;font-family:${font};">If you implement top win</p>
+      <p style="margin:6px 0 0;color:#15803d;font-size:32px;font-weight:800;font-family:${font};line-height:1;">${predictedScore}</p>
+      <p style="margin:4px 0 0;color:#15803d;font-size:12px;font-weight:600;font-family:${font};">+${predictedGain} pts</p>
+    </td>
+  </tr>
+</table>
+<p style="margin:0 0 10px;color:${Dark};font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;font-family:${font};">Your highest-impact action right now</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:rgba(34,197,94,0.07);border:1.5px solid rgba(34,197,94,0.2);border-radius:4px;margin-bottom:20px;">
+  <tr><td style="padding:20px 24px;">
+    <p style="margin:0;color:#166534;font-size:14px;line-height:1.6;font-family:${font};">&rarr; ${escapeHtml(topQuickWin)}</p>
+  </td></tr>
+</table>` : ''}
+${cta('Open Dashboard', url)}`
+
+  const { data, error } = await getResend().emails.send({
+    from: FROM, to,
+    subject: `7 days on: your score could be ${predictedScore ?? 'higher'} right now`,
+    html: base(content),
+  })
+  if (error) console.error('[email] 7d-followup error:', JSON.stringify(error))
+  else console.log('[email] 7d-followup sent id:', data?.id, 'to:', to)
+  return { data, error }
+}
+
+// ─── Enhancement to Weekly Intelligence: add score trend section ──────────────
+
+export async function sendPersonalisedWeeklyIntelligenceEmail({
+  to, name, weekOf, insights, benchmarks, opportunity, recommendation,
+  scoreTrend,
+}: {
+  to: string
+  name: string
+  weekOf: string
+  insights: IntelligenceInsight[]
+  benchmarks: IntelligenceBenchmark[]
+  opportunity: string
+  recommendation: string
+  scoreTrend?: { current: number; prev: number | null; topQuickWin?: string; predictedGain?: number }
+}) {
+  const first = name?.split(' ')[0] ?? 'there'
+  const weekLabel = new Date(weekOf).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+
+  const insightRows = insights.slice(0, 3).map((ins, i) => `
+    <tr><td style="padding:10px 0;${i < insights.slice(0, 3).length - 1 ? `border-bottom:1px solid ${BorderLight};` : ''}">
+      <p style="margin:0;color:${Muted};font-size:11px;text-transform:uppercase;letter-spacing:0.07em;font-family:${font};">${i + 1}</p>
+      <p style="margin:2px 0 0;color:${Dark};font-size:14px;font-weight:600;font-family:${font};">${ins.title}</p>
+      <p style="margin:3px 0 0;color:${Muted};font-size:13px;line-height:1.5;font-family:${font};">${ins.body}</p>
+    </td></tr>`).join('')
+
+  const benchmarkRows = benchmarks.slice(0, 4).map((b, i, arr) => {
+    const fmt = (v: number) => b.unit === '%' ? `${v}%` : b.unit === '$' ? `$${v}` : `${v}${b.unit}`
+    return `<tr>
+      <td style="padding:8px 12px;color:${Muted};font-size:13px;font-family:${font};${i < arr.length - 1 ? `border-bottom:1px solid ${BorderLight};` : ''}">${b.name}</td>
+      <td style="padding:8px 12px;color:${Dark};font-size:13px;font-weight:600;font-family:${font};${i < arr.length - 1 ? `border-bottom:1px solid ${BorderLight};` : ''}">${b.userValue != null ? fmt(b.userValue) : '&#8212;'}</td>
+      <td style="padding:8px 12px;color:${Orange};font-size:13px;font-family:${font};${i < arr.length - 1 ? `border-bottom:1px solid ${BorderLight};` : ''}">${fmt(b.industryAvg)}</td>
+    </tr>`
+  }).join('')
+
+  const scoreTrendSection = scoreTrend ? (() => {
+    const delta = scoreTrend.prev !== null ? scoreTrend.current - scoreTrend.prev : null
+    const color = delta !== null ? (delta > 0 ? '#15803d' : delta < 0 ? '#dc2626' : '#d97706') : '#d97706'
+    const arrow = delta !== null ? (delta > 0 ? '&#8593;' : delta < 0 ? '&#8595;' : '&#8594;') : ''
+    return `
+<p style="margin:0 0 10px;color:${Dark};font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;font-family:${font};">Your ICP score this week</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1.5px solid ${Border};border-radius:4px;margin-bottom:20px;">
+  <tr>
+    <td style="padding:20px 24px;border-right:1px solid ${BorderLight};text-align:center;width:50%;">
+      <p style="margin:0;color:${Muted};font-size:12px;text-transform:uppercase;letter-spacing:0.07em;font-family:${font};">Current Score</p>
+      <p style="margin:6px 0 0;font-size:36px;font-weight:800;color:${color};font-family:${font};line-height:1;">${scoreTrend.current}</p>
+      ${delta !== null ? `<p style="margin:4px 0 0;font-size:13px;font-weight:600;color:${color};font-family:${font};">${arrow} ${Math.abs(delta)} pts ${delta > 0 ? 'up' : delta < 0 ? 'down' : 'unchanged'}</p>` : ''}
+    </td>
+    <td style="padding:20px 24px;text-align:center;width:50%;">
+      <p style="margin:0;color:${Muted};font-size:12px;text-transform:uppercase;letter-spacing:0.07em;font-family:${font};">Potential score</p>
+      <p style="margin:6px 0 0;font-size:36px;font-weight:800;color:#15803d;font-family:${font};line-height:1;">${scoreTrend.predictedGain ? Math.min(100, scoreTrend.current + scoreTrend.predictedGain) : '?'}</p>
+      ${scoreTrend.predictedGain ? `<p style="margin:4px 0 0;font-size:13px;font-weight:600;color:#15803d;font-family:${font};">+${scoreTrend.predictedGain} if top win done</p>` : ''}
+    </td>
+  </tr>
+</table>
+${scoreTrend.topQuickWin ? `
+<p style="margin:0 0 10px;color:${Dark};font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;font-family:${font};">Your #1 action this week</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:rgba(34,197,94,0.07);border:1.5px solid rgba(34,197,94,0.2);border-radius:4px;margin-bottom:20px;">
+  <tr><td style="padding:18px 22px;">
+    <p style="margin:0;color:#166534;font-size:14px;line-height:1.6;font-family:${font};">&rarr; ${escapeHtml(scoreTrend.topQuickWin)}</p>
+  </td></tr>
+</table>` : ''}`
+  })() : ''
+
+  const content = `
+${ICON.brain}
+${heading('Your Weekly Market Intelligence', 34)}
+${sub(`Hi ${first}, here is what moved in your market this week, ${weekLabel}.`)}
+
+${scoreTrendSection}
+
+<p style="margin:0 0 10px;color:${Dark};font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;font-family:${font};">3 things to know this week</p>
+${infoCard(`<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${insightRows}</table>`)}
+
+<p style="margin:0 0 10px;color:${Dark};font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;font-family:${font};">Your benchmark position</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:${CardBg};border:1.5px solid ${Border};margin-bottom:16px;">
+  <tr><td style="padding:0;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+      <tr>
+        <th style="padding:10px 12px;color:${Muted};font-size:11px;text-align:left;text-transform:uppercase;letter-spacing:0.07em;border-bottom:1.5px solid ${Border};font-family:${font};">Metric</th>
+        <th style="padding:10px 12px;color:${Dark};font-size:11px;text-align:left;text-transform:uppercase;letter-spacing:0.07em;border-bottom:1.5px solid ${Border};font-family:${font};">You</th>
+        <th style="padding:10px 12px;color:${Orange};font-size:11px;text-align:left;text-transform:uppercase;letter-spacing:0.07em;border-bottom:1.5px solid ${Border};font-family:${font};">Industry Avg</th>
+      </tr>
+      ${benchmarkRows}
+    </table>
+  </td></tr>
+</table>
+
+<p style="margin:0 0 10px;color:${Dark};font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;font-family:${font};">This week's opportunity</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(245,158,11,0.07);border:1.5px solid rgba(245,158,11,0.25);margin-bottom:16px;">
+  <tr><td style="padding:18px 22px;">
+    <p style="margin:0;color:#92400e;font-size:14px;line-height:1.6;font-family:${font};">${opportunity}</p>
+  </td></tr>
+</table>
+
+<p style="margin:0 0 10px;color:${Dark};font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;font-family:${font};">Recommended action this week</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(34,197,94,0.07);border:1.5px solid rgba(34,197,94,0.2);margin-bottom:24px;">
+  <tr><td style="padding:18px 22px;">
+    <p style="margin:0;color:#166534;font-size:14px;line-height:1.6;font-family:${font};">&rarr; ${recommendation}</p>
+  </td></tr>
+</table>
+
+${cta('View Full Briefing', 'https://idealicp.com/dashboard')}`
+
+  const { data, error } = await getResend().emails.send({
+    from: FROM, to,
+    subject: `Your weekly market intelligence + ICP score update, ${weekLabel}`,
+    html: base(content),
+  })
+  if (error) console.error('[email] personalised-weekly-intel error:', JSON.stringify(error))
+  else console.log('[email] personalised-weekly-intel sent id:', data?.id, 'to:', to)
+  return { data, error }
+}

@@ -1065,19 +1065,43 @@ Rules:
   // Sanitize any em/en dashes that slipped through the AI output
   const parsed = stripDashes(rawParsedOrFallback)
 
-  // Inject tier metadata
-  const diagnosis: unknown =
-    typeof parsed === 'object' && parsed !== null
-      ? {
-          ...(parsed as Record<string, unknown>),
-          is_deep_research: isSubscriber,
-          ...(!isSubscriber && {
-            landing_page_assessment: 'Upgrade to subscriber for live landing page assessment',
-            competitor_insights:     'Upgrade to subscriber for competitor research',
-            regional_benchmarks:     'Upgrade to subscriber for real regional benchmarks',
-          }),
-        }
-      : parsed
+  // Compute score predictions from top-level quick wins
+  const computeScorePredictions = (
+    overallScore: number,
+    wins: Array<{ action: string; impact?: string; effort?: string; expectedImpact?: string }>,
+  ) => wins.slice(0, 3).map(win => {
+    const base  = win.impact === 'High' ? 8 : win.impact === 'Medium' ? 5 : 3
+    const sf    = overallScore < 40 ? 1.2 : overallScore < 60 ? 1.0 : 0.7
+    const delta = Math.max(1, Math.round(base * sf))
+    return {
+      action:         win.action,
+      predictedDelta: delta,
+      predictedScore: Math.min(100, overallScore + delta),
+      impact:         win.impact ?? 'Medium',
+      effort:         win.effort ?? 'Medium',
+      expectedImpact: win.expectedImpact ?? '',
+    }
+  })
+
+  // Inject tier metadata + score predictions
+  const parsedObj = typeof parsed === 'object' && parsed !== null ? (parsed as Record<string, unknown>) : null
+  const overallScore = parsedObj ? (parsedObj.overall_score ?? parsedObj.health_score) as number | undefined : undefined
+  const topWins = parsedObj?.quick_wins as Array<{ action: string; impact?: string; effort?: string; expectedImpact?: string }> | undefined
+
+  const diagnosis: unknown = parsedObj
+    ? {
+        ...parsedObj,
+        is_deep_research: isSubscriber,
+        ...(overallScore !== undefined && topWins?.length
+          ? { score_predictions: computeScorePredictions(overallScore, topWins) }
+          : {}),
+        ...(!isSubscriber && {
+          landing_page_assessment: 'Upgrade to subscriber for live landing page assessment',
+          competitor_insights:     'Upgrade to subscriber for competitor research',
+          regional_benchmarks:     'Upgrade to subscriber for real regional benchmarks',
+        }),
+      }
+    : parsed
 
   const { data, error } = await supabase
     .from('diagnostics')

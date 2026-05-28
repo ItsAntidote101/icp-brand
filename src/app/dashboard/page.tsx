@@ -349,11 +349,17 @@ type CategoryData = {
   business_outcomes?: BusinessOutcomes
 }
 
+type ScorePrediction = {
+  action: string; predictedDelta: number; predictedScore: number
+  impact: string; effort: string; expectedImpact: string
+}
+
 type DiagnosisData = {
   overall_score?: number; health_score?: number
   executive_summary?: string
   critical_findings?: Finding[]; findings?: Finding[]
   quick_wins?: QuickWin[]
+  score_predictions?: ScorePrediction[]
   landing_page_assessment?: string
   monthly_waste_estimate?: string
   is_deep_research?: boolean
@@ -670,6 +676,60 @@ function QuickWinsWidget({ diag, delay }: { diag: DiagnosisData; delay: number }
           <div style={{ height: 6, background: Pborder, borderRadius: 100, overflow: 'hidden' }}>
             <div style={{ height: '100%', background: P, borderRadius: 100, width: `${(done / wins.length) * 100}%`, transition: 'width 0.4s ease' }} />
           </div>
+        </div>
+      )}
+    </Card>
+  )
+}
+
+function ScorePredictionWidget({ diag, score, delay }: { diag: DiagnosisData; score: number; delay: number }) {
+  const preds = diag.score_predictions ?? []
+  if (preds.length === 0) return null
+  const top = preds[0]
+
+  return (
+    <Card delay={delay}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+        <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(34,197,94,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <TrendingUp size={16} color="#16a34a" />
+        </div>
+        <p style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: P, margin: 0 }}>Score potential</p>
+      </div>
+
+      <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
+        <div style={{ flex: 1, background: '#f8f4f0', borderRadius: 12, padding: '14px 16px', textAlign: 'center' }}>
+          <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Now</p>
+          <p style={{ fontFamily: font, fontSize: 28, fontWeight: 800, color: scoreColor(score), margin: 0, lineHeight: 1 }}>{score}</p>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', color: Pmuted }}>
+          <ArrowRight size={16} />
+        </div>
+        <div style={{ flex: 1, background: 'rgba(34,197,94,0.08)', borderRadius: 12, padding: '14px 16px', textAlign: 'center', border: '1px solid rgba(34,197,94,0.2)' }}>
+          <p style={{ fontFamily: fontB, fontSize: 11, color: '#16a34a', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Potential</p>
+          <p style={{ fontFamily: font, fontSize: 28, fontWeight: 800, color: '#16a34a', margin: 0, lineHeight: 1 }}>{top.predictedScore}</p>
+          <p style={{ fontFamily: fontB, fontSize: 11, color: '#16a34a', margin: '2px 0 0', fontWeight: 600 }}>+{top.predictedDelta} pts</p>
+        </div>
+      </div>
+
+      <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: Pmuted, margin: '0 0 8px' }}>Highest-impact action</p>
+      <div style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.18)', borderRadius: 10, padding: '12px 14px', marginBottom: 12 }}>
+        <p style={{ fontFamily: fontB, fontSize: 13, color: '#166534', margin: 0, lineHeight: 1.5 }}>&#8594; {top.action}</p>
+      </div>
+      {top.expectedImpact && (
+        <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: 0, lineHeight: 1.5 }}>
+          Expected: {top.expectedImpact}
+        </p>
+      )}
+
+      {preds.length > 1 && (
+        <div style={{ marginTop: 14, borderTop: `1px solid ${Pborder}`, paddingTop: 12 }}>
+          <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.07em' }}>More wins</p>
+          {preds.slice(1).map((p2, i) => (
+            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+              <p style={{ fontFamily: fontB, fontSize: 12, color: P, margin: 0, flex: 1, lineHeight: 1.4, paddingRight: 12 }}>{p2.action}</p>
+              <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, color: '#16a34a', background: 'rgba(34,197,94,0.1)', padding: '2px 8px', borderRadius: 100, whiteSpace: 'nowrap', flexShrink: 0 }}>+{p2.predictedDelta} pts</span>
+            </div>
+          ))}
         </div>
       )}
     </Card>
@@ -6181,19 +6241,22 @@ export default function DashboardPage() {
                   </UpgradeGate>
                 )}
 
-                {/* Priority action + Quick Wins checklist */}
+                {/* Priority action + Quick Wins checklist + Score Prediction */}
                 <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
                   <TodaysPriorityCard diag={diag} report={latestReport} user={user} onComplete={setStreak} />
-                  <div>
-                    <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 14px' }}>THIS WEEK</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                    <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 -4px' }}>THIS WEEK</p>
                     <EnhancedQuickWinsWidget diag={diag} user={user} onStreakUpdate={setStreak} maxWins={isStarter ? 3 : 1} reportId={latestReport?.id} />
                     {!isStarter && (
-                      <div style={{ marginTop: 10, background: BgAlt, border: `1.5px dashed ${Pborder}`, borderRadius: 12, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{ marginTop: 0, background: BgAlt, border: `1.5px dashed ${Pborder}`, borderRadius: 12, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
                         <Lock size={13} color={Pmuted} />
                         <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: 0 }}>
                           2 more quick wins on <button onClick={() => setShowUpgradeModal(true)} style={{ color: P, fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: fontB, fontSize: 12 }}>Starter</button>
                         </p>
                       </div>
+                    )}
+                    {score !== null && diag.score_predictions && diag.score_predictions.length > 0 && (
+                      <ScorePredictionWidget diag={diag} score={score} delay={300} />
                     )}
                   </div>
                 </div>

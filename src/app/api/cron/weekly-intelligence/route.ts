@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import Anthropic from '@anthropic-ai/sdk'
-import { sendWeeklyIntelligenceEmail } from '@/lib/email'
+import { sendPersonalisedWeeklyIntelligenceEmail } from '@/lib/email'
 
 export const dynamic     = 'force-dynamic'
 export const maxDuration = 120
@@ -188,21 +188,45 @@ export async function GET(req: NextRequest) {
       const estimatedCpa  = budgetNum > 0 && leadsNum > 0 ? (budgetNum / leadsNum).toFixed(0) : ''
       const ltvCacRatio   = estimatedCpa && ltvNum > 0 ? (ltvNum / parseFloat(estimatedCpa)).toFixed(1) : ''
 
-      // Fetch latest ICP score
-      const { data: latestReport } = await supabase
+      // Fetch latest two ICP reports for score trend
+      const { data: recentReports } = await supabase
         .from('reports')
         .select('report_summary')
         .eq('user_id', user.id)
         .order('generated_at', { ascending: false })
-        .limit(1)
-        .maybeSingle()
+        .limit(2)
+
+      const getScore = (s: string) => { try { const p = JSON.parse(s); return p.overall_score ?? p.health_score ?? null } catch { return null } }
+      const latestReport = recentReports?.[0]
+      const prevReport   = recentReports?.[1]
 
       let icpScore: number | null = null
+      let prevScore: number | null = null
+      let topQuickWin: string | undefined
+      let predictedGain: number | undefined
+
       if (latestReport?.report_summary) {
+        icpScore = getScore(latestReport.report_summary as string)
+        // Extract top quick win + prediction
         try {
-          const parsed = JSON.parse(latestReport.report_summary as string)
-          icpScore = parsed.overall_score ?? parsed.health_score ?? null
+          const d = JSON.parse(latestReport.report_summary as string) as Record<string, unknown>
+          const preds = d.score_predictions as Array<{ action: string; predictedDelta: number }> | undefined
+          if (preds?.[0]) {
+            topQuickWin  = preds[0].action
+            predictedGain = preds[0].predictedDelta
+          } else {
+            const wins = d.quick_wins as Array<{ action: string; impact: string }> | undefined
+            if (wins?.[0]) {
+              topQuickWin = wins[0].action
+              const base = wins[0].impact === 'High' ? 8 : wins[0].impact === 'Medium' ? 5 : 3
+              const sf   = (icpScore ?? 50) < 40 ? 1.2 : (icpScore ?? 50) < 60 ? 1.0 : 0.7
+              predictedGain = Math.max(1, Math.round(base * sf))
+            }
+          }
         } catch { /* noop */ }
+      }
+      if (prevReport?.report_summary) {
+        prevScore = getScore(prevReport.report_summary as string)
       }
 
       const data = await generateBriefingForUser({
@@ -227,7 +251,7 @@ export async function GET(req: NextRequest) {
       const opportunity    = (data.topOpportunity as string | undefined) ?? ''
       const recommendation = (data.topRecommendation as string | undefined) ?? ''
 
-      await sendWeeklyIntelligenceEmail({
+      await sendPersonalisedWeeklyIntelligenceEmail({
         to: user.email,
         name: user.full_name ?? '',
         weekOf: week,
@@ -235,6 +259,9 @@ export async function GET(req: NextRequest) {
         benchmarks,
         opportunity,
         recommendation,
+        scoreTrend: icpScore !== null ? {
+          current: icpScore, prev: prevScore, topQuickWin, predictedGain,
+        } : undefined,
       })
 
       processed++
