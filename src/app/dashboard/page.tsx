@@ -12,7 +12,7 @@ import {
   Star, Flame, AlertTriangle, Camera, Pencil,
   Users, Search, Filter, DollarSign,
 } from 'lucide-react'
-import { AreaChart, Area, ResponsiveContainer, Tooltip } from 'recharts'
+import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis, YAxis, ReferenceLine, CartesianGrid } from 'recharts'
 
 // ─── Tokens ───────────────────────────────────────────────────────────────────
 const P       = '#201515'
@@ -660,9 +660,50 @@ function PerformanceBreakdownWidget({ diag, score, delay }: { diag: DiagnosisDat
   )
 }
 
+type ScoreRange = 'all' | '90d' | '30d'
+
+function scoreBand(s: number): { label: string; color: string; bg: string } {
+  if (s >= 85) return { label: 'Excellent', color: '#16a34a', bg: '#f0fdf4' }
+  if (s >= 70) return { label: 'Good',      color: '#2563eb', bg: '#eff6ff' }
+  if (s >= 55) return { label: 'Average',   color: '#d97706', bg: '#fffbeb' }
+  if (s >= 40) return { label: 'Below Avg', color: '#ea580c', bg: '#fff7ed' }
+  return              { label: 'Poor',      color: '#dc2626', bg: '#fef2f2' }
+}
+
+function trajectoryInsight(data: { score: number }[]): { icon: 'up' | 'down' | 'flat' | 'volatile'; text: string; color: string; bg: string; border: string } {
+  if (data.length < 2) return { icon: 'flat', text: 'Run another diagnosis to see your trajectory.', color: Pmuted, bg: BgAlt, border: Pborder }
+  const recent = data.slice(-3)
+  const gains  = recent.slice(1).map((d, i) => d.score - recent[i].score)
+  const avg    = gains.reduce((a, b) => a + b, 0) / gains.length
+  const swings = gains.filter(g => Math.abs(g) >= 8).length
+
+  if (swings >= 2) return {
+    icon: 'volatile', text: 'Scores are fluctuating — inconsistent strategy may be causing variance. Stabilise your targeting first.',
+    color: '#d97706', bg: '#fffbeb', border: '#fde68a'
+  }
+  if (avg >= 6) return {
+    icon: 'up', text: 'Strong upward trajectory. Your targeting is compounding — keep implementing quick wins.',
+    color: '#15803d', bg: '#f0fdf4', border: '#bbf7d0'
+  }
+  if (avg >= 1) return {
+    icon: 'up', text: 'Steady progress. Consistent small improvements add up — stay the course.',
+    color: '#2563eb', bg: '#eff6ff', border: '#bfdbfe'
+  }
+  if (avg <= -4) return {
+    icon: 'down', text: 'Score is declining. Market conditions may have shifted — run a fresh diagnosis to identify what changed.',
+    color: '#b91c1c', bg: '#fef2f2', border: '#fecaca'
+  }
+  return {
+    icon: 'flat', text: 'Score is plateauing. Try implementing a quick win to break through to the next tier.',
+    color: '#d97706', bg: '#fffbeb', border: '#fde68a'
+  }
+}
+
 function ScoreHistoryWidget({ reports, latestReport, renewalDate, delay }: {
   reports: ReportRow[]; latestReport: ReportRow; renewalDate: string | null; delay: number
 }) {
+  const [range, setRange] = React.useState<ScoreRange>('all')
+
   const hasHistory = reports.length >= 2
   const nextDate   = renewalDate
     ? new Date(renewalDate)
@@ -694,61 +735,135 @@ function ScoreHistoryWidget({ reports, latestReport, renewalDate, delay }: {
     )
   }
 
-  const chartData = [...reports].reverse().map(r => {
+  // All data, oldest→newest
+  const allData = [...reports].reverse().map(r => {
     const d = parseDiagnosis(r.report_summary)
-    return { date: formatDate(r.generated_at), score: getScore(d) ?? 0 }
+    return { date: formatDate(r.generated_at), rawDate: r.generated_at, score: getScore(d) ?? 0 }
   })
 
-  const first   = chartData[0]?.score ?? 0
-  const last    = chartData[chartData.length - 1]?.score ?? 0
-  const delta   = last - first
-  const deltaColor = delta >= 10 ? '#22c55e' : delta >= 1 ? '#f59e0b' : delta < 0 ? '#ef4444' : Pmuted
-  const deltaLabel = delta > 0 ? `+${delta} pts` : delta < 0 ? `${delta} pts` : 'No change'
-  const daySpan = chartData.length >= 2
-    ? Math.round((new Date(reports[0].generated_at).getTime() - new Date(reports[reports.length - 1].generated_at).getTime()) / 86_400_000)
-    : 0
+  // Apply time range filter
+  const cutoff = range === '30d' ? Date.now() - 30 * 86_400_000
+               : range === '90d' ? Date.now() - 90 * 86_400_000
+               : 0
+  const chartData = allData.filter(d => new Date(d.rawDate).getTime() >= cutoff)
+  const displayData = chartData.length >= 1 ? chartData : allData
+
+  // Stats from full history (not filtered) for "since you started"
+  const firstEver    = allData[0]?.score ?? 0
+  const currentScore = allData[allData.length - 1]?.score ?? 0
+  const best         = Math.max(...allData.map(d => d.score))
+  const bestDate     = allData.find(d => d.score === best)?.date ?? ''
+  const totalDays    = Math.round((new Date(allData[allData.length - 1].rawDate).getTime() - new Date(allData[0].rawDate).getTime()) / 86_400_000)
+  const sinceStart   = currentScore - firstEver
+  const sinceColor   = sinceStart >= 10 ? '#16a34a' : sinceStart >= 1 ? '#2563eb' : sinceStart < 0 ? '#ef4444' : Pmuted
+
+  // Filtered delta (for the selected range)
+  const filtFirst  = displayData[0]?.score ?? 0
+  const filtLast   = displayData[displayData.length - 1]?.score ?? 0
+  const filtDelta  = filtLast - filtFirst
+  const filtColor  = filtDelta >= 10 ? '#22c55e' : filtDelta >= 1 ? '#f59e0b' : filtDelta < 0 ? '#ef4444' : Pmuted
+  const filtLabel  = filtDelta > 0 ? `+${filtDelta} pts` : filtDelta < 0 ? `${filtDelta} pts` : '±0 pts'
+
+  const band       = scoreBand(currentScore)
+  const insight    = trajectoryInsight(displayData)
+
+  const ranges: { key: ScoreRange; label: string }[] = [
+    { key: 'all', label: 'All time' },
+    { key: '90d', label: '90 days' },
+    { key: '30d', label: '30 days' },
+  ]
 
   return (
     <Card delay={delay}>
+      {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-        <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: 0 }}>Score History</p>
+        <div>
+          <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: '0 0 4px' }}>Score History</p>
+          <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, color: band.color, background: band.bg, padding: '2px 8px', borderRadius: 100 }}>
+            {band.label}
+          </span>
+        </div>
         <div style={{ textAlign: 'right' }}>
-          <span style={{ fontFamily: font, fontSize: 22, fontWeight: 800, color: deltaColor }}>{deltaLabel}</span>
-          {daySpan > 0 && <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '2px 0 0' }}>over {daySpan} days</p>}
+          <span style={{ fontFamily: font, fontSize: 22, fontWeight: 800, color: filtColor }}>{filtLabel}</span>
+          <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '2px 0 0' }}>
+            {range === 'all' ? `over ${totalDays} days` : range === '90d' ? 'last 90 days' : 'last 30 days'}
+          </p>
         </div>
       </div>
-      <ResponsiveContainer width="100%" height={160}>
-        <AreaChart data={chartData} margin={{ top: 4, right: 0, bottom: 0, left: 0 }}>
+
+      {/* Time range filter */}
+      <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
+        {ranges.map(r => (
+          <button key={r.key} onClick={() => setRange(r.key)}
+            style={{ fontFamily: fontB, fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 100, cursor: 'pointer', border: range === r.key ? `1.5px solid ${P}` : `1.5px solid ${Pborder}`, background: range === r.key ? P : 'transparent', color: range === r.key ? '#fff' : Pmuted, transition: 'all 0.15s' }}>
+            {r.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Chart */}
+      <ResponsiveContainer width="100%" height={170}>
+        <AreaChart data={displayData} margin={{ top: 6, right: 4, bottom: 0, left: -28 }}>
           <defs>
             <linearGradient id="sg" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%"  stopColor={P} stopOpacity={0.18} />
+              <stop offset="5%"  stopColor={P} stopOpacity={0.2} />
               <stop offset="95%" stopColor={P} stopOpacity={0} />
             </linearGradient>
           </defs>
-          <Area type="monotone" dataKey="score" stroke={P} strokeWidth={2.5} fill="url(#sg)" dot={{ fill: P, r: 4 }} isAnimationActive />
+          <CartesianGrid strokeDasharray="3 3" stroke={Pborder} vertical={false} />
+          <XAxis dataKey="date" tick={{ fontFamily: fontB, fontSize: 10, fill: Pmuted }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+          <YAxis domain={[0, 100]} tick={{ fontFamily: fontB, fontSize: 10, fill: Pmuted }} tickLine={false} axisLine={false} ticks={[0, 40, 55, 70, 85, 100]} />
+          <ReferenceLine y={70} stroke="#2563eb" strokeDasharray="4 3" strokeOpacity={0.35} label={{ value: 'Good', position: 'insideTopRight', fontFamily: fontB, fontSize: 9, fill: '#2563eb', opacity: 0.6 }} />
+          <ReferenceLine y={55} stroke="#d97706" strokeDasharray="4 3" strokeOpacity={0.3} label={{ value: 'Avg', position: 'insideTopRight', fontFamily: fontB, fontSize: 9, fill: '#d97706', opacity: 0.6 }} />
+          <Area type="monotone" dataKey="score" stroke={P} strokeWidth={2.5} fill="url(#sg)" dot={{ fill: P, r: 4, strokeWidth: 0 }} activeDot={{ r: 5, fill: P }} isAnimationActive />
           <Tooltip
-            contentStyle={{ fontFamily: fontB, fontSize: 12, border: `1px solid ${Pborder}`, borderRadius: 10, color: P }}
-            formatter={(v) => [`Score: ${v}`, '']}
+            contentStyle={{ fontFamily: fontB, fontSize: 12, border: `1px solid ${Pborder}`, borderRadius: 10, color: P, boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}
+            formatter={(v) => {
+              const n = typeof v === 'number' ? v : Number(v)
+              const b = scoreBand(n)
+              return [`${n}/100 — ${b.label}`, 'ICP Score']
+            }}
             labelStyle={{ color: Pmuted, marginBottom: 4 }}
           />
         </AreaChart>
       </ResponsiveContainer>
-      {delta >= 10 && (
-        <div style={{ marginTop: 12, background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: '8px 14px', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <TrendingUp size={14} color="#16a34a" />
-          <span style={{ fontFamily: fontB, fontSize: 12, color: '#15803d' }}>
-            Strong improvement. Your targeting is getting more precise.
-          </span>
-        </div>
-      )}
-      {delta < 0 && (
-        <div style={{ marginTop: 12, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10, padding: '8px 14px', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <AlertCircle size={14} color="#dc2626" />
-          <span style={{ fontFamily: fontB, fontSize: 12, color: '#b91c1c' }}>
-            Score dropped. Run a new diagnosis to identify what shifted.
-          </span>
-        </div>
-      )}
+
+      {/* Stats row */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginTop: 14 }}>
+        {[
+          { label: 'Since you started', value: sinceStart >= 0 ? `+${sinceStart} pts` : `${sinceStart} pts`, color: sinceColor, sub: `from ${firstEver} → ${currentScore}` },
+          { label: 'Personal best', value: `${best}/100`, color: P, sub: bestDate },
+          { label: 'Days tracked', value: `${totalDays}`, color: P, sub: `${allData.length} diagnoses` },
+        ].map(s => (
+          <div key={s.label} style={{ background: BgAlt, borderRadius: 10, padding: '10px 12px', textAlign: 'center' }}>
+            <p style={{ fontFamily: fontB, fontSize: 10, color: Pmuted, margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{s.label}</p>
+            <p style={{ fontFamily: font, fontSize: 15, fontWeight: 800, color: s.color, margin: '0 0 2px' }}>{s.value}</p>
+            <p style={{ fontFamily: fontB, fontSize: 10, color: Pmuted, margin: 0 }}>{s.sub}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Trajectory insight */}
+      <div style={{ marginTop: 12, background: insight.bg, border: `1px solid ${insight.border}`, borderRadius: 10, padding: '9px 14px', display: 'flex', alignItems: 'center', gap: 8 }}>
+        {insight.icon === 'up'       && <TrendingUp size={14} color={insight.color} />}
+        {insight.icon === 'down'     && <TrendingDown size={14} color={insight.color} />}
+        {insight.icon === 'volatile' && <AlertCircle size={14} color={insight.color} />}
+        {insight.icon === 'flat'     && <RefreshCw size={14} color={insight.color} />}
+        <span style={{ fontFamily: fontB, fontSize: 12, color: insight.color, lineHeight: 1.5 }}>{insight.text}</span>
+      </div>
+
+      {/* Next tier nudge */}
+      {(() => {
+        const nextThreshold = currentScore < 40 ? 40 : currentScore < 55 ? 55 : currentScore < 70 ? 70 : currentScore < 85 ? 85 : null
+        const nextName      = nextThreshold === 40 ? 'Below Average' : nextThreshold === 55 ? 'Average' : nextThreshold === 70 ? 'Good' : nextThreshold === 85 ? 'Excellent' : null
+        const gap           = nextThreshold ? nextThreshold - currentScore : 0
+        if (!nextThreshold || !nextName) return null
+        return (
+          <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '10px 0 0', textAlign: 'center' }}>
+            {gap} point{gap !== 1 ? 's' : ''} away from <strong style={{ color: P }}>{nextName}</strong> tier
+          </p>
+        )
+      })()}
     </Card>
   )
 }
