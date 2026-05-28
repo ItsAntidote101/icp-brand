@@ -5102,15 +5102,20 @@ export default function DashboardPage() {
   const [intelligenceSeenThisSession, setIntelligenceSeenThisSession] = useState(false)
   const [reportsError,    setReportsError]    = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
+  const [readNotifIds,    setReadNotifIds]    = useState<Set<string>>(new Set())
   const [csvHistory,      setCsvHistory]      = useState<CsvHistoryItem[]>([])
   const [qRegion,   setQRegion]   = useState('')
   const [qIndustry, setQIndustry] = useState('')
   const [showHelp,          setShowHelp]          = useState(false)
 
-  // Load currency preference on mount
+  // Load currency preference and read-notification IDs on mount
   useEffect(() => {
     const stored = localStorage.getItem('preferred_currency')
     if (stored && CURRENCIES.includes(stored)) setCurrency(stored)
+    try {
+      const raw = localStorage.getItem('notif_read_ids')
+      if (raw) setReadNotifIds(new Set<string>(JSON.parse(raw) as string[]))
+    } catch { /* ignore */ }
   }, [])
 
   const handleCurrencyChange = (c: string) => {
@@ -5274,15 +5279,129 @@ export default function DashboardPage() {
   const userIndustry = qIndustry || (diag.search?.keyword_analysis ?? '') || ''
   const assignedBuyer = user ? getAssignedBuyer(userRegion, userIndustry, user.subscription_tier) : MEDIA_BUYERS[0]
 
-  const notifications: { id: string; icon: React.ReactNode; text: string; sub: string; color: string; action?: () => void }[] = []
+  type DashNotif = { id: string; icon: React.ReactNode; title: string; body: string; color: string; ts: string; actionLabel?: string; action?: () => void }
+  const allNotifications: DashNotif[] = []
+
+  // 1 — New intelligence briefing
   if (hasNewIntelligence)
-    notifications.push({ id: 'intel', icon: <Brain size={15} />, text: 'New intelligence briefing ready', sub: 'This week', color: '#22c55e', action: () => { setShowNotifications(false); setActiveTab('intelligence') } })
+    allNotifications.push({
+      id: `intel-${latestReport?.generated_at?.slice(0, 10) ?? 'new'}`,
+      icon: <Brain size={15} />, color: '#22c55e',
+      title: 'New intelligence briefing ready',
+      body: 'Your weekly market intelligence report has been updated with fresh competitor and regional data.',
+      ts: 'This week', actionLabel: 'View briefing →',
+      action: () => { setShowNotifications(false); setActiveTab('intelligence') },
+    })
+
+  // 2 — Unread advisor reply
   if (user?.has_unread_reply)
-    notifications.push({ id: 'reply', icon: <MessageCircle size={15} />, text: 'New reply from your advisor', sub: 'Unread', color: '#e8330a' })
-  if (scoreDeltaMain !== null && scoreDeltaMain !== 0)
-    notifications.push({ id: 'score', icon: <TrendingUp size={15} />, text: `ICP score ${scoreDeltaMain > 0 ? 'improved' : 'dropped'} ${Math.abs(scoreDeltaMain)} points`, sub: 'Since last report', color: scoreDeltaMain > 0 ? '#22c55e' : '#ef4444', action: () => { setShowNotifications(false); setActiveTab('reports') } })
+    allNotifications.push({
+      id: 'advisor-reply',
+      icon: <MessageCircle size={15} />, color: '#e8330a',
+      title: 'New reply from your advisor',
+      body: 'Your assigned media buyer has responded to your last message.',
+      ts: 'Unread', actionLabel: 'Open chat →',
+    })
+
+  // 3 — Score improved (milestone: crossed a band)
+  if (scoreDeltaMain !== null && scoreDeltaMain > 0 && score !== null && prevScore !== null) {
+    const prevBand = scoreBand(prevScore).label
+    const curBand  = scoreBand(score).label
+    const crossed  = prevBand !== curBand
+    allNotifications.push({
+      id: `score-up-${prevScore}-${score}`,
+      icon: <TrendingUp size={15} />, color: '#22c55e',
+      title: crossed ? `You reached ${curBand} tier 🎉` : `ICP score improved +${scoreDeltaMain} pts`,
+      body: crossed
+        ? `Your score moved from ${prevScore} (${prevBand}) to ${score} (${curBand}). Keep implementing quick wins to push further.`
+        : `Your ICP score went from ${prevScore} to ${score}. Check the Score History tab to see your trajectory.`,
+      ts: formatDate(latestReport.generated_at), actionLabel: 'See history →',
+      action: () => { setShowNotifications(false); setActiveTab('reports') },
+    })
+  }
+
+  // 4 — Score dropped
+  if (scoreDeltaMain !== null && scoreDeltaMain < 0 && score !== null && prevScore !== null)
+    allNotifications.push({
+      id: `score-drop-${prevScore}-${score}`,
+      icon: <TrendingDown size={15} />, color: '#ef4444',
+      title: `ICP score dropped ${Math.abs(scoreDeltaMain)} pts`,
+      body: `Your score fell from ${prevScore} to ${score}. Review the critical findings to understand what shifted.`,
+      ts: formatDate(latestReport.generated_at), actionLabel: 'Review findings →',
+      action: () => { setShowNotifications(false); setActiveTab('audience') },
+    })
+
+  // 5 — Data quality flag on latest report
+  if (latestReport) {
+    const d = diag
+    const qFlag = (
+      (typeof d.landing_page_assessment === 'string' && d.landing_page_assessment.toLowerCase().includes('test or placeholder')) ||
+      (typeof d.funnel?.landing_page_assessment === 'string' && d.funnel.landing_page_assessment.toLowerCase().includes('test or placeholder')) ||
+      (typeof d.executive_summary === 'string' && (d.executive_summary.toLowerCase().includes('implausible') || d.executive_summary.toLowerCase().includes('anomaly')))
+    )
+    if (qFlag)
+      allNotifications.push({
+        id: `quality-flag-${latestReport.id}`,
+        icon: <AlertCircle size={15} />, color: '#d97706',
+        title: 'Data quality issue in your report',
+        body: 'Your last diagnostic contains a test URL or implausible values. Re-run with real data for accurate results.',
+        ts: formatDate(latestReport.generated_at), actionLabel: 'Re-run diagnosis →',
+        action: () => { setShowNotifications(false); window.location.href = '/questionnaire' },
+      })
+  }
+
+  // 6 — Overdue diagnosis
+  if (latestReport && user) {
+    const t = user.subscription_tier
+    const threshold = t === 'agency' ? 7 : t === 'pro' ? 14 : 30
+    const days = daysBetween(latestReport.generated_at)
+    if (days > threshold)
+      allNotifications.push({
+        id: `stale-diag-${latestReport.id}-${Math.floor(days / threshold)}`,
+        icon: <RefreshCw size={15} />, color: '#d97706',
+        title: `Diagnosis is ${days} days old`,
+        body: `${t === 'agency' ? 'Agency tier' : t === 'pro' ? 'Pro tier' : 'Your plan'} recommends a fresh diagnostic every ${threshold} days. Market conditions may have shifted.`,
+        ts: `Due ${threshold}d ago`, actionLabel: 'Run new diagnosis →',
+        action: () => { setShowNotifications(false); window.location.href = '/questionnaire' },
+      })
+  }
+
+  // 7 — Latest CSV analysis has notable waste
+  if (csvHistory.length > 0) {
+    const latest = csvHistory[0]
+    if (latest.budget_waste)
+      allNotifications.push({
+        id: `csv-waste-${latest.id}`,
+        icon: <BarChart2 size={15} />, color: '#7c3aed',
+        title: 'Campaign waste detected',
+        body: `Your ${latest.file} analysis found ~${latest.budget_waste} in estimated ad waste. Review recommendations to recover it.`,
+        ts: formatDate(latest.created_at), actionLabel: 'View analysis →',
+        action: () => { setShowNotifications(false); window.location.href = `/dashboard/csv?id=${latest.id}` },
+      })
+  }
+
+  // 8 — First run prompt
   if (!hasReports)
-    notifications.push({ id: 'start', icon: <Zap size={15} />, text: 'Run your first diagnosis to unlock your dashboard', sub: 'Action needed', color: '#f59e0b' })
+    allNotifications.push({
+      id: 'first-run',
+      icon: <Zap size={15} />, color: '#f59e0b',
+      title: 'Run your first diagnosis',
+      body: 'Answer 10 questions and get a full ICP score, audience insights, and media buyer quick wins — takes 3 minutes.',
+      ts: 'Action needed', actionLabel: 'Start now →',
+      action: () => { setShowNotifications(false); window.location.href = '/questionnaire' },
+    })
+
+  // Compute unread count — notifications whose ID is not in the read set
+  const unreadNotifications = allNotifications.filter(n => !readNotifIds.has(n.id))
+  const unreadCount = unreadNotifications.length
+
+  const markAllRead = () => {
+    const ids = allNotifications.map(n => n.id)
+    const merged = Array.from(readNotifIds).concat(ids)
+    const next = new Set(merged)
+    setReadNotifIds(next)
+    try { localStorage.setItem('notif_read_ids', JSON.stringify(Array.from(next))) } catch { /* ignore */ }
+  }
 
   const TAB_ICONS: Record<Tab, React.ReactNode> = {
     overview:     <LayoutDashboard size={20} />,
@@ -5512,37 +5631,73 @@ export default function DashboardPage() {
             </Link>
             {/* Bell notification button */}
             <div style={{ position: 'relative' }}>
-              <button onClick={() => setShowNotifications(v => !v)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 10, width: 38, height: 38, cursor: 'pointer', position: 'relative' }}>
-                <Bell size={16} color={notifications.length > 0 ? P : Pmuted} />
-                {notifications.length > 0 && (
-                  <span style={{ position: 'absolute', top: 7, right: 7, width: 7, height: 7, borderRadius: '50%', background: '#ef4444', border: '1.5px solid #fff' }} />
+              <button
+                onClick={() => { setShowNotifications(v => { if (!v) markAllRead(); return !v }); }}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 10, width: 38, height: 38, cursor: 'pointer', position: 'relative' }}
+              >
+                <Bell size={16} color={allNotifications.length > 0 ? P : Pmuted} />
+                {unreadCount > 0 && (
+                  <span style={{ position: 'absolute', top: 6, right: 6, minWidth: 16, height: 16, borderRadius: 100, background: '#ef4444', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: fontB, fontSize: 9, fontWeight: 700, color: '#fff', padding: '0 3px' }}>
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
                 )}
               </button>
               {showNotifications && (
                 <>
                   <div onClick={() => setShowNotifications(false)} style={{ position: 'fixed', inset: 0, zIndex: 90 }} />
-                  <div style={{ position: 'absolute', top: 46, right: 0, zIndex: 100, width: 320, background: '#f8f4f0', borderRadius: 12, boxShadow: '0 8px 32px rgba(32,21,21,0.14)', border: `1px solid ${Pborder}`, overflow: 'hidden' }}>
-                    <div style={{ padding: '16px 20px 12px', borderBottom: `1px solid ${Pborder}` }}>
-                      <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: Pmuted, margin: 0 }}>Notifications</p>
+                  <div style={{ position: 'absolute', top: 46, right: 0, zIndex: 100, width: 340, background: '#f8f4f0', borderRadius: 14, boxShadow: '0 12px 40px rgba(32,21,21,0.16)', border: `1px solid ${Pborder}`, overflow: 'hidden' }}>
+                    {/* Header */}
+                    <div style={{ padding: '14px 18px', borderBottom: `1px solid ${Pborder}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: Pmuted, margin: 0 }}>Notifications</p>
+                        {allNotifications.length > 0 && (
+                          <span style={{ fontFamily: fontB, fontSize: 11, background: BgAlt, color: Pmuted, borderRadius: 100, padding: '2px 7px', border: `1px solid ${Pborder}` }}>
+                            {allNotifications.length}
+                          </span>
+                        )}
+                      </div>
+                      {unreadCount > 0 && (
+                        <button onClick={markAllRead} style={{ fontFamily: fontB, fontSize: 11, color: P, background: 'transparent', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>
+                          Mark all read
+                        </button>
+                      )}
                     </div>
-                    {notifications.length === 0 ? (
-                      <div style={{ padding: '28px 20px', textAlign: 'center' }}>
-                        <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: 0 }}>No new notifications</p>
+
+                    {/* Notification list */}
+                    {allNotifications.length === 0 ? (
+                      <div style={{ padding: '32px 20px', textAlign: 'center' }}>
+                        <Bell size={20} color={Pmuted} style={{ marginBottom: 10, opacity: 0.4 }} />
+                        <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: 0 }}>You&apos;re all caught up</p>
+                        <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '4px 0 0', opacity: 0.7 }}>New alerts will appear here</p>
                       </div>
                     ) : (
-                      <div style={{ padding: '8px 0' }}>
-                        {notifications.map(n => (
-                          <button key={n.id} onClick={n.action ?? (() => setShowNotifications(false))}
-                            style={{ width: '100%', display: 'flex', alignItems: 'flex-start', gap: 12, padding: '12px 20px', background: 'transparent', border: 'none', cursor: n.action ? 'pointer' : 'default', textAlign: 'left' }}>
-                            <div style={{ width: 30, height: 30, borderRadius: '50%', background: n.color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
-                              <span style={{ color: n.color }}>{n.icon}</span>
-                            </div>
-                            <div>
-                              <p style={{ fontFamily: fontB, fontSize: 13, color: P, margin: '0 0 2px', lineHeight: 1.4 }}>{n.text}</p>
-                              <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: 0 }}>{n.sub}</p>
-                            </div>
-                          </button>
-                        ))}
+                      <div style={{ maxHeight: 420, overflowY: 'auto' as const, padding: '6px 0' }}>
+                        {allNotifications.map(n => {
+                          const isUnread = !readNotifIds.has(n.id)
+                          return (
+                            <button key={n.id}
+                              onClick={n.action ?? (() => setShowNotifications(false))}
+                              style={{ width: '100%', display: 'flex', alignItems: 'flex-start', gap: 12, padding: '12px 18px', background: isUnread ? 'rgba(232,51,10,0.04)' : 'transparent', border: 'none', cursor: n.action ? 'pointer' : 'default', textAlign: 'left', borderLeft: isUnread ? '3px solid #e8330a' : '3px solid transparent', transition: 'background 0.15s' }}
+                              onMouseEnter={e => { if (n.action) e.currentTarget.style.background = BgAlt }}
+                              onMouseLeave={e => { e.currentTarget.style.background = isUnread ? 'rgba(232,51,10,0.04)' : 'transparent' }}
+                            >
+                              <div style={{ width: 32, height: 32, borderRadius: '50%', background: n.color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
+                                <span style={{ color: n.color }}>{n.icon}</span>
+                              </div>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                                  <p style={{ fontFamily: fontB, fontSize: 13, fontWeight: isUnread ? 700 : 500, color: P, margin: 0, lineHeight: 1.3 }}>{n.title}</p>
+                                  {isUnread && <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#ef4444', flexShrink: 0 }} />}
+                                </div>
+                                <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '0 0 6px', lineHeight: 1.5 }}>{n.body}</p>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                                  <span style={{ fontFamily: fontB, fontSize: 10, color: Pmuted, opacity: 0.7 }}>{n.ts}</span>
+                                  {n.actionLabel && <span style={{ fontFamily: fontB, fontSize: 11, color: n.color, fontWeight: 600 }}>{n.actionLabel}</span>}
+                                </div>
+                              </div>
+                            </button>
+                          )
+                        })}
                       </div>
                     )}
                   </div>
