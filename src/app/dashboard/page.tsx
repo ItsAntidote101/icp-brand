@@ -310,6 +310,11 @@ type ReportRow = {
   report_summary: string; generated_at: string
 }
 
+type CsvHistoryItem = {
+  id: string; created_at: string; file: string; summary: string
+  budget_waste: string | null; recommendations_count: number; top_performers_count: number
+}
+
 type Finding  = { title: string; severity: string; explanation: string }
 type QuickWin = {
   action:         string
@@ -913,19 +918,76 @@ function NextDiagnosisWidget({ lastReport, renewalDate, delay }: { lastReport: R
   )
 }
 
-function CampaignInsightsWidget({ delay }: { delay: number }) {
+function CampaignInsightsWidget({ delay, history }: { delay: number; history: CsvHistoryItem[] }) {
+  if (history.length === 0) {
+    return (
+      <Card delay={delay} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', minHeight: 180 }}>
+        <div style={{ width: 48, height: 48, borderRadius: '50%', background: '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
+          <BarChart2 size={22} color={P} />
+        </div>
+        <p style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: P, margin: '0 0 8px' }}>Campaign data analysis</p>
+        <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 20px', maxWidth: 200, lineHeight: 1.6 }}>
+          Upload your Google Ads or Meta export to get a media buyer breakdown of your actual spend.
+        </p>
+        <Link href="/dashboard/csv" style={{ fontFamily: font, fontWeight: 600, fontSize: 13, color: P, border: `1.5px solid ${Pborder}`, borderRadius: 10, padding: '9px 18px', textDecoration: 'none' }}>
+          Upload CSV →
+        </Link>
+      </Card>
+    )
+  }
+
+  const recent = history.slice(0, 3)
   return (
-    <Card delay={delay} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', minHeight: 180 }}>
-      <div style={{ width: 48, height: 48, borderRadius: '50%', background: '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
-        <BarChart2 size={22} color={P} />
+    <Card delay={delay}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ width: 32, height: 32, borderRadius: 8, background: '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <BarChart2 size={16} color={P} />
+          </div>
+          <p style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: 0 }}>Campaign Analyses</p>
+        </div>
+        <Link href="/dashboard/csv" style={{ fontFamily: fontB, fontSize: 12, color: P, textDecoration: 'none', border: `1.5px solid ${Pborder}`, borderRadius: 8, padding: '5px 12px', whiteSpace: 'nowrap' as const }}>
+          + New upload
+        </Link>
       </div>
-      <p style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: P, margin: '0 0 8px' }}>Campaign data analysis</p>
-      <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 20px', maxWidth: 200, lineHeight: 1.6 }}>
-        Upload your Google Ads or Meta export to get a media buyer breakdown of your actual spend.
-      </p>
-      <Link href="/dashboard/csv" style={{ fontFamily: font, fontWeight: 600, fontSize: 13, color: P, border: `1.5px solid ${Pborder}`, borderRadius: 10, padding: '9px 18px', textDecoration: 'none' }}>
-        Upload CSV →
-      </Link>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        {recent.map((item, i) => (
+          <Link key={item.id} href={`/dashboard/csv?id=${item.id}`} style={{ textDecoration: 'none' }}>
+            <div style={{ background: i % 2 === 0 ? BgAlt : 'transparent', borderRadius: 10, padding: '11px 14px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', transition: 'background 0.15s' }}
+              onMouseEnter={e => (e.currentTarget.style.background = '#f0ecf8')}
+              onMouseLeave={e => (e.currentTarget.style.background = i % 2 === 0 ? BgAlt : 'transparent')}
+            >
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(232,51,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <FileSearch size={14} color={P} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 600, color: P, margin: '0 0 2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>
+                  {item.file}
+                </p>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' as const }}>
+                  <span style={{ fontFamily: fontB, fontSize: 11, color: Pmuted }}>{formatDate(item.created_at)}</span>
+                  {item.budget_waste && (
+                    <span style={{ fontFamily: fontB, fontSize: 11, color: '#d97706', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 100, padding: '1px 7px' }}>
+                      ~{item.budget_waste} waste
+                    </span>
+                  )}
+                  <span style={{ fontFamily: fontB, fontSize: 11, color: Pmuted }}>
+                    {item.recommendations_count} recs
+                  </span>
+                </div>
+              </div>
+              <ArrowRight size={13} color={Pmuted} style={{ flexShrink: 0 }} />
+            </div>
+          </Link>
+        ))}
+      </div>
+
+      {history.length > 3 && (
+        <Link href="/dashboard/csv/history" style={{ display: 'block', textAlign: 'center', fontFamily: fontB, fontSize: 12, color: Pmuted, textDecoration: 'none', marginTop: 10, padding: '6px 0' }}>
+          View all {history.length} analyses →
+        </Link>
+      )}
     </Card>
   )
 }
@@ -5040,6 +5102,7 @@ export default function DashboardPage() {
   const [intelligenceSeenThisSession, setIntelligenceSeenThisSession] = useState(false)
   const [reportsError,    setReportsError]    = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
+  const [csvHistory,      setCsvHistory]      = useState<CsvHistoryItem[]>([])
   const [qRegion,   setQRegion]   = useState('')
   const [qIndustry, setQIndustry] = useState('')
   const [showHelp,          setShowHelp]          = useState(false)
@@ -5058,12 +5121,19 @@ export default function DashboardPage() {
   const loadReports = useCallback(async (email: string) => {
     setReportsError(false)
     try {
-      const res = await fetch(`/api/user/reports?email=${encodeURIComponent(email)}`)
-      if (res.ok) {
-        const j = await res.json()
+      const [rRes, cRes] = await Promise.all([
+        fetch(`/api/user/reports?email=${encodeURIComponent(email)}`),
+        fetch(`/api/csv-history?email=${encodeURIComponent(email)}`),
+      ])
+      if (rRes.ok) {
+        const j = await rRes.json()
         setReports(j.reports ?? [])
       } else {
         setReportsError(true)
+      }
+      if (cRes.ok) {
+        const j = await cRes.json()
+        setCsvHistory(j.analyses ?? [])
       }
     } catch {
       setReportsError(true)
@@ -5706,7 +5776,7 @@ export default function DashboardPage() {
 
                 {/* Campaign CSV, Pro+ */}
                 <UpgradeGate requiredTier="pro" currentTier={t} feature="Campaign Data Analysis" description="Upload your Google Ads or Meta export for a media buyer breakdown of your actual spend." onUpgrade={() => setShowUpgradeModal(true)}>
-                  <CampaignInsightsWidget delay={0} />
+                  <CampaignInsightsWidget delay={0} history={csvHistory} />
                 </UpgradeGate>
 
                 {/* Your Media Buyer */}

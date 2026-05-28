@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Papa from 'papaparse'
 
@@ -71,6 +72,9 @@ function ImpactBadge({ impact }: { impact: string }) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function CsvUploadPage() {
+  const searchParams = useSearchParams()
+  const savedId      = searchParams.get('id')
+
   const [format, setFormat]         = useState<CsvFormat>('google')
   const [parsed, setParsed]         = useState<ParsedCSV | null>(null)
   const [fileName, setFileName]     = useState('')
@@ -80,6 +84,8 @@ export default function CsvUploadPage() {
   const [analysis, setAnalysis]     = useState<Analysis | null>(null)
   const [apiError, setApiError]     = useState('')
   const [userEmail, setUserEmail]   = useState('')
+  const [savedMeta, setSavedMeta]   = useState<{ file: string; created_at: string } | null>(null)
+  const [loadingId, setLoadingId]   = useState(false)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const resultsRef   = useRef<HTMLDivElement>(null)
@@ -87,6 +93,25 @@ export default function CsvUploadPage() {
   useEffect(() => {
     setUserEmail(getStoredEmail())
   }, [])
+
+  // Load a saved analysis when ?id= is present
+  useEffect(() => {
+    if (!savedId) return
+    setLoadingId(true)
+    fetch('/api/csv-history', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: savedId }),
+    })
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(j => {
+        const d = j.analysis as Record<string, unknown>
+        setAnalysis(d as Analysis)
+        setSavedMeta({ file: typeof d.file === 'string' ? d.file : 'upload.csv', created_at: j.created_at })
+      })
+      .catch(() => setApiError('Could not load saved analysis.'))
+      .finally(() => setLoadingId(false))
+  }, [savedId])
 
   // ── CSV parsing ───────────────────────────────────────────────────────────
 
@@ -182,21 +207,53 @@ export default function CsvUploadPage() {
             ← Dashboard
           </Link>
           <span className="text-[#939084]">/</span>
-          <span className="text-[#201515] text-sm font-medium">CSV Analysis</span>
+          {savedId ? (
+            <>
+              <Link href="/dashboard/csv" className="text-[#939084] hover:text-[#605d52] transition-colors text-sm">CSV Analysis</Link>
+              <span className="text-[#939084]">/</span>
+              <span className="text-[#201515] text-sm font-medium truncate max-w-[160px]">{savedMeta?.file ?? 'Saved analysis'}</span>
+            </>
+          ) : (
+            <span className="text-[#201515] text-sm font-medium">CSV Analysis</span>
+          )}
         </div>
       </nav>
 
       <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
 
-        <div>
-          <h1 className="text-2xl font-bold text-[#201515]">Campaign CSV Analysis</h1>
-          <p className="text-[#939084] text-sm mt-1">
-            Upload your ad platform export and get a media buyer&apos;s-eye analysis in seconds.
-          </p>
-        </div>
+        {savedId ? (
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <h1 className="text-2xl font-bold text-[#201515]">{savedMeta?.file ?? 'Campaign Analysis'}</h1>
+              {savedMeta?.created_at && (
+                <p className="text-[#939084] text-sm mt-1">
+                  Analysed {new Date(savedMeta.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                </p>
+              )}
+            </div>
+            <Link href="/dashboard/csv" className="text-sm font-semibold text-[#e8330a] border border-[#e8330a]/30 rounded px-4 py-2 hover:bg-[#e8330a]/5 transition-colors">
+              + New upload
+            </Link>
+          </div>
+        ) : (
+          <div>
+            <h1 className="text-2xl font-bold text-[#201515]">Campaign CSV Analysis</h1>
+            <p className="text-[#939084] text-sm mt-1">
+              Upload your ad platform export and get a media buyer&apos;s-eye analysis in seconds.
+            </p>
+          </div>
+        )}
 
-        {/* Format selector */}
-        {!parsed && (
+        {/* Loading spinner for saved analysis */}
+        {loadingId && (
+          <div className="flex items-center gap-3 py-12 justify-center text-[#939084] text-sm">
+            <span className="w-4 h-4 border-2 border-[#c5c0b1] border-t-[#201515] rounded-full animate-spin" />
+            Loading saved analysis…
+          </div>
+        )}
+
+        {/* Format selector — only for new uploads */}
+        {!parsed && !savedId && (
           <div className="bg-[rgba(201,192,177,0.18)] border border-[#c5c0b1] rounded p-5 space-y-4">
             <p className="text-xs text-[#939084] uppercase tracking-widest font-semibold">CSV Format</p>
             <div className="grid grid-cols-3 sm:grid-cols-3 gap-1.5">
@@ -221,8 +278,8 @@ export default function CsvUploadPage() {
           </div>
         )}
 
-        {/* Upload zone */}
-        {!parsed ? (
+        {/* Upload zone — hidden when viewing a saved analysis */}
+        {!savedId && !parsed ? (
           <div
             onDragOver={e => { e.preventDefault(); setDragOver(true) }}
             onDragLeave={() => setDragOver(false)}
@@ -267,7 +324,7 @@ export default function CsvUploadPage() {
                 <div className="min-w-0">
                   <p className="text-[#201515] text-sm font-medium truncate">{fileName}</p>
                   <p className="text-[#939084] text-xs">
-                    {parsed.rows.length} rows · {parsed.headers.length} columns
+                    {parsed?.rows.length ?? 0} rows · {parsed?.headers.length ?? 0} columns
                   </p>
                 </div>
               </div>
@@ -496,12 +553,21 @@ export default function CsvUploadPage() {
               >
                 Back to Dashboard
               </Link>
-              <button
-                onClick={reset}
-                className="flex-1 bg-[rgba(201,192,177,0.18)] hover:bg-[rgba(201,192,177,0.25)] border border-[#c5c0b1] text-[#939084] hover:text-[#201515] font-medium px-5 py-3 rounded text-sm transition-colors"
-              >
-                Analyse another file
-              </button>
+              {savedId ? (
+                <Link
+                  href="/dashboard/csv"
+                  className="flex-1 text-center bg-[rgba(201,192,177,0.18)] hover:bg-[rgba(201,192,177,0.25)] border border-[#c5c0b1] text-[#939084] hover:text-[#201515] font-medium px-5 py-3 rounded text-sm transition-colors"
+                >
+                  + Upload new file
+                </Link>
+              ) : (
+                <button
+                  onClick={reset}
+                  className="flex-1 bg-[rgba(201,192,177,0.18)] hover:bg-[rgba(201,192,177,0.25)] border border-[#c5c0b1] text-[#939084] hover:text-[#201515] font-medium px-5 py-3 rounded text-sm transition-colors"
+                >
+                  Analyse another file
+                </button>
+              )}
             </div>
           </div>
         )}
