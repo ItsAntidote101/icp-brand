@@ -12,7 +12,7 @@ import {
   Star, Flame, AlertTriangle, Camera, Pencil,
   Users, Search, Filter, DollarSign,
 } from 'lucide-react'
-import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis, YAxis, ReferenceLine, CartesianGrid } from 'recharts'
+import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis, YAxis, ReferenceLine, CartesianGrid, LabelList } from 'recharts'
 
 // ─── Tokens ───────────────────────────────────────────────────────────────────
 const P       = '#201515'
@@ -777,11 +777,20 @@ function ScoreHistoryWidget({ reports, latestReport, renewalDate, delay }: {
     )
   }
 
-  // All data, oldest→newest
-  const allData = [...reports].reverse().map(r => {
+  // All data, oldest→newest — skip 0-score entries (failed/test diagnosis runs)
+  const allDataRaw = [...reports].reverse().map(r => {
     const d = parseDiagnosis(r.report_summary)
-    return { date: formatDate(r.generated_at), rawDate: r.generated_at, score: getScore(d) ?? 0 }
+    const s = getScore(d)
+    return s !== null && s > 0 ? { date: formatDate(r.generated_at), rawDate: r.generated_at, score: s } : null
+  }).filter((x): x is { date: string; rawDate: string; score: number } => x !== null)
+
+  // Deduplicate: keep the highest score per calendar date (multiple runs same day)
+  const seen = new Map<string, { date: string; rawDate: string; score: number }>()
+  allDataRaw.forEach(d => {
+    const existing = seen.get(d.date)
+    if (!existing || d.score > existing.score) seen.set(d.date, d)
   })
+  const allData = Array.from(seen.values())
 
   // Apply time range filter
   const cutoff = range === '30d' ? Date.now() - 30 * 86_400_000
@@ -857,15 +866,52 @@ function ScoreHistoryWidget({ reports, latestReport, renewalDate, delay }: {
           <YAxis domain={[0, 100]} tick={{ fontFamily: fontB, fontSize: 10, fill: Pmuted }} tickLine={false} axisLine={false} ticks={[0, 40, 55, 70, 85, 100]} />
           <ReferenceLine y={70} stroke="#2563eb" strokeDasharray="4 3" strokeOpacity={0.35} label={{ value: 'Good', position: 'insideTopRight', fontFamily: fontB, fontSize: 9, fill: '#2563eb', opacity: 0.6 }} />
           <ReferenceLine y={55} stroke="#d97706" strokeDasharray="4 3" strokeOpacity={0.3} label={{ value: 'Avg', position: 'insideTopRight', fontFamily: fontB, fontSize: 9, fill: '#d97706', opacity: 0.6 }} />
-          <Area type="monotone" dataKey="score" stroke={P} strokeWidth={2.5} fill="url(#sg)" dot={{ fill: P, r: 4, strokeWidth: 0 }} activeDot={{ r: 5, fill: P }} isAnimationActive />
-          <Tooltip
-            contentStyle={{ fontFamily: fontB, fontSize: 12, border: `1px solid ${Pborder}`, borderRadius: 10, color: P, boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}
-            formatter={(v) => {
-              const n = typeof v === 'number' ? v : Number(v)
-              const b = scoreBand(n)
-              return [`${n}/100 — ${b.label}`, 'ICP Score']
+          <Area type="monotone" dataKey="score" stroke={P} strokeWidth={2.5} fill="url(#sg)"
+            dot={(props) => {
+              const { cx, cy, payload } = props as { cx: number; cy: number; payload: { score: number } }
+              const b = scoreBand(payload.score)
+              return <circle key={`dot-${cx}`} cx={cx} cy={cy} r={5} fill={b.color} stroke="#fff" strokeWidth={2} />
             }}
-            labelStyle={{ color: Pmuted, marginBottom: 4 }}
+            activeDot={(props) => {
+              const { cx, cy, payload } = props as { cx: number; cy: number; payload: { score: number } }
+              const b = scoreBand(payload.score)
+              return <circle key={`adot-${cx}`} cx={cx} cy={cy} r={7} fill={b.color} stroke="#fff" strokeWidth={2.5} />
+            }}
+            isAnimationActive
+          >
+            <LabelList dataKey="score" position="top"
+              content={(props) => {
+                const { x, y, value } = props as { x?: number; y?: number; value?: number }
+                if (x === undefined || y === undefined || value === undefined) return null
+                const b = scoreBand(value)
+                return (
+                  <text x={x} y={(y as number) - 8} textAnchor="middle"
+                    style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, fill: b.color }}>
+                    {value}
+                  </text>
+                )
+              }}
+            />
+          </Area>
+          <Tooltip
+            contentStyle={{ fontFamily: fontB, fontSize: 12, border: `1px solid ${Pborder}`, borderRadius: 12, padding: '10px 14px', boxShadow: '0 4px 20px rgba(0,0,0,0.12)', background: '#fff' }}
+            content={({ active, payload, label }) => {
+              if (!active || !payload?.length) return null
+              const val = payload[0]?.value as number
+              const b = scoreBand(val)
+              return (
+                <div style={{ fontFamily: fontB }}>
+                  <p style={{ fontSize: 11, color: Pmuted, margin: '0 0 6px' }}>{label}</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontFamily: font, fontSize: 22, fontWeight: 800, color: b.color, lineHeight: 1 }}>{val}</span>
+                    <div>
+                      <p style={{ fontSize: 10, color: Pmuted, margin: 0 }}>/ 100</p>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: b.color, background: b.bg, borderRadius: 100, padding: '1px 6px' }}>{b.label}</span>
+                    </div>
+                  </div>
+                </div>
+              )
+            }}
           />
         </AreaChart>
       </ResponsiveContainer>
