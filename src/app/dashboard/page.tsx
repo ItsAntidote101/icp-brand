@@ -484,16 +484,17 @@ function deriveDimensions(diag: DiagnosisData, base: number) {
 // ─── Milestones ───────────────────────────────────────────────────────────────
 
 type MilestoneKey = 'first_diagnosis' | 'quick_win' | 'score_climber' | 'intelligence_reader' | 'consistent' | 'power_user'
-type Milestone = { key: MilestoneKey; name: string; description: string; unlock_hint: string; earned: boolean; earned_at: string | null }
-type MilestoneDef = { key: MilestoneKey; name: string; description: string; unlock_hint: string; Icon: React.ComponentType<{ size?: number | string; color?: string }>; color: string }
+type MilestoneProgress = { current: number; target: number; label: string }
+type Milestone = { key: MilestoneKey; name: string; description: string; unlock_hint: string; earned: boolean; earned_at: string | null; progress?: MilestoneProgress }
+type MilestoneDef = { key: MilestoneKey; name: string; description: string; unlock_hint: string; Icon: React.ComponentType<{ size?: number | string; color?: string }>; color: string; actionLink?: string; actionLabel?: string }
 
 const MILESTONE_DEFS: MilestoneDef[] = [
-  { key: 'first_diagnosis',     name: 'First Diagnosis',     description: 'Completed your first ICP diagnostic',  unlock_hint: 'Run your first diagnosis',      Icon: FileSearch, color: '#f59e0b' },
-  { key: 'quick_win',           name: 'Quick Win',           description: 'Marked your first fix as complete',    unlock_hint: 'Mark a quick win as done',      Icon: Zap,        color: '#22c55e' },
-  { key: 'score_climber',       name: 'Score Climber',       description: 'Improved ICP score by 10+ points',     unlock_hint: 'Improve your score 10 points',  Icon: TrendingUp, color: '#3b82f6' },
-  { key: 'intelligence_reader', name: 'Intelligence Reader', description: 'Read 5 intelligence briefings',        unlock_hint: 'Open Intelligence tab 5 times', Icon: Brain,      color: '#e8330a' },
-  { key: 'consistent',          name: 'Consistent',          description: 'Ran 3 or more diagnoses',              unlock_hint: 'Complete 3 total diagnoses',    Icon: RefreshCw,  color: '#f97316' },
-  { key: 'power_user',          name: 'Power User',          description: 'Earned all other badges',              unlock_hint: 'Earn all other badges first',   Icon: Star,       color: '#f59e0b' },
+  { key: 'first_diagnosis',     name: 'First Diagnosis',     description: 'Completed your first ICP diagnostic',  unlock_hint: 'Run your first diagnosis',      Icon: FileSearch, color: '#f59e0b', actionLink: '/questionnaire',  actionLabel: 'Run Diagnosis' },
+  { key: 'quick_win',           name: 'Quick Win',           description: 'Marked your first fix as complete',    unlock_hint: 'Mark a quick win as done',      Icon: Zap,        color: '#22c55e', actionLabel: 'Go to Quick Wins' },
+  { key: 'score_climber',       name: 'Score Climber',       description: 'Improved ICP score by 10+ points',     unlock_hint: 'Improve your score 10 points',  Icon: TrendingUp, color: '#3b82f6', actionLink: '/questionnaire',  actionLabel: 'Re-run Diagnosis' },
+  { key: 'intelligence_reader', name: 'Intelligence Reader', description: 'Read 5 intelligence briefings',        unlock_hint: 'Open Intelligence tab 5 times', Icon: Brain,      color: '#e8330a', actionLabel: 'Open Intelligence' },
+  { key: 'consistent',          name: 'Consistent',          description: 'Ran 3 or more diagnoses',              unlock_hint: 'Complete 3 total diagnoses',    Icon: RefreshCw,  color: '#f97316', actionLink: '/questionnaire',  actionLabel: 'Run Diagnosis' },
+  { key: 'power_user',          name: 'Power User',          description: 'Earned all 5 badges — Master Status',  unlock_hint: 'Earn all other badges first',   Icon: Star,       color: '#f59e0b' },
 ]
 
 const TIER_LABEL: Record<string, string> = { starter: 'Starter', pro: 'Pro', agency: 'Agency', free: 'Free' }
@@ -1786,28 +1787,144 @@ function UpgradeGate({ children, requiredTier, currentTier, feature, description
   )
 }
 
-function MilestonesSection({ milestones }: { milestones: Milestone[] }) {
+function MilestonesSection({ milestones, bonusDiagnoses, onTabSwitch }: { milestones: Milestone[]; bonusDiagnoses?: number; onTabSwitch?: (tab: string) => void }) {
+  const [selected, setSelected] = useState<MilestoneKey | null>(null)
+  const [hovered, setHovered]   = useState<MilestoneKey | null>(null)
+
+  const earnedCount = milestones.filter(m => m.earned).length
+  const allEarned   = earnedCount === MILESTONE_DEFS.length
+
+  const selectedDef = selected ? MILESTONE_DEFS.find(d => d.key === selected) : null
+  const selectedMs  = selected ? milestones.find(m => m.key === selected) : null
+
+  function handleAction(def: MilestoneDef) {
+    if (def.actionLink) { window.location.href = def.actionLink; return }
+    if (def.key === 'quick_win' || def.key === 'intelligence_reader') {
+      const map: Record<string, string> = { quick_win: 'overview', intelligence_reader: 'intelligence' }
+      onTabSwitch?.(map[def.key])
+      setSelected(null)
+    }
+  }
+
   return (
     <div style={{ animation: 'fadeUp 0.4s ease both', animationDelay: '450ms' }}>
-      <p style={{ fontFamily: font, fontSize: 20, fontWeight: 700, color: P, margin: '0 0 16px', letterSpacing: '-0.02em' }}>Your achievements.</p>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <p style={{ fontFamily: font, fontSize: 20, fontWeight: 700, color: P, margin: 0, letterSpacing: '-0.02em' }}>Your achievements.</p>
+        <span style={{ fontFamily: fontB, fontSize: 13, color: Pmuted }}>{earnedCount}/{MILESTONE_DEFS.length} earned</span>
+      </div>
+
+      {/* Master badge banner */}
+      {allEarned && (
+        <div style={{ background: 'linear-gradient(135deg, #f59e0b18, #f97316, #f59e0b18)', border: '1.5px solid #f59e0b50', borderRadius: 14, padding: '16px 20px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{ width: 48, height: 48, borderRadius: '50%', background: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Star size={22} color="#fff" />
+          </div>
+          <div>
+            <p style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: '0 0 2px' }}>Master Status Achieved</p>
+            <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: 0 }}>
+              You&apos;ve earned every badge.{bonusDiagnoses ? ` +${bonusDiagnoses} bonus diagnoses have been added to your account.` : ''}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Badge grid */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: selected ? 16 : 0 }}>
         {MILESTONE_DEFS.map(def => {
-          const ms     = milestones.find(m => m.key === def.key)
-          const earned = ms?.earned ?? false
+          const ms      = milestones.find(m => m.key === def.key)
+          const earned  = ms?.earned ?? false
+          const isOpen  = selected === def.key
+          const isHover = hovered === def.key
+
           return (
-            <div key={def.key} style={{ width: 140, background: '#f8f4f0', borderRadius: 12, padding: '20px 16px', textAlign: 'center', border: `1px solid ${earned ? def.color + '30' : Pborder}`, opacity: earned ? 1 : 0.5, position: 'relative', transition: 'opacity 0.2s' }}>
-              <div style={{ width: 52, height: 52, borderRadius: '50%', background: earned ? def.color + '20' : '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px' }}>
+            <button
+              key={def.key}
+              onClick={() => setSelected(isOpen ? null : def.key)}
+              onMouseEnter={() => setHovered(def.key)}
+              onMouseLeave={() => setHovered(null)}
+              style={{
+                width: 140, background: isOpen ? def.color + '12' : isHover ? '#f3f4f6' : '#f8f4f0',
+                borderRadius: 14, padding: '20px 16px', textAlign: 'center',
+                border: `1.5px solid ${isOpen ? def.color + '60' : earned ? def.color + '30' : Pborder}`,
+                opacity: earned ? 1 : 0.6, position: 'relative', cursor: 'pointer',
+                transition: 'all 0.15s ease', transform: isOpen ? 'translateY(-2px)' : 'none',
+                boxShadow: isOpen ? `0 4px 16px ${def.color}25` : 'none',
+              }}
+            >
+              <div style={{ width: 52, height: 52, borderRadius: '50%', background: earned ? def.color + '20' : '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px', transition: 'background 0.15s' }}>
                 <def.Icon size={24} color={earned ? def.color : '#9ca3af'} />
               </div>
               {!earned && <div style={{ position: 'absolute', top: 8, right: 8 }}><Lock size={10} color="#9ca3af" /></div>}
+              {earned && <div style={{ position: 'absolute', top: 8, right: 8 }}><CheckCircle size={10} color={def.color} /></div>}
               <p style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, color: earned ? P : Pmuted, margin: '0 0 4px' }}>{def.name}</p>
               <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: 0, lineHeight: 1.4 }}>
                 {earned ? (ms?.earned_at ? `Earned ${formatDate(ms.earned_at)}` : 'Earned') : def.unlock_hint}
               </p>
-            </div>
+            </button>
           )
         })}
       </div>
+
+      {/* Detail panel */}
+      {selectedDef && (
+        <div style={{ background: '#fff', border: `1.5px solid ${selectedDef.color}40`, borderRadius: 14, padding: '20px 24px', animation: 'fadeUp 0.2s ease both' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16, marginBottom: 16 }}>
+            <div style={{ width: 52, height: 52, borderRadius: '50%', background: selectedDef.color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <selectedDef.Icon size={24} color={selectedDef.color} />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: P, margin: '0 0 4px' }}>{selectedDef.name}</p>
+              <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: 0, lineHeight: 1.5 }}>
+                {selectedMs?.earned ? selectedDef.description : selectedDef.unlock_hint}
+              </p>
+            </div>
+            {selectedMs?.earned && selectedMs.earned_at && (
+              <span style={{ fontFamily: fontB, fontSize: 11, color: selectedDef.color, background: selectedDef.color + '15', padding: '4px 10px', borderRadius: 100, whiteSpace: 'nowrap', flexShrink: 0 }}>
+                {formatDate(selectedMs.earned_at)}
+              </span>
+            )}
+          </div>
+
+          {/* Progress bar for locked */}
+          {!selectedMs?.earned && selectedMs?.progress && (
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                <span style={{ fontFamily: fontB, fontSize: 12, color: Pmuted }}>Progress</span>
+                <span style={{ fontFamily: fontB, fontSize: 12, color: P, fontWeight: 600 }}>{selectedMs.progress.label}</span>
+              </div>
+              <div style={{ height: 6, borderRadius: 3, background: '#f3f4f6', overflow: 'hidden' }}>
+                <div style={{ height: '100%', borderRadius: 3, background: selectedDef.color, width: `${Math.min(100, (selectedMs.progress.current / selectedMs.progress.target) * 100)}%`, transition: 'width 0.4s ease' }} />
+              </div>
+            </div>
+          )}
+
+          {/* Power User reward description */}
+          {selectedDef.key === 'power_user' && !selectedMs?.earned && (
+            <div style={{ background: '#f59e0b0d', border: '1px solid #f59e0b30', borderRadius: 10, padding: '12px 16px', marginBottom: 16 }}>
+              <p style={{ fontFamily: fontB, fontSize: 13, color: P, margin: '0 0 4px', fontWeight: 600 }}>Reward: +2 Bonus Diagnoses</p>
+              <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: 0, lineHeight: 1.5 }}>
+                Earn all 5 badges and we&apos;ll automatically credit 2 extra diagnoses to your monthly allowance — permanently.
+              </p>
+            </div>
+          )}
+          {selectedDef.key === 'power_user' && selectedMs?.earned && bonusDiagnoses ? (
+            <div style={{ background: '#22c55e0d', border: '1px solid #22c55e30', borderRadius: 10, padding: '12px 16px', marginBottom: 16 }}>
+              <p style={{ fontFamily: fontB, fontSize: 13, color: '#166534', margin: '0 0 2px', fontWeight: 600 }}>+{bonusDiagnoses} Bonus Diagnoses Active</p>
+              <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: 0 }}>These are added on top of your plan limit every month.</p>
+            </div>
+          ) : null}
+
+          {/* Action button for locked badges */}
+          {!selectedMs?.earned && selectedDef.key !== 'power_user' && (
+            <button
+              onClick={() => handleAction(selectedDef)}
+              style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, background: selectedDef.color, color: '#fff', border: 'none', borderRadius: 10, padding: '10px 20px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}
+            >
+              {selectedDef.actionLabel ?? 'Get started'} <ArrowRight size={13} />
+            </button>
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -5271,6 +5388,8 @@ export default function DashboardPage() {
   const [showUpgradeModal,  setShowUpgradeModal]  = useState(false)
   const [cancelToast, setCancelToast] = useState('')
   const [milestones,      setMilestones]      = useState<Milestone[]>([])
+  const [bonusDiagnoses,  setBonusDiagnoses]  = useState(0)
+  const [powerUserReward, setPowerUserReward] = useState(false)
   const [streak,          setStreak]          = useState(0)
   const [newAchievement,  setNewAchievement]  = useState<{ name: string; description: string; color: string; iconName: string } | null>(null)
   const [intelligenceSeenThisSession, setIntelligenceSeenThisSession] = useState(false)
@@ -5377,11 +5496,29 @@ export default function DashboardPage() {
     const email = user.email
     void fetch(`/api/milestones?email=${encodeURIComponent(email)}`)
       .then(r => r.ok ? r.json() : { milestones: [] })
-      .then((j: { milestones: Milestone[] }) => { setMilestones(j.milestones ?? []) }, () => {})
+      .then((j: { milestones: Milestone[]; bonusDiagnoses?: number }) => {
+        setMilestones(j.milestones ?? [])
+        setBonusDiagnoses(j.bonusDiagnoses ?? 0)
+      }, () => {})
     void fetch('/api/milestones', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email }),
-    }).then(() => {}, () => {})
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then((d: { awarded?: string[]; reward?: { type: string; count: number } } | null) => {
+        if (d?.reward?.type === 'bonus_diagnoses') {
+          setBonusDiagnoses(d.reward.count)
+          setPowerUserReward(true)
+        }
+        // Refresh milestones after awarding
+        if (d?.awarded && d.awarded.length > 0) {
+          void fetch(`/api/milestones?email=${encodeURIComponent(email)}`)
+            .then(r => r.ok ? r.json() : null)
+            .then((j: { milestones: Milestone[]; bonusDiagnoses?: number } | null) => {
+              if (j) { setMilestones(j.milestones ?? []); setBonusDiagnoses(j.bonusDiagnoses ?? 0) }
+            }, () => {})
+        }
+      }, () => {})
     // Check achievements and surface any newly earned
     void fetch('/api/achievements/update', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -6095,7 +6232,7 @@ export default function DashboardPage() {
 
                 {/* Milestones, Starter+ */}
                 <UpgradeGate requiredTier="starter" currentTier={t} feature="Achievements" description="Unlock badges as you implement fixes, improve your score, and use the platform consistently." onUpgrade={() => setShowUpgradeModal(true)}>
-                  <MilestonesSection milestones={milestones} />
+                  <MilestonesSection milestones={milestones} bonusDiagnoses={bonusDiagnoses} onTabSwitch={tab => setActiveTab(tab as Tab)} />
                 </UpgradeGate>
 
                 {/* Score History, Starter+ */}
@@ -6180,6 +6317,31 @@ export default function DashboardPage() {
       {/* ── Achievement unlock modal ───────────────────────────────────────── */}
       {newAchievement && (
         <AchievementModal achievement={newAchievement} onDismiss={() => setNewAchievement(null)} />
+      )}
+
+      {/* ── Power User master reward modal ────────────────────────────────── */}
+      {powerUserReward && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 1200, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+          <div style={{ background: '#fff', borderRadius: 20, padding: '40px 36px', maxWidth: 420, width: '100%', textAlign: 'center', boxShadow: '0 24px 80px rgba(0,0,0,0.3)', animation: 'fadeUp 0.3s ease both' }}>
+            <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'linear-gradient(135deg, #f59e0b, #f97316)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', boxShadow: '0 8px 24px #f59e0b40' }}>
+              <Star size={32} color="#fff" />
+            </div>
+            <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#f59e0b', margin: '0 0 8px' }}>Master Status Unlocked</p>
+            <h2 style={{ fontFamily: font, fontSize: 24, fontWeight: 700, color: P, margin: '0 0 12px', letterSpacing: '-0.02em' }}>You earned every badge.</h2>
+            <p style={{ fontFamily: fontB, fontSize: 14, color: Pmuted, margin: '0 0 24px', lineHeight: 1.7 }}>
+              That&apos;s real commitment to your ICP. As a thank-you, we&apos;ve added <strong>+{bonusDiagnoses} bonus diagnoses</strong> to your monthly allowance — permanently on your account.
+            </p>
+            <div style={{ background: '#f59e0b0d', border: '1px solid #f59e0b30', borderRadius: 12, padding: '14px 18px', marginBottom: 24 }}>
+              <p style={{ fontFamily: fontB, fontSize: 13, color: P, margin: 0, fontWeight: 600 }}>+{bonusDiagnoses} extra diagnoses added to your plan</p>
+            </div>
+            <button
+              onClick={() => setPowerUserReward(false)}
+              style={{ fontFamily: font, fontSize: 14, fontWeight: 700, background: 'linear-gradient(135deg, #f59e0b, #f97316)', color: '#fff', border: 'none', borderRadius: 12, padding: '14px 32px', cursor: 'pointer', width: '100%' }}
+            >
+              Awesome, thank you!
+            </button>
+          </div>
+        </div>
       )}
 
       {/* ── Cancellation toast ────────────────────────────────────────────── */}

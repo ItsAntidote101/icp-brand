@@ -224,7 +224,7 @@ export async function POST(req: NextRequest) {
   if (email) {
     const { data: userRecord } = await supabase
       .from('users')
-      .select('id, subscription_tier, billing_status')
+      .select('id, subscription_tier, billing_status, user_badges')
       .eq('email', email)
       .single()
 
@@ -235,7 +235,9 @@ export async function POST(req: NextRequest) {
     )
 
     const tier = (userRecord?.subscription_tier ?? 'free') as string
-    const limit = MONTHLY_LIMITS[tier] ?? 1
+    const baseLimit = MONTHLY_LIMITS[tier] ?? 1
+    const bonusDiagnoses = ((userRecord?.user_badges as Record<string, unknown> | null)?.power_user_bonus_diagnoses as number) ?? 0
+    const limit = baseLimit === Infinity ? Infinity : baseLimit + bonusDiagnoses
 
     if (limit !== Infinity) {
       const monthStart = new Date()
