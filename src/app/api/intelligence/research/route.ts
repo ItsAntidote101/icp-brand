@@ -7,8 +7,8 @@ export const dynamic    = 'force-dynamic'
 export const maxDuration = 120  // web search calls can take 60-90s
 
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'http://localhost',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || 'build-placeholder',
 )
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })

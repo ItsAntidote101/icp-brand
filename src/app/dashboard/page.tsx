@@ -419,14 +419,51 @@ function greeting(name: string | null) {
 }
 
 function parseWaste(text: string | undefined): { fromCurrency: string; amount: number; raw: string } {
-  if (!text || text.startsWith('Upgrade')) return { fromCurrency: 'KES', amount: 0, raw: '-' }
+  if (!text || text.startsWith('Upgrade') || text === '-') return { fromCurrency: 'KES', amount: 0, raw: '-' }
   const symMap: Record<string, string> = { '$': 'USD', '€': 'EUR', '£': 'GBP' }
-  const m = text.match(/(KES|NGN|ZAR|USD|GBP|EUR|\$|€|£)\s*([\d,]+)/i)
-  if (m) {
-    const fromCurrency = symMap[m[1]] ?? m[1].toUpperCase()
-    return { fromCurrency, amount: parseInt(m[2].replace(/,/g, ''), 10), raw: text }
+  const curPat = 'KES|NGN|ZAR|USD|GBP|EUR|\\$|€|£'
+  const numPat = '[\\d][\\d,\\.]*'
+  const sufPat = '[MKBmkb]'
+  // Try number-first: "3.4M KES", "35,000 USD", "1.2B NGN"
+  let numStr = '', suffix = '', currStr = ''
+  let m = text.match(new RegExp(`(${numPat})\\s*(${sufPat})?\\s*(${curPat})`, 'i'))
+  if (m) { numStr = m[1]; suffix = m[2] ?? ''; currStr = m[3] }
+  else {
+    // Try currency-first: "KES 3.4M", "$35,000", "USD 1.2B"
+    m = text.match(new RegExp(`(${curPat})\\s*(${numPat})\\s*(${sufPat})?`, 'i'))
+    if (m) { numStr = m[2]; suffix = m[3] ?? ''; currStr = m[1] }
   }
-  return { fromCurrency: 'KES', amount: 0, raw: text.length > 28 ? text.slice(0, 28) + '…' : text }
+  if (numStr) {
+    const fromCurrency = symMap[currStr] ?? currStr.toUpperCase()
+    let amount = parseFloat(numStr.replace(/,/g, '')) || 0
+    const s = suffix.toUpperCase()
+    if (s === 'K') amount *= 1_000
+    else if (s === 'M') amount *= 1_000_000
+    else if (s === 'B') amount *= 1_000_000_000
+    if (amount > 0) return { fromCurrency, amount: Math.round(amount), raw: text }
+  }
+  return { fromCurrency: 'KES', amount: 0, raw: text }
+}
+
+// Extract a short display value from verbose AI money text, e.g. "KES 12,500 per acquisition" → "KES 12,500"
+function extractMoneyDisplay(text: string | undefined): string | undefined {
+  if (!text) return undefined
+  const symMap: Record<string, string> = { '$': 'USD', '€': 'EUR', '£': 'GBP' }
+  const curPat = 'KES|NGN|ZAR|USD|GBP|EUR|\\$|€|£'
+  const numPat = '[\\d][\\d,\\.]*'
+  const sufPat = '[MKBmkb]'
+  let m = text.match(new RegExp(`(${numPat})\\s*(${sufPat})?\\s*(${curPat})`, 'i'))
+  if (m) {
+    const cur = symMap[m[3]] ?? m[3].toUpperCase()
+    return `${cur} ${m[1]}${m[2] ? m[2].toUpperCase() : ''}`
+  }
+  m = text.match(new RegExp(`(${curPat})\\s*(${numPat})\\s*(${sufPat})?`, 'i'))
+  if (m) {
+    const cur = symMap[m[1]] ?? m[1].toUpperCase()
+    return `${cur} ${m[2]}${m[3] ? m[3].toUpperCase() : ''}`
+  }
+  // No currency found — return first 30 chars
+  return text.length > 30 ? text.slice(0, 30) + '…' : text
 }
 
 const DIMS = ['Audience Targeting', 'Landing Page', 'Message-Market Fit', 'Budget Allocation', 'Funnel Conversion', 'Creative Relevance']
@@ -2209,15 +2246,15 @@ function EconomicsTab({ diag, hasReports, score, currency, onUpgrade }: {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
         <EconomicsKpiTile
           label="Monthly Waste"
-          value={displayWaste ?? (waste.raw !== '-' ? waste.raw : undefined)}
-          sub={displayWaste ? `Estimated ad spend lost to ICP mismatch` : undefined}
+          value={displayWaste ?? extractMoneyDisplay(waste.raw !== '-' ? waste.raw : undefined)}
+          sub={`Estimated ad spend lost to ICP mismatch`}
           accent="#ef4444"
           empty={!displayWaste && waste.raw === '-'}
         />
         <EconomicsKpiTile
           label="Revenue Opportunity"
-          value={bo?.monthly_revenue_opportunity ? 'See analysis below' : undefined}
-          sub={bo?.monthly_revenue_opportunity ? 'Monthly upside from fixing your ICP' : undefined}
+          value={bo?.monthly_revenue_opportunity ? extractMoneyDisplay(bo.monthly_revenue_opportunity) : undefined}
+          sub={bo?.monthly_revenue_opportunity ? 'Monthly upside from fixing ICP mismatch' : undefined}
           accent={Accent}
           empty={!bo?.monthly_revenue_opportunity}
           emptyAction={onUpgrade}
@@ -2225,7 +2262,7 @@ function EconomicsTab({ diag, hasReports, score, currency, onUpgrade }: {
         />
         <EconomicsKpiTile
           label="Current CAC"
-          value={bo?.cac_current ? 'See analysis below' : undefined}
+          value={bo?.cac_current ? extractMoneyDisplay(bo.cac_current) : undefined}
           sub={bo?.cac_current ? 'Customer acquisition cost estimate' : undefined}
           accent={P}
           empty={!bo?.cac_current}

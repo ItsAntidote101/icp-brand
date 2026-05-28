@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Papa from 'papaparse'
@@ -72,6 +72,14 @@ function ImpactBadge({ impact }: { impact: string }) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function CsvUploadPage() {
+  return (
+    <Suspense fallback={<div style={{ minHeight: '100vh', background: '#fffefb' }} />}>
+      <CsvUploadInner />
+    </Suspense>
+  )
+}
+
+function CsvUploadInner() {
   const searchParams = useSearchParams()
   const savedId      = searchParams.get('id')
 

@@ -8,8 +8,8 @@ import { getSession } from '@/lib/session'
 export const dynamic = 'force-dynamic'
 
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'http://localhost',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || 'build-placeholder',
 )
 
 const TIER_PRICE_KES: Record<string, number> = { starter: 6500, pro: 13000, agency: 26000, free: 0 }

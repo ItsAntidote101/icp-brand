@@ -5,8 +5,8 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 30
 
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'http://localhost',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || 'build-placeholder',
 )
 
 type EventType = 'diagnosis' | 'subscription' | 'waste_found' | 'score_improved' | 'weekly_stat'
