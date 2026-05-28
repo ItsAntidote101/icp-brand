@@ -1248,53 +1248,144 @@ function BusinessOutcomesWidget({ diag }: { diag: DiagnosisData }) {
   )
 }
 
-function WasteTicker({ diag, report, currency, onTabChange }: { diag: DiagnosisData; report: ReportRow; currency: string; onTabChange: (tab: Tab) => void }) {
+function WasteTicker({ diag, report, currency, score, scoreDelta, onTabChange }: {
+  diag: DiagnosisData; report: ReportRow; currency: string
+  score: number | null; scoreDelta: number | null; onTabChange: (tab: Tab) => void
+}) {
   const waste      = parseWaste(diag.monthly_waste_estimate ?? diag.economics?.monthly_waste_estimate)
-  const perTick    = (waste.amount / 30 / 24 / 3600) / 10
+  const perSecond  = waste.amount > 0 ? waste.amount / 30 / 86_400 : 0
   const daysSince  = daysBetween(report.generated_at)
-  const startAmt   = Math.round((waste.amount / 30) * daysSince)
+  // startAmt = money lost from diagnosis date until now, in waste currency
+  const startAmt   = Math.round(perSecond * daysSince * 86_400)
 
-  const [displayed,   setDisplayed]   = useState(startAmt)
-  const [isPulsing,   setIsPulsing]   = useState(false)
+  // Persist counter across navigation using sessionStorage keyed by report ID
+  const storageKey = `waste_tick_${report.id}`
+  const getStored  = () => {
+    try {
+      const raw = sessionStorage.getItem(storageKey)
+      if (raw) {
+        const { value, ts } = JSON.parse(raw) as { value: number; ts: number }
+        // Add seconds elapsed since we last stored
+        return Math.round(value + perSecond * (Date.now() - ts) / 1000)
+      }
+    } catch { /* ignore */ }
+    return startAmt
+  }
 
+  const [displayed, setDisplayed] = useState(() => getStored())
+
+  // Tick every 500ms, persist to sessionStorage every 10s
   useEffect(() => {
     if (waste.amount === 0) return
-    const id = setInterval(() => setDisplayed(v => v + perTick), 100)
-    return () => clearInterval(id)
-  }, [perTick, waste.amount])
-
-  useEffect(() => {
-    const id = setInterval(() => {
-      setIsPulsing(true)
-      setTimeout(() => setIsPulsing(false), 600)
-    }, 3000)
-    return () => clearInterval(id)
-  }, [])
+    const tickId = setInterval(() => setDisplayed(v => v + perSecond * 0.5), 500)
+    const saveId = setInterval(() => {
+      setDisplayed(v => {
+        try { sessionStorage.setItem(storageKey, JSON.stringify({ value: v, ts: Date.now() })) } catch { /* ignore */ }
+        return v
+      })
+    }, 10_000)
+    return () => { clearInterval(tickId); clearInterval(saveId) }
+  }, [perSecond, waste.amount, storageKey])
 
   const displayVal = waste.amount > 0
     ? convertAmount(Math.round(displayed), waste.fromCurrency, currency)
-    : '-'
+    : null
+
+  // Top quick win for the right panel
+  const topWin = (diag.quick_wins ?? diag.economics?.quick_wins ?? [])[0]
+  const topFinding = (diag.critical_findings ?? diag.findings ?? [])[0]
+  const band = score !== null ? scoreBand(score) : null
 
   return (
     <div style={{
       background: 'linear-gradient(135deg,#0d0806 0%,#201515 100%)',
-      borderRadius: 12,
-      padding: '28px 32px',
-      boxShadow: '0 2px 16px rgba(201,192,177,0.5)',
-      border: isPulsing ? '1px solid rgba(239,68,68,0.5)' : '1px solid transparent',
-      transition: 'border-color 0.3s ease',
-      animation: 'fadeUp 0.4s ease both',
+      borderRadius: 14,
+      overflow: 'hidden',
+      boxShadow: '0 4px 24px rgba(201,192,177,0.18)',
+      display: 'grid',
+      gridTemplateColumns: '1fr 1fr',
     }}>
-      <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.5)', margin: '0 0 10px' }}>MONEY LOST SINCE DIAGNOSIS</p>
-      <div style={{ fontFamily: font, fontSize: 'clamp(32px,4vw,52px)', fontWeight: 800, color: '#fff', lineHeight: 1, fontVariantNumeric: 'tabular-nums' as const, margin: '0 0 10px' }}>
-        {displayVal}
+      {/* LEFT — the leak */}
+      <div style={{ padding: '28px 28px 24px', borderRight: '1px solid rgba(255,255,255,0.07)' }}>
+        <p style={{ fontFamily: fontB, fontSize: 9, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.13em', color: 'rgba(239,68,68,0.7)', margin: '0 0 10px' }}>
+          MONEY LOST SINCE DIAGNOSIS
+        </p>
+        <div style={{ fontFamily: font, fontSize: 'clamp(26px,3vw,40px)', fontWeight: 800, color: displayVal ? '#fff' : 'rgba(255,255,255,0.3)', lineHeight: 1, fontVariantNumeric: 'tabular-nums' as const, margin: '0 0 8px' }}>
+          {displayVal ?? '—'}
+        </div>
+        <p style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.45)', margin: '0 0 16px', lineHeight: 1.5 }}>
+          {waste.amount > 0
+            ? `~${convertAmount(Math.round(waste.amount / 30), waste.fromCurrency, currency)}/day leaking to wrong audiences`
+            : 'Run a diagnosis to calculate your waste estimate'}
+        </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#ef4444', display: 'inline-block', animation: 'pulse 2s infinite' }} />
+          <span style={{ fontFamily: fontB, fontSize: 10, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.05em' }}>
+            {daysSince === 0 ? 'Diagnosed today' : `${daysSince} day${daysSince !== 1 ? 's' : ''} since diagnosis`}
+          </span>
+        </div>
       </div>
-      <p style={{ fontFamily: fontB, fontSize: 13, color: 'rgba(255,255,255,0.6)', margin: '0 0 4px' }}>
-        and counting. Fix your top finding to stop the leak.
-      </p>
-      <button onClick={() => onTabChange('audience')} style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.8)', textDecoration: 'underline', cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>
-        See What To Fix →
-      </button>
+
+      {/* RIGHT — the upside */}
+      <div style={{ padding: '28px 28px 24px', background: 'rgba(255,255,255,0.025)' }}>
+        <p style={{ fontFamily: fontB, fontSize: 9, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.13em', color: 'rgba(34,197,94,0.7)', margin: '0 0 10px' }}>
+          YOUR BIGGEST WIN RIGHT NOW
+        </p>
+
+        {topWin ? (
+          <>
+            <p style={{ fontFamily: fontB, fontSize: 13, color: '#fff', margin: '0 0 6px', lineHeight: 1.5, fontWeight: 600 }}>
+              {topWin.action}
+            </p>
+            {(topWin.expectedImpact || topWin.impact) && (
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(34,197,94,0.12)', borderRadius: 100, padding: '4px 10px', marginBottom: 14 }}>
+                <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#22c55e', flexShrink: 0 }} />
+                <span style={{ fontFamily: fontB, fontSize: 11, color: '#22c55e', fontWeight: 700 }}>
+                  {topWin.expectedImpact ?? topWin.impact}
+                </span>
+              </div>
+            )}
+            {topWin.platform && (
+              <p style={{ fontFamily: fontB, fontSize: 10, color: 'rgba(255,255,255,0.35)', margin: '0 0 14px' }}>
+                {topWin.platform}{topWin.where ? ` · ${topWin.where}` : ''}
+              </p>
+            )}
+          </>
+        ) : topFinding ? (
+          <>
+            <p style={{ fontFamily: fontB, fontSize: 13, color: '#fff', margin: '0 0 8px', lineHeight: 1.5, fontWeight: 600 }}>
+              {topFinding.title}
+            </p>
+            <p style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.45)', margin: '0 0 14px', lineHeight: 1.5 }}>
+              {topFinding.explanation?.slice(0, 90)}{(topFinding.explanation?.length ?? 0) > 90 ? '…' : ''}
+            </p>
+          </>
+        ) : (
+          <p style={{ fontFamily: fontB, fontSize: 13, color: 'rgba(255,255,255,0.4)', margin: '0 0 20px', lineHeight: 1.6 }}>
+            Complete your diagnosis to unlock personalised quick wins.
+          </p>
+        )}
+
+        {/* Score pill */}
+        {band && score !== null && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ background: band.color + '22', border: `1px solid ${band.color}44`, borderRadius: 100, padding: '3px 10px', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+              <span style={{ fontFamily: font, fontSize: 13, fontWeight: 800, color: band.color }}>{score}</span>
+              <span style={{ fontFamily: fontB, fontSize: 10, color: band.color, opacity: 0.8 }}>{band.label}</span>
+            </div>
+            {scoreDelta !== null && scoreDelta !== 0 && (
+              <span style={{ fontFamily: fontB, fontSize: 11, color: scoreDelta > 0 ? '#22c55e' : '#ef4444', fontWeight: 700 }}>
+                {scoreDelta > 0 ? `+${scoreDelta}` : scoreDelta} pts
+              </span>
+            )}
+          </div>
+        )}
+
+        <button onClick={() => onTabChange('audience')}
+          style={{ display: 'block', marginTop: 14, fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.5)', textDecoration: 'underline', cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>
+          See all findings & quick wins →
+        </button>
+      </div>
     </div>
   )
 }
@@ -5881,7 +5972,7 @@ export default function DashboardPage() {
 
 
                 {/* Real-time waste ticker */}
-                <WasteTicker diag={diag} report={latestReport} currency={currency} onTabChange={setActiveTab} />
+                <WasteTicker diag={diag} report={latestReport} currency={currency} score={score} scoreDelta={scoreDeltaMain} onTabChange={setActiveTab} />
 
                 {/* Score + Streak */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
