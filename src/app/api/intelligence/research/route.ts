@@ -279,16 +279,46 @@ Return ONLY valid JSON with no markdown fences:
 
   const res = await anthropic.messages.create({
     model:      'claude-sonnet-4-6',
-    max_tokens: 4000,
+    max_tokens: 6000,
     system:     systemPrompt,
     tools:      [{ type: 'web_search_20250305' as const, name: 'web_search' }],
     messages:   [{ role: 'user', content: userPrompt }],
+  }, {
+    headers: { 'anthropic-beta': 'web-search-2025-03-05' },
   })
 
-  const raw   = res.content.filter(b => b.type === 'text').map(b => (b as { type: 'text'; text: string }).text).join('')
-  const clean = raw.replace(/^```json\s*/m, '').replace(/^```\s*/m, '').replace(/```\s*$/m, '').trim()
-  const parsed = JSON.parse(clean)
-  return stripDashes(parsed) as Record<string, unknown>
+  const raw = res.content
+    .filter(b => b.type === 'text')
+    .map(b => (b as { type: 'text'; text: string }).text)
+    .join('')
+
+  // Robustly extract the JSON object — find first '{' to matching last '}'
+  const start = raw.indexOf('{')
+  const end   = raw.lastIndexOf('}')
+  if (start === -1 || end === -1 || end < start) {
+    console.error('[intelligence/research] No JSON object found in response. Raw output:', raw.slice(0, 500))
+    throw new Error('No JSON in model response')
+  }
+  const clean = raw.slice(start, end + 1)
+
+  let parsed: Record<string, unknown>
+  try {
+    parsed = JSON.parse(clean)
+  } catch (e) {
+    console.error('[intelligence/research] JSON.parse failed. Clean output:', clean.slice(0, 500))
+    throw e
+  }
+
+  // Ensure required fields exist so the frontend doesn't crash
+  const safe = {
+    insights:             Array.isArray(parsed.insights)             ? parsed.insights             : [],
+    benchmarks:           Array.isArray(parsed.benchmarks)           ? parsed.benchmarks           : [],
+    competitorPositions:  Array.isArray(parsed.competitorPositions)  ? parsed.competitorPositions  : [],
+    userPosition:         parsed.userPosition ?? { x: 50, y: 50 },
+    researchSources:      Array.isArray(parsed.researchSources)      ? parsed.researchSources      : [],
+    ...parsed,
+  }
+  return stripDashes(safe) as Record<string, unknown>
 }
 
 // ─── Ask-your-market question (with live web research) ────────────────────────
@@ -330,6 +360,8 @@ SourceURLs: [comma-separated list of actual URLs you found, in the same order as
     system:     systemPrompt,
     tools:      [{ type: 'web_search_20250305' as const, name: 'web_search' }],
     messages:   [{ role: 'user', content: userPrompt }],
+  }, {
+    headers: { 'anthropic-beta': 'web-search-2025-03-05' },
   })
 
   const text   = res.content.filter(b => b.type === 'text').map(b => (b as { type: 'text'; text: string }).text).join('')

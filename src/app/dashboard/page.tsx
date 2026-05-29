@@ -5281,14 +5281,18 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
                   </div>
                 ))}
               </div>
-              {briefing.benchmarks.map(b => <BenchmarkTrack key={b.name} {...b} />)}
+              {(briefing.benchmarks ?? []).map(b => <BenchmarkTrack key={b.name} {...b} />)}
             </div>
 
             {/* Competitor Activity Feed */}
             <div>
               <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: '0 0 4px', letterSpacing: '-0.02em' }}>{"What's moving in your market."}</p>
               <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 16px' }}>Intelligence gathered for your industry and region this week.</p>
-              {briefing.insights.map(ins => <InsightCard key={ins.id} insight={ins} />)}
+              {(briefing.insights ?? []).length === 0 ? (
+                <div style={{ background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 12, padding: '24px 20px', textAlign: 'center' }}>
+                  <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: 0 }}>No insights found. Try refreshing your intelligence.</p>
+                </div>
+              ) : (briefing.insights ?? []).map(ins => <InsightCard key={ins.id} insight={ins} />)}
             </div>
           </>
         )}
@@ -5304,11 +5308,11 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
         <div style={{ position: 'sticky', top: 32, display: 'flex', flexDirection: 'column', gap: 24 }}>
           {QACard}
 
-          {briefing && (
+          {briefing && briefing.userPosition && (briefing.competitorPositions ?? []).length > 0 && (
             <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 16, padding: '24px 28px', boxShadow: '0 1px 8px rgba(201,192,177,0.18)' }}>
               <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: '0 0 4px', letterSpacing: '-0.02em' }}>Your competitive position.</p>
               <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '0 0 20px' }}>Approximate positioning based on ICP alignment and ad spend efficiency.</p>
-              <CompetitiveRadar userPos={briefing.userPosition} competitors={briefing.competitorPositions} />
+              <CompetitiveRadar userPos={briefing.userPosition} competitors={briefing.competitorPositions ?? []} />
             </div>
           )}
         </div>
