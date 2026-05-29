@@ -5347,8 +5347,10 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
   const [escalationNote,  setEscalationNote]  = useState('')
   const [escalating,      setEscalating]      = useState(false)
   const [escalated,       setEscalated]       = useState(false)
+  const [proactiveMsg,    setProactiveMsg]    = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef    = useRef<HTMLTextAreaElement>(null)
+  const idleTimerRef   = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const font  = "'PolySans Median', -apple-system, system-ui, sans-serif"
   const fontB = "'PolySans Neutral', -apple-system, system-ui, sans-serif"
@@ -5368,6 +5370,56 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
     s.push('Write ad copy for my ICP')
     return s.slice(0, 4)
   }, [topFinding, score, user.current_streak])
+
+  // Contextual proactive message — changes per tab and score
+  const contextMsg = useMemo(() => {
+    if (score !== null && score < 55) return `Scores below 55 almost always have one fixable root cause. Want me to find yours?`
+    if (activeTab === 'economics') return `You're losing ${waste} per month. I can write a prioritised fix plan in 60 seconds.`
+    if (activeTab === 'audience') return `I can write Meta or Google audience copy based on your ICP profile right now.`
+    if (activeTab === 'intelligence') return `Ask me anything about your market intelligence — competitors, benchmarks, next moves.`
+    if (topFinding) return `Still working on "${topFinding.title}"? Ask me for copy, a test to run, or a step-by-step fix.`
+    return `I've read your full diagnostic. What do you want to fix first?`
+  }, [score, activeTab, waste, topFinding])
+
+  // Idle detection — show proactive bubble after 40s of inactivity
+  useEffect(() => {
+    if (isOpen) {
+      setProactiveMsg(null)
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current)
+      return
+    }
+    let lastReset = 0
+    function scheduleIdleMsg() {
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current)
+      idleTimerRef.current = setTimeout(() => setProactiveMsg(contextMsg), 40_000)
+    }
+    function onActivity() {
+      const now = Date.now()
+      if (now - lastReset < 1000) return
+      lastReset = now
+      setProactiveMsg(prev => (prev !== null ? null : prev))
+      scheduleIdleMsg()
+    }
+    scheduleIdleMsg()
+    window.addEventListener('mousemove', onActivity, { passive: true })
+    window.addEventListener('keydown', onActivity, { passive: true })
+    window.addEventListener('touchstart', onActivity, { passive: true })
+    window.addEventListener('scroll', onActivity, { passive: true })
+    return () => {
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current)
+      window.removeEventListener('mousemove', onActivity)
+      window.removeEventListener('keydown', onActivity)
+      window.removeEventListener('touchstart', onActivity)
+      window.removeEventListener('scroll', onActivity)
+    }
+  }, [isOpen, contextMsg])
+
+  // Auto-dismiss proactive bubble after 8s
+  useEffect(() => {
+    if (!proactiveMsg) return
+    const t = setTimeout(() => setProactiveMsg(null), 8_000)
+    return () => clearTimeout(t)
+  }, [proactiveMsg])
 
   useEffect(() => {
     if (isOpen && !initialized) {
@@ -5651,9 +5703,51 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
         </div>
       )}
 
+      {/* ── Proactive speech bubble ──────────────────────────────────────── */}
+      <style>{`
+        @keyframes chatBubbleIn {
+          from { opacity: 0; transform: translateY(10px) scale(0.96) }
+          to   { opacity: 1; transform: translateY(0) scale(1) }
+        }
+        @media (max-width: 1023px) {
+          .chat-fab { bottom: 80px !important; }
+          .chat-proactive { bottom: 148px !important; }
+        }
+      `}</style>
+      {proactiveMsg && !isOpen && (
+        <div className="chat-proactive" style={{
+          position: 'fixed', bottom: 100, right: 24, zIndex: 1001,
+          maxWidth: 280,
+          animation: 'chatBubbleIn 0.3s ease',
+          filter: 'drop-shadow(0 8px 24px rgba(32,21,21,0.18))',
+        }}>
+          <div style={{
+            background: '#fff', borderRadius: '16px 16px 4px 16px',
+            padding: '14px 14px 14px 14px', border: `1px solid ${Pborder}`,
+            cursor: 'pointer',
+          }} onClick={() => { setProactiveMsg(null); setIsOpen(true) }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+              <div style={{ width: 28, height: 28, borderRadius: '50%', background: P, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <BrainCircuit size={13} color="#fff" />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, color: Pmuted, margin: '0 0 3px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>ICP Media Buyer</p>
+                <p style={{ fontFamily: fontB, fontSize: 13, color: P, margin: 0, lineHeight: 1.5 }}>{proactiveMsg}</p>
+                <p style={{ fontFamily: fontB, fontSize: 11, color: '#e8330a', margin: '6px 0 0', fontWeight: 600 }}>Tap to chat →</p>
+              </div>
+              <button onClick={e => { e.stopPropagation(); setProactiveMsg(null) }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: Pmuted, padding: '0 0 0 4px', display: 'flex', flexShrink: 0, lineHeight: 1 }}>
+                <X size={14} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Floating button ─────────────────────────────────────────────── */}
       <button
-        onClick={() => setIsOpen(v => !v)}
+        className="chat-fab"
+        onClick={() => { setIsOpen(v => !v); setProactiveMsg(null) }}
         style={{
           position: 'fixed', bottom: 32, right: 32, zIndex: 1001,
           width: 56, height: 56, borderRadius: '50%',
@@ -6757,6 +6851,60 @@ export default function DashboardPage() {
             </div>
           </div>
         </>
+      )}
+
+      {/* ── Mobile notification sheet (lg:hidden) ─────────────────────────── */}
+      {showNotifications && (
+        <div className="lg:hidden" style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+          <div onClick={() => setShowNotifications(false)} style={{ position: 'absolute', inset: 0, background: 'rgba(32,21,21,0.45)', backdropFilter: 'blur(2px)' }} />
+          <div style={{ position: 'relative', background: '#f8f4f0', borderRadius: '20px 20px 0 0', maxHeight: '75vh', display: 'flex', flexDirection: 'column', paddingBottom: 60 }}>
+            {/* Handle */}
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 0' }}>
+              <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(147,144,132,0.4)' }} />
+            </div>
+            {/* Header */}
+            <div style={{ padding: '12px 20px 12px', borderBottom: `1px solid ${Pborder}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: Pmuted, margin: 0 }}>Notifications</p>
+                {unreadCount > 0 && (
+                  <span style={{ fontFamily: fontB, fontSize: 11, background: '#ef4444', color: '#fff', borderRadius: 100, padding: '2px 7px' }}>{unreadCount} unread</span>
+                )}
+              </div>
+              <button onClick={() => setShowNotifications(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: Pmuted, display: 'flex', padding: 4 }}>
+                <X size={18} />
+              </button>
+            </div>
+            {/* List */}
+            {allNotifications.length === 0 ? (
+              <div style={{ padding: '40px 20px', textAlign: 'center' }}>
+                <Bell size={20} color={Pmuted} style={{ marginBottom: 10, opacity: 0.4 }} />
+                <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: 0 }}>You&apos;re all caught up</p>
+              </div>
+            ) : (
+              <div style={{ overflowY: 'auto', padding: '6px 0' }}>
+                {allNotifications.map(n => {
+                  const isUnread = !readNotifIds.has(n.id)
+                  return (
+                    <button key={n.id} onClick={() => { markAllRead(); n.action?.() }}
+                      style={{ width: '100%', display: 'flex', alignItems: 'flex-start', gap: 12, padding: '14px 20px', background: isUnread ? 'rgba(232,51,10,0.04)' : 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', borderLeft: isUnread ? '3px solid #e8330a' : '3px solid transparent' }}>
+                      <div style={{ width: 34, height: 34, borderRadius: '50%', background: n.color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
+                        <span style={{ color: n.color }}>{n.icon}</span>
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                          <p style={{ fontFamily: fontB, fontSize: 14, fontWeight: isUnread ? 700 : 500, color: P, margin: 0, lineHeight: 1.3 }}>{n.title}</p>
+                          {isUnread && <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#ef4444', flexShrink: 0 }} />}
+                        </div>
+                        <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '0 0 6px', lineHeight: 1.5 }}>{n.body}</p>
+                        {n.actionLabel && <span style={{ fontFamily: fontB, fontSize: 12, color: n.color, fontWeight: 600 }}>{n.actionLabel}</span>}
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        </div>
       )}
 
       {/* ── Chat Widget ───────────────────────────────────────────────────── */}
