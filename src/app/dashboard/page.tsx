@@ -10,7 +10,7 @@ import {
   RefreshCw, Bell, Brain, Send, Settings, HelpCircle, LogOut,
   MessageCircle, ArrowUp, UserCheck, BrainCircuit, Clock, Lock,
   Star, Flame, AlertTriangle, Camera, Pencil,
-  Users, Search, Filter, DollarSign,
+  Users, Search, Filter, DollarSign, Gift,
 } from 'lucide-react'
 import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis, YAxis, ReferenceLine, CartesianGrid, LabelList } from 'recharts'
 
@@ -5683,6 +5683,8 @@ export default function DashboardPage() {
   const [reportsError,    setReportsError]    = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
   const [readNotifIds,    setReadNotifIds]    = useState<Set<string>>(new Set())
+  const [referralCount,   setReferralCount]   = useState(0)
+  const [referralBonus,   setReferralBonus]   = useState(0)
   const [csvHistory,      setCsvHistory]      = useState<CsvHistoryItem[]>([])
   const [qRegion,   setQRegion]   = useState('')
   const [qIndustry, setQIndustry] = useState('')
@@ -5764,6 +5766,19 @@ export default function DashboardPage() {
     if (stored) verifyEmail(stored)
     else verifySession()
   }, [verifyEmail, verifySession, router])
+
+  // Load referral stats for the notification bell
+  useEffect(() => {
+    if (!user) return
+    fetch('/api/referral/me')
+      .then(r => r.ok ? r.json() : null)
+      .then((d: { referralCount: number; bonusDiagnoses: number } | null) => {
+        if (!d) return
+        setReferralCount(d.referralCount)
+        setReferralBonus(d.bonusDiagnoses)
+      })
+      .catch(() => {})
+  }, [user?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Load questionnaire profile for accurate buyer assignment
   useEffect(() => {
@@ -5892,13 +5907,16 @@ export default function DashboardPage() {
     })
 
   // 2 — Unread advisor reply
+  // ID rotates weekly so a new reply resurfaces even if a previous one was dismissed
+  const advisorReplyWeek = `${new Date().getFullYear()}-W${String(Math.ceil((new Date().getDate() + new Date(new Date().getFullYear(), new Date().getMonth(), 1).getDay()) / 7)).padStart(2, '0')}`
   if (user?.has_unread_reply)
     allNotifications.push({
-      id: 'advisor-reply',
+      id: `advisor-reply-${advisorReplyWeek}`,
       icon: <MessageCircle size={15} />, color: '#e8330a',
-      title: 'New reply from your advisor',
-      body: 'Your assigned media buyer has responded to your last message.',
+      title: `New message from ${assignedBuyer?.name ?? 'your media buyer'}`,
+      body: `${assignedBuyer?.name ?? 'Your assigned media buyer'} has left a message about your report. Open the overview tab to read it.`,
       ts: 'Unread', actionLabel: 'Open chat →',
+      action: () => { setShowNotifications(false); setActiveTab('overview') },
     })
 
   // 3 — Score improved (milestone: crossed a band)
@@ -5987,6 +6005,18 @@ export default function DashboardPage() {
       body: 'Answer 10 questions and get a full ICP score, audience insights, and media buyer quick wins — takes 3 minutes.',
       ts: 'Action needed', actionLabel: 'Start now →',
       action: () => { setShowNotifications(false); window.location.href = '/questionnaire' },
+    })
+
+  // 9 — Referral bonus earned
+  // ID includes the count so each new referral generates a fresh notification
+  if (referralCount > 0)
+    allNotifications.push({
+      id: `referral-earned-${referralCount}`,
+      icon: <Gift size={15} />, color: '#22c55e',
+      title: referralCount === 1 ? 'A friend used your referral link' : `${referralCount} friends used your referral link`,
+      body: `You've earned ${referralBonus} bonus ${referralBonus === 1 ? 'diagnosis' : 'diagnoses'} — re-run your ICP score any time to track your improvement.`,
+      ts: 'Account', actionLabel: 'View referrals →',
+      action: () => { setShowNotifications(false); setActiveTab('account') },
     })
 
   // Compute unread count — notifications whose ID is not in the read set
@@ -6267,7 +6297,7 @@ export default function DashboardPage() {
                 onClick={() => { setShowNotifications(v => { if (!v) markAllRead(); return !v }); }}
                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 10, width: 38, height: 38, cursor: 'pointer', position: 'relative' }}
               >
-                <Bell size={16} color={allNotifications.length > 0 ? P : Pmuted} />
+                <Bell size={16} color={unreadCount > 0 ? P : Pmuted} />
                 {unreadCount > 0 && (
                   <span style={{ position: 'absolute', top: 6, right: 6, minWidth: 16, height: 16, borderRadius: 100, background: '#ef4444', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: fontB, fontSize: 9, fontWeight: 700, color: '#fff', padding: '0 3px' }}>
                     {unreadCount > 9 ? '9+' : unreadCount}
@@ -6282,9 +6312,9 @@ export default function DashboardPage() {
                     <div style={{ padding: '14px 18px', borderBottom: `1px solid ${Pborder}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: Pmuted, margin: 0 }}>Notifications</p>
-                        {allNotifications.length > 0 && (
-                          <span style={{ fontFamily: fontB, fontSize: 11, background: BgAlt, color: Pmuted, borderRadius: 100, padding: '2px 7px', border: `1px solid ${Pborder}` }}>
-                            {allNotifications.length}
+                        {unreadCount > 0 && (
+                          <span style={{ fontFamily: fontB, fontSize: 11, background: '#ef4444', color: '#fff', borderRadius: 100, padding: '2px 7px' }}>
+                            {unreadCount} unread
                           </span>
                         )}
                       </div>
