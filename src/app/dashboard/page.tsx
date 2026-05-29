@@ -2197,30 +2197,6 @@ function BreakdownBarsSection({ diag, labels }: { diag: DiagnosisData; labels: s
   )
 }
 
-// ─── Locked tab overlay (shown to free users for subscriber-only tabs) ────────
-
-function LockedTabOverlay({ tabName, description, onUpgrade }: {
-  tabName: string; description: string; onUpgrade: () => void
-}) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 24px', textAlign: 'center', maxWidth: 480, margin: '0 auto' }}>
-      <div style={{ width: 52, height: 52, borderRadius: 12, background: 'rgba(232,51,10,0.1)', border: '1px solid rgba(232,51,10,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e8330a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
-        </svg>
-      </div>
-      <h2 style={{ fontFamily: 'inherit', fontSize: 20, fontWeight: 800, color: '#201515', margin: '0 0 10px' }}>{tabName} is locked</h2>
-      <p style={{ fontSize: 14, color: '#605d52', lineHeight: 1.6, margin: '0 0 28px' }}>{description}</p>
-      <button
-        onClick={onUpgrade}
-        style={{ background: '#e8330a', color: '#fff', border: 'none', borderRadius: 10, padding: '12px 28px', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}
-      >
-        Unlock with Starter
-      </button>
-      <p style={{ fontSize: 12, color: '#939084', marginTop: 14 }}>KES 6,500 / month. Cancel anytime.</p>
-    </div>
-  )
-}
 
 // ─── Teaser tab overlay (free users see top finding + blurred preview) ────────
 
