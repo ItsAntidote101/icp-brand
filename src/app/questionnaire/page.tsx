@@ -757,6 +757,7 @@ export default function QuestionnairePage() {
   const { status } = useSession()
   const [step,          setStep]          = useState<'welcome' | 'questions'>('welcome')
   const [showGate,      setShowGate]      = useState(false)
+  const [showFreeTierGate, setShowFreeTierGate] = useState(false)
   const [profile,       setProfile]       = useState<Profile>({ name: '', email: '', company: '' })
   const [current,       setCurrent]       = useState(0)
   const [answers,       setAnswers]       = useState<Answers>({})
@@ -786,28 +787,39 @@ export default function QuestionnairePage() {
 
   // Pre-fill from last diagnosis for returning authenticated users
   useEffect(() => {
-    fetch('/api/questionnaire/last-answers')
-      .then(r => r.ok ? r.json() : null)
-      .then((d: PrefillPayload | null) => {
-        if (!d?.prefill) return
-        const { profile: p, answers: a } = d.prefill
-        // Pre-fill profile if we have the data
-        if (p.name || p.email || p.company) {
-          setProfile({ name: p.name, email: p.email, company: p.company })
-        }
-        // If they have previous answers, skip welcome and pre-fill stable questions
-        if (Object.keys(a).length > 0 && p.name && p.email && p.company) {
-          setAnswers(a as Answers)
-          setPrefillIds(new Set(Object.keys(a).map(Number)))
-          setPrefillBanner(true)
-          setStep('questions')
-        } else if (p.name && p.email && p.company) {
-          // Has account but no previous answers -- skip welcome (profile is known)
-          setStep('questions')
-        }
-      })
-      .catch(() => {})
-      .finally(() => setPrefillReady(true))
+    // Fetch tier info and prefill answers in parallel
+    Promise.all([
+      fetch('/api/questionnaire/last-answers').then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch('/api/auth/me').then(r => r.ok ? r.json() : null).catch(() => null),
+    ]).then(([d, me]: [PrefillPayload | null, { subscription_tier?: string } | null]) => {
+      const isFree = !me || me.subscription_tier === 'free'
+
+      if (!d?.prefill) { setPrefillReady(true); return }
+      const { profile: p, answers: a } = d.prefill
+
+      if (p.name || p.email || p.company) {
+        setProfile({ name: p.name, email: p.email, company: p.company })
+      }
+
+      const hasPriorAnswers = Object.keys(a).length > 0
+
+      // Free users who've already run a diagnosis: show upgrade gate immediately
+      if (isFree && hasPriorAnswers) {
+        setShowFreeTierGate(true)
+        setPrefillReady(true)
+        return
+      }
+
+      if (hasPriorAnswers && p.name && p.email && p.company) {
+        setAnswers(a as Answers)
+        setPrefillIds(new Set(Object.keys(a).map(Number)))
+        setPrefillBanner(true)
+        setStep('questions')
+      } else if (p.name && p.email && p.company) {
+        setStep('questions')
+      }
+      setPrefillReady(true)
+    })
   }, [])
 
   useEffect(() => {
@@ -1058,6 +1070,43 @@ export default function QuestionnairePage() {
             </p>
 
           </div>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Free tier gate: already diagnosed, needs upgrade to re-run ──────────
+  if (showFreeTierGate) {
+    return (
+      <div className="min-h-screen bg-[#fffefb] flex flex-col items-center justify-center px-6">
+        <div className="max-w-[480px] w-full text-center">
+          <div className="w-14 h-14 rounded-2xl bg-[rgba(232,51,10,0.1)] border border-[rgba(232,51,10,0.25)] flex items-center justify-center mx-auto mb-6">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#e8330a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold text-[#201515] mb-3 leading-tight">
+            You&apos;ve already run your free diagnosis
+          </h1>
+          <p className="text-[#605d52] text-sm leading-relaxed mb-2">
+            Your baseline ICP score is saved in your dashboard. To re-run after implementing your quick wins and track whether your score has improved, you need Starter.
+          </p>
+          <p className="text-[#939084] text-xs mb-8">
+            Starter — KES 6,500/month. Includes 3 diagnoses/month, weekly intelligence briefings, and full category analysis.
+          </p>
+          <div className="flex flex-col gap-3">
+            <a href="/pricing"
+              className="block w-full bg-[#e8330a] text-white font-semibold text-sm rounded-lg py-3.5 px-6 text-center hover:opacity-90 transition-opacity">
+              Upgrade to Starter — Track My Progress
+            </a>
+            <a href="/dashboard"
+              className="block w-full bg-transparent text-[#605d52] font-medium text-sm rounded-lg py-3 px-6 text-center border border-[rgba(201,192,177,0.5)] hover:border-[#201515] transition-colors">
+              Back to My Dashboard
+            </a>
+          </div>
+          <p className="text-[#939084] text-xs mt-6">
+            Your quick wins and buyer message are waiting in your dashboard.
+          </p>
         </div>
       </div>
     )
