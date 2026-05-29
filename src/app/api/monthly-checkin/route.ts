@@ -62,6 +62,19 @@ export async function GET(req: NextRequest) {
     .single()
 
   if (userErr || !user) return NextResponse.json({ error: 'User not found' }, { status: 404 })
+
+  // Free users can fetch their buyer intro message only
+  const typeParam = req.nextUrl.searchParams.get('type')
+  if (typeParam === 'intro') {
+    const { data: intro } = await supabase
+      .from('monthly_checkins')
+      .select('id, message, buyer_name, buyer_initials, created_at')
+      .eq('user_id', user.id)
+      .eq('month_key', 'intro')
+      .maybeSingle()
+    return NextResponse.json({ checkin: intro ?? null })
+  }
+
   if (user.subscription_tier === 'free' || user.billing_status !== 'active')
     return NextResponse.json({ error: 'Not available on free tier' }, { status: 403 })
 

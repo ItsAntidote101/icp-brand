@@ -1,16 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import Anthropic from '@anthropic-ai/sdk'
 import { sendPostDiagnosis48hEmail, sendPostDiagnosis7dEmail } from '@/lib/email'
 
 export const dynamic     = 'force-dynamic'
 export const maxDuration = 120
 
-const supabase = createClient(
+const supabase  = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'http://localhost',
   process.env.SUPABASE_SERVICE_ROLE_KEY || 'build-placeholder',
 )
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://idealicp.com'
+
+const BUYERS: Record<string, { name: string; initials: string; title: string; tone: string }> = {
+  EK: { name: 'Eugene Kariuki',  initials: 'EK', title: 'Senior Media Buyer, East Africa',     tone: 'direct and practical, references Nairobi/Kenya market specifics' },
+  AM: { name: 'Aisha Mensah',    initials: 'AM', title: 'Senior Media Buyer, West Africa',     tone: 'energetic and data-focused, references Lagos/Accra market context' },
+  DO: { name: 'David Osei',      initials: 'DO', title: 'Performance Strategist, South Africa', tone: 'analytical and precise, references Johannesburg/Cape Town context' },
+  GN: { name: 'Grace Nakato',    initials: 'GN', title: 'Paid Social Lead, East Africa',       tone: 'warm but results-focused, strong on Meta/social commerce' },
+  MW: { name: 'Marcus Webb',     initials: 'MW', title: 'Global Performance Lead',             tone: 'strategic and senior, references global patterns' },
+}
+
+function assignBuyer(region: string, industry: string, tier: string) {
+  const r = region.toLowerCase(); const i = industry.toLowerCase()
+  if (tier === 'agency') return BUYERS.MW
+  if (r.includes('west') || r.includes('ghana') || r.includes('nigeria') || r.includes('lagos') || r.includes('accra')) return BUYERS.AM
+  if (r.includes('south') || r.includes('johannesburg') || r.includes('cape') || r.includes('durban')) return BUYERS.DO
+  if (i.includes('ecommerce') || i.includes('e-commerce') || i.includes('retail')) return BUYERS.GN
+  return BUYERS.EK
+}
 
 function getScore(summary: string): number | null {
   try { const p = JSON.parse(summary); return p.overall_score ?? p.health_score ?? null } catch { return null }
@@ -41,7 +60,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 })
   }
 
-  const results = { sent48h: 0, sent7d: 0, errors: 0 }
+  const results = { buyerIntro: 0, sent48h: 0, sent7d: 0, errors: 0 }
 
   for (const user of users ?? []) {
     const badges = (user.user_badges ?? {}) as Record<string, unknown>
@@ -60,6 +79,100 @@ export async function GET(req: NextRequest) {
       const hours = hoursBetween(latest.generated_at as string)
       const days  = daysBetween(latest.generated_at as string)
       const score = getScore(latest.report_summary as string)
+
+      // ──────────────────────────────────────────────────────────────────
+      // BUYER INTRO: 2h after first-ever diagnosis or any new diagnosis
+      // ──────────────────────────────────────────────────────────────────
+      const alreadyIntro = badges.notif_buyer_intro_report === latest.id
+      if (hours >= 2 && hours <= 6 && !alreadyIntro) {
+        try {
+          // Load questionnaire context
+          const { data: rawQ } = await supabase
+            .from('questionnaires')
+            .select('responses')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle()
+
+          const r = (rawQ?.responses as Record<string, unknown>) ?? {}
+          const region   = (r[11] as string) ?? 'Kenya'
+          const industry = (r[2]  as string) ?? 'business'
+          const tier     = (user.subscription_tier as string) ?? 'free'
+          const buyer    = assignBuyer(region, industry, tier)
+
+          // Parse findings and top quick win
+          let topFinding = ''; let topAction = ''; let execSummary = ''
+          try {
+            const d = JSON.parse(latest.report_summary as string) as Record<string, unknown>
+            execSummary = (d.executive_summary as string) ?? ''
+            const findings = [
+              ...((d.audience as Record<string, unknown>)?.findings as Array<{severity: string; title: string; explanation: string}> ?? []),
+              ...((d.search   as Record<string, unknown>)?.findings as Array<{severity: string; title: string; explanation: string}> ?? []),
+            ]
+            const critical = findings.find(f => f.severity === 'Critical') ?? findings[0]
+            if (critical) topFinding = `${critical.title}: ${critical.explanation}`
+            const wins = d.quick_wins as Array<{ action: string }> | undefined
+            if (wins?.[0]) topAction = wins[0].action
+          } catch { /* noop */ }
+
+          const firstName = user.full_name?.split(' ')[0] ?? 'there'
+          const prompt = `You are ${buyer.name}, ${buyer.title} at ICP Diagnostic. Your tone is ${buyer.tone}.
+
+Write a short, personal first message to ${firstName} (${user.email}) who just completed their ICP diagnostic${score !== null ? ` and scored ${score}/100` : ''}.
+
+Their context:
+- Executive summary: ${execSummary || 'Not available'}
+- Top finding: ${topFinding || 'Not available'}
+- Top quick win: ${topAction || 'Not available'}
+- Industry: ${industry}
+- Region: ${region}
+
+Rules:
+- 3-4 sentences maximum. Do not exceed this.
+- Address them by first name (${firstName})
+- Reference ONE specific finding or insight from their report
+- Give ONE concrete suggestion or observation
+- End with an open question to invite a reply
+- Sound like a real human expert, not an AI
+- Do NOT mention that you are an AI
+- Do NOT use em dashes or en dashes
+- Do NOT be generic. Reference their specific situation.`
+
+          const res = await anthropic.messages.create({
+            model:      'claude-haiku-4-5-20251001',
+            max_tokens: 200,
+            messages:   [{ role: 'user', content: prompt }],
+          })
+          const message = (res.content[0] as { type: string; text: string }).text
+            .replace(/ — /g, ', ').replace(/— /g, ', ').replace(/—/g, '-')
+            .trim()
+
+          // Store in monthly_checkins as buyer intro (month_key = 'intro')
+          await supabase.from('monthly_checkins').upsert({
+            user_id:         user.id,
+            month_key:       'intro',
+            message,
+            buyer_name:      buyer.name,
+            buyer_initials:  buyer.initials,
+            created_at:      new Date().toISOString(),
+          }, { onConflict: 'user_id,month_key' })
+
+          // Mark user as having an unread reply
+          await supabase.from('users')
+            .update({ has_unread_reply: true })
+            .eq('id', user.id)
+
+          // Track so we don't re-send for same report
+          await supabase.from('users').update({
+            user_badges: { ...badges, notif_buyer_intro_report: latest.id },
+          }).eq('id', user.id)
+
+          results.buyerIntro++
+        } catch (introErr) {
+          console.error('[post-diag-followup] buyer intro error for:', user.email, introErr)
+        }
+      }
 
       // Parse quick wins + findings once
       let topFinding: string | undefined

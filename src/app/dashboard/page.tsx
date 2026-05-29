@@ -212,20 +212,30 @@ function BuyerProfileCard({ buyer, tier, region, industry }: {
   )
 }
 
-function MonthlyCheckinCard({ user, buyer }: { user: UserData; buyer: MediaBuyer }) {
+function MonthlyCheckinCard({ user, buyer, onUpgrade }: { user: UserData; buyer: MediaBuyer; onUpgrade?: () => void }) {
   const font    = "'PolySans Median', -apple-system, system-ui, sans-serif"
   const fontB   = "'PolySans Neutral', -apple-system, system-ui, sans-serif"
   const P       = '#201515'
   const Pmuted  = '#939084'
   const Pborder = 'rgba(201,192,177,0.3)'
+  const isFree  = user.subscription_tier === 'free'
 
-  type CheckinData = { id?: string; message: string; buyer_name: string; buyer_initials: string; created_at: string }
+  type CheckinData = { id?: string; message: string; buyer_name: string; buyer_initials: string; created_at: string; is_intro?: boolean }
   const [checkin,  setCheckin]  = useState<CheckinData | null>(null)
   const [loading,  setLoading]  = useState(true)
   const [expanded, setExpanded] = useState(false)
 
   useEffect(() => {
-    if (user.subscription_tier === 'free') { setLoading(false); return }
+    // Free users: show the buyer intro message if it exists
+    if (isFree) {
+      fetch('/api/monthly-checkin?type=intro')
+        .then(r => r.ok ? r.json() : null)
+        .then(j => { if (j?.checkin) setCheckin({ ...j.checkin, is_intro: true }) })
+        .catch(() => {})
+        .finally(() => setLoading(false))
+      return
+    }
+
     const cacheKey = `monthly_checkin_${user.email}_${new Date().toISOString().slice(0, 7)}`
     const cached = typeof window !== 'undefined' ? localStorage.getItem(cacheKey) : null
     if (cached) { try { setCheckin(JSON.parse(cached)); setLoading(false); return } catch {/* noop */} }
@@ -237,7 +247,6 @@ function MonthlyCheckinCard({ user, buyer }: { user: UserData; buyer: MediaBuyer
           setCheckin(j.checkin)
           if (typeof window !== 'undefined') localStorage.setItem(cacheKey, JSON.stringify(j.checkin))
         } else if (j?.checkin === null) {
-          // Generate one
           fetch('/api/monthly-checkin', { method: 'POST' })
             .then(r => r.ok ? r.json() : null)
             .then(j2 => {
@@ -254,18 +263,24 @@ function MonthlyCheckinCard({ user, buyer }: { user: UserData; buyer: MediaBuyer
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user.email, user.subscription_tier])
 
-  if (user.subscription_tier === 'free' || loading || !checkin) return null
+  if (loading || !checkin) return null
 
-  const monthLabel = new Date().toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
+  const label = checkin.is_intro ? 'Message from your media buyer' : 'Monthly Check-in'
+  const timeLabel = checkin.is_intro
+    ? new Date(checkin.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+    : new Date().toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
 
   return (
-    <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 8px rgba(201,192,177,0.15)', animation: 'fadeUp 0.4s ease both' }}>
+    <div style={{ background: '#fff', border: `1.5px solid ${checkin.is_intro ? '#e8330a30' : Pborder}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 8px rgba(201,192,177,0.15)', animation: 'fadeUp 0.4s ease both' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
         <BuyerAvatar buyer={buyer} size={34} />
         <div style={{ flex: 1 }}>
-          <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: '#e8330a', margin: '0 0 1px' }}>Monthly Check-in</p>
-          <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: 0 }}>From {checkin.buyer_name} · {monthLabel}</p>
+          <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: '#e8330a', margin: '0 0 1px' }}>{label}</p>
+          <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: 0 }}>From {checkin.buyer_name} · {timeLabel}</p>
         </div>
+        {checkin.is_intro && (
+          <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, background: '#e8330a', color: '#fff', padding: '3px 8px', borderRadius: 100, letterSpacing: '0.05em' }}>NEW</span>
+        )}
       </div>
 
       <p style={{ fontFamily: font, fontSize: 14, color: '#605d52', lineHeight: 1.7, margin: 0, display: expanded ? 'block' : '-webkit-box', WebkitLineClamp: expanded ? undefined : 3, WebkitBoxOrient: expanded ? undefined : 'vertical' as const, overflow: expanded ? 'visible' : 'hidden' }}>
@@ -278,13 +293,21 @@ function MonthlyCheckinCard({ user, buyer }: { user: UserData; buyer: MediaBuyer
         </button>
       )}
 
-      {(user.subscription_tier === 'pro' || user.subscription_tier === 'agency') && (
-        <a href={buyer.calLink} target="_blank" rel="noopener noreferrer"
-          style={{ display: 'inline-flex', alignItems: 'center', gap: 7, marginTop: 16, background: P, color: '#fff', borderRadius: 10, padding: '9px 16px', fontFamily: fontB, fontSize: 12, fontWeight: 600, textDecoration: 'none' }}>
-          <Users size={12} />
-          Book a call with {buyer.firstName}
-        </a>
-      )}
+      <div style={{ display: 'flex', gap: 10, marginTop: 16, flexWrap: 'wrap' }}>
+        {(user.subscription_tier === 'pro' || user.subscription_tier === 'agency') && (
+          <a href={buyer.calLink} target="_blank" rel="noopener noreferrer"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: P, color: '#fff', borderRadius: 10, padding: '9px 16px', fontFamily: fontB, fontSize: 12, fontWeight: 600, textDecoration: 'none' }}>
+            <Users size={12} />
+            Book a call with {buyer.firstName}
+          </a>
+        )}
+        {isFree && onUpgrade && (
+          <button onClick={onUpgrade}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: '#e8330a', color: '#fff', borderRadius: 10, padding: '9px 16px', fontFamily: fontB, fontSize: 12, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
+            Reply to {checkin.buyer_name.split(' ')[0]} — upgrade to Starter
+          </button>
+        )}
+      </div>
     </div>
   )
 }
@@ -2155,6 +2178,107 @@ function LockedTabOverlay({ tabName, description, onUpgrade }: {
         Unlock with Starter
       </button>
       <p style={{ fontSize: 12, color: '#939084', marginTop: 14 }}>KES 6,500 / month. Cancel anytime.</p>
+    </div>
+  )
+}
+
+// ─── Teaser tab overlay (free users see top finding + blurred preview) ────────
+
+const TAB_KEYWORDS: Record<string, string[]> = {
+  audience:  ['audience', 'icp', 'target', 'persona', 'buyer', 'profile', 'firmograph', 'segment', 'demographic'],
+  search:    ['search', 'keyword', 'channel', 'google', 'seo', 'sem', 'paid search', 'organic', 'cpc'],
+  funnel:    ['funnel', 'landing', 'cta', 'conversion', 'friction', 'trust', 'offer', 'copy'],
+  economics: ['cac', 'ltv', 'cost', 'revenue', 'budget', 'roas', 'roi', 'margin', 'waste', 'profit'],
+}
+
+function TeaserTabOverlay({ tabName, category, diag, onUpgrade }: {
+  tabName: string; category: string; diag: DiagnosisData; onUpgrade: () => void
+}) {
+  const keywords = TAB_KEYWORDS[category] ?? []
+  const allFindings = getFindings(diag)
+  const catData = (diag as Record<string, unknown>)[category] as { findings?: Finding[] } | undefined
+  const findings = catData?.findings?.length
+    ? catData.findings
+    : catFindings(diag, keywords).length > 0
+      ? catFindings(diag, keywords)
+      : allFindings.slice(0, 3)
+
+  const topFinding = findings[0]
+  const lockedCount = findings.length - 1
+
+  const SEVERITY_COLORS: Record<string, { bg: string; text: string }> = {
+    Critical: { bg: 'rgba(239,68,68,0.1)', text: '#ef4444' },
+    Warning:  { bg: 'rgba(245,158,11,0.1)', text: '#d97706' },
+    Info:     { bg: 'rgba(59,130,246,0.1)', text: '#2563eb' },
+  }
+  const sevColor = SEVERITY_COLORS[topFinding?.severity ?? 'Info'] ?? SEVERITY_COLORS.Info
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 0, animation: 'fadeUp 0.4s ease both' }}>
+      {/* Live preview card */}
+      {topFinding && (
+        <div style={{ marginBottom: 0 }}>
+          <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 14px' }}>
+            Top {tabName} Finding — from your diagnosis
+          </p>
+          <div style={{ background: '#fff', border: `1.5px solid ${Pborder}`, borderLeft: `4px solid ${sevColor.text}`, borderRadius: '0 12px 12px 0', padding: '16px 20px', marginBottom: 12 }}>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                  <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.08em', color: sevColor.text, background: sevColor.bg, padding: '2px 7px', borderRadius: 5 }}>
+                    {topFinding.severity}
+                  </span>
+                </div>
+                <p style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: P, margin: '0 0 5px', letterSpacing: '-0.01em' }}>{topFinding.title}</p>
+                <p style={{ fontFamily: fontB, fontSize: 13, color: '#605d52', margin: 0, lineHeight: 1.55 }}>
+                  {topFinding.explanation?.slice(0, 160)}{(topFinding.explanation?.length ?? 0) > 160 ? '...' : ''}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Blurred preview of locked findings */}
+          {lockedCount > 0 && (
+            <div style={{ position: 'relative', marginBottom: 24 }}>
+              {[...Array(Math.min(lockedCount, 2))].map((_, i) => (
+                <div key={i} style={{
+                  background: '#fff', border: `1.5px solid ${Pborder}`, borderRadius: 12, padding: '14px 18px', marginBottom: 8,
+                  filter: 'blur(3px)', opacity: 0.55, userSelect: 'none', pointerEvents: 'none',
+                }}>
+                  <div style={{ height: 10, background: '#e5e0d8', borderRadius: 5, width: '45%', marginBottom: 8 }} />
+                  <div style={{ height: 8, background: '#e5e0d8', borderRadius: 4, width: '80%', marginBottom: 5 }} />
+                  <div style={{ height: 8, background: '#e5e0d8', borderRadius: 4, width: '65%' }} />
+                </div>
+              ))}
+              {/* Lock badge over blurred cards */}
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ background: 'rgba(32,21,21,0.85)', color: '#fff', borderRadius: 20, padding: '6px 14px', display: 'flex', alignItems: 'center', gap: 6, backdropFilter: 'blur(2px)' }}>
+                  <Lock size={12} color="#fff" />
+                  <span style={{ fontFamily: fontB, fontSize: 12, fontWeight: 600 }}>{lockedCount} more finding{lockedCount !== 1 ? 's' : ''} locked</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Upgrade CTA */}
+      <div style={{ background: 'linear-gradient(135deg,#201515 0%,#2d1a1a 100%)', borderRadius: 16, padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 14 }}>
+        <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Lock size={18} color="#fff" />
+        </div>
+        <div>
+          <p style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: '#fff', margin: '0 0 6px' }}>
+            Unlock full {tabName} analysis
+          </p>
+          <p style={{ fontFamily: fontB, fontSize: 13, color: 'rgba(255,255,255,0.6)', margin: 0, lineHeight: 1.55 }}>
+            See all findings, quick wins, and your personalised action plan — plus weekly intelligence briefings.
+          </p>
+        </div>
+        <button onClick={onUpgrade} style={{ background: Accent, color: '#fff', border: 'none', borderRadius: 10, padding: '11px 26px', fontFamily: fontB, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
+          Upgrade to Starter — KES 6,500/mo
+        </button>
+      </div>
     </div>
   )
 }
@@ -6246,15 +6370,7 @@ export default function DashboardPage() {
                   <TodaysPriorityCard diag={diag} report={latestReport} user={user} onComplete={setStreak} />
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                     <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 -4px' }}>THIS WEEK</p>
-                    <EnhancedQuickWinsWidget diag={diag} user={user} onStreakUpdate={setStreak} maxWins={isStarter ? 3 : 1} reportId={latestReport?.id} />
-                    {!isStarter && (
-                      <div style={{ marginTop: 0, background: BgAlt, border: `1.5px dashed ${Pborder}`, borderRadius: 12, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <Lock size={13} color={Pmuted} />
-                        <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: 0 }}>
-                          2 more quick wins on <button onClick={() => setShowUpgradeModal(true)} style={{ color: P, fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: fontB, fontSize: 12 }}>Starter</button>
-                        </p>
-                      </div>
-                    )}
+                    <EnhancedQuickWinsWidget diag={diag} user={user} onStreakUpdate={setStreak} maxWins={3} reportId={latestReport?.id} />
                     {score !== null && diag.score_predictions && diag.score_predictions.length > 0 && (
                       <ScorePredictionWidget diag={diag} score={score} delay={300} />
                     )}
@@ -6298,10 +6414,8 @@ export default function DashboardPage() {
                   <MilestonesSection milestones={milestones} bonusDiagnoses={bonusDiagnoses} onTabSwitch={tab => setActiveTab(tab as Tab)} />
                 </UpgradeGate>
 
-                {/* Score History, Starter+ */}
-                <UpgradeGate requiredTier="starter" currentTier={t} feature="Score History" description="Track your ICP score trend across every diagnosis you run." onUpgrade={() => setShowUpgradeModal(true)}>
-                  <ScoreHistoryWidget reports={reports} latestReport={latestReport} renewalDate={user.renewal_date ?? null} delay={0} />
-                </UpgradeGate>
+                {/* Score History — visible to all tiers */}
+                <ScoreHistoryWidget reports={reports} latestReport={latestReport} renewalDate={user.renewal_date ?? null} delay={0} />
 
                 {/* Campaign CSV, Pro+ */}
                 <UpgradeGate requiredTier="pro" currentTier={t} feature="Campaign Data Analysis" description="Upload your Google Ads or Meta export for a media buyer breakdown of your actual spend." onUpgrade={() => setShowUpgradeModal(true)}>
@@ -6321,19 +6435,19 @@ export default function DashboardPage() {
 
         {activeTab === 'audience' && (isSubscribed
           ? <AudienceTab diag={diag} hasReports={hasReports} score={score} onUpgrade={() => setShowUpgradeModal(true)} />
-          : <LockedTabOverlay tabName="Audience Analysis" description="See exactly who your best customers are, where your targeting is misaligned, and how to fix it. Includes ICP breakdown, Meta audience notes, and quick wins." onUpgrade={() => setShowUpgradeModal(true)} />
+          : <TeaserTabOverlay tabName="Audience" category="audience" diag={diag} onUpgrade={() => setShowUpgradeModal(true)} />
         )}
         {activeTab === 'search' && (isSubscribed
           ? <SearchTab diag={diag} hasReports={hasReports} score={score} onUpgrade={() => setShowUpgradeModal(true)} />
-          : <LockedTabOverlay tabName="Search and Channels" description="Understand which channels are wasting your budget and which are underinvested. Includes keyword analysis, channel efficiency score, and reallocation quick wins." onUpgrade={() => setShowUpgradeModal(true)} />
+          : <TeaserTabOverlay tabName="Search & Channels" category="search" diag={diag} onUpgrade={() => setShowUpgradeModal(true)} />
         )}
         {activeTab === 'funnel' && (isSubscribed
           ? <FunnelTab diag={diag} hasReports={hasReports} score={score} isSubscribed={isSubscribed} buyer={assignedBuyer} onUpgrade={() => setShowUpgradeModal(true)} />
-          : <LockedTabOverlay tabName="Funnel and Landing Page" description="Find out exactly where your funnel is losing buyers. Includes landing page assessment, friction index, CTA analysis, and trust signal audit." onUpgrade={() => setShowUpgradeModal(true)} />
+          : <TeaserTabOverlay tabName="Funnel & Landing Page" category="funnel" diag={diag} onUpgrade={() => setShowUpgradeModal(true)} />
         )}
         {activeTab === 'economics' && (isSubscribed
           ? <EconomicsTab diag={diag} hasReports={hasReports} score={score} currency={currency} onUpgrade={() => setShowUpgradeModal(true)} />
-          : <LockedTabOverlay tabName="Economics and Unit Costs" description="See your real CAC, LTV ratio, monthly waste estimate, and revenue opportunity. Understand what fixing your ICP is worth in actual money." onUpgrade={() => setShowUpgradeModal(true)} />
+          : <TeaserTabOverlay tabName="Economics & Unit Costs" category="economics" diag={diag} onUpgrade={() => setShowUpgradeModal(true)} />
         )}
         {activeTab === 'intelligence' && user && <IntelligenceTab user={user} score={score} hasNewIntelligence={hasNewIntelligence} onUpgrade={() => setShowUpgradeModal(true)} />}
         {activeTab === 'reports' && <ReportsTab reports={reports} dataLoading={dataLoading} />}
