@@ -336,10 +336,10 @@ export default function ReportPage({ params }: { params: { id: string } }) {
         </div>
       </nav>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 sm:py-14 space-y-12">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-14 space-y-8 sm:space-y-12">
 
         {/* ── SECTION 1 · Score Header ───────────────────────────────────── */}
-        <section className="fade-up flex flex-col sm:flex-row items-start sm:items-center justify-between gap-10 pb-10 border-b border-[#c5c0b1]">
+        <section className="fade-up flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 sm:gap-10 pb-8 sm:pb-10 border-b border-[#c5c0b1]">
           <div className="flex-1">
             <span className="inline-block text-[11px] font-semibold uppercase tracking-widest text-[#e8330a] bg-[rgba(232,51,10,0.08)] border border-[rgba(232,51,10,0.2)] px-3 py-1 rounded-full mb-4">
               ICP Diagnostic Report
@@ -362,13 +362,13 @@ export default function ReportPage({ params }: { params: { id: string } }) {
               </p>
             )}
 
-            <div className="mt-7 flex flex-wrap gap-3">
+            <div className="mt-6 grid grid-cols-3 gap-2 sm:gap-3 max-w-xs sm:max-w-none">
               {[
                 { label: 'Critical Issues',      value: `${criticalCount}` },
                 { label: 'Dimensions Analysed',  value: `${report.breakdown.length}` },
                 { label: 'Immediate Actions',    value: `${report.quick_wins.length}` },
               ].map(s => (
-                <div key={s.label} className="bg-[#f8f4f0] border border-[#c5c0b1] rounded-xl px-5 py-3 min-w-[100px]">
+                <div key={s.label} className="bg-[#f8f4f0] border border-[#c5c0b1] rounded-xl px-3 sm:px-5 py-3">
                   <p className="text-2xl font-extrabold text-[#201515]">{s.value}</p>
                   <p className="text-[11px] text-[#939084] mt-0.5">{s.label}</p>
                 </div>
@@ -654,7 +654,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                         </ul>
                         <button
                           onClick={() => openSubscribe(tier.name)}
-                          className={`w-full py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95 ${
+                          className={`w-full py-3 rounded-xl text-sm font-semibold transition-all active:scale-95 ${
                             tier.highlight
                               ? 'bg-[#e8330a] text-white shadow shadow-[rgba(232,51,10,0.4)]'
                               : 'border border-[rgba(255,255,255,0.15)] bg-[rgba(255,255,255,0.06)] text-[rgba(255,255,255,0.7)] hover:bg-[rgba(255,255,255,0.12)] hover:text-white'
@@ -696,13 +696,13 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                 onChange={e => setEmail(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') handleSubscribe() }}
                 placeholder="you@company.com"
-                className="w-full bg-[rgba(201,192,177,0.18)] border border-[#c5c0b1] focus:border-[#e8330a] rounded-xl px-4 py-3 text-[#201515] placeholder-[#939084] text-sm outline-none transition-colors mb-3"
+                className="w-full bg-[rgba(201,192,177,0.18)] border border-[#c5c0b1] focus:border-[#e8330a] rounded-xl px-4 py-3.5 text-[#201515] placeholder-[#939084] text-sm outline-none transition-colors mb-3"
               />
               {subscribeError && <p className="text-xs text-red-500 mb-3">{subscribeError}</p>}
               <button
                 onClick={handleSubscribe}
                 disabled={subscribing}
-                className="w-full py-3 rounded-xl bg-[#e8330a] disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold transition-all active:scale-95 flex items-center justify-center gap-2">
+                className="w-full py-3.5 rounded-xl bg-[#e8330a] disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold transition-all active:scale-95 flex items-center justify-center gap-2">
                 {subscribing ? (
                   <>
                     <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">

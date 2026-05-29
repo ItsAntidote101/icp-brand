@@ -1179,7 +1179,7 @@ export default function QuestionnairePage() {
           </div>
 
           {/* Right: what you will get panel */}
-          <aside className="hidden lg:flex flex-col w-[340px] flex-shrink-0 border-l border-[#c5c0b1] overflow-y-auto">
+          <aside className="hidden xl:flex flex-col w-[340px] flex-shrink-0 border-l border-[#c5c0b1] overflow-y-auto">
             <WelcomePanel diagCount={diagCount} />
           </aside>
         </div>
@@ -1430,7 +1430,7 @@ export default function QuestionnairePage() {
         </div>
 
         {/* Right: live report preview panel */}
-        <aside className="hidden lg:flex flex-col w-[320px] flex-shrink-0 border-l border-[#c5c0b1] overflow-y-auto">
+        <aside className="hidden xl:flex flex-col w-[320px] flex-shrink-0 border-l border-[#c5c0b1] overflow-y-auto">
           <QuestionPanel
             answers={answers}
             current={current}

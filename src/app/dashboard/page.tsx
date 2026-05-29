@@ -5941,6 +5941,7 @@ export default function DashboardPage() {
         @keyframes wastePulse  { 0%,100% { border-color: rgba(201,192,177,0.3) } 50% { border-color: #ef4444 } }
         .sidebar-nav-item:hover { background: #fffefb !important; }
         button:has(.avatar-overlay):hover .avatar-overlay { opacity: 1 !important; }
+        .mob-tab-strip::-webkit-scrollbar { display: none; }
         @media (prefers-reduced-motion: reduce) {
           *, *::before, *::after {
             animation-duration: 0.01ms !important;
@@ -6110,26 +6111,59 @@ export default function DashboardPage() {
       </aside>
 
       {/* ── MOBILE TOP NAV (lg:hidden) ─────────────────────────────────────── */}
-      <nav className="lg:hidden" style={{ position: 'sticky', top: 0, zIndex: 40, background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(20px)', borderBottom: `1px solid ${Pborder}` }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 56, padding: '0 16px', gap: 10 }}>
-          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', flexShrink: 0 }}>
-            <div style={{ width: 24, height: 24, borderRadius: 4, background: '#e8330a' }} />
-            <span style={{ fontFamily: font, fontWeight: 700, fontSize: 14, color: P }}>ICP Diagnostic</span>
+      <nav className="lg:hidden" style={{ position: 'sticky', top: 0, zIndex: 40, background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(20px)', borderBottom: `1px solid ${Pborder}` }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 56, padding: '0 16px', gap: 8 }}>
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 6, textDecoration: 'none', flexShrink: 0 }}>
+            <div style={{ width: 22, height: 22, borderRadius: 4, background: '#e8330a' }} />
+            <span style={{ fontFamily: font, fontWeight: 700, fontSize: 13, color: P }}>ICP</span>
           </Link>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ position: 'relative' }}>
-              <select value={currency} onChange={e => handleCurrencyChange(e.target.value)}
-                style={{ appearance: 'none', WebkitAppearance: 'none', fontFamily: fontB, fontSize: 12, fontWeight: 600, color: P, background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 100, padding: '5px 28px 5px 12px', cursor: 'pointer', outline: 'none' }}>
-                {CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-              <span style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', fontSize: 9, color: P }}>▾</span>
-            </div>
+          <span style={{ fontFamily: font, fontWeight: 600, fontSize: 13, color: P, flex: 1, textAlign: 'center' }}>{TAB_LABELS[activeTab]}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             {tierLabel && (
-              <span className="hidden sm:inline-block" style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, background: P, color: '#fff', padding: '3px 10px', borderRadius: 100 }}>{tierLabel}</span>
+              <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, background: P, color: '#fff', padding: '3px 8px', borderRadius: 100 }}>{tierLabel}</span>
             )}
+            <button
+              onClick={() => { setShowNotifications(v => { if (!v) markAllRead(); return !v }); }}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: `1px solid ${Pborder}`, borderRadius: 8, width: 36, height: 36, cursor: 'pointer', position: 'relative', flexShrink: 0 }}>
+              <Bell size={15} color={unreadCount > 0 ? Accent : Pmuted} />
+              {unreadCount > 0 && (
+                <span style={{ position: 'absolute', top: 4, right: 4, minWidth: 14, height: 14, borderRadius: 100, background: '#ef4444', border: '1.5px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: fontB, fontSize: 8, fontWeight: 700, color: '#fff', padding: '0 2px' }}>
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </button>
           </div>
         </div>
       </nav>
+
+      {/* ── MOBILE TAB STRIP (lg:hidden) ──────────────────────────────────────── */}
+      <div className="lg:hidden" style={{ position: 'sticky', top: 56, zIndex: 39, background: 'rgba(255,255,255,0.98)', borderBottom: `1px solid ${Pborder}` }}>
+        <div className="mob-tab-strip" style={{ display: 'flex', overflowX: 'auto', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch', padding: '0 12px', gap: 4 }}>
+          {(['overview', 'audience', 'search', 'funnel', 'economics', 'intelligence', 'reports', 'account'] as Tab[]).map(tab => {
+            const isActive = activeTab === tab
+            const hasNew = tab === 'intelligence' && hasNewIntelligence
+            return (
+              <button key={tab} onClick={() => setActiveTab(tab)}
+                style={{
+                  flexShrink: 0, display: 'flex', alignItems: 'center', gap: 5,
+                  padding: '10px 12px', border: 'none', background: 'transparent', cursor: 'pointer',
+                  fontFamily: fontB, fontSize: 12, fontWeight: isActive ? 700 : 500,
+                  color: isActive ? Accent : Pmuted,
+                  borderBottom: isActive ? `2px solid ${Accent}` : '2px solid transparent',
+                  marginBottom: -1, whiteSpace: 'nowrap', transition: 'color 0.15s',
+                  position: 'relative',
+                }}>
+                {TAB_ICONS[tab]}
+                <span>{TAB_LABELS[tab]}</span>
+                {hasNew && <span style={{ position: 'absolute', top: 6, right: 6, width: 6, height: 6, borderRadius: '50%', background: '#ef4444' }} />}
+                {tab === 'overview' && score !== null && isActive && (
+                  <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, background: scoreLabelBg(score), color: scoreColor(score), padding: '1px 6px', borderRadius: 100 }}>{score}</span>
+                )}
+              </button>
+            )
+          })}
+        </div>
+      </div>
 
       {/* ── MAIN CONTENT ──────────────────────────────────────────────────────── */}
       <div className="lg:ml-[240px]">
@@ -6289,7 +6323,7 @@ export default function DashboardPage() {
 
                 {/* Data quality warning: AI detected fake/suspicious input */}
                 {dataQualityFlag && (
-                  <div style={{ background: '#fffbeb', border: '1px solid rgba(217,119,6,0.35)', borderLeft: '4px solid #d97706', borderRadius: '0 12px 12px 0', padding: '16px 20px', display: 'flex', gap: 14, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+                  <div style={{ background: '#fffbeb', border: '1px solid rgba(217,119,6,0.35)', borderLeft: '4px solid #d97706', borderRadius: '0 12px 12px 0', padding: 'clamp(12px, 4vw, 16px) clamp(12px, 4vw, 20px)', display: 'flex', gap: 12, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'space-between' }}>
                     <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', flex: 1 }}>
                       <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(217,119,6,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
                         <AlertCircle size={15} color="#d97706" />
@@ -6312,7 +6346,7 @@ export default function DashboardPage() {
 
                 {/* Re-diagnosis nudge: score may have drifted */}
                 {daysSinceDiag > reDiagThreshold && (
-                  <div style={{ background: 'linear-gradient(135deg,#201515 0%,#2d1e0a 100%)', borderRadius: 16, padding: '18px 24px', display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+                  <div style={{ background: 'linear-gradient(135deg,#201515 0%,#2d1e0a 100%)', borderRadius: 16, padding: 'clamp(14px, 4vw, 18px) clamp(14px, 4vw, 24px)', display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between' }}>
                     <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                       <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <RefreshCw size={16} color="#fff" />
@@ -6343,7 +6377,7 @@ export default function DashboardPage() {
 
                 {/* Free-tier score improvement nudge */}
                 {t === 'free' && daysSinceDiag > 30 && score !== null && score < 50 && (
-                  <div style={{ background: '#f8f4f0', border: '1px solid rgba(239,68,68,0.2)', borderLeft: '4px solid #ef4444', borderRadius: '0 16px 16px 0', padding: '18px 24px', display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+                  <div style={{ background: '#f8f4f0', border: '1px solid rgba(239,68,68,0.2)', borderLeft: '4px solid #ef4444', borderRadius: '0 16px 16px 0', padding: 'clamp(14px, 4vw, 18px) clamp(14px, 4vw, 24px)', display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between' }}>
                     <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                       <AlertTriangle size={20} color="#ef4444" style={{ flexShrink: 0 }} />
                       <div>
@@ -6366,7 +6400,7 @@ export default function DashboardPage() {
                 <WasteTicker diag={diag} report={latestReport} currency={currency} score={score} scoreDelta={scoreDeltaMain} onTabChange={setActiveTab} />
 
                 {/* Score + Streak */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   <ICPScoreCard diag={diag} reports={reports} />
                   <UpgradeGate requiredTier="starter" currentTier={t} feature="Fix Streak" description="Track your weekly implementation streak. Available on Starter and above." onUpgrade={() => setShowUpgradeModal(true)}>
                     <FixStreakWidget streak={streak} />
@@ -6390,7 +6424,7 @@ export default function DashboardPage() {
                 )}
 
                 {/* Priority action + Quick Wins checklist + Score Prediction */}
-                <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4 lg:gap-6">
                   <TodaysPriorityCard diag={diag} report={latestReport} user={user} onComplete={setStreak} />
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                     <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 -4px' }}>THIS WEEK</p>
@@ -6407,7 +6441,7 @@ export default function DashboardPage() {
                   const hasNoWins = (diag.quick_wins ?? []).length === 0
                   if (criticalCount >= 2 && hasNoWins) {
                     return (
-                      <div style={{ background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 16, padding: '18px 24px', display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+                      <div style={{ background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 16, padding: 'clamp(14px, 4vw, 18px) clamp(14px, 4vw, 24px)', display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between' }}>
                         <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                           <div style={{ width: 36, height: 36, borderRadius: 10, background: '#fed7aa', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                             <AlertTriangle size={18} color="#c2410c" />
@@ -6447,7 +6481,7 @@ export default function DashboardPage() {
                 </UpgradeGate>
 
                 {/* Your Media Buyer */}
-                <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4 lg:gap-6">
                   <GetItDoneCard tier={t} onBook={() => setShowModal(true)} onUpgrade={() => setShowUpgradeModal(true)} />
                   <BuyerProfileCard buyer={assignedBuyer} tier={t} region={userRegion || undefined} industry={userIndustry || undefined} />
                 </div>
