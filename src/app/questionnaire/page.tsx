@@ -19,6 +19,7 @@ interface Question {
   question: string
   type: QuestionType
   options?: string[]
+  comingSoon?: string[]
   placeholder?: string
   showIf?: (answers: Answers) => boolean
 }
@@ -134,8 +135,8 @@ const QUESTIONS: Question[] = [
     id: 11, layer: 2, layerName: 'Targeting Mismatch',
     question: 'What is the primary geographic region you are targeting with ads?',
     type: 'select',
-    options: [
-      'Kenya',
+    options: ['Kenya'],
+    comingSoon: [
       'Tanzania',
       'Uganda',
       'West Africa (Nigeria, Ghana)',
@@ -274,12 +275,18 @@ function TextareaInput({ value, onChange, placeholder }: { value: string; onChan
   )
 }
 
-function SelectInput({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: string[] }) {
+function SelectInput({ value, onChange, options, comingSoon }: { value: string; onChange: (v: string) => void; options: string[]; comingSoon?: string[] }) {
   return (
     <select value={value} onChange={e => onChange(e.target.value)}
       className="w-full bg-[#fff] border border-[#c5c0b1] focus:border-[#e8330a] rounded px-4 py-3.5 text-[#201515] text-base outline-none transition-colors cursor-pointer appearance-none">
       <option value="" disabled>Select an option...</option>
       {options.map(o => <option key={o} value={o}>{o}</option>)}
+      {comingSoon && comingSoon.length > 0 && (
+        <>
+          <option disabled>──────────────</option>
+          {comingSoon.map(o => <option key={o} disabled>{o} (Coming soon)</option>)}
+        </>
+      )}
     </select>
   )
 }
@@ -1348,7 +1355,7 @@ export default function QuestionnairePage() {
                 {q.type === 'text'     && <TextInput     value={textVal} onChange={setAnswer} placeholder={q.placeholder} />}
                 {q.type === 'url'      && <UrlInput      value={textVal} onChange={setAnswer} onBlur={q.id === 10 ? handleUrlBlur : undefined} placeholder={q.placeholder} />}
                 {q.type === 'textarea' && <TextareaInput value={textVal} onChange={setAnswer} placeholder={q.placeholder} />}
-                {q.type === 'select'   && <SelectInput   value={textVal} onChange={setAnswer} options={q.options!} />}
+                {q.type === 'select'   && <SelectInput   value={textVal} onChange={setAnswer} options={q.options!} comingSoon={q.comingSoon} />}
                 {q.type === 'radio'    && <RadioInput    value={textVal} onChange={setAnswer} options={q.options!} />}
                 {q.type === 'checkbox' && <CheckboxInput value={arrVal}  onChange={setAnswer} options={q.options!} />}
                 {q.type === 'number'   && <NumberInput   value={textVal} onChange={setAnswer} placeholder={q.placeholder} />}

@@ -25,7 +25,7 @@ const fontB   = "'PolySans Neutral', -apple-system, system-ui, sans-serif"
 
 // ─── Currency ─────────────────────────────────────────────────────────────────
 const USD_RATES: Record<string, number> = { KES: 129, NGN: 1580, ZAR: 18.5, USD: 1, GBP: 0.79, EUR: 0.92 }
-const CURRENCIES = ['KES', 'NGN', 'ZAR', 'USD', 'GBP', 'EUR']
+const CURRENCIES = ['KES', 'USD']
 
 function convertAmount(amount: number, fromCurrency: string, toCurrency: string): string {
   const inUSD     = amount / (USD_RATES[fromCurrency] ?? 1)
