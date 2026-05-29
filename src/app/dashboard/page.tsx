@@ -302,10 +302,17 @@ function MonthlyCheckinCard({ user, buyer, onUpgrade }: { user: UserData; buyer:
           </a>
         )}
         {isFree && onUpgrade && (
-          <button onClick={onUpgrade}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: '#e8330a', color: '#fff', borderRadius: 10, padding: '9px 16px', fontFamily: fontB, fontSize: 12, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
-            Reply to {checkin.buyer_name.split(' ')[0]} — upgrade to Starter
-          </button>
+          <div style={{ width: '100%' }}>
+            <div style={{ background: 'rgba(232,51,10,0.06)', border: '1px solid rgba(232,51,10,0.2)', borderRadius: 10, padding: '10px 14px', marginBottom: 10 }}>
+              <p style={{ fontFamily: fontB, fontSize: 12, color: '#9a1c00', margin: 0, lineHeight: 1.5 }}>
+                {checkin.buyer_name.split(' ')[0]} has reviewed your score and has a follow-up question for you.
+              </p>
+            </div>
+            <button onClick={onUpgrade}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: '#e8330a', color: '#fff', borderRadius: 10, padding: '9px 16px', fontFamily: fontB, fontSize: 12, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
+              See {checkin.buyer_name.split(' ')[0]}&apos;s question — upgrade to Starter
+            </button>
+          </div>
         )}
       </div>
     </div>
@@ -825,8 +832,8 @@ function trajectoryInsight(data: { score: number }[]): { icon: 'up' | 'down' | '
   }
 }
 
-function ScoreHistoryWidget({ reports, latestReport, renewalDate, delay }: {
-  reports: ReportRow[]; latestReport: ReportRow; renewalDate: string | null; delay: number
+function ScoreHistoryWidget({ reports, latestReport, renewalDate, delay, tier, onUpgrade }: {
+  reports: ReportRow[]; latestReport: ReportRow; renewalDate: string | null; delay: number; tier?: string; onUpgrade?: () => void
 }) {
   const [range, setRange] = React.useState<ScoreRange>('all')
 
@@ -837,26 +844,59 @@ function ScoreHistoryWidget({ reports, latestReport, renewalDate, delay }: {
   const latestScore = getScore(parseDiagnosis(latestReport.report_summary))
 
   if (!hasHistory) {
+    const isFreeUser = tier === 'free'
     return (
       <Card delay={delay} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
         <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: '0 0 20px' }}>Score History</p>
         {latestScore !== null && (
-          <div style={{ background: BgAlt, borderRadius: 12, padding: '14px 18px', marginBottom: 18, display: 'inline-flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontFamily: fontB, fontSize: 12, color: Pmuted }}>Baseline</span>
-            <span style={{ fontFamily: font, fontSize: 22, fontWeight: 800, color: P }}>{latestScore}<span style={{ fontSize: 13, fontWeight: 500, color: Pmuted }}>/100</span></span>
-            <span style={{ fontFamily: fontB, fontSize: 11, color: Pmuted }}>, {formatDate(latestReport.generated_at)}</span>
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, marginBottom: 18 }}>
+            <div style={{ background: BgAlt, borderRadius: 12, padding: '14px 18px', display: 'inline-flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontFamily: fontB, fontSize: 12, color: Pmuted }}>Baseline</span>
+              <span style={{ fontFamily: font, fontSize: 22, fontWeight: 800, color: P }}>{latestScore}<span style={{ fontSize: 13, fontWeight: 500, color: Pmuted }}>/100</span></span>
+              <span style={{ fontFamily: fontB, fontSize: 11, color: Pmuted }}>, {formatDate(latestReport.generated_at)}</span>
+            </div>
+            {/* Implied future data points */}
+            {isFreeUser && (
+              <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', paddingBottom: 4 }}>
+                {[0, 1].map(i => (
+                  <div key={i} style={{ background: 'rgba(201,192,177,0.25)', borderRadius: 8, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 6, filter: 'blur(1.5px)', opacity: 0.5 }}>
+                    <span style={{ fontFamily: fontB, fontSize: 11, color: Pmuted }}>Diagnosis {i + 2}</span>
+                    <span style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: P }}>??</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
-        <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, lineHeight: 1.6, margin: '0 0 6px' }}>
-          Your score trend will appear here after your next diagnosis.
-        </p>
-        <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '0 0 20px' }}>
-          Next diagnosis due {formatDate(nextDate.toISOString())}
-        </p>
-        <Link href="/questionnaire"
-          style={{ fontFamily: font, fontWeight: 600, fontSize: 13, color: P, border: `1.5px solid ${Pborder}`, borderRadius: 10, padding: '9px 18px', textDecoration: 'none', display: 'inline-block', width: 'fit-content' }}>
-          Run New Diagnosis →
-        </Link>
+        {isFreeUser ? (
+          <>
+            <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, lineHeight: 1.6, margin: '0 0 4px' }}>
+              Implement your quick wins, then re-run to see if your score improves.
+            </p>
+            <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '0 0 18px' }}>
+              Re-diagnosis requires Starter — your baseline is locked in here.
+            </p>
+            {onUpgrade && (
+              <button onClick={onUpgrade}
+                style={{ fontFamily: font, fontWeight: 600, fontSize: 13, color: '#fff', background: Accent, border: 'none', borderRadius: 10, padding: '9px 18px', cursor: 'pointer', display: 'inline-block', width: 'fit-content' }}>
+                Track My Progress — Upgrade to Starter
+              </button>
+            )}
+          </>
+        ) : (
+          <>
+            <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, lineHeight: 1.6, margin: '0 0 6px' }}>
+              Your score trend will appear here after your next diagnosis.
+            </p>
+            <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '0 0 20px' }}>
+              Next diagnosis due {formatDate(nextDate.toISOString())}
+            </p>
+            <Link href="/questionnaire"
+              style={{ fontFamily: font, fontWeight: 600, fontSize: 13, color: P, border: `1.5px solid ${Pborder}`, borderRadius: 10, padding: '9px 18px', textDecoration: 'none', display: 'inline-block', width: 'fit-content' }}>
+              Run New Diagnosis →
+            </Link>
+          </>
+        )}
       </Card>
     )
   }
@@ -6287,10 +6327,10 @@ export default function DashboardPage() {
                         </p>
                       </div>
                     </div>
-                    <Link href="/questionnaire"
-                      style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, background: '#d97706', color: '#fff', padding: '9px 18px', borderRadius: 9, textDecoration: 'none', whiteSpace: 'nowrap' as const, flexShrink: 0, alignSelf: 'center' }}>
-                      Re-run Diagnosis →
-                    </Link>
+                    {t === 'free'
+                      ? <button onClick={() => setShowUpgradeModal(true)} style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, background: '#d97706', color: '#fff', padding: '9px 18px', borderRadius: 9, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' as const, flexShrink: 0, alignSelf: 'center' }}>Upgrade to Re-run →</button>
+                      : <Link href="/questionnaire" style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, background: '#d97706', color: '#fff', padding: '9px 18px', borderRadius: 9, textDecoration: 'none', whiteSpace: 'nowrap' as const, flexShrink: 0, alignSelf: 'center' }}>Re-run Diagnosis →</Link>
+                    }
                   </div>
                 )}
 
@@ -6303,17 +6343,25 @@ export default function DashboardPage() {
                       </div>
                       <div>
                         <p style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: '#fff', margin: '0 0 2px' }}>
-                          {t === 'agency' ? 'Your competitive window is closing.' : t === 'pro' ? 'Your ICP may have drifted.' : `Your last diagnosis was ${daysSinceDiag} days ago.`}
+                          {t === 'free'
+                            ? `Your baseline was set ${daysSinceDiag} days ago. Have you improved?`
+                            : t === 'agency' ? 'Your competitive window is closing.'
+                            : t === 'pro' ? 'Your ICP may have drifted.'
+                            : `Your last diagnosis was ${daysSinceDiag} days ago.`}
                         </p>
                         <p style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.55)', margin: 0 }}>
-                          {t === 'agency' ? `${daysSinceDiag} days since last diagnosis. Agency tier gives you fresh intelligence weekly.` : t === 'pro' ? `${daysSinceDiag} days without a new diagnostic. Markets shift fast.` : 'Markets shift. A fresh diagnostic will show whether your ICP score has drifted.'}
+                          {t === 'free'
+                            ? 'Re-run your diagnosis on Starter to see if your quick wins moved the needle.'
+                            : t === 'agency' ? `${daysSinceDiag} days since last diagnosis. Agency tier gives you fresh intelligence weekly.`
+                            : t === 'pro' ? `${daysSinceDiag} days without a new diagnostic. Markets shift fast.`
+                            : 'Markets shift. A fresh diagnostic will show whether your ICP score has drifted.'}
                         </p>
                       </div>
                     </div>
-                    <Link href="/questionnaire"
-                      style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, background: '#fff', color: P, padding: '10px 20px', borderRadius: 10, textDecoration: 'none', whiteSpace: 'nowrap' as const, flexShrink: 0 }}>
-                      Run New Diagnosis →
-                    </Link>
+                    {t === 'free'
+                      ? <button onClick={() => setShowUpgradeModal(true)} style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, background: '#fff', color: P, padding: '10px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' as const, flexShrink: 0 }}>Upgrade to Re-run →</button>
+                      : <Link href="/questionnaire" style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, background: '#fff', color: P, padding: '10px 20px', borderRadius: 10, textDecoration: 'none', whiteSpace: 'nowrap' as const, flexShrink: 0 }}>Run New Diagnosis →</Link>
+                    }
                   </div>
                 )}
 
@@ -6415,7 +6463,7 @@ export default function DashboardPage() {
                 </UpgradeGate>
 
                 {/* Score History — visible to all tiers */}
-                <ScoreHistoryWidget reports={reports} latestReport={latestReport} renewalDate={user.renewal_date ?? null} delay={0} />
+                <ScoreHistoryWidget reports={reports} latestReport={latestReport} renewalDate={user.renewal_date ?? null} delay={0} tier={t} onUpgrade={() => setShowUpgradeModal(true)} />
 
                 {/* Campaign CSV, Pro+ */}
                 <UpgradeGate requiredTier="pro" currentTier={t} feature="Campaign Data Analysis" description="Upload your Google Ads or Meta export for a media buyer breakdown of your actual spend." onUpgrade={() => setShowUpgradeModal(true)}>

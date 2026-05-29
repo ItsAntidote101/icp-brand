@@ -240,17 +240,7 @@ export async function POST(req: NextRequest) {
     const limit = baseLimit === Infinity ? Infinity : baseLimit + bonusDiagnoses
 
     if (limit !== Infinity) {
-      const monthStart = new Date()
-      monthStart.setUTCDate(1)
-      monthStart.setUTCHours(0, 0, 0, 0)
-
-      const { count: usedThisMonth } = await supabase
-        .from('diagnostics')
-        .select('id', { count: 'exact', head: true })
-        .eq('questionnaire_id', questionnaireId)
-        .gte('created_at', monthStart.toISOString())
-
-      // Count all diagnostics this month for this user via their questionnaires
+      // Fetch all questionnaires for this user (needed for both free and paid counts)
       const { data: userQuestionnaires } = await supabase
         .from('questionnaires')
         .select('id')
@@ -258,22 +248,47 @@ export async function POST(req: NextRequest) {
 
       const qIds = (userQuestionnaires ?? []).map((q: { id: string }) => q.id)
 
-      const { count: monthCount } = qIds.length > 0
-        ? await supabase
-            .from('diagnostics')
-            .select('id', { count: 'exact', head: true })
-            .in('questionnaire_id', qIds)
-            .gte('created_at', monthStart.toISOString())
-        : { count: 0 }
+      if (tier === 'free') {
+        // Free tier: one diagnosis lifetime (not monthly) — every re-run is an upgrade moment
+        const { count: allTimeCount } = qIds.length > 0
+          ? await supabase
+              .from('diagnostics')
+              .select('id', { count: 'exact', head: true })
+              .in('questionnaire_id', qIds)
+          : { count: 0 }
 
-      if ((monthCount ?? 0) >= limit) {
-        return NextResponse.json({
-          error: 'diagnosis_limit_reached',
-          message: `You have used all ${limit} diagnosis${limit === 1 ? '' : 'es'} included in your ${tier} plan this month. Upgrade to run more.`,
-          limit,
-          used: monthCount,
-          upgradeUrl: '/pricing',
-        }, { status: 402 })
+        if ((allTimeCount ?? 0) >= 1) {
+          return NextResponse.json({
+            error: 'diagnosis_limit_reached',
+            message: 'Free accounts include one lifetime diagnosis. Upgrade to Starter to run your next diagnosis and track your improvement over time.',
+            limit: 1,
+            used: allTimeCount,
+            upgradeUrl: '/pricing',
+          }, { status: 402 })
+        }
+      } else {
+        // Paid tiers: monthly limit
+        const monthStart = new Date()
+        monthStart.setUTCDate(1)
+        monthStart.setUTCHours(0, 0, 0, 0)
+
+        const { count: monthCount } = qIds.length > 0
+          ? await supabase
+              .from('diagnostics')
+              .select('id', { count: 'exact', head: true })
+              .in('questionnaire_id', qIds)
+              .gte('created_at', monthStart.toISOString())
+          : { count: 0 }
+
+        if ((monthCount ?? 0) >= limit) {
+          return NextResponse.json({
+            error: 'diagnosis_limit_reached',
+            message: `You have used all ${limit} diagnosis${limit === 1 ? '' : 'es'} included in your ${tier} plan this month. Upgrade to run more.`,
+            limit,
+            used: monthCount,
+            upgradeUrl: '/pricing',
+          }, { status: 402 })
+        }
       }
     }
   }
