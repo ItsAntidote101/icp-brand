@@ -114,6 +114,17 @@ function scoreContext(s: number): string {
   return 'Most of your ad spend is reaching people who will never convert.'
 }
 
+function extractShortMoney(text: string | undefined): string {
+  if (!text) return '—'
+  const m = text.match(/(?:KES|USD|\$|£|€)\s*[\d,]+(?:\.\d+)?(?:\s*[KMBkmb])?/i)
+  return m ? m[0].trim() : text.slice(0, 25)
+}
+function extractShortRatio(text: string | undefined): string {
+  if (!text) return '—'
+  const m = text.match(/\d+\.?\d*\s*:\s*1/)
+  return m ? m[0] : text.slice(0, 15)
+}
+
 // ── Components ────────────────────────────────────────────────────────────────
 
 function SeverityBadge({ severity }: { severity: Severity }) {
@@ -217,16 +228,17 @@ function LoadingSkeleton() {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function ReportPage({ params }: { params: { id: string } }) {
-  const [report,         setReport]         = useState<ReportData | null>(null)
-  const [loading,        setLoading]        = useState(true)
-  const [animate,        setAnimate]        = useState(false)
-  const [showModal,      setShowModal]      = useState(false)
-  const [selectedTier,   setSelectedTier]   = useState<Tier>('Pro')
-  const [email,          setEmail]          = useState('')
-  const [subscribing,    setSubscribing]    = useState(false)
-  const [subscribeError, setSubscribeError] = useState('')
-  const [isSubscribed,   setIsSubscribed]   = useState(false)
-  const [buyerIntro,     setBuyerIntro]     = useState<BuyerIntro | null>(null)
+  const [report,           setReport]           = useState<ReportData | null>(null)
+  const [loading,          setLoading]          = useState(true)
+  const [animate,          setAnimate]          = useState(false)
+  const [showModal,        setShowModal]        = useState(false)
+  const [selectedTier,     setSelectedTier]     = useState<Tier>('Pro')
+  const [email,            setEmail]            = useState('')
+  const [subscribing,      setSubscribing]      = useState(false)
+  const [subscribeError,   setSubscribeError]   = useState('')
+  const [isSubscribed,     setIsSubscribed]     = useState(false)
+  const [buyerIntro,       setBuyerIntro]       = useState<BuyerIntro | null>(null)
+  const [showBreakdown,    setShowBreakdown]    = useState(false)
   const emailRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -411,34 +423,55 @@ export default function ReportPage({ params }: { params: { id: string } }) {
 
         {/* ── SECTION 3 · Score Breakdown ───────────────────────────────── */}
         <section className="fade-up" style={{ animationDelay: '0.1s' }}>
-          <div className="mb-5">
-            <h2 className="text-xl font-bold text-[#201515] mb-1">Score Breakdown</h2>
-            <p className="text-[#939084] text-sm">Your score across 6 diagnostic dimensions — what we found and why it matters</p>
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-bold text-[#201515] mb-0.5">Score Breakdown</h2>
+              <p className="text-[#939084] text-sm">Your score across {report.breakdown.length} diagnostic dimensions</p>
+            </div>
+            <button
+              className="sm:hidden text-xs font-semibold text-[#e8330a] border border-[rgba(232,51,10,0.3)] px-3 py-1.5 rounded-lg"
+              onClick={() => setShowBreakdown(v => !v)}
+            >
+              {showBreakdown ? 'Hide' : 'Show all'}
+            </button>
           </div>
+          {/* Mobile: show only top 2 worst scores unless expanded */}
           <div className="grid sm:grid-cols-2 gap-3">
-            {report.breakdown.map((card, i) => {
-              const col = scoreColor(card.score)
-              return (
-                <div key={i} className="bg-white border border-[#c5c0b1] rounded-xl p-5 hover:shadow-sm transition-shadow">
-                  <div className="flex items-center justify-between mb-2.5">
-                    <h3 className="text-[#201515] font-semibold text-sm">{card.label}</h3>
-                    <span className="text-xl font-black" style={{ color: col }}>{card.score}</span>
-                  </div>
-                  <ScoreBar score={card.score} animate={animate} />
-                  <div className="mt-4 space-y-2.5">
-                    <div className="flex gap-2">
-                      <span className="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider text-[#939084] w-16 pt-0.5">Found</span>
-                      <p className="text-[#605d52] text-xs leading-relaxed">{card.found}</p>
+            {report.breakdown
+              .slice()
+              .sort((a, b) => a.score - b.score)
+              .filter((_, i) => showBreakdown || i < 2)
+              .map((card, i) => {
+                const col = scoreColor(card.score)
+                return (
+                  <div key={i} className="bg-white border border-[#c5c0b1] rounded-xl p-4 sm:p-5 hover:shadow-sm transition-shadow">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-[#201515] font-semibold text-sm">{card.label}</h3>
+                      <span className="text-xl font-black" style={{ color: col }}>{card.score}</span>
                     </div>
-                    <div className="flex gap-2">
-                      <span className="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider text-[#939084] w-16 pt-0.5">Why</span>
-                      <p className="text-[#605d52] text-xs leading-relaxed">{card.why}</p>
+                    <ScoreBar score={card.score} animate={animate} />
+                    <div className="mt-3 space-y-2">
+                      <div className="flex gap-2">
+                        <span className="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider text-[#939084] w-14 pt-0.5">Found</span>
+                        <p className="text-[#605d52] text-xs leading-relaxed">{card.found}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <span className="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider text-[#939084] w-14 pt-0.5">Why</span>
+                        <p className="text-[#605d52] text-xs leading-relaxed">{card.why}</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )
-            })}
+                )
+              })}
           </div>
+          {!showBreakdown && report.breakdown.length > 2 && (
+            <button
+              className="sm:hidden mt-3 w-full text-center text-xs font-semibold text-[#605d52] border border-[#c5c0b1] px-4 py-2.5 rounded-xl"
+              onClick={() => setShowBreakdown(true)}
+            >
+              Show {report.breakdown.length - 2} more dimensions ↓
+            </button>
+          )}
         </section>
 
         {/* ── SECTION 4 · Quick Wins ────────────────────────────────────── */}
@@ -470,25 +503,33 @@ export default function ReportPage({ params }: { params: { id: string } }) {
               <p className="text-[#939084] text-sm">Projected unit economics before and after fixing your ICP</p>
             </div>
             <div className="grid sm:grid-cols-2 gap-3 mb-3">
-              <div className="bg-white border border-[#c5c0b1] rounded-xl p-5">
+              <div className="bg-white border border-[#c5c0b1] rounded-xl p-4 sm:p-5">
                 <p className="text-[11px] font-bold uppercase tracking-wider text-[#939084] mb-3">Customer Acquisition Cost</p>
-                <div className="flex items-end gap-4 mb-3">
-                  <div><p className="text-[11px] text-[#939084] mb-0.5">Current</p>
-                    <p className="text-lg font-black text-red-500">{report.business_outcomes.cac_current}</p></div>
-                  <div className="text-[#c5c0b1] mb-1 text-lg">→</div>
-                  <div><p className="text-[11px] text-[#939084] mb-0.5">Projected</p>
-                    <p className="text-lg font-black text-emerald-500">{report.business_outcomes.cac_projected}</p></div>
+                <div className="flex items-center gap-4 mb-3">
+                  <div>
+                    <p className="text-[11px] text-[#939084] mb-0.5">Current</p>
+                    <p className="text-xl font-black text-red-500">{extractShortMoney(report.business_outcomes.cac_current)}</p>
+                  </div>
+                  <div className="text-[#c5c0b1] text-lg">→</div>
+                  <div>
+                    <p className="text-[11px] text-[#939084] mb-0.5">Projected</p>
+                    <p className="text-xl font-black text-emerald-500">{extractShortMoney(report.business_outcomes.cac_projected)}</p>
+                  </div>
                 </div>
                 <p className="text-xs text-[#939084] leading-relaxed">Lower CAC means more customers from the same budget after ICP alignment.</p>
               </div>
-              <div className="bg-white border border-[#c5c0b1] rounded-xl p-5">
+              <div className="bg-white border border-[#c5c0b1] rounded-xl p-4 sm:p-5">
                 <p className="text-[11px] font-bold uppercase tracking-wider text-[#939084] mb-3">LTV : CAC Ratio</p>
-                <div className="flex items-end gap-4 mb-3">
-                  <div><p className="text-[11px] text-[#939084] mb-0.5">Current</p>
-                    <p className="text-lg font-black text-amber-500">{report.business_outcomes.ltv_cac_current}</p></div>
-                  <div className="text-[#c5c0b1] mb-1 text-lg">→</div>
-                  <div><p className="text-[11px] text-[#939084] mb-0.5">Projected</p>
-                    <p className="text-lg font-black text-emerald-500">{report.business_outcomes.ltv_cac_projected}</p></div>
+                <div className="flex items-center gap-4 mb-3">
+                  <div>
+                    <p className="text-[11px] text-[#939084] mb-0.5">Current</p>
+                    <p className="text-xl font-black text-amber-500">{extractShortRatio(report.business_outcomes.ltv_cac_current)}</p>
+                  </div>
+                  <div className="text-[#c5c0b1] text-lg">→</div>
+                  <div>
+                    <p className="text-[11px] text-[#939084] mb-0.5">Projected</p>
+                    <p className="text-xl font-black text-emerald-500">{extractShortRatio(report.business_outcomes.ltv_cac_projected)}</p>
+                  </div>
                 </div>
                 <p className="text-xs text-[#939084] leading-relaxed">Healthy B2B benchmark is 3:1 or above. Below 2:1 means your acquisition model is unsustainable.</p>
               </div>

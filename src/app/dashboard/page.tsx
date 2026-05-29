@@ -2673,6 +2673,7 @@ function EconomicsTab({ diag, hasReports, score, currency, onUpgrade }: {
   const displayWaste = waste.amount > 0 ? convertAmount(waste.amount, waste.fromCurrency, currency) : null
 
   const hasFinancialData = !!(bo?.cac_current || bo?.ltv_cac_current)
+  const [showFinancialDetail, setShowFinancialDetail] = useState(false)
 
   if (!hasReports) return <NoDiagnosisPlaceholder tabName="Economics" />
 
@@ -2747,44 +2748,58 @@ function EconomicsTab({ diag, hasReports, score, currency, onUpgrade }: {
       {/* ── Financial projections: Before/After ─────────────────────────────── */}
       {hasFinancialData && (
         <Card>
-          <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 20px' }}>What fixing your ICP is worth</p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            {bo?.cac_current && (
-              <EconomicsBeforeAfterRow
-                label="Customer Acquisition Cost"
-                current={bo.cac_current}
-                projected={bo.cac_projected}
-              />
-            )}
-            {bo?.cac_current && bo?.ltv_cac_current && (
-              <div style={{ height: 1, background: Pborder }} />
-            )}
-            {bo?.ltv_cac_current && (
-              <EconomicsBeforeAfterRow
-                label="LTV : CAC Ratio"
-                current={bo.ltv_cac_current}
-                projected={bo.ltv_cac_projected}
-                currentColor="#d97706"
-              />
-            )}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: showFinancialDetail ? 20 : 0 }}>
+            <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: 0 }}>What fixing your ICP is worth</p>
+            <button
+              onClick={() => setShowFinancialDetail(v => !v)}
+              style={{ fontFamily: fontB, fontSize: 12, fontWeight: 600, color: Accent, background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px 0', flexShrink: 0 }}
+            >
+              {showFinancialDetail ? 'Hide ↑' : 'View analysis ↓'}
+            </button>
           </div>
+          {showFinancialDetail && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              {bo?.cac_current && (
+                <EconomicsBeforeAfterRow
+                  label="Customer Acquisition Cost"
+                  current={bo.cac_current}
+                  projected={bo.cac_projected}
+                />
+              )}
+              {bo?.cac_current && bo?.ltv_cac_current && (
+                <div style={{ height: 1, background: Pborder }} />
+              )}
+              {bo?.ltv_cac_current && (
+                <EconomicsBeforeAfterRow
+                  label="LTV : CAC Ratio"
+                  current={bo.ltv_cac_current}
+                  projected={bo.ltv_cac_projected}
+                  currentColor="#d97706"
+                />
+              )}
+            </div>
+          )}
         </Card>
       )}
 
-      {/* ── Revenue opportunity ──────────────────────────────────────────────── */}
+      {/* ── Revenue opportunity (hidden on mobile — already in KPI tile) ────── */}
       {bo?.monthly_revenue_opportunity && (
-        <Card style={{ background: 'rgba(232,51,10,0.05)', border: `1px solid rgba(232,51,10,0.18)` }}>
-          <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Accent, margin: '0 0 10px' }}>Revenue Opportunity</p>
-          <p style={{ fontFamily: fontB, fontSize: 14, color: P, lineHeight: 1.7, margin: 0 }}>{bo.monthly_revenue_opportunity}</p>
-        </Card>
+        <div className="hidden sm:block">
+          <Card style={{ background: 'rgba(232,51,10,0.05)', border: `1px solid rgba(232,51,10,0.18)` }}>
+            <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Accent, margin: '0 0 10px' }}>Revenue Opportunity</p>
+            <p style={{ fontFamily: fontB, fontSize: 14, color: P, lineHeight: 1.7, margin: 0 }}>{bo.monthly_revenue_opportunity}</p>
+          </Card>
+        </div>
       )}
 
-      {/* ── Waste detail ─────────────────────────────────────────────────────── */}
+      {/* ── Waste detail (hidden on mobile — already in KPI tile) ────────────── */}
       {waste.raw && waste.raw !== '-' && waste.raw.length > 20 && (
-        <Card>
-          <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 10px' }}>Waste Estimate Breakdown</p>
-          <p style={{ fontFamily: fontB, fontSize: 14, color: P, lineHeight: 1.7, margin: 0 }}>{waste.raw}</p>
-        </Card>
+        <div className="hidden sm:block">
+          <Card>
+            <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 10px' }}>Waste Estimate Breakdown</p>
+            <p style={{ fontFamily: fontB, fontSize: 14, color: P, lineHeight: 1.7, margin: 0 }}>{waste.raw}</p>
+          </Card>
+        </div>
       )}
 
       {/* ── Budget efficiency breakdown bars ─────────────────────────────────── */}
@@ -4400,7 +4415,8 @@ function AccountTab({ user, currency, score, reportCount, reports, onSignOut, on
         </div>
       </div>
 
-      {/* Card Two: Billing History */}
+      {/* Card Two: Billing History — hidden when empty */}
+      {(billingLoading || billingHistory.length > 0) && (
       <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 12, padding: '28px 32px' }}>
         <p style={{ fontFamily: font, fontSize: 16, fontWeight: 600, color: P, margin: '0 0 18px', letterSpacing: '-0.01em' }}>Billing History</p>
         {billingLoading ? (
@@ -4452,6 +4468,7 @@ function AccountTab({ user, currency, score, reportCount, reports, onSignOut, on
           </>
         )}
       </div>
+      )}{/* end billing history conditional */}
 
       {/* Card Three: Payment Method */}
       <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 12, padding: '28px 32px' }}>
@@ -4873,6 +4890,7 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
   const [qError,               setQError]               = useState('')
   const [refreshesToday,       setRefreshesToday]       = useState(0)
   const [showResearchSources,  setShowResearchSources]  = useState(false)
+
   const [, setTick]                                     = useState(0)
   const refreshLock = useRef(false)
 
