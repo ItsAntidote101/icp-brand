@@ -502,6 +502,14 @@ function extractMoneyDisplay(text: string | undefined): string | undefined {
   return text.length > 30 ? text.slice(0, 30) + '…' : text
 }
 
+// Parse AI money text and convert to the user's chosen display currency
+function convertMoneyText(text: string | undefined, toCurrency: string): string | undefined {
+  if (!text) return undefined
+  const parsed = parseWaste(text)
+  if (parsed.amount > 0) return convertAmount(parsed.amount, parsed.fromCurrency, toCurrency)
+  return extractMoneyDisplay(text)
+}
+
 const DIMS = ['Audience Targeting', 'Landing Page', 'Message-Market Fit', 'Budget Allocation', 'Funnel Conversion', 'Creative Relevance']
 const DVAR = [10, -15, 5, -8, 12, -5]
 const DPEN = [0.8, 1.2, 0.6, 1.0, 0.9, 0.7]
@@ -1367,7 +1375,7 @@ function DailyBriefCard({ diag, reports, score, hasIntelligence, onTabChange, us
   )
 }
 
-function BusinessOutcomesWidget({ diag }: { diag: DiagnosisData }) {
+function BusinessOutcomesWidget({ diag, currency }: { diag: DiagnosisData; currency: string }) {
   const bo = diag.business_outcomes ?? diag.economics?.business_outcomes
   if (!bo || (!bo.cac_current && !bo.ltv_cac_current)) return null
 
@@ -1383,11 +1391,11 @@ function BusinessOutcomesWidget({ diag }: { diag: DiagnosisData }) {
           <div style={{ background: BgAlt, borderRadius: 8, padding: '14px 16px' }}>
             <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.07em', color: Pmuted, margin: '0 0 8px' }}>Customer Acquisition Cost</p>
             <p style={{ fontFamily: fontB, fontSize: 12, color: '#dc2626', margin: '0 0 2px' }}>Current</p>
-            <p style={{ fontFamily: font, fontSize: 16, fontWeight: 800, color: P, margin: '0 0 8px', lineHeight: 1.2 }}>{bo.cac_current}</p>
+            <p style={{ fontFamily: font, fontSize: 16, fontWeight: 800, color: P, margin: '0 0 8px', lineHeight: 1.2 }}>{convertMoneyText(bo.cac_current, currency) ?? bo.cac_current}</p>
             {bo.cac_projected && (
               <>
                 <p style={{ fontFamily: fontB, fontSize: 12, color: '#16a34a', margin: '0 0 2px' }}>After fix</p>
-                <p style={{ fontFamily: font, fontSize: 16, fontWeight: 800, color: '#16a34a', margin: 0, lineHeight: 1.2 }}>{bo.cac_projected}</p>
+                <p style={{ fontFamily: font, fontSize: 16, fontWeight: 800, color: '#16a34a', margin: 0, lineHeight: 1.2 }}>{convertMoneyText(bo.cac_projected, currency) ?? bo.cac_projected}</p>
               </>
             )}
           </div>
@@ -1410,7 +1418,7 @@ function BusinessOutcomesWidget({ diag }: { diag: DiagnosisData }) {
         {bo.monthly_revenue_opportunity && (
           <div style={{ background: 'rgba(232,51,10,0.06)', borderRadius: 8, padding: '14px 16px', border: `1px solid rgba(232,51,10,0.15)` }}>
             <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.07em', color: Accent, margin: '0 0 8px' }}>Revenue Opportunity</p>
-            <p style={{ fontFamily: fontB, fontSize: 13, color: P, lineHeight: 1.55, margin: 0 }}>{bo.monthly_revenue_opportunity}</p>
+            <p style={{ fontFamily: fontB, fontSize: 13, color: P, lineHeight: 1.55, margin: 0 }}>{convertMoneyText(bo.monthly_revenue_opportunity, currency) ?? bo.monthly_revenue_opportunity}</p>
           </div>
         )}
       </div>
@@ -2707,7 +2715,7 @@ function EconomicsTab({ diag, hasReports, score, currency, onUpgrade }: {
         />
         <EconomicsKpiTile
           label="Revenue Opportunity"
-          value={bo?.monthly_revenue_opportunity ? extractMoneyDisplay(bo.monthly_revenue_opportunity) : undefined}
+          value={bo?.monthly_revenue_opportunity ? convertMoneyText(bo.monthly_revenue_opportunity, currency) : undefined}
           sub={bo?.monthly_revenue_opportunity ? 'Monthly upside from fixing ICP mismatch' : undefined}
           accent={Accent}
           empty={!bo?.monthly_revenue_opportunity}
@@ -2716,7 +2724,7 @@ function EconomicsTab({ diag, hasReports, score, currency, onUpgrade }: {
         />
         <EconomicsKpiTile
           label="Current CAC"
-          value={bo?.cac_current ? extractMoneyDisplay(bo.cac_current) : undefined}
+          value={bo?.cac_current ? convertMoneyText(bo.cac_current, currency) : undefined}
           sub={bo?.cac_current ? 'Customer acquisition cost estimate' : undefined}
           accent={P}
           empty={!bo?.cac_current}
@@ -6506,7 +6514,7 @@ export default function DashboardPage() {
                 {score !== null && <ScoreJourneyWidget score={score} reports={reports} />}
 
                 {/* Business Outcomes, shown when data exists */}
-                <BusinessOutcomesWidget diag={diag} />
+                <BusinessOutcomesWidget diag={diag} currency={currency} />
 
                 {/* Performance Breakdown, Pro+ */}
                 {isPro && score !== null && (
