@@ -28,6 +28,17 @@ const fontSerif = font
 // ── Data ─────────────────────────────────────────────────────────────────────
 const TIERS = [
   {
+    name: 'Free',
+    monthly: 'Free',
+    annual: 'Free',
+    annualMonthly: 'Free',
+    desc: 'One lifetime diagnosis. See exactly where your targeting leaks money.',
+    bullets: ['ICP health score (0–100)', 'Top 3 findings with severity', '3 quick wins action plan', 'Media buyer reviews your report'],
+    cta: 'Get Free Diagnosis',
+    href: '/questionnaire',
+    highlight: false,
+  },
+  {
     name: 'Starter',
     monthly: 'KES 6,500',
     annual: 'KES 65,000',
@@ -82,6 +93,14 @@ const FAQS = [
   {
     q: 'How accurate is the waste estimate?',
     a: 'It is derived from your ICP score, budget size, industry benchmarks, and the specific misalignments found in your diagnostic. It represents the estimated portion of your monthly ad spend reaching audiences with a low probability of converting.',
+  },
+  {
+    q: 'Is there really a free diagnosis?',
+    a: 'Yes. You get one lifetime diagnosis at no cost, with no credit card required. You will receive your ICP health score, top 3 findings, a quick wins plan, and a personal review from a member of our B2B media buying team. Upgrade to Starter when you are ready to run monthly re-diagnoses and track your improvement over time.',
+  },
+  {
+    q: 'Does a real person review my report?',
+    a: 'Yes. Every diagnosis is reviewed by a practitioner on our B2B media buying team. If they identify a critical targeting gap, they will follow up directly with a personal note within 24 hours. This is included on the free tier — no upgrade required to receive the review.',
   },
 ]
 
@@ -147,8 +166,6 @@ export default function Page() {
   const pendingMetrics = useRef<typeof calcMetrics>(null)
   const [showStickyBar,   setShowStickyBar]   = useState(false)
   const [stickyDismissed, setStickyDismissed] = useState(false)
-  const [liveCount,       setLiveCount]       = useState(480)
-
   const [activeNow,       setActiveNow]       = useState(4)
 
   const countRef        = useRef<HTMLSpanElement>(null)
@@ -165,11 +182,6 @@ export default function Page() {
     }
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
-
-  useEffect(() => {
-    const interval = setInterval(() => setLiveCount(c => c + 1), 8000)
-    return () => clearInterval(interval)
   }, [])
 
   useEffect(() => {
@@ -479,13 +491,13 @@ export default function Page() {
               <a href="#how-it-works" className="btn-ghost" style={btnGhost}>See how it works</a>
             </div>
             <p style={{ fontFamily: fontB, fontSize: 13, color: Muted, margin: 0 }}>
-              {liveCount.toLocaleString()} marketers diagnosed this month. Free forever, no card needed.
+              {diagnosisCount.toLocaleString()}+ B2B teams diagnosed across East Africa. One free lifetime diagnosis, no card needed.
             </p>
           </div>
           {/* Right, hidden on mobile, visible on md+ */}
           <div className="hidden md:flex" style={{ padding: 'clamp(48px,8vw,96px) clamp(20px,5vw,56px)', flexDirection: 'column', justifyContent: 'center', gap: 32, borderLeft: `1.5px solid ${Border}` }}>
             <p style={{ fontFamily: fontB, fontSize: 'clamp(16px,2vw,20px)', color: Muted, lineHeight: 1.7, margin: 0 }}>
-              Most B2B teams waste 30 to 60 percent of their ad budget targeting people who will never buy. The ICP Diagnostic finds the exact misalignment, scores your targeting, and gives you a ranked fix list in 5 minutes.
+              Most B2B teams waste 30 to 60 percent of their ad budget targeting people who will never buy. The ICP Diagnostic finds the exact misalignment, scores your targeting, and gives you a ranked fix list in 5 minutes. Every report is then reviewed by a B2B media buyer on our team.
             </p>
             <div className="grid grid-cols-3" style={{ gap: 0, borderTop: `1.5px solid ${Border}`, borderLeft: `1.5px solid ${Border}` }}>
               {[
@@ -647,7 +659,7 @@ export default function Page() {
           {[
             { Icon: Shield, title: 'No ad account access', body: 'No Google OAuth. No Meta permissions. Zero.' },
             { Icon: Globe,  title: '10+ markets covered',  body: 'Kenya, Nigeria, South Africa, UK, US and more.' },
-            { Icon: Users,  title: 'Built by media buyers', body: 'USD 2M+ in ad spend managed. Real practitioners built every rule.' },
+            { Icon: Users,  title: 'Reviewed by media buyers', body: 'Every diagnosis is reviewed by a practitioner. If they spot a critical gap, expect a personal follow-up within 24 hours.' },
             { Icon: Lock,   title: 'Your data is private',  body: 'Stored securely. Never shared. Never sold.' },
           ].map(({ Icon, title, body }) => (
             <div key={title} style={{ padding: 'clamp(24px,3vw,36px)', borderRight: `1.5px solid ${Border}`, borderBottom: `1.5px solid ${Border}` }}>
@@ -848,7 +860,7 @@ export default function Page() {
             <div>
               <p style={{ fontFamily: fontB, fontSize: 11, color: Muted, fontWeight: 700, margin: '0 0 14px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Your free report includes</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 24px' }}>
-                {['ICP health score (0-100)', 'Monthly waste estimate', 'Top 3 findings with fixes', 'Quick wins for this week', 'CAC and LTV:CAC projection'].map((item, idx) => (
+                {['ICP health score (0-100)', 'Monthly waste estimate', 'Top 3 findings with fixes', 'Quick wins for this week', 'CAC and LTV:CAC projection', 'Media buyer reviews your report'].map((item, idx) => (
                   <div key={idx} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                     <Check size={13} color={Orange} />
                     <span style={{ fontFamily: fontB, fontSize: 14, color: Text }}>{item}</span>
@@ -859,6 +871,95 @@ export default function Page() {
             <Link href="/questionnaire" className="btn-primary" style={btnPrimary}>
               Get My Free ICP Report <ArrowRight size={16} />
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ── MEDIA BUYER REVIEW ─────────────────────────────────────────── */}
+      <section style={{ background: Dark, borderBottom: `1.5px solid ${DarkBorder}` }}>
+        <div className="container" style={{ paddingTop: 'clamp(56px,8vw,96px)', paddingBottom: 'clamp(56px,8vw,96px)' }}>
+
+          {/* Header */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, marginBottom: 48 }}>
+            <div>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 16, background: 'rgba(34,197,94,0.09)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 100, padding: '5px 14px 5px 10px' }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', flexShrink: 0, display: 'inline-block' }} />
+                <span style={{ fontFamily: fontB, fontSize: 12, color: '#22c55e', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.09em' }}>Real buyers. Real reviews.</span>
+              </div>
+              <h2 style={{ fontFamily: fontSerif, fontSize: 'clamp(28px,4.5vw,52px)', color: '#fff', fontWeight: 700, margin: 0, lineHeight: 1.08 }}>
+                Your score doesn&apos;t sit in a database.<br />
+                <span style={{ color: Orange }}>A buyer reads it.</span>
+              </h2>
+            </div>
+            <p style={{ fontFamily: fontB, fontSize: 14, color: DarkMuted, margin: 0, maxWidth: 340, lineHeight: 1.7 }}>
+              Every diagnosis is reviewed by a practitioner on our B2B media buying team. If they spot a critical gap, you get a personal follow-up within 24 hours — included on the free tier.
+            </p>
+          </div>
+
+          {/* 2-col: buyers left, message preview right */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0, border: `1.5px solid ${DarkBorder}`, overflow: 'hidden' }} className="block md:grid">
+
+            {/* Left: buyer roster */}
+            <div style={{ borderRight: `1.5px solid ${DarkBorder}`, display: 'flex', flexDirection: 'column' }}>
+              {[
+                { initials: 'EW', name: 'Eugene W.', role: 'Senior B2B Media Buyer', note: 'KES 85M+ in B2B ad spend managed. Specialises in Kenya and East Africa SaaS.' },
+                { initials: 'AO', name: 'Amara O.', role: 'Growth Strategist', note: 'Fintech and professional services. Nigeria and South Africa markets.' },
+                { initials: 'DK', name: 'David K.', role: 'B2B Funnel Specialist', note: 'Landing page and funnel analysis. 300+ conversion audits completed.' },
+              ].map(({ initials, name, role, note }, i) => (
+                <div key={i} style={{ padding: 'clamp(20px,3vw,28px)', borderTop: i > 0 ? `1.5px solid ${DarkBorder}` : 'none', display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+                  <div style={{ width: 44, height: 44, borderRadius: '50%', background: Orange, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <span style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: '#fff' }}>{initials}</span>
+                  </div>
+                  <div>
+                    <p style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: '#fff', margin: '0 0 2px' }}>{name}</p>
+                    <p style={{ fontFamily: fontB, fontSize: 12, color: Orange, margin: '0 0 7px', fontWeight: 600 }}>{role}</p>
+                    <p style={{ fontFamily: fontB, fontSize: 12, color: DarkMuted, margin: 0, lineHeight: 1.55 }}>{note}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Right: message preview */}
+            <div style={{ padding: 'clamp(24px,4vw,40px)', display: 'flex', flexDirection: 'column', gap: 20 }}>
+              {/* Sender row */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ width: 40, height: 40, borderRadius: '50%', background: Orange, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <span style={{ fontFamily: font, fontSize: 13, fontWeight: 700, color: '#fff' }}>EW</span>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontFamily: font, fontSize: 13, fontWeight: 700, color: '#fff', margin: 0 }}>Eugene W.</p>
+                  <p style={{ fontFamily: fontB, fontSize: 11, color: DarkMuted, margin: 0 }}>Senior Media Buyer · sent 2h after diagnosis</p>
+                </div>
+                <div style={{ background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: 100, padding: '3px 10px', flexShrink: 0 }}>
+                  <span style={{ fontFamily: fontB, fontSize: 11, color: '#22c55e', fontWeight: 600 }}>NEW</span>
+                </div>
+              </div>
+
+              {/* Visible message */}
+              <div style={{ background: 'rgba(255,255,255,0.05)', border: `1.5px solid ${DarkBorder}`, borderRadius: 8, padding: '20px 22px' }}>
+                <p style={{ fontFamily: fontB, fontSize: 14, color: 'rgba(255,255,255,0.85)', lineHeight: 1.75, margin: 0 }}>
+                  &ldquo;I reviewed your targeting score. Your search intent mapping has a gap that is likely costing 30–40% of your monthly ad budget. I have flagged two specific channels where your ICP match drops below 40%.
+                </p>
+              </div>
+
+              {/* Blurred continuation with CTA overlay */}
+              <div style={{ position: 'relative', borderRadius: 8, overflow: 'hidden' }}>
+                <div style={{ background: 'rgba(255,255,255,0.04)', border: `1.5px solid ${DarkBorder}`, borderRadius: 8, padding: '16px 22px', filter: 'blur(5px)', userSelect: 'none', pointerEvents: 'none', marginBottom: 0 }}>
+                  <p style={{ fontFamily: fontB, fontSize: 14, color: 'rgba(255,255,255,0.6)', lineHeight: 1.75, margin: 0 }}>
+                    The fix is straightforward but needs to happen before your next campaign. I want to show you the benchmark data for your vertical and the two audience segments you are currently missing entirely...
+                  </p>
+                </div>
+                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(to bottom, transparent 0%, rgba(32,21,21,0.96) 60%)' }}>
+                  <Link href="/questionnaire" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: Orange, color: '#fff', borderRadius: 6, padding: '11px 22px', fontFamily: font, fontSize: 13, fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                    Get your free score <ArrowRight size={14} />
+                  </Link>
+                </div>
+              </div>
+
+              <p style={{ fontFamily: fontB, fontSize: 12, color: DarkMuted, margin: 0, lineHeight: 1.6 }}>
+                This is what every free diagnosis gets: a real practitioner looking at your numbers, not a template.
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -1191,7 +1292,7 @@ export default function Page() {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 0, border: `1.5px solid ${Border}`, borderRadius: 0, overflow: 'hidden' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(215px, 1fr))', gap: 0, border: `1.5px solid ${Border}`, borderRadius: 0, overflow: 'hidden' }}>
             {TIERS.map((tier, i) => (
               <div key={tier.name} style={{
                 background: tier.highlight ? Dark : '#fff',
@@ -1206,9 +1307,9 @@ export default function Page() {
                 <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: tier.highlight ? DarkMuted : Muted, margin: '0 0 6px' }}>{tier.name}</p>
                 <p style={{ fontFamily: fontB, fontSize: 13, color: tier.highlight ? DarkMuted : Muted, margin: '0 0 20px', lineHeight: 1.55, minHeight: 40 }}>{tier.desc}</p>
                 <p style={{ fontFamily: fontSerif, fontSize: 32, fontWeight: 700, color: tier.highlight ? '#fff' : Text, margin: '0 0 2px' }}>
-                  {billingAnnual ? (tier as typeof tier & { annualMonthly: string }).annualMonthly + '/mo' : tier.monthly + '/mo'}
+                  {tier.monthly === 'Free' ? 'Free' : (billingAnnual ? (tier as typeof tier & { annualMonthly: string }).annualMonthly + '/mo' : tier.monthly + '/mo')}
                 </p>
-                {billingAnnual && (
+                {billingAnnual && tier.monthly !== 'Free' && (
                   <p style={{ fontFamily: fontB, fontSize: 12, color: tier.highlight ? 'rgba(255,255,255,0.4)' : Muted, margin: '0 0 4px' }}>
                     Billed as {(tier as typeof tier & { annual: string }).annual}/year
                   </p>
@@ -1224,7 +1325,7 @@ export default function Page() {
                 <Link href={tier.href} className={tier.highlight ? 'btn-primary' : 'btn-ghost'} style={tier.highlight ? { ...btnPrimary, justifyContent: 'center', width: '100%' } : { ...btnGhost, justifyContent: 'center', width: '100%' }}>
                   {tier.cta}
                 </Link>
-                <p style={{ fontFamily: fontB, fontSize: 12, color: tier.highlight ? DarkMuted : Muted, textAlign: 'center', marginTop: 10, marginBottom: 0 }}>Cancel anytime.</p>
+                <p style={{ fontFamily: fontB, fontSize: 12, color: tier.highlight ? DarkMuted : Muted, textAlign: 'center', marginTop: 10, marginBottom: 0 }}>{tier.monthly === 'Free' ? 'No credit card required.' : 'Cancel anytime.'}</p>
               </div>
             ))}
           </div>
