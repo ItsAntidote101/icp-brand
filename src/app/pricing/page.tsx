@@ -1,4 +1,5 @@
 'use client'
+export const dynamic = 'force-static'
 import { useState } from 'react'
 import Link from 'next/link'
 import { useSession } from '@/hooks/useSession'
@@ -41,14 +42,15 @@ const PLANS = [
     highlight: false,
     cta: 'Start free diagnosis',
     href: '/questionnaire',
-    desc: 'Run your first ICP diagnosis and see exactly where your targeting is leaking money.',
+    desc: 'One lifetime diagnosis. See exactly where your targeting leaks money — a media buyer reviews your report.',
     includes: [
       'ICP health score (0-100)',
       'Top 3 critical findings',
       '3 quick wins for this week',
       'CAC and LTV:CAC estimate',
       'Monthly waste estimate',
-      '1 diagnosis per month',
+      'Media buyer reviews your report',
+      '1 lifetime diagnosis',
     ],
   },
   {
@@ -132,7 +134,7 @@ const COMPARISON: Group[] = [
       { feature: 'LTV:CAC ratio analysis',            cells: [true, true, true, true] },
       { feature: 'Executive summary',                 cells: [false, true, true, true] },
       { feature: 'Full improvement roadmap',          cells: [false, true, true, true] },
-      { feature: 'Diagnoses per month',               cells: ['1', '2', '5', 'Unlimited'] },
+      { feature: 'Diagnoses included',                 cells: ['1 lifetime', '2 / mo', '5 / mo', 'Unlimited'] },
     ],
   },
   {
@@ -171,6 +173,8 @@ const COMPARISON: Group[] = [
   {
     group: 'Human Support and Access',
     rows: [
+      { feature: 'Media buyer reviews your report',            cells: [true, true, true, true], note: 'Every diagnosis is read by a practitioner — included on all tiers' },
+      { feature: 'Personal follow-up if critical gap found',   cells: [true, true, true, true], note: 'Within 24 hours of your diagnosis completing' },
       { feature: 'AI chat in dashboard',                       cells: [false, true, true, true] },
       { feature: 'Priority in-dashboard support',              cells: [false, false, true, true] },
       { feature: 'Monthly strategy session',                   cells: [false, false, true, true], note: 'A real B2B media buyer reviews your findings with you' },
@@ -449,7 +453,7 @@ export default function PricingPage() {
               { Icon: FileText,     title: 'Landing Page Audit',      body: 'Our AI visits your actual URL, scores your copy, CTA, trust signals, and conversion friction points in real time.', tier: 'Pro and Agency' },
               { Icon: Brain,        title: 'Competitive Intelligence', body: 'We research your top 3 competitors, identify their positioning gaps, and benchmark your metrics against your real market.', tier: 'Pro and Agency' },
               { Icon: TrendingDown, title: 'CAC and LTV Projections', body: 'Your exact cost per customer before and after ICP fixes, your LTV:CAC ratio, and the monthly revenue you recover.', tier: 'All plans' },
-              { Icon: Users,        title: 'Human Strategy Layer',    body: 'Real B2B media buyers review your report, validate the findings, and help you prioritise. Pro gets one practitioner. Agency gets the full team.', tier: 'Pro and Agency' },
+              { Icon: Users,        title: 'Human Strategy Layer',    body: 'Every diagnosis is reviewed by a B2B media buyer — included free. Pro adds a monthly strategy session with one practitioner. Agency gets the full team actively working on your accounts.', tier: 'All plans' },
               { Icon: Zap,          title: 'Weekly Intelligence',     body: 'Every week your dashboard updates with new signals: audience drift, competitive moves, benchmark changes, and fresh quick wins.', tier: 'Starter and above' },
               { Icon: Shield,       title: 'Ongoing Monitoring',      body: 'Your ICP health score refreshes monthly. If your targeting drifts or the market shifts, you find out before your CAC spikes.', tier: 'Starter and above' },
             ].map(({ Icon, title, body, tier }) => (
@@ -476,13 +480,53 @@ export default function PricingPage() {
               { q: 'What happens if I exceed my monthly diagnosis limit?', a: 'You can purchase additional diagnoses at KES 3,000 each, or upgrade to the next plan. Your existing data and reports are never deleted.' },
               { q: 'Is the media buyer session a real human?', a: 'Yes. Pro subscribers get a monthly 45-minute video call with a B2B media buyer from our team. Agency subscribers get access to a team of media buyers, not just one, who actively work on their client accounts alongside them.' },
               { q: 'How does the annual discount work?', a: 'Annual billing gives you 10 months for the price of 12 (two months free). You pay the full annual amount upfront. Refunds are available within the first 14 days.' },
-              { q: 'What does the free diagnosis include exactly?', a: 'Your ICP health score (0-100), your top 3 critical findings with brief descriptions, 3 quick wins you can act on this week, a CAC estimate, and a monthly waste estimate. No credit card required.' },
+              { q: 'What does the free diagnosis include exactly?', a: 'Your ICP health score (0-100), your top 3 critical findings with brief descriptions, 3 quick wins you can act on this week, a CAC estimate, and a monthly waste estimate. A B2B media buyer on our team also reviews your report — if they spot a critical gap, they follow up personally within 24 hours. No credit card required. One lifetime diagnosis on the free tier.' },
             ].map(({ q, a }, i) => (
               <div key={i} style={{ borderTop: `1.5px solid ${Border}`, padding: '24px 0' }}>
                 <p style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: Text, margin: '0 0 10px' }}>{q}</p>
                 <p style={{ fontFamily: fontB, fontSize: 14, color: Muted, lineHeight: 1.7, margin: 0 }}>{a}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── MEDIA BUYER TRUST STRIP ───────────────────────────────────────── */}
+      <section style={{ background: Warm, borderBottom: `1.5px solid ${Border}` }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: 'clamp(32px,5vw,56px) clamp(16px,4vw,40px)' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 24, justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(34,197,94,0.09)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 100, padding: '5px 14px 5px 10px' }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', flexShrink: 0, display: 'inline-block' }} />
+                <span style={{ fontFamily: fontB, fontSize: 12, color: '#22c55e', fontWeight: 600 }}>Buyer review included on every plan</span>
+              </div>
+              {[
+                { initials: 'EW', name: 'Eugene W.', role: 'Senior Buyer' },
+                { initials: 'AO', name: 'Amara O.', role: 'Growth Strategist' },
+                { initials: 'DK', name: 'David K.', role: 'Funnel Specialist' },
+              ].map(({ initials, name, role }) => (
+                <div key={initials} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: Dark, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <span style={{ fontFamily: font, fontSize: 12, fontWeight: 700, color: '#fff' }}>{initials}</span>
+                  </div>
+                  <div>
+                    <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, color: Text, margin: 0 }}>{name}</p>
+                    <p style={{ fontFamily: fontB, fontSize: 11, color: Muted, margin: 0 }}>{role}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+              <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: Muted }}>Secure checkout via</span>
+              {[
+                { src: '/images/logos/paystack-logo_1.png',                 alt: 'Paystack',   h: 18 },
+                { src: '/images/logos/M-PESA_LOGO-01.svg.png',              alt: 'M-Pesa',     h: 18 },
+                { src: '/images/logos/Visa_Inc._logo_(2014-2021).svg.png',  alt: 'Visa',       h: 16 },
+                { src: '/images/logos/MasterCard_early_1990s_logo.svg.png', alt: 'Mastercard', h: 22 },
+              ].map(({ src, alt, h }) => (
+                <img key={alt} src={src} alt={alt} style={{ height: h, objectFit: 'contain', opacity: 0.5 }} />
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -496,7 +540,7 @@ export default function PricingPage() {
               Stop guessing. <span style={{ color: Orange }}>Start diagnosing.</span>
             </h2>
             <p style={{ fontFamily: fontB, fontSize: 15, color: DarkMuted, margin: 0, lineHeight: 1.65, maxWidth: 440 }}>
-              Your first diagnosis is free. No card, no setup, no agency. Just 22 questions and a complete picture of where your ad spend is going.
+              Your first diagnosis is free. No card, no setup, no agency. Just 22 questions, a complete picture of where your ad spend is going, and a media buyer reading your results.
             </p>
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14 }}>
