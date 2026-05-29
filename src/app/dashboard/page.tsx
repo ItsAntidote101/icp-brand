@@ -4912,9 +4912,12 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
         const d = await res.json()
         setRateLimitModal({ tier: d.tier ?? tier, nextAt: d.nextRefreshAt, agencyLimit: d.upgradeAvailable === false })
         setNextRefresh(d.nextRefreshAt)
+      } else {
+        setRefreshError('Refresh failed. Please try again.')
+        setTimeout(() => setRefreshError(''), 5000)
       }
     } catch {
-      setRefreshError('Refresh failed. Please try again.')
+      setRefreshError('Refresh failed — please check your connection and try again.')
       setTimeout(() => setRefreshError(''), 5000)
     } finally {
       setRefreshing(false)
@@ -5680,6 +5683,7 @@ export default function DashboardPage() {
   const [streak,          setStreak]          = useState(0)
   const [newAchievement,  setNewAchievement]  = useState<{ name: string; description: string; color: string; iconName: string } | null>(null)
   const [intelligenceSeenThisSession, setIntelligenceSeenThisSession] = useState(false)
+  const [intelligenceMounted, setIntelligenceMounted] = useState(false)
   const [reportsError,    setReportsError]    = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
   const [readNotifIds,    setReadNotifIds]    = useState<Set<string>>(new Set())
@@ -5844,15 +5848,18 @@ export default function DashboardPage() {
   }, [user?.email, user?.current_streak])
 
   useEffect(() => {
-    if (activeTab === 'intelligence' && user && !intelligenceSeenThisSession) {
-      setIntelligenceSeenThisSession(true)
-      void fetch('/api/user/seen', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ field: 'intelligence' }),
-      })
+    if (activeTab === 'intelligence' && user) {
+      if (!intelligenceMounted) setIntelligenceMounted(true)
+      if (!intelligenceSeenThisSession) {
+        setIntelligenceSeenThisSession(true)
+        void fetch('/api/user/seen', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ field: 'intelligence' }),
+        })
+      }
     }
-  }, [activeTab, user, intelligenceSeenThisSession])
+  }, [activeTab, user, intelligenceSeenThisSession, intelligenceMounted])
 
   const handleSignOut = async () => {
     await fetch('/api/auth/logout', { method: 'POST' })
@@ -6253,35 +6260,6 @@ export default function DashboardPage() {
         </div>
       </nav>
 
-      {/* ── MOBILE TAB STRIP (lg:hidden) ──────────────────────────────────────── */}
-      <div className="lg:hidden" style={{ position: 'sticky', top: 56, zIndex: 39, background: 'rgba(255,255,255,0.98)', borderBottom: `1px solid ${Pborder}` }}>
-        <div className="mob-tab-strip" style={{ display: 'flex', overflowX: 'auto', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch', padding: '0 12px', gap: 4 }}>
-          {(['overview', 'audience', 'search', 'funnel', 'economics', 'intelligence', 'reports', 'account'] as Tab[]).map(tab => {
-            const isActive = activeTab === tab
-            const hasNew = tab === 'intelligence' && hasNewIntelligence
-            return (
-              <button key={tab} onClick={() => setActiveTab(tab)}
-                style={{
-                  flexShrink: 0, display: 'flex', alignItems: 'center', gap: 5,
-                  padding: '10px 12px', border: 'none', background: 'transparent', cursor: 'pointer',
-                  fontFamily: fontB, fontSize: 12, fontWeight: isActive ? 700 : 500,
-                  color: isActive ? Accent : Pmuted,
-                  borderBottom: isActive ? `2px solid ${Accent}` : '2px solid transparent',
-                  marginBottom: -1, whiteSpace: 'nowrap', transition: 'color 0.15s',
-                  position: 'relative',
-                }}>
-                {TAB_ICONS[tab]}
-                <span>{TAB_LABELS[tab]}</span>
-                {hasNew && <span style={{ position: 'absolute', top: 6, right: 6, width: 6, height: 6, borderRadius: '50%', background: '#ef4444' }} />}
-                {tab === 'overview' && score !== null && isActive && (
-                  <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, background: scoreLabelBg(score), color: scoreColor(score), padding: '1px 6px', borderRadius: 100 }}>{score}</span>
-                )}
-              </button>
-            )
-          })}
-        </div>
-      </div>
-
       {/* ── MAIN CONTENT ──────────────────────────────────────────────────────── */}
       <div className="lg:ml-[240px]">
         {/* Desktop page header */}
@@ -6624,7 +6602,11 @@ export default function DashboardPage() {
           ? <EconomicsTab diag={diag} hasReports={hasReports} score={score} currency={currency} onUpgrade={() => setShowUpgradeModal(true)} />
           : <TeaserTabOverlay tabName="Economics & Unit Costs" category="economics" diag={diag} onUpgrade={() => setShowUpgradeModal(true)} />
         )}
-        {activeTab === 'intelligence' && user && <IntelligenceTab user={user} score={score} hasNewIntelligence={hasNewIntelligence} onUpgrade={() => setShowUpgradeModal(true)} />}
+        {intelligenceMounted && user && (
+          <div style={{ display: activeTab === 'intelligence' ? 'block' : 'none' }}>
+            <IntelligenceTab user={user} score={score} hasNewIntelligence={hasNewIntelligence} onUpgrade={() => setShowUpgradeModal(true)} />
+          </div>
+        )}
         {activeTab === 'reports' && <ReportsTab reports={reports} dataLoading={dataLoading} />}
         {activeTab === 'account' && user && (
           <AccountTab
