@@ -791,8 +791,8 @@ export default function QuestionnairePage() {
     Promise.all([
       fetch('/api/questionnaire/last-answers').then(r => r.ok ? r.json() : null).catch(() => null),
       fetch('/api/auth/me').then(r => r.ok ? r.json() : null).catch(() => null),
-    ]).then(([d, me]: [PrefillPayload | null, { subscription_tier?: string } | null]) => {
-      const isFree = !me || me.subscription_tier === 'free'
+    ]).then(([d, me]: [PrefillPayload | null, { status?: string; user?: { subscription_tier?: string } } | null]) => {
+      const isFree = me?.user?.subscription_tier === 'free'
 
       if (!d?.prefill) { setPrefillReady(true); return }
       const { profile: p, answers: a } = d.prefill
