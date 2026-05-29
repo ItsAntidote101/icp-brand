@@ -50,9 +50,20 @@ export async function POST(req: NextRequest) {
       sendNewSignupToFounder({ userEmail: email.toLowerCase().trim(), userName: fullName ?? undefined, source: 'email' }),
     ])
 
+    // Attribute referral if a ref code was stored in the cookie before signup
+    const refCode = req.cookies.get('icp_ref')?.value
+    if (refCode) {
+      void supabase
+        .from('users')
+        .update({ user_badges: { referred_by: refCode.toUpperCase() } })
+        .eq('id', newUser.id)
+    }
+
     const token = createSessionToken(email.toLowerCase().trim(), newUser.id)
     const res = NextResponse.json({ success: true, isNew: true, userId: newUser.id })
     res.cookies.set(sessionCookieOptions(token))
+    // Clear the ref cookie so repeat signups don't re-attribute
+    res.cookies.set({ name: 'icp_ref', value: '', maxAge: 0, path: '/' })
     return res
   } catch (err) {
     console.error('[auth/signup] error:', err)

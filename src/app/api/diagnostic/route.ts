@@ -236,7 +236,11 @@ export async function POST(req: NextRequest) {
 
     const tier = (userRecord?.subscription_tier ?? 'free') as string
     const baseLimit = MONTHLY_LIMITS[tier] ?? 1
-    const bonusDiagnoses = ((userRecord?.user_badges as Record<string, unknown> | null)?.power_user_bonus_diagnoses as number) ?? 0
+    const userBadges = (userRecord?.user_badges as Record<string, unknown> | null) ?? {}
+    const bonusDiagnoses = (
+      ((userBadges.power_user_bonus_diagnoses as number) ?? 0) +
+      ((userBadges.referral_bonus_diagnoses  as number) ?? 0)
+    )
     const limit = baseLimit === Infinity ? Infinity : baseLimit + bonusDiagnoses
 
     if (limit !== Infinity) {
@@ -257,11 +261,14 @@ export async function POST(req: NextRequest) {
               .in('questionnaire_id', qIds)
           : { count: 0 }
 
-        if ((allTimeCount ?? 0) >= 1) {
+        if ((allTimeCount ?? 0) >= limit) {
+          const bonusMsg = bonusDiagnoses > 0
+            ? `Free accounts include 1 lifetime diagnosis plus ${bonusDiagnoses} bonus diagnosis${bonusDiagnoses > 1 ? 'es' : ''} from referrals — you have used them all.`
+            : 'Free accounts include one lifetime diagnosis. Refer a friend to earn a bonus diagnosis, or upgrade to Starter to run monthly re-diagnoses.'
           return NextResponse.json({
             error: 'diagnosis_limit_reached',
-            message: 'Free accounts include one lifetime diagnosis. Upgrade to Starter to run your next diagnosis and track your improvement over time.',
-            limit: 1,
+            message: bonusMsg,
+            limit,
             used: allTimeCount,
             upgradeUrl: '/pricing',
           }, { status: 402 })
@@ -1213,6 +1220,67 @@ Rules:
             }
           })
       })
+  }
+
+  // ── Credit referrer on first-ever diagnosis (non-blocking) ───────────────
+  if (questionnaire?.user_id) {
+    void (async () => {
+      try {
+        const { data: diagUser } = await supabase
+          .from('users')
+          .select('user_badges')
+          .eq('id', questionnaire.user_id)
+          .single()
+
+        const diagBadges = (diagUser?.user_badges as Record<string, unknown>) ?? {}
+        const referredBy      = diagBadges.referred_by as string | undefined
+        const alreadyRewarded = diagBadges.referral_rewarded as boolean | undefined
+
+        if (!referredBy || alreadyRewarded) return
+
+        // Only credit on the first diagnosis
+        const { data: userQs } = await supabase
+          .from('questionnaires')
+          .select('id')
+          .eq('user_id', questionnaire.user_id)
+        const qIds = (userQs ?? []).map((q: { id: string }) => q.id)
+        const { count: totalDiags } = qIds.length > 0
+          ? await supabase.from('diagnostics').select('id', { count: 'exact', head: true }).in('questionnaire_id', qIds)
+          : { count: 0 }
+
+        if ((totalDiags ?? 0) > 1) return // not the first diagnosis
+
+        // Find referrer by their stored referral_code
+        const { data: referrer } = await supabase
+          .from('users')
+          .select('id, user_badges')
+          .filter('user_badges->>referral_code', 'eq', referredBy)
+          .maybeSingle()
+
+        if (referrer) {
+          const refBadges = (referrer.user_badges as Record<string, unknown>) ?? {}
+          await supabase
+            .from('users')
+            .update({
+              user_badges: {
+                ...refBadges,
+                referral_count:          ((refBadges.referral_count           as number) ?? 0) + 1,
+                referral_bonus_diagnoses: ((refBadges.referral_bonus_diagnoses as number) ?? 0) + 1,
+              },
+            })
+            .eq('id', referrer.id)
+          console.log(`[diagnostic] referral credited: referrer=${referrer.id}, referred=${questionnaire.user_id}`)
+        }
+
+        // Mark rewarded so we never double-credit
+        await supabase
+          .from('users')
+          .update({ user_badges: { ...diagBadges, referral_rewarded: true } })
+          .eq('id', questionnaire.user_id)
+      } catch (e) {
+        console.error('[diagnostic] referral credit error (non-fatal):', e)
+      }
+    })()
   }
 
   return NextResponse.json({ id: data.id, diagnosis }, { status: 201 })
