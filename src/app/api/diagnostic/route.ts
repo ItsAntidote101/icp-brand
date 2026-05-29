@@ -329,7 +329,7 @@ export async function POST(req: NextRequest) {
 
 Analyse the questionnaire data using your expert knowledge of the ${geographicRegion} market and ${industry} sector. Provide precise, data-grounded benchmarks, competitor insights, and actionable recommendations calibrated to this specific region and industry.
 ${regionContext}
-Return ONLY a valid JSON object. No markdown, no prose outside JSON. Do not use em dashes or en dashes anywhere in your output. Use commas, colons, or full stops instead.`
+Return ONLY a valid JSON object. No markdown, no prose outside JSON. Do not use em dashes or en dashes anywhere in your output. Use commas, colons, or full stops instead. For ALL monetary values use the format: CURRENCY_CODE AMOUNT — e.g. "KES 36000" or "USD 280". Always put the currency code first, then a space, then the number. No currency symbols ($, £), no words like "approximately" before the number.`
 
   const prompt = `Analyse this ICP diagnostic questionnaire and return a structured report. Use your expert knowledge of the ${geographicRegion} market, the ${industry} industry, and paid acquisition benchmarks to populate all fields.
 
@@ -713,7 +713,7 @@ Rules:
 
 Your role is to analyse questionnaire responses and produce a precise, actionable ICP diagnostic report based solely on the answers provided. No web research needed.
 
-Return ONLY a valid JSON object. No markdown, no prose outside JSON. Do not use em dashes or en dashes anywhere in your output. Use commas, colons, or full stops instead.`
+Return ONLY a valid JSON object. No markdown, no prose outside JSON. Do not use em dashes or en dashes anywhere in your output. Use commas, colons, or full stops instead. For ALL monetary values use the format: CURRENCY_CODE AMOUNT — e.g. "KES 36000" or "USD 280". Always put the currency code first, then a space, then the number. No currency symbols ($, £), no words like "approximately" before the number.`
 
     const freePrompt = `Analyse this ICP diagnostic questionnaire submission and return a structured report.
 
