@@ -1,39 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-import { createSessionToken, sessionCookieOptions } from '@/lib/session'
+import { NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'http://localhost',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || 'build-placeholder',
-)
-
-export async function POST(req: NextRequest) {
-  try {
-    const { email } = await req.json() as { email: string }
-    if (!email) return NextResponse.json({ error: 'Email required' }, { status: 400 })
-
-    const { data: user, error } = await supabase
-      .from('users')
-      .select('id, email, full_name, company_name, subscription_tier, billing_status, renewal_date, created_at')
-      .eq('email', email.toLowerCase().trim())
-      .single()
-
-    if (error || !user) {
-      return NextResponse.json({ notFound: true }, { status: 404 })
-    }
-
-    if (user.billing_status !== 'active') {
-      return NextResponse.json({ inactive: true }, { status: 200 })
-    }
-
-    const token = createSessionToken(user.email, user.id)
-    const res = NextResponse.json({ success: true, user })
-    res.cookies.set(sessionCookieOptions(token))
-    return res
-  } catch (err) {
-    console.error('[auth/login] error:', err)
-    return NextResponse.json({ error: 'Internal error' }, { status: 500 })
-  }
+// This endpoint has been replaced by /api/auth/send-otp + /api/auth/verify-otp.
+// Returning 410 Gone so any stale client gets a clear signal rather than silent auth.
+export async function POST() {
+  return NextResponse.json(
+    { error: 'This endpoint is no longer active. Use /api/auth/send-otp and /api/auth/verify-otp.' },
+    { status: 410 },
+  )
 }

@@ -1,72 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-import { sendAccountCreatedEmail, sendNewSignupToFounder } from '@/lib/email'
-import { createSessionToken, sessionCookieOptions } from '@/lib/session'
+import { NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'http://localhost',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || 'build-placeholder',
-)
-
-export async function POST(req: NextRequest) {
-  try {
-    const { email, firstName, lastName } = await req.json() as {
-      email: string; firstName?: string; lastName?: string
-    }
-    if (!email) return NextResponse.json({ error: 'Email required' }, { status: 400 })
-
-    const { data: existing } = await supabase
-      .from('users')
-      .select('id, billing_status')
-      .eq('email', email.toLowerCase().trim())
-      .single()
-
-    if (existing) {
-      return NextResponse.json({ success: true, isNew: false, userId: existing.id })
-    }
-
-    const fullName = [firstName?.trim(), lastName?.trim()].filter(Boolean).join(' ') || null
-
-    const { data: newUser, error } = await supabase
-      .from('users')
-      .insert({
-        email: email.toLowerCase().trim(),
-        full_name: fullName,
-        subscription_tier: 'free',
-        billing_status: 'active',
-      })
-      .select('id')
-      .single()
-
-    if (error || !newUser) {
-      console.error('[auth/signup] insert error:', error)
-      return NextResponse.json({ error: 'Failed to create account' }, { status: 500 })
-    }
-
-    void Promise.allSettled([
-      sendAccountCreatedEmail({ to: email.toLowerCase().trim(), name: fullName ?? undefined }),
-      sendNewSignupToFounder({ userEmail: email.toLowerCase().trim(), userName: fullName ?? undefined, source: 'email' }),
-    ])
-
-    // Attribute referral if a ref code was stored in the cookie before signup
-    const refCode = req.cookies.get('icp_ref')?.value
-    if (refCode) {
-      void supabase
-        .from('users')
-        .update({ user_badges: { referred_by: refCode.toUpperCase() } })
-        .eq('id', newUser.id)
-    }
-
-    const token = createSessionToken(email.toLowerCase().trim(), newUser.id)
-    const res = NextResponse.json({ success: true, isNew: true, userId: newUser.id })
-    res.cookies.set(sessionCookieOptions(token))
-    // Clear the ref cookie so repeat signups don't re-attribute
-    res.cookies.set({ name: 'icp_ref', value: '', maxAge: 0, path: '/' })
-    return res
-  } catch (err) {
-    console.error('[auth/signup] error:', err)
-    return NextResponse.json({ error: 'Internal error' }, { status: 500 })
-  }
+// This endpoint has been replaced by /api/auth/send-otp + /api/auth/verify-otp.
+// Returning 410 Gone so any stale client gets a clear signal rather than silent auth.
+export async function POST() {
+  return NextResponse.json(
+    { error: 'This endpoint is no longer active. Use /api/auth/send-otp and /api/auth/verify-otp.' },
+    { status: 410 },
+  )
 }
