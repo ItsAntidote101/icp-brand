@@ -778,6 +778,7 @@ export default function QuestionnairePage() {
   const [urlVerifyTitle, setUrlVerifyTitle] = useState('')
   const [urlWarning, setUrlWarning] = useState(false)
   const [diagCount,     setDiagCount]     = useState(9400)
+  const [emailTouched,  setEmailTouched]  = useState(false)
   const timerRefs = useRef<ReturnType<typeof setTimeout>[]>([])
 
   const xp = Object.keys(answers).length * XP_PER_Q
@@ -1012,9 +1013,48 @@ export default function QuestionnairePage() {
     border: { 1: 'border-[#e8330a]/40', 2: 'border-[#e8330a]/40', 3: 'border-[#e8330a]/40' },
   }
 
+  const DISPOSABLE_DOMAINS = new Set([
+    'mailinator.com','guerrillamail.com','guerrillamail.net','guerrillamail.org',
+    'guerrillamail.biz','guerrillamail.de','guerrillamail.info','sharklasers.com',
+    'spam4.me','yopmail.com','yopmail.fr','cool.fr.nf','jetable.fr.nf','nospam.ze.tc',
+    'nomail.xl.cx','mega.zik.dj','speed.1s.fr','courriel.fr.nf','moncourrier.fr.nf',
+    'monemail.fr.nf','monmail.fr.nf','temp-mail.org','temp-mail.io','tempmail.com',
+    'tempmail.net','throwam.com','throwam.net','mailnull.com','trashmail.com',
+    'trashmail.me','trashmail.net','trashmail.at','trashmail.io','trashmail.org',
+    'dispostable.com','discard.email','maildrop.cc','spamgourmet.com','spamgourmet.net',
+    'spamgourmet.org','spamfree24.org','spamfree24.de','spam.la','spaml.com',
+    'spammotel.com','spamoff.de','spamspot.com','spamthisplease.com',
+    'fakeinbox.com','fakemail.net','fakermail.com','mailnesia.com','mailnull.com',
+    'throwam.com','mailsac.com','mohmal.com','tempr.email','zetmail.com',
+    'thetimezone.com','discard.email','drdrb.net','drdrb.com','filzmail.com',
+    'getonemail.com','haltospam.com','ieh-mail.de','inboxclean.com','inboxclean.org',
+    'incognitomail.com','incognitomail.net','incognitomail.org',
+    'jetable.com','jetable.net','jetable.org','nomail.pw','nwldx.com',
+    'objectmail.com','obobbo.com','oneoffemail.com','pookmail.com',
+    'rppkn.com','smellfear.com','sofimail.com','sofort-mail.de',
+    'spamevader.com','spamex.com','spaml.de','spamstack.net',
+    'supergreatmail.com','suremail.info','tempalias.com','tempe-mail.com',
+    'temporaryemail.net','temporaryemail.us','temporaryforwarding.com',
+    'throwam.com','throwam.net','throwam.org','throwam.us',
+    'trbvm.com','uggsrock.com','uggsrock.net','urfunktion.de',
+    'veryrealemail.com','wetrainbayarea.com','yapped.net','yogamaven.com',
+    'zehnminutenmail.de','zippymail.info','zoemail.org','zwallet.com',
+  ])
+
+  function getEmailError(email: string): string | null {
+    const e = email.trim().toLowerCase()
+    if (!e) return null
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e)) return 'Enter a valid email address.'
+    const domain = e.split('@')[1]
+    if (DISPOSABLE_DOMAINS.has(domain)) return 'Disposable email addresses are not accepted. Please use your work or personal email.'
+    return null
+  }
+
+  const emailError   = getEmailError(profile.email)
+  const emailOk      = profile.email.trim().length > 0 && !emailError
   const welcomeValid =
     profile.name.trim().length > 0 &&
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profile.email) &&
+    emailOk &&
     profile.company.trim().length > 0
 
   // ── Prefill loading (prevents flash of welcome screen for returning users) ──
@@ -1162,9 +1202,17 @@ export default function QuestionnairePage() {
               </div>
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-widest text-[#939084] mb-2">Email Address</label>
-                <input type="email" value={profile.email} onChange={e => setProfile(p => ({ ...p, email: e.target.value }))}
+                <input type="email" value={profile.email}
+                  onChange={e => { setProfile(p => ({ ...p, email: e.target.value })); setEmailTouched(false) }}
+                  onBlur={() => setEmailTouched(true)}
                   placeholder="jane@company.com"
-                  className="w-full bg-[rgba(201,192,177,0.18)] border border-[#c5c0b1] focus:border-[#e8330a] rounded px-4 py-3.5 text-[#201515] placeholder-[#939084] text-base outline-none transition-colors" />
+                  className={`w-full bg-[rgba(201,192,177,0.18)] border rounded px-4 py-3.5 text-[#201515] placeholder-[#939084] text-base outline-none transition-colors ${emailTouched && emailError ? 'border-red-400 focus:border-red-400' : 'border-[#c5c0b1] focus:border-[#e8330a]'}`} />
+                {emailTouched && emailError && (
+                  <p className="mt-1.5 text-xs text-red-500 flex items-center gap-1">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5.5" stroke="currentColor"/><path d="M6 3.5v3M6 8h.01" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
+                    {emailError}
+                  </p>
+                )}
               </div>
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-widest text-[#939084] mb-2">Company Name</label>
