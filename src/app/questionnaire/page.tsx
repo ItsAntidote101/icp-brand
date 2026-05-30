@@ -84,7 +84,7 @@ const QUESTIONS: Question[] = [
     id: 6, layer: 1, layerName: 'ICP Foundation',
     question: 'What is your average deal size per client?',
     type: 'radio',
-    options: ['Under $1,000', '$1,000-$5,000', '$5,000-$25,000', '$25,000-$100,000', '$100,000+'],
+    options: ['Under KES 100,000', 'KES 100,000–500,000', 'KES 500,000–2,500,000', 'KES 2,500,000–10,000,000', 'KES 10,000,000+'],
     showIf: isB2B,
   },
   // B2C only: average order/transaction value
@@ -162,7 +162,7 @@ const QUESTIONS: Question[] = [
     id: 13, layer: 2, layerName: 'Targeting Mismatch',
     question: 'What is your total monthly ad spend across all channels?',
     type: 'radio',
-    options: ['Under $1,000', '$1,000-$5,000', '$5,000-$20,000', '$20,000-$100,000', '$100,000+'],
+    options: ['Under KES 100,000', 'KES 100,000–500,000', 'KES 500,000–2,500,000', 'KES 2,500,000–10,000,000', 'KES 10,000,000+'],
   },
   {
     id: 14, layer: 2, layerName: 'Targeting Mismatch',

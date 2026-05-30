@@ -370,7 +370,7 @@ function DiagnosticAnimation() {
         </div>
 
         {/* Body: nav + animation */}
-        <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: 32, maxWidth: 900, margin: '0 auto', alignItems: 'start' }} className="block md:grid">
+        <div style={{ gridTemplateColumns: '260px 1fr', gap: 32, maxWidth: 900, margin: '0 auto', alignItems: 'start' }} className="diag-body block md:grid">
 
           {/* Step nav */}
           <div className="diag-step-nav" style={{ border: `1.5px solid ${DarkBorder}` }}>
@@ -689,8 +689,13 @@ export default function Page() {
           /* Proof tiles: 2-col grid on mobile */
           .proof-tiles { display: grid !important; grid-template-columns: 1fr 1fr !important; }
 
-          /* Media buyer: remove right border when stacked */
-          .buyer-roster { border-right: none !important; border-bottom: 1.5px solid rgba(255,255,255,0.1); }
+          /* Media buyer section: stack columns on mobile */
+          .buyer-section-grid { border: 1.5px solid rgba(255,255,255,0.1); }
+          .buyer-roster { border-right: none !important; border-bottom: 1.5px solid rgba(255,255,255,0.12) !important; }
+
+          /* DiagnosticAnimation: stack nav above stage on mobile */
+          .diag-body { margin-bottom: 0; }
+          .diag-step-nav { margin-bottom: 16px; }
         }
       `}</style>
 
@@ -1159,7 +1164,7 @@ export default function Page() {
           </div>
 
           {/* 2-col: buyers left, message preview right */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0, border: `1.5px solid ${DarkBorder}`, overflow: 'hidden' }} className="block md:grid">
+          <div style={{ gridTemplateColumns: '1fr 1fr', gap: 0, border: `1.5px solid ${DarkBorder}`, overflow: 'hidden' }} className="buyer-section-grid block md:grid">
 
             {/* Left: buyer roster */}
             <div className="buyer-roster" style={{ borderRight: `1.5px solid ${DarkBorder}`, display: 'flex', flexDirection: 'column' }}>
