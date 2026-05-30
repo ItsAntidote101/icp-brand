@@ -88,7 +88,7 @@ const FAQS = [
   },
   {
     q: 'What markets do you cover?',
-    a: 'Kenya, Nigeria, South Africa, UK, US, Europe, and Southeast Asia. Your recommendations always reflect local ad costs and regional audience behaviour.',
+    a: 'Kenya is our primary market, with Tanzania, Uganda, Nigeria, South Africa, UK, and US coming soon. Your recommendations always reflect local ad costs and regional audience behaviour.',
   },
   {
     q: 'How accurate is the waste estimate?',
@@ -658,7 +658,7 @@ export default function Page() {
         <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', borderLeft: `1.5px solid ${Border}` }}>
           {[
             { Icon: Shield, title: 'No ad account access', body: 'No Google OAuth. No Meta permissions. Zero.' },
-            { Icon: Globe,  title: '10+ markets covered',  body: 'Kenya, Nigeria, South Africa, UK, US and more.' },
+            { Icon: Globe,  title: 'Kenya-first, expanding',  body: 'Built for Kenya. Tanzania, Uganda, Nigeria, South Africa and more coming soon.' },
             { Icon: Users,  title: 'Reviewed by media buyers', body: 'Every diagnosis is reviewed by a practitioner. If they spot a critical gap, expect a personal follow-up within 24 hours.' },
             { Icon: Lock,   title: 'Your data is private',  body: 'Stored securely. Never shared. Never sold.' },
           ].map(({ Icon, title, body }) => (

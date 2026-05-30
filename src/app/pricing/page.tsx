@@ -70,7 +70,7 @@ const PLANS = [
       'Monthly ICP health refresh',
       'AI chat in the dashboard',
       'Print-ready report and diagnostic CSV export',
-      '2 diagnoses per month',
+      '3 diagnoses per month',
     ],
   },
   {
@@ -92,7 +92,7 @@ const PLANS = [
       'Competitive landscape tracking',
       'Priority in-dashboard support',
       'Monthly strategy session (media buyer)',
-      '5 diagnoses per month',
+      '20 diagnoses per month',
     ],
   },
   {
@@ -134,7 +134,7 @@ const COMPARISON: Group[] = [
       { feature: 'LTV:CAC ratio analysis',            cells: [true, true, true, true] },
       { feature: 'Executive summary',                 cells: [false, true, true, true] },
       { feature: 'Full improvement roadmap',          cells: [false, true, true, true] },
-      { feature: 'Diagnoses included',                 cells: ['1 lifetime', '2 / mo', '5 / mo', 'Unlimited'] },
+      { feature: 'Diagnoses included',                 cells: ['1 lifetime', '3 / mo', '20 / mo', 'Unlimited'] },
     ],
   },
   {
