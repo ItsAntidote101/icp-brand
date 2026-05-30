@@ -50,10 +50,11 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // All users who have ever run a diagnosis (any tier)
+  // Only active accounts — cancelled users should not receive follow-up emails
   const { data: users, error: usersErr } = await supabase
     .from('users')
     .select('id, email, full_name, subscription_tier, billing_status, user_badges')
+    .eq('billing_status', 'active')
 
   if (usersErr) {
     console.error('[post-diag-followup] fetch users error:', JSON.stringify(usersErr))
