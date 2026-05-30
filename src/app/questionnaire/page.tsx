@@ -461,7 +461,7 @@ function WelcomePanel({ diagCount }: { diagCount: number }) {
       </div>
 
       {/* Sample report preview (stylised) */}
-      <div className="rounded border border-[#c5c0b1] bg-white p-4 overflow-hidden relative">
+      <div className="rounded border border-[#c5c0b1] bg-white p-4">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#939084] mb-3">Sample report</p>
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 rounded-full bg-[#e8330a]/20 border border-[#e8330a]/30 flex items-center justify-center flex-shrink-0">
@@ -480,8 +480,6 @@ function WelcomePanel({ diagCount }: { diagCount: number }) {
             </div>
           ))}
         </div>
-        {/* subtle blur overlay to suggest "preview" */}
-        <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-[#201515] to-transparent" />
       </div>
 
       {/* Social proof */}
