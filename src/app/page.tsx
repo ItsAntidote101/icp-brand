@@ -373,13 +373,13 @@ function DiagnosticAnimation() {
         <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: 32, maxWidth: 900, margin: '0 auto', alignItems: 'start' }} className="block md:grid">
 
           {/* Step nav */}
-          <div style={{ border: `1.5px solid ${DarkBorder}` }}>
+          <div className="diag-step-nav" style={{ border: `1.5px solid ${DarkBorder}` }}>
             {steps.map(({ num, label, sub }, i) => (
               <button key={i} onClick={() => { setStage(i); setAnimKey(k => k + 1) }}
                 style={{ display: 'block', width: '100%', textAlign: 'left', cursor: 'pointer', padding: '18px 20px', outline: 'none', borderTop: 'none', borderRight: 'none', borderBottom: i < 2 ? `1px solid ${DarkBorder}` : 'none', borderLeft: stage === i ? `3px solid ${Orange}` : '3px solid transparent', background: stage === i ? 'rgba(232,51,10,0.06)' : 'transparent', transition: 'background 0.25s, border-left-color 0.25s' } as React.CSSProperties}>
                 <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, color: stage === i ? Orange : 'rgba(255,255,255,0.28)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 3px' }}>Step {num}</p>
                 <p style={{ fontFamily: font, fontSize: 13, fontWeight: 700, color: stage === i ? '#fff' : 'rgba(255,255,255,0.4)', margin: '0 0 3px', lineHeight: 1.3 }}>{label}</p>
-                <p style={{ fontFamily: fontB, fontSize: 10, color: stage === i ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.18)', margin: 0 }}>{sub}</p>
+                <p className="diag-step-sub" style={{ fontFamily: fontB, fontSize: 10, color: stage === i ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.18)', margin: 0 }}>{sub}</p>
                 {stage === i && (
                   <div style={{ marginTop: 10, height: 2, background: 'rgba(255,255,255,0.08)', borderRadius: 1, overflow: 'hidden' }}>
                     <div key={animKey} style={{ height: '100%', background: Orange, borderRadius: 1, animation: `diagProgress ${ANIM_DURATION}ms linear forwards` }} />
@@ -672,6 +672,25 @@ export default function Page() {
         @media (max-width: 767px) {
           .testimonial-left { border-right: none !important; }
           .proof-chart-col { border-right: none !important; border-bottom: 1.5px solid rgba(255,255,255,0.12); }
+        }
+        @media (max-width: 639px) {
+          /* Testimonial: 4-col aggregate stats → 2-col */
+          .testimonial-stats { grid-template-columns: 1fr 1fr !important; }
+          .testimonial-stats > div:nth-child(even) { border-right: none !important; }
+
+          /* DiagnosticAnimation: compact the step nav */
+          .diag-step-nav > button { padding: 12px 14px !important; }
+          .diag-step-sub { display: none !important; }
+
+          /* Sticky bar: wrap text above button row */
+          .sticky-bar { flex-wrap: wrap !important; gap: 8px !important; padding: 10px 16px 10px !important; }
+          .sticky-bar > p { width: 100% !important; flex: none !important; font-size: 12px !important; margin-bottom: 0 !important; }
+
+          /* Proof tiles: 2-col grid on mobile */
+          .proof-tiles { display: grid !important; grid-template-columns: 1fr 1fr !important; }
+
+          /* Media buyer: remove right border when stacked */
+          .buyer-roster { border-right: none !important; border-bottom: 1.5px solid rgba(255,255,255,0.1); }
         }
       `}</style>
 
@@ -995,7 +1014,7 @@ export default function Page() {
               <p style={{ fontFamily: fontSerif, fontSize: 'clamp(18px,2.5vw,26px)', color: '#fff', lineHeight: 1.45, margin: 0, fontWeight: 600 }}>
                 ICP Diagnostic is where B2B marketers stop guessing and start knowing. Real answers from your numbers, benchmarked against your market.
               </p>
-              <div style={{ display: 'flex', gap: 32 }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'clamp(16px,3vw,32px)' }}>
                 {[['78%', 'of businesses have critical targeting gaps'], ['5 min', 'to a complete ICP health score']].map(([val, label]) => (
                   <div key={val}>
                     <p style={{ fontFamily: fontSerif, fontSize: 28, fontWeight: 700, color: Orange, margin: '0 0 4px' }}>{val}</p>
@@ -1007,7 +1026,7 @@ export default function Page() {
           </div>
 
           {/* 4 tiles */}
-          <div style={{ gridTemplateColumns: 'repeat(2, 1fr)', borderLeft: `1.5px solid ${DarkBorder}` }} className="block md:grid">
+          <div style={{ gridTemplateColumns: 'repeat(2, 1fr)', borderLeft: `1.5px solid ${DarkBorder}` }} className="proof-tiles block md:grid">
             {[
               { Icon: Zap,       title: '22 questions across 3 targeting layers', body: 'No ad account access. No agency. Takes 5 minutes from sign-up to your first scored finding.' },
               { Icon: BarChart2, title: '43% average CAC reduction after fixing ICP', body: 'Reported by businesses that completed their first diagnosis and acted on the top two findings.' },
@@ -1143,7 +1162,7 @@ export default function Page() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0, border: `1.5px solid ${DarkBorder}`, overflow: 'hidden' }} className="block md:grid">
 
             {/* Left: buyer roster */}
-            <div style={{ borderRight: `1.5px solid ${DarkBorder}`, display: 'flex', flexDirection: 'column' }}>
+            <div className="buyer-roster" style={{ borderRight: `1.5px solid ${DarkBorder}`, display: 'flex', flexDirection: 'column' }}>
               {[
                 { initials: 'EW', name: 'Eugene W.', role: 'Senior B2B Media Buyer', note: 'KES 85M+ in B2B ad spend managed. Specialises in Kenya and East Africa SaaS.' },
                 { initials: 'AO', name: 'Amara O.', role: 'Growth Strategist', note: 'Fintech and professional services. Nigeria and South Africa markets.' },
@@ -1242,7 +1261,7 @@ export default function Page() {
             <div className="container" style={{ paddingTop: 'clamp(56px,7vw,88px)', paddingBottom: 'clamp(56px,7vw,88px)' }}>
 
               {/* Aggregate stats bar */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0, border: `1.5px solid ${Border}`, borderRadius: 0, marginBottom: 52, background: '#fff', overflow: 'hidden' }} className="grid-cols-2 md:grid-cols-4">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0, border: `1.5px solid ${Border}`, borderRadius: 0, marginBottom: 52, background: '#fff', overflow: 'hidden' }} className="testimonial-stats">
                 {[
                   { val: '+23 pts', label: 'Average ICP score improvement in 60 days' },
                   { val: '61%', label: 'Average reduction in cost per lead after first fix' },
@@ -1637,14 +1656,14 @@ export default function Page() {
           <h2 style={{ fontFamily: fontSerif, fontSize: 'clamp(28px,5vw,60px)', color: '#fff', fontWeight: 700, maxWidth: 720, margin: '0 auto 20px', lineHeight: 1.1 }}>
             Your competitors ran ads today without knowing their <span style={{ color: Orange }}>ICP score.</span>
           </h2>
-          <p style={{ fontFamily: fontB, fontSize: 16, color: DarkMuted, maxWidth: 400, margin: '0 auto 40px', lineHeight: 1.65 }}>
+          <p style={{ fontFamily: fontB, fontSize: 'clamp(14px,1.6vw,16px)', color: DarkMuted, maxWidth: 400, margin: '0 auto 40px', lineHeight: 1.65 }}>
             Every week without a diagnosis is budget you will not get back.
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center', marginBottom: 24 }}>
-            <Link href="/questionnaire" className="btn-primary" style={{ ...btnPrimary, fontSize: 16, padding: '16px 32px' }}>
+            <Link href="/questionnaire" className="btn-primary" style={{ ...btnPrimary, fontSize: 'clamp(14px,1.6vw,16px)', padding: 'clamp(12px,1.5vw,16px) clamp(20px,2.5vw,32px)' }}>
               Get My Free ICP Score <ArrowRight size={18} />
             </Link>
-            <Link href="/auth?tab=login" className="btn-ghost-dark" style={{ ...btnGhostDark, fontSize: 16, padding: '16px 32px' }}>
+            <Link href="/auth?tab=login" className="btn-ghost-dark" style={{ ...btnGhostDark, fontSize: 'clamp(14px,1.6vw,16px)', padding: 'clamp(12px,1.5vw,16px) clamp(20px,2.5vw,32px)' }}>
               Log in
             </Link>
           </div>
@@ -1693,7 +1712,7 @@ export default function Page() {
 
       {/* ── STICKY BAR ──────────────────────────────────────────────────── */}
       {showStickyBar && !stickyDismissed && (
-        <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 999, background: '#fff', borderTop: `1.5px solid ${Border}`, padding: '12px clamp(16px,4vw,24px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <div className="sticky-bar" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 999, background: '#fff', borderTop: `1.5px solid ${Border}`, padding: '12px clamp(16px,4vw,24px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
           <p style={{ fontFamily: fontB, fontSize: 14, color: Text, fontWeight: 600, margin: 0, flex: 1 }}>
             Free ICP Score. 5 minutes. No card needed.
           </p>
