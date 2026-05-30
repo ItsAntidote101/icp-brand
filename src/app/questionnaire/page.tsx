@@ -779,6 +779,7 @@ export default function QuestionnairePage() {
   const [urlWarning, setUrlWarning] = useState(false)
   const [diagCount,     setDiagCount]     = useState(9400)
   const [emailTouched,  setEmailTouched]  = useState(false)
+  const [emailMxStatus, setEmailMxStatus] = useState<'idle' | 'checking' | 'ok' | 'fail'>('idle')
   const timerRefs = useRef<ReturnType<typeof setTimeout>[]>([])
 
   const xp = Object.keys(answers).length * XP_PER_Q
@@ -1051,10 +1052,11 @@ export default function QuestionnairePage() {
   }
 
   const emailError   = getEmailError(profile.email)
-  const emailOk      = profile.email.trim().length > 0 && !emailError
+  const emailOk      = profile.email.trim().length > 0 && !emailError && emailMxStatus !== 'fail'
   const welcomeValid =
     profile.name.trim().length > 0 &&
     emailOk &&
+    emailMxStatus !== 'checking' &&
     profile.company.trim().length > 0
 
   // ── Prefill loading (prevents flash of welcome screen for returning users) ──
@@ -1202,15 +1204,70 @@ export default function QuestionnairePage() {
               </div>
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-widest text-[#939084] mb-2">Email Address</label>
-                <input type="email" value={profile.email}
-                  onChange={e => { setProfile(p => ({ ...p, email: e.target.value })); setEmailTouched(false) }}
-                  onBlur={() => setEmailTouched(true)}
-                  placeholder="jane@company.com"
-                  className={`w-full bg-[rgba(201,192,177,0.18)] border rounded px-4 py-3.5 text-[#201515] placeholder-[#939084] text-base outline-none transition-colors ${emailTouched && emailError ? 'border-red-400 focus:border-red-400' : 'border-[#c5c0b1] focus:border-[#e8330a]'}`} />
+                <div className="relative">
+                  <input type="email" value={profile.email}
+                    onChange={e => {
+                      setProfile(p => ({ ...p, email: e.target.value }))
+                      setEmailTouched(false)
+                      setEmailMxStatus('idle')
+                    }}
+                    onBlur={async () => {
+                      setEmailTouched(true)
+                      const err = getEmailError(profile.email)
+                      if (err) return // client-side already failed, skip network call
+                      const trimmed = profile.email.trim()
+                      if (!trimmed) return
+                      setEmailMxStatus('checking')
+                      try {
+                        const res = await fetch('/api/validate-email', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ email: trimmed }),
+                        })
+                        const data = await res.json()
+                        setEmailMxStatus(data.valid ? 'ok' : 'fail')
+                      } catch {
+                        setEmailMxStatus('ok') // network error — fail open
+                      }
+                    }}
+                    placeholder="jane@company.com"
+                    className={`w-full bg-[rgba(201,192,177,0.18)] border rounded px-4 py-3.5 pr-10 text-[#201515] placeholder-[#939084] text-base outline-none transition-colors ${
+                      (emailTouched && emailError) || emailMxStatus === 'fail'
+                        ? 'border-red-400 focus:border-red-400'
+                        : emailMxStatus === 'ok'
+                        ? 'border-green-400 focus:border-green-400'
+                        : 'border-[#c5c0b1] focus:border-[#e8330a]'
+                    }`} />
+                  {/* right-side icon */}
+                  {emailMxStatus === 'checking' && (
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <svg className="animate-spin w-4 h-4 text-[#939084]" viewBox="0 0 24 24" fill="none">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                      </svg>
+                    </span>
+                  )}
+                  {emailMxStatus === 'ok' && (
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.5" stroke="#22c55e"/><path d="M5 8.5l2 2 4-4" stroke="#22c55e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    </span>
+                  )}
+                  {emailMxStatus === 'fail' && (
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.5" stroke="#f87171"/><path d="M8 4.5v4M8 10.5h.01" stroke="#f87171" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                    </span>
+                  )}
+                </div>
                 {emailTouched && emailError && (
                   <p className="mt-1.5 text-xs text-red-500 flex items-center gap-1">
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5.5" stroke="currentColor"/><path d="M6 3.5v3M6 8h.01" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
                     {emailError}
+                  </p>
+                )}
+                {emailMxStatus === 'fail' && !emailError && (
+                  <p className="mt-1.5 text-xs text-red-500 flex items-center gap-1">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5.5" stroke="currentColor"/><path d="M6 3.5v3M6 8h.01" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
+                    This email domain doesn&apos;t appear to exist. Please check for typos.
                   </p>
                 )}
               </div>
