@@ -1699,7 +1699,6 @@ function EnhancedQuickWinsWidget({ diag, user, onStreakUpdate, maxWins = 3, repo
     } catch { /* ignore */ }
     return wins.map(() => false)
   })
-  const [confirming, setConfirming] = useState<number | null>(null)
   const [saving,     setSaving]     = useState<number | null>(null)
   const [badgeToast, setBadgeToast] = useState('')
   const [winError,   setWinError]   = useState('')
@@ -1710,7 +1709,7 @@ function EnhancedQuickWinsWidget({ diag, user, onStreakUpdate, maxWins = 3, repo
     : 'Estimated impact: KES 1,000-2,500/month'
 
   async function completeWin(i: number) {
-    setSaving(i); setConfirming(null)
+    setSaving(i)
     try {
       const res = await fetch('/api/quick-wins/complete', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -1749,11 +1748,11 @@ function EnhancedQuickWinsWidget({ diag, user, onStreakUpdate, maxWins = 3, repo
           <div style={{ background: BgAlt, borderRadius: 12, padding: '14px 16px' }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
             <button
-              onClick={() => !checked[i] && setConfirming(confirming === i ? null : i)}
-              disabled={saving === i}
-              style={{ width: 24, height: 24, borderRadius: '50%', border: `2px solid ${checked[i] ? P : '#c5c0b1'}`, background: checked[i] ? P : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: checked[i] ? 'default' : 'pointer', flexShrink: 0, transition: 'all 0.2s', marginTop: 1 }}>
+              onClick={() => { if (!checked[i] && saving === null) completeWin(i) }}
+              disabled={checked[i] || saving !== null}
+              style={{ width: 24, height: 24, minWidth: 24, maxWidth: 24, minHeight: 24, maxHeight: 24, padding: 0, flexShrink: 0, flexGrow: 0, borderRadius: '50%', border: `2px solid ${checked[i] ? '#22c55e' : saving === i ? Pmuted : '#c5c0b1'}`, background: checked[i] ? '#22c55e' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: checked[i] || saving !== null ? 'default' : 'pointer', transition: 'all 0.2s', marginTop: 2, boxSizing: 'content-box' as const }}>
               {checked[i] && <Check size={12} color="#fff" strokeWidth={3} />}
-              {saving === i && <div style={{ width: 8, height: 8, borderRadius: '50%', border: '2px solid #939084', borderTopColor: P, animation: 'spin 0.6s linear infinite' }} />}
+              {saving === i && <div style={{ width: 8, height: 8, borderRadius: '50%', border: '2px solid #e8e0d5', borderTopColor: P, animation: 'spin 0.6s linear infinite' }} />}
             </button>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 6 }}>
@@ -1786,15 +1785,6 @@ function EnhancedQuickWinsWidget({ diag, user, onStreakUpdate, maxWins = 3, repo
           </div>
           </div>
 
-          {confirming === i && (
-            <div style={{ marginTop: 10, marginLeft: 36, background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 10, padding: '12px 14px' }}>
-              <p style={{ fontFamily: fontB, fontSize: 13, color: P, margin: '0 0 10px' }}>Mark &ldquo;{w.action.slice(0, 40)}{w.action.length > 40 ? '…' : ''}&rdquo; as complete?</p>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button onClick={() => completeWin(i)} style={{ fontFamily: fontB, fontSize: 12, fontWeight: 600, background: P, color: '#fff', border: 'none', borderRadius: 8, padding: '7px 14px', cursor: 'pointer' }}>Yes, done</button>
-                <button onClick={() => setConfirming(null)} style={{ fontFamily: fontB, fontSize: 12, background: 'none', color: Pmuted, border: `1px solid ${Pborder}`, borderRadius: 8, padding: '7px 14px', cursor: 'pointer' }}>Not yet</button>
-              </div>
-            </div>
-          )}
         </div>
       ))}
 
@@ -6624,31 +6614,7 @@ export default function DashboardPage() {
                 {/* Real-time waste ticker */}
                 <WasteTicker diag={diag} report={latestReport} currency={currency} score={score} scoreDelta={scoreDeltaMain} onTabChange={setActiveTab} />
 
-                {/* Score + Streak */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                  <ICPScoreCard diag={diag} reports={reports} />
-                  <UpgradeGate requiredTier="starter" currentTier={t} feature="Fix Streak" description="Track your weekly implementation streak. Available on Starter and above." onUpgrade={() => setShowUpgradeModal(true)}>
-                    <FixStreakWidget streak={streak} />
-                  </UpgradeGate>
-                </div>
-
-                {/* Score Journey */}
-                {score !== null && <ScoreJourneyWidget score={score} reports={reports} />}
-
-                {/* Business Outcomes, shown when data exists */}
-                <BusinessOutcomesWidget diag={diag} currency={currency} />
-
-                {/* Performance Breakdown, Pro+ */}
-                {isPro && score !== null && (
-                  <PerformanceBreakdownWidget diag={diag} score={score} delay={200} />
-                )}
-                {!isPro && score !== null && (
-                  <UpgradeGate requiredTier="pro" currentTier={t} feature="Performance Breakdown" description="6-dimension score breakdown across targeting, landing page, budget allocation, and more." onUpgrade={() => setShowUpgradeModal(true)}>
-                    <PerformanceBreakdownWidget diag={diag} score={score} delay={0} />
-                  </UpgradeGate>
-                )}
-
-                {/* Priority action + Quick Wins checklist + Score Prediction */}
+                {/* Priority action + Quick Wins — shown immediately after the waste hook */}
                 <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4 lg:gap-6">
                   <TodaysPriorityCard diag={diag} report={latestReport} user={user} onComplete={setStreak} />
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -6659,6 +6625,30 @@ export default function DashboardPage() {
                     )}
                   </div>
                 </div>
+
+                {/* Score + Streak */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                  <ICPScoreCard diag={diag} reports={reports} />
+                  <UpgradeGate requiredTier="starter" currentTier={t} feature="Fix Streak" description="Track your weekly implementation streak. Available on Starter and above." onUpgrade={() => setShowUpgradeModal(true)}>
+                    <FixStreakWidget streak={streak} />
+                  </UpgradeGate>
+                </div>
+
+                {/* Business Outcomes, shown when data exists */}
+                <BusinessOutcomesWidget diag={diag} currency={currency} />
+
+                {/* Score Journey — hidden on mobile by default, visible on md+ */}
+                {score !== null && <div className="hidden md:block"><ScoreJourneyWidget score={score} reports={reports} /></div>}
+
+                {/* Performance Breakdown, Pro+ */}
+                {isPro && score !== null && (
+                  <PerformanceBreakdownWidget diag={diag} score={score} delay={200} />
+                )}
+                {!isPro && score !== null && (
+                  <UpgradeGate requiredTier="pro" currentTier={t} feature="Performance Breakdown" description="6-dimension score breakdown across targeting, landing page, budget allocation, and more." onUpgrade={() => setShowUpgradeModal(true)}>
+                    <PerformanceBreakdownWidget diag={diag} score={score} delay={0} />
+                  </UpgradeGate>
+                )}
 
                 {/* Escalation nudge: critical findings + no quick wins completed */}
                 {(() => {
