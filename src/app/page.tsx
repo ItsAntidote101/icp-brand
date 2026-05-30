@@ -143,6 +143,264 @@ const btnGhostDark: React.CSSProperties = {
   cursor: 'pointer', textDecoration: 'none', whiteSpace: 'nowrap',
 }
 
+
+// ── Animated "How it works" components ───────────────────────────────────────
+
+const ANIM_DURATION = 5000 // ms per stage
+
+function DiagStage1({ animKey }: { animKey: number }) {
+  const rows = [
+    { q: 'What industry are you in?',     a: 'B2B SaaS / Tech',                delay: 0.15 },
+    { q: 'Monthly ad spend?',             a: 'KES 180,000 / month',             delay: 0.65 },
+    { q: 'Primary target audience?',      a: 'Kenya · SMEs · 50–200 employees', delay: 1.15 },
+    { q: 'Biggest targeting challenge?',  a: 'Reaching decision-makers only',   delay: 1.65 },
+  ]
+  return (
+    <div key={animKey} style={{ border: '1.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)', borderRadius: 4, overflow: 'hidden' }}>
+      {/* Window chrome */}
+      <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', gap: 12, background: 'rgba(0,0,0,0.2)' }}>
+        <div style={{ display: 'flex', gap: 6 }}>
+          {['#e8330a','#f59e0b','#22c55e'].map((c,i) => <div key={i} style={{ width: 9, height: 9, borderRadius: '50%', background: c, opacity: 0.8 }} />)}
+        </div>
+        <span style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.3)', flex: 1, textAlign: 'center' }}>ICP Questionnaire — Step 2 of 4</span>
+        <div style={{ display: 'flex', gap: 4 }}>
+          {[50,35,50].map((w,i) => <div key={i} style={{ width: w, height: 3, background: i === 1 ? '#e8330a' : 'rgba(255,255,255,0.12)', borderRadius: 2 }} />)}
+        </div>
+      </div>
+      {/* Progress */}
+      <div style={{ padding: '10px 20px 0', display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ flex: 1, height: 3, background: 'rgba(255,255,255,0.08)', borderRadius: 2, overflow: 'hidden' }}>
+          <div style={{ width: '50%', height: '100%', background: '#e8330a', borderRadius: 2 }} />
+        </div>
+        <span style={{ fontFamily: fontB, fontSize: 10, color: 'rgba(255,255,255,0.35)' }}>11 / 22 answered</span>
+      </div>
+      {/* Q&A rows */}
+      <div style={{ padding: '4px 0 8px' }}>
+        {rows.map(({ q, a, delay }, i) => (
+          <div key={i} style={{ padding: '10px 20px', borderBottom: i < 3 ? '1px solid rgba(255,255,255,0.04)' : 'none', opacity: 0, animation: `diagFadeUp 0.4s ease ${delay}s forwards` }}>
+            <p style={{ fontFamily: fontB, fontSize: 10, color: 'rgba(255,255,255,0.38)', margin: '0 0 3px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{q}</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontFamily: font, fontSize: 13, fontWeight: 600, color: '#fff' }}>{a}</span>
+              <div style={{ width: 16, height: 16, borderRadius: '50%', background: '#22c55e', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, opacity: 0, animation: `diagCheckPop 0.3s cubic-bezier(0.34,1.56,0.64,1) ${delay + 0.28}s forwards` }}>
+                <svg width="8" height="7" viewBox="0 0 8 7" fill="none"><path d="M1 3.5l2 2 4-4" stroke="#fff" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      {/* Footer */}
+      <div style={{ padding: '10px 20px 14px', borderTop: '1px solid rgba(255,255,255,0.07)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: 0, animation: 'diagFadeUp 0.4s ease 2.1s forwards' }}>
+        <span style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>No ad account access needed</span>
+        <div style={{ background: '#e8330a', color: '#fff', fontFamily: fontB, fontSize: 12, fontWeight: 700, padding: '7px 16px', borderRadius: 4, cursor: 'default' }}>Continue →</div>
+      </div>
+    </div>
+  )
+}
+
+function DiagStage2({ animKey }: { animKey: number }) {
+  const r = 46, circ = 2 * Math.PI * r
+  const score = 74
+  const filled = circ * (score / 100)
+  const offset = circ - filled
+  const bars = [
+    { label: 'Audience alignment',   pct: 38, color: '#e8330a', delay: 0.5  },
+    { label: 'Landing page fit',     pct: 61, color: '#f59e0b', delay: 0.85 },
+    { label: 'Budget efficiency',    pct: 44, color: '#e8330a', delay: 1.2  },
+    { label: 'Competitive position', pct: 29, color: '#f87171', delay: 1.55 },
+  ]
+  return (
+    <div key={animKey} style={{ border: '1.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)', borderRadius: 4, overflow: 'hidden' }}>
+      <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.07)', background: 'rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#e8330a', animation: 'diagPulse 1s ease infinite' }} />
+        <span style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>AI engine running — analysing your ICP</span>
+      </div>
+      <div style={{ padding: '20px 24px', display: 'flex', gap: 24, alignItems: 'center' }}>
+        {/* Score circle */}
+        <div style={{ flexShrink: 0, position: 'relative', width: 108, height: 108, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0, animation: 'diagFadeUp 0.5s ease 0.15s forwards' }}>
+          <svg width="108" height="108" viewBox="0 0 108 108" style={{ position: 'absolute', transform: 'rotate(-90deg)' }}>
+            <circle cx="54" cy="54" r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="7" />
+            <circle cx="54" cy="54" r={r} fill="none" stroke="#e8330a" strokeWidth="7"
+              strokeDasharray={circ} strokeDashoffset={circ}
+              strokeLinecap="round"
+              style={{ animation: `diagCircleFill 1.8s cubic-bezier(0.4,0,0.2,1) 0.3s forwards`, ['--offset' as string]: offset }} />
+          </svg>
+          <div style={{ textAlign: 'center', position: 'relative' }}>
+            <p style={{ fontFamily: fontSerif, fontSize: 26, fontWeight: 700, color: '#fff', margin: 0, lineHeight: 1 }}>{score}</p>
+            <p style={{ fontFamily: fontB, fontSize: 9, color: 'rgba(255,255,255,0.4)', margin: '2px 0 0', textTransform: 'uppercase', letterSpacing: '0.06em' }}>/ 100</p>
+          </div>
+        </div>
+        {/* Analysis bars */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {bars.map(({ label, pct, color, delay }, i) => (
+            <div key={i} style={{ opacity: 0, animation: `diagFadeUp 0.35s ease ${delay}s forwards` }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                <span style={{ fontFamily: fontB, fontSize: 10, color: 'rgba(255,255,255,0.55)' }}>{label}</span>
+                <span style={{ fontFamily: fontB, fontSize: 10, color, fontWeight: 700 }}>{pct}%</span>
+              </div>
+              <div style={{ height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 2, overflow: 'hidden' }}>
+                <div style={{ height: '100%', background: color, borderRadius: 2, width: 0, ['--w' as string]: `${pct}%`, animation: `diagBarFill 0.9s cubic-bezier(0.4,0,0.2,1) ${delay + 0.1}s forwards` }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      {/* Live intelligence feed */}
+      <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', padding: '10px 24px 14px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {[
+          { text: 'Benchmarking against 400+ Kenya B2B accounts', delay: 1.9 },
+          { text: 'Scanning competitor landing pages live', delay: 2.3 },
+          { text: 'Matching regional CPL benchmarks (Q1 2026)', delay: 2.7 },
+        ].map(({ text, delay }, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, opacity: 0, animation: `diagFadeUp 0.35s ease ${delay}s forwards` }}>
+            <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#22c55e', flexShrink: 0, animation: 'diagPulse 1.2s ease infinite' }} />
+            <span style={{ fontFamily: fontB, fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>{text}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function DiagStage3({ animKey }: { animKey: number }) {
+  const findings = [
+    { sev: 'Critical', color: '#f87171', bg: 'rgba(248,113,113,0.08)', border: 'rgba(248,113,113,0.2)', title: 'Audience too broad for B2B intent', impact: 'Costing est. KES 41,000 / mo', delay: 0.2 },
+    { sev: 'Warning',  color: '#f59e0b', bg: 'rgba(245,158,11,0.07)',  border: 'rgba(245,158,11,0.2)',  title: 'Landing page CTA misaligned with ICP', impact: 'Reducing conversion rate ~23%', delay: 0.55 },
+    { sev: 'Warning',  color: '#f59e0b', bg: 'rgba(245,158,11,0.07)',  border: 'rgba(245,158,11,0.2)',  title: 'No SME-specific messaging detected', impact: 'Losing mid-market segment', delay: 0.9 },
+  ]
+  const wins = [
+    { text: 'Narrow audience to 25–44 decision-makers in SMEs', delay: 1.4 },
+    { text: 'Rewrite CTA to "Book a 20-min demo" — test vs current', delay: 1.8 },
+    { text: 'Add pain-point headline above fold targeting ops leads', delay: 2.2 },
+  ]
+  return (
+    <div key={animKey} style={{ border: '1.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)', borderRadius: 4, overflow: 'hidden' }}>
+      {/* Score header */}
+      <div style={{ padding: '14px 20px', borderBottom: '1px solid rgba(255,255,255,0.07)', background: 'rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', gap: 14, opacity: 0, animation: 'diagFadeUp 0.4s ease 0.05s forwards' }}>
+        <div style={{ width: 44, height: 44, borderRadius: '50%', border: '2px solid #e8330a', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: 'rgba(232,51,10,0.1)' }}>
+          <span style={{ fontFamily: fontSerif, fontSize: 17, fontWeight: 700, color: '#e8330a' }}>74</span>
+        </div>
+        <div>
+          <p style={{ fontFamily: font, fontSize: 13, fontWeight: 700, color: '#fff', margin: '0 0 2px' }}>ICP Health Score</p>
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+            <span style={{ fontFamily: fontB, fontSize: 10, color: '#f87171', fontWeight: 700 }}>● 1 Critical</span>
+            <span style={{ fontFamily: fontB, fontSize: 10, color: '#f59e0b', fontWeight: 700 }}>● 2 Warnings</span>
+          </div>
+        </div>
+        <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
+          <p style={{ fontFamily: fontB, fontSize: 10, color: 'rgba(255,255,255,0.35)', margin: '0 0 2px' }}>Monthly waste estimate</p>
+          <p style={{ fontFamily: fontSerif, fontSize: 16, fontWeight: 700, color: '#f87171', margin: 0 }}>KES 41,000</p>
+        </div>
+      </div>
+      {/* Findings */}
+      <div style={{ padding: '8px 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {findings.map(({ sev, color, bg, border, title, impact, delay }, i) => (
+          <div key={i} style={{ background: bg, border: `1px solid ${border}`, borderRadius: 4, padding: '9px 12px', opacity: 0, animation: `diagSlideIn 0.4s ease ${delay}s forwards` }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
+              <span style={{ fontFamily: fontB, fontSize: 9, fontWeight: 700, color, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{sev}</span>
+            </div>
+            <p style={{ fontFamily: font, fontSize: 12, fontWeight: 600, color: '#fff', margin: '0 0 2px' }}>{title}</p>
+            <p style={{ fontFamily: fontB, fontSize: 10, color: 'rgba(255,255,255,0.45)', margin: 0 }}>{impact}</p>
+          </div>
+        ))}
+      </div>
+      {/* Quick wins */}
+      <div style={{ padding: '8px 16px 0', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+        <p style={{ fontFamily: fontB, fontSize: 9, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '6px 0 6px' }}>Quick wins this week</p>
+        {wins.map(({ text, delay }, i) => (
+          <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 6, opacity: 0, animation: `diagFadeUp 0.35s ease ${delay}s forwards` }}>
+            <div style={{ width: 14, height: 14, borderRadius: '50%', border: '1.5px solid #22c55e', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1, background: 'rgba(34,197,94,0.15)' }}>
+              <svg width="7" height="6" viewBox="0 0 7 6" fill="none"><path d="M1 3l2 2 3-4" stroke="#22c55e" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            </div>
+            <span style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.7)', lineHeight: 1.4 }}>{text}</span>
+          </div>
+        ))}
+      </div>
+      {/* Media buyer */}
+      <div style={{ margin: '10px 16px 14px', background: 'rgba(232,51,10,0.07)', border: '1px solid rgba(232,51,10,0.18)', borderRadius: 4, padding: '9px 12px', display: 'flex', gap: 10, alignItems: 'center', opacity: 0, animation: 'diagFadeUp 0.4s ease 2.7s forwards' }}>
+        <div style={{ width: 30, height: 30, borderRadius: '50%', background: '#e8330a', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, color: '#fff' }}>EK</span>
+        </div>
+        <div>
+          <p style={{ fontFamily: font, fontSize: 11, fontWeight: 700, color: '#fff', margin: '0 0 1px' }}>Eugene K. assigned to your report</p>
+          <p style={{ fontFamily: fontB, fontSize: 10, color: 'rgba(255,255,255,0.4)', margin: 0 }}>Senior B2B Media Buyer · Reviewing within 24h</p>
+        </div>
+        <div style={{ marginLeft: 'auto', width: 8, height: 8, borderRadius: '50%', background: '#22c55e', flexShrink: 0, animation: 'diagPulse 1.5s ease infinite' }} />
+      </div>
+    </div>
+  )
+}
+
+function DiagnosticAnimation() {
+  const [stage,    setStage]    = useState(0)
+  const [animKey,  setAnimKey]  = useState(0)
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setStage(s => (s + 1) % 3)
+      setAnimKey(k => k + 1)
+    }, ANIM_DURATION)
+    return () => clearTimeout(t)
+  }, [stage])
+
+  const steps = [
+    { num: '01', label: 'Answer 22 questions',  sub: '5 minutes · no ad account access' },
+    { num: '02', label: 'AI scores your ICP',   sub: 'Live web intelligence · benchmarked' },
+    { num: '03', label: 'Get your report',       sub: 'Instant · reviewed by a media buyer' },
+  ]
+
+  return (
+    <section id="how-it-works" style={{ background: Dark, borderBottom: `1.5px solid ${DarkBorder}`, overflow: 'hidden' }}>
+      <style>{`
+        @keyframes diagFadeUp    { from { opacity:0; transform:translateY(10px) } to { opacity:1; transform:translateY(0) } }
+        @keyframes diagSlideIn   { from { opacity:0; transform:translateX(-8px) } to { opacity:1; transform:translateX(0) } }
+        @keyframes diagCheckPop  { 0%{opacity:0;transform:scale(0) rotate(-30deg)} 60%{transform:scale(1.2)} 100%{opacity:1;transform:scale(1) rotate(0)} }
+        @keyframes diagBarFill   { from { width:0 } to { width:var(--w) } }
+        @keyframes diagCircleFill{ from { stroke-dashoffset:290 } to { stroke-dashoffset:var(--offset) } }
+        @keyframes diagPulse     { 0%,100%{opacity:1} 50%{opacity:0.3} }
+        @keyframes diagProgress  { from{width:0%} to{width:100%} }
+        @keyframes diagStageFade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+      `}</style>
+      <div className="container" style={{ paddingTop: 'clamp(56px,8vw,96px)', paddingBottom: 'clamp(56px,8vw,96px)' }}>
+        {/* Header */}
+        <div style={{ textAlign: 'center', marginBottom: 52 }}>
+          <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, color: Orange, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 14px' }}>See it in action</p>
+          <h2 style={{ fontFamily: fontSerif, fontSize: 'clamp(28px,4.5vw,52px)', fontWeight: 700, color: '#fff', margin: 0, lineHeight: 1.08, letterSpacing: '-0.03em' }}>
+            From first question to{' '}<span style={{ color: Orange }}>bankable insight</span><br className="hidden md:block" /> in under 5 minutes
+          </h2>
+        </div>
+
+        {/* Body: nav + animation */}
+        <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: 32, maxWidth: 900, margin: '0 auto', alignItems: 'start' }} className="block md:grid">
+
+          {/* Step nav */}
+          <div style={{ border: `1.5px solid ${DarkBorder}` }}>
+            {steps.map(({ num, label, sub }, i) => (
+              <button key={i} onClick={() => { setStage(i); setAnimKey(k => k + 1) }}
+                style={{ display: 'block', width: '100%', textAlign: 'left', cursor: 'pointer', padding: '18px 20px', outline: 'none', borderTop: 'none', borderRight: 'none', borderBottom: i < 2 ? `1px solid ${DarkBorder}` : 'none', borderLeft: stage === i ? `3px solid ${Orange}` : '3px solid transparent', background: stage === i ? 'rgba(232,51,10,0.06)' : 'transparent', transition: 'background 0.25s, border-left-color 0.25s' } as React.CSSProperties}>
+                <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, color: stage === i ? Orange : 'rgba(255,255,255,0.28)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 3px' }}>Step {num}</p>
+                <p style={{ fontFamily: font, fontSize: 13, fontWeight: 700, color: stage === i ? '#fff' : 'rgba(255,255,255,0.4)', margin: '0 0 3px', lineHeight: 1.3 }}>{label}</p>
+                <p style={{ fontFamily: fontB, fontSize: 10, color: stage === i ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.18)', margin: 0 }}>{sub}</p>
+                {stage === i && (
+                  <div style={{ marginTop: 10, height: 2, background: 'rgba(255,255,255,0.08)', borderRadius: 1, overflow: 'hidden' }}>
+                    <div key={animKey} style={{ height: '100%', background: Orange, borderRadius: 1, animation: `diagProgress ${ANIM_DURATION}ms linear forwards` }} />
+                  </div>
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* Animated stage */}
+          <div key={animKey} style={{ animation: 'diagStageFade 0.35s ease forwards' }}>
+            {stage === 0 && <DiagStage1 animKey={animKey} />}
+            {stage === 1 && <DiagStage2 animKey={animKey} />}
+            {stage === 2 && <DiagStage3 animKey={animKey} />}
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 export default function Page() {
   const session = useSession()
   const isLoggedIn = session.status === 'authenticated'
@@ -511,6 +769,8 @@ export default function Page() {
         </div>
       </section>
 
+      <DiagnosticAnimation />
+
       {/* ── PLATFORM DIAGRAM ───────────────────────────────────────────── */}
       <section style={{ background: Warm, borderBottom: `1.5px solid ${Border}` }}>
         <style>{`
@@ -779,7 +1039,7 @@ export default function Page() {
       </div>
 
       {/* ── HOW IT WORKS ────────────────────────────────────────────────── */}
-      <section id="how-it-works" style={{ background: Warm, borderBottom: `1.5px solid ${Border}` }}>
+      <section style={{ background: Warm, borderBottom: `1.5px solid ${Border}` }}>
         <div className="container" style={{ paddingTop: 'clamp(56px,8vw,96px)', paddingBottom: 'clamp(56px,8vw,96px)' }}>
           <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 14px' }}>How It Works</p>
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, marginBottom: 48 }}>
