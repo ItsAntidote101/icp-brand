@@ -560,9 +560,9 @@ function Skel({ style }: { style?: React.CSSProperties }) {
 function Card({ children, style, delay = 0 }: { children: React.ReactNode; style?: React.CSSProperties; delay?: number }) {
   return (
     <div style={{
-      background: '#fff', borderRadius: 12, padding: 28,
+      background: '#fff', borderRadius: 16, padding: 28,
       border: `1px solid ${Pborder}`,
-      boxShadow: '0 2px 16px rgba(201,192,177,0.25)',
+      boxShadow: '0 2px 20px rgba(201,192,177,0.35)',
       animation: 'fadeUp 0.4s ease both',
       animationDelay: `${delay}ms`,
       ...style,
@@ -735,22 +735,22 @@ function ScorePredictionWidget({ diag, score, delay }: { diag: DiagnosisData; sc
       </div>
 
       <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
-        <div style={{ flex: 1, background: '#f8f4f0', borderRadius: 12, padding: '14px 16px', textAlign: 'center' }}>
+        <div style={{ flex: 1, background: '#f5f0eb', borderRadius: 12, padding: '14px 16px', textAlign: 'center', border: '1px solid rgba(201,192,177,0.4)' }}>
           <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Now</p>
-          <p style={{ fontFamily: font, fontSize: 28, fontWeight: 800, color: scoreColor(score), margin: 0, lineHeight: 1 }}>{score}</p>
+          <p style={{ fontFamily: font, fontSize: 32, fontWeight: 800, color: scoreColor(score), margin: 0, lineHeight: 1 }}>{score}</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', color: Pmuted }}>
           <ArrowRight size={16} />
         </div>
-        <div style={{ flex: 1, background: 'rgba(34,197,94,0.08)', borderRadius: 12, padding: '14px 16px', textAlign: 'center', border: '1px solid rgba(34,197,94,0.2)' }}>
+        <div style={{ flex: 1, background: 'rgba(34,197,94,0.08)', borderRadius: 12, padding: '14px 16px', textAlign: 'center', border: '1px solid rgba(34,197,94,0.2)', boxShadow: '0 2px 8px rgba(34,197,94,0.15)' }}>
           <p style={{ fontFamily: fontB, fontSize: 11, color: '#16a34a', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Potential</p>
-          <p style={{ fontFamily: font, fontSize: 28, fontWeight: 800, color: '#16a34a', margin: 0, lineHeight: 1 }}>{top.predictedScore}</p>
+          <p style={{ fontFamily: font, fontSize: 32, fontWeight: 800, color: '#16a34a', margin: 0, lineHeight: 1 }}>{top.predictedScore}</p>
           <p style={{ fontFamily: fontB, fontSize: 11, color: '#16a34a', margin: '2px 0 0', fontWeight: 600 }}>+{top.predictedDelta} pts</p>
         </div>
       </div>
 
       <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: Pmuted, margin: '0 0 8px' }}>Highest-impact action</p>
-      <div style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.18)', borderRadius: 10, padding: '12px 14px', marginBottom: 12 }}>
+      <div style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.18)', borderLeft: '3px solid #16a34a', borderRadius: 10, padding: '12px 14px 12px 11px', marginBottom: 12 }}>
         <p style={{ fontFamily: fontB, fontSize: 13, color: '#166534', margin: 0, lineHeight: 1.5 }}>&#8594; {top.action}</p>
       </div>
       {top.expectedImpact && (
@@ -1591,7 +1591,7 @@ function ICPScoreCard({ diag, reports }: { diag: DiagnosisData; reports: ReportR
       {delta !== null && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           {delta > 0 ? <TrendingUp size={13} color="#22c55e" /> : delta < 0 ? <TrendingDown size={13} color="#ef4444" /> : null}
-          <span style={{ fontFamily: fontB, fontSize: 12, color: delta > 0 ? '#22c55e' : delta < 0 ? '#ef4444' : Pmuted }}>
+          <span style={{ fontFamily: fontB, fontSize: 14, fontWeight: 700, color: delta > 0 ? '#22c55e' : delta < 0 ? '#ef4444' : Pmuted }}>
             {delta > 0 ? `+${delta}` : delta === 0 ? 'No change' : String(delta)} since last month
           </span>
         </div>
@@ -1745,7 +1745,8 @@ function EnhancedQuickWinsWidget({ diag, user, onStreakUpdate, maxWins = 3, repo
   return (
     <Card>
       {wins.map((w, i) => (
-        <div key={i} style={{ marginBottom: i < wins.length - 1 ? 20 : 0 }}>
+        <div key={i} style={{ marginBottom: i < wins.length - 1 ? 12 : 0 }}>
+          <div style={{ background: BgAlt, borderRadius: 12, padding: '14px 16px' }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
             <button
               onClick={() => !checked[i] && setConfirming(confirming === i ? null : i)}
@@ -1756,7 +1757,7 @@ function EnhancedQuickWinsWidget({ diag, user, onStreakUpdate, maxWins = 3, repo
             </button>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 6 }}>
-                <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', background: impactBg(w.impact), color: impactColor(w.impact), padding: '2px 8px', borderRadius: 100 }}>
+                <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 800, textTransform: 'uppercase' as const, letterSpacing: '0.04em', background: impactBg(w.impact), color: impactColor(w.impact), padding: '2px 8px', borderRadius: 100 }}>
                   {w.impact} impact
                 </span>
                 {w.platform && (
@@ -1770,18 +1771,19 @@ function EnhancedQuickWinsWidget({ diag, user, onStreakUpdate, maxWins = 3, repo
                   </span>
                 )}
               </div>
-              <p style={{ fontFamily: fontB, fontSize: 13, color: checked[i] ? Pmuted : P, margin: '0 0 4px', lineHeight: 1.55, textDecoration: checked[i] ? 'line-through' : 'none', transition: 'all 0.2s' }}>
+              <p style={{ fontFamily: fontB, fontSize: 14, color: checked[i] ? Pmuted : P, margin: '0 0 4px', lineHeight: 1.6, textDecoration: checked[i] ? 'line-through' : 'none', transition: 'all 0.2s' }}>
                 {w.action}
               </p>
               {w.where && !checked[i] && (
-                <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '0 0 4px', display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <span style={{ opacity: 0.6 }}>Where:</span> {w.where}
+                <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '0 0 4px', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ opacity: 0.7 }}>Where:</span> {w.where}
                 </p>
               )}
-              <p style={{ fontFamily: fontB, fontSize: 12, color: '#d97706', margin: 0 }}>
+              <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, color: '#c05a00', margin: 0 }}>
                 {w.expectedImpact ?? impactLabel(w.impact)}
               </p>
             </div>
+          </div>
           </div>
 
           {confirming === i && (
@@ -1798,9 +1800,9 @@ function EnhancedQuickWinsWidget({ diag, user, onStreakUpdate, maxWins = 3, repo
 
       {wins.length > 0 && (
         <div style={{ marginTop: 20 }}>
-          <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '0 0 6px' }}>{done}/{wins.length} completed</p>
-          <div style={{ height: 6, background: Pborder, borderRadius: 100, overflow: 'hidden' }}>
-            <div style={{ height: '100%', background: P, borderRadius: 100, width: `${(done / wins.length) * 100}%`, transition: 'width 0.4s ease' }} />
+          <p style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, color: P, margin: '0 0 6px' }}>{done}/{wins.length} completed</p>
+          <div style={{ height: 7, background: Pborder, borderRadius: 100, overflow: 'hidden' }}>
+            <div style={{ height: '100%', background: '#e8330a', borderRadius: 100, width: `${(done / wins.length) * 100}%`, transition: 'width 0.4s ease' }} />
           </div>
         </div>
       )}
@@ -2888,21 +2890,25 @@ function TodaysPriorityCard({ diag, report, user, onComplete }: {
   }
 
   return (
-    <div style={{ background: '#fafafa', borderLeft: `4px solid ${col}`, borderRadius: '0 20px 20px 0', padding: '28px 32px', boxShadow: '0 2px 16px rgba(201,192,177,0.25)', animation: 'fadeUp 0.4s ease both' }}>
-      <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: col }}>FIX THIS TODAY</span>
-      <h3 style={{ fontFamily: font, fontSize: 22, fontWeight: 700, color: P, margin: '8px 0 6px', letterSpacing: '-0.01em', lineHeight: 1.2 }}>{topFinding.title}</h3>
+    <div style={{ background: '#fff', borderRadius: 20, padding: '28px 32px 28px 36px', boxShadow: '0 4px 24px rgba(201,192,177,0.3)', border: `1px solid ${Pborder}`, position: 'relative', overflow: 'hidden', animation: 'fadeUp 0.4s ease both' }}>
+      <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 4, background: col, borderRadius: '20px 0 0 20px' }} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: col }}>FIX THIS TODAY</span>
+        <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, background: col + '18', color: col, padding: '2px 8px', borderRadius: 100 }}>{topFinding.severity ?? 'Critical'}</span>
+      </div>
+      <h3 style={{ fontFamily: font, fontSize: 24, fontWeight: 700, color: P, margin: '8px 0 6px', letterSpacing: '-0.02em', lineHeight: 1.25 }}>{topFinding.title}</h3>
       {days > 0 && (
         <span style={{ fontFamily: fontB, fontSize: 12, fontWeight: 600, background: days > 14 ? '#fee2e2' : '#fef3c7', color: days > 14 ? '#ef4444' : '#d97706', padding: '4px 12px', borderRadius: 100, display: 'inline-block', margin: '0 0 12px' }}>
           Unresolved for {days} {days === 1 ? 'day' : 'days'}
         </span>
       )}
-      <p style={{ fontFamily: fontB, fontSize: 14, color: '#605d52', lineHeight: 1.65, margin: '0 0 18px', ...({ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as React.CSSProperties) }}>
+      <p style={{ fontFamily: fontB, fontSize: 14, color: '#4a4640', lineHeight: 1.65, margin: '0 0 20px' }}>
         {topFinding.explanation}
       </p>
       {topWin && (
-        <div style={{ background: 'rgba(232,51,10,0.07)', borderRadius: 8, padding: '16px 20px', marginBottom: 18 }}>
+        <div style={{ background: '#fafafa', border: '1px solid rgba(201,192,177,0.4)', borderLeft: `3px solid ${col}`, borderRadius: 12, padding: '14px 18px', marginBottom: 18 }}>
           <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 6px' }}>HOW TO FIX THIS</p>
-          <p style={{ fontFamily: fontB, fontSize: 14, color: P, margin: '0 0 8px', lineHeight: 1.55 }}>{topWin.action}</p>
+          <p style={{ fontFamily: fontB, fontSize: 14, color: P, margin: '0 0 8px', lineHeight: 1.6 }}>{topWin.action}</p>
           <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 600, background: '#fef3c7', color: '#d97706', padding: '3px 10px', borderRadius: 100 }}>
             {topWin.timeline ?? 'Estimated: 15 minutes'}
           </span>
@@ -2911,7 +2917,7 @@ function TodaysPriorityCard({ diag, report, user, onComplete }: {
       <button
         onClick={markDone}
         disabled={done || saving}
-        style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: done ? '#22c55e' : P, color: '#fff', border: 'none', borderRadius: 12, padding: '12px 22px', fontFamily: fontB, fontSize: 14, fontWeight: 600, cursor: done || saving ? 'default' : 'pointer', opacity: saving ? 0.75 : 1, transition: 'background 0.25s' }}>
+        style={{ display: 'flex', width: '100%', justifyContent: 'center', alignItems: 'center', gap: 8, background: done ? '#22c55e' : P, color: '#fff', border: 'none', borderRadius: 14, padding: '13px 22px', fontFamily: fontB, fontSize: 14, fontWeight: 600, cursor: done || saving ? 'default' : 'pointer', opacity: saving ? 0.75 : 1, transition: 'background 0.25s', marginTop: 4 }}>
         {done ? <><Check size={15} /> Fixed</> : saving ? 'Saving…' : 'Mark as Fixed'}
       </button>
     </div>
