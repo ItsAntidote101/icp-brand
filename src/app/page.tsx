@@ -475,56 +475,39 @@ export default function Page() {
 
       {/* ── HERO ────────────────────────────────────────────────────────── */}
       <section style={{ background: Warm, borderBottom: `1.5px solid ${Border}` }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', gridTemplateColumns: '1fr 1fr' }} className="block md:grid">
-          {/* Left */}
-          <div style={{ padding: 'clamp(48px,8vw,96px) clamp(20px,5vw,56px)' }}>
-            <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 24px' }}>ICP Diagnostic Tool</p>
-            <h1 style={{ fontFamily: fontSerif, fontSize: 'clamp(32px,4.5vw,56px)', fontWeight: 700, color: Text, lineHeight: 1.08, margin: '0 0 32px' }}>
-              Your targeting is{' '}
-              <span style={{ color: Orange }}>leaking money.</span>
-              {' '}Find out exactly where.
-            </h1>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 32 }}>
-              <Link href="/questionnaire" className="btn-primary" style={btnPrimary}>
-                Get free diagnostic <ArrowRight size={16} />
-              </Link>
-              <a href="#how-it-works" className="btn-ghost" style={btnGhost}>See how it works</a>
+        {/* Headline + CTA — centred */}
+        <div style={{ maxWidth: 760, margin: '0 auto', padding: 'clamp(56px,9vw,112px) clamp(20px,5vw,40px) clamp(40px,6vw,72px)', textAlign: 'center' }}>
+          <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 20px' }}>ICP Diagnostic Tool</p>
+          <h1 style={{ fontFamily: fontSerif, fontSize: 'clamp(36px,5.5vw,68px)', fontWeight: 700, color: Text, lineHeight: 1.06, margin: '0 0 24px', letterSpacing: '-0.03em' }}>
+            Your targeting is{' '}
+            <span style={{ color: Orange }}>leaking money.</span>
+            {' '}Find out exactly where.
+          </h1>
+          <p style={{ fontFamily: fontB, fontSize: 'clamp(15px,1.8vw,18px)', color: Muted, lineHeight: 1.7, margin: '0 auto 36px', maxWidth: 560 }}>
+            Answer 22 questions. Get a scored ICP health report, ranked findings, and a fix plan — reviewed by a B2B media buyer. Free. No ad account access needed.
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center', marginBottom: 20 }}>
+            <Link href="/questionnaire" className="btn-primary" style={btnPrimary}>
+              Get free diagnostic <ArrowRight size={16} />
+            </Link>
+            <a href="#how-it-works" className="btn-ghost" style={btnGhost}>See how it works</a>
+          </div>
+          <p style={{ fontFamily: fontB, fontSize: 13, color: Muted, margin: 0 }}>
+            {diagnosisCount.toLocaleString()}+ B2B teams diagnosed. One free lifetime diagnosis, no card needed.
+          </p>
+        </div>
+        {/* Stats bar — full width, single instance */}
+        <div style={{ borderTop: `1.5px solid ${Border}`, display: 'flex' }}>
+          {[
+            { stat: '5 min',    label: 'To complete' },
+            { stat: 'Instant',  label: 'Results' },
+            { stat: '0',        label: 'Ad access needed' },
+          ].map(({ stat, label }, i) => (
+            <div key={label} style={{ flex: 1, padding: 'clamp(16px,3vw,28px) clamp(12px,3vw,24px)', borderRight: i < 2 ? `1.5px solid ${Border}` : 'none', textAlign: 'center' }}>
+              <p style={{ fontFamily: fontSerif, fontSize: 'clamp(20px,2.5vw,28px)', fontWeight: 700, color: Text, margin: '0 0 4px' }}>{stat}</p>
+              <p style={{ fontFamily: fontB, fontSize: 'clamp(11px,1.2vw,13px)', color: Muted, margin: 0 }}>{label}</p>
             </div>
-            <p style={{ fontFamily: fontB, fontSize: 13, color: Muted, margin: 0 }}>
-              {diagnosisCount.toLocaleString()}+ B2B teams diagnosed across East Africa. One free lifetime diagnosis, no card needed.
-            </p>
-          </div>
-          {/* Right, hidden on mobile, visible on md+ */}
-          <div className="hidden md:flex" style={{ padding: 'clamp(48px,8vw,96px) clamp(20px,5vw,56px)', flexDirection: 'column', justifyContent: 'center', gap: 32, borderLeft: `1.5px solid ${Border}` }}>
-            <p style={{ fontFamily: fontB, fontSize: 'clamp(16px,2vw,20px)', color: Muted, lineHeight: 1.7, margin: 0 }}>
-              Most B2B teams waste 30 to 60 percent of their ad budget targeting people who will never buy. The ICP Diagnostic finds the exact misalignment, scores your targeting, and gives you a ranked fix list in 5 minutes. Every report is then reviewed by a B2B media buyer on our team.
-            </p>
-            <div className="grid grid-cols-3" style={{ gap: 0, borderTop: `1.5px solid ${Border}`, borderLeft: `1.5px solid ${Border}` }}>
-              {[
-                { stat: '5 min', label: 'To complete' },
-                { stat: 'Instant', label: 'Results' },
-                { stat: '0', label: 'Ad access needed' },
-              ].map(({ stat, label }) => (
-                <div key={label} style={{ padding: '20px 16px', borderBottom: `1.5px solid ${Border}`, borderRight: `1.5px solid ${Border}` }}>
-                  <p style={{ fontFamily: fontSerif, fontSize: 24, fontWeight: 700, color: Text, margin: '0 0 4px' }}>{stat}</p>
-                  <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, margin: 0 }}>{label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-          {/* Mobile stats strip, visible only on mobile */}
-          <div className="md:hidden" style={{ display: 'flex', borderTop: `1.5px solid ${Border}` }}>
-            {[
-              { stat: '5 min', label: 'To complete' },
-              { stat: 'Instant', label: 'Results' },
-              { stat: '0', label: 'Ad access' },
-            ].map(({ stat, label }, i) => (
-              <div key={label} style={{ flex: 1, padding: '16px 12px', borderRight: i < 2 ? `1.5px solid ${Border}` : 'none', textAlign: 'center' }}>
-                <p style={{ fontFamily: fontSerif, fontSize: 20, fontWeight: 700, color: Text, margin: '0 0 3px' }}>{stat}</p>
-                <p style={{ fontFamily: fontB, fontSize: 11, color: Muted, margin: 0 }}>{label}</p>
-              </div>
-            ))}
-          </div>
+          ))}
         </div>
       </section>
 
