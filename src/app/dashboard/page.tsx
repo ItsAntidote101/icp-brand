@@ -1707,8 +1707,13 @@ function EnhancedQuickWinsWidget({ diag, user, onStreakUpdate, maxWins = 3, repo
     return wins.map(() => false)
   })
   const [saving,     setSaving]     = useState<number | null>(null)
+  const [expanded,   setExpanded]   = useState<boolean[]>(() => wins.map(() => false))
   const [badgeToast, setBadgeToast] = useState('')
   const [winError,   setWinError]   = useState('')
+
+  function toggleExpanded(i: number) {
+    setExpanded(p => { const n = [...p]; n[i] = !n[i]; return n })
+  }
 
   const impactLabel = (impact: string) =>
     impact === 'High' ? 'Estimated impact: KES 8,000-15,000/month'
@@ -1751,21 +1756,40 @@ function EnhancedQuickWinsWidget({ diag, user, onStreakUpdate, maxWins = 3, repo
   return (
     <Card>
       {wins.map((w, i) => (
-        <div key={i} style={{ marginBottom: i < wins.length - 1 ? 12 : 0 }}>
-          <div style={{ background: BgAlt, borderRadius: 12, padding: '14px 16px' }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+        <div key={i} style={{ marginBottom: i < wins.length - 1 ? 8 : 0, background: BgAlt, borderRadius: 12, overflow: 'hidden' }}>
+          {/* ── Header row (always visible, clickable to expand) ── */}
+          <div
+            role="button"
+            onClick={() => toggleExpanded(i)}
+            style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', cursor: 'pointer', userSelect: 'none' as const }}
+          >
+            {/* Complete button — stops propagation so it doesn't toggle the dropdown */}
             <button
-              onClick={() => { if (!checked[i] && saving === null) completeWin(i) }}
+              onClick={e => { e.stopPropagation(); if (!checked[i] && saving === null) completeWin(i) }}
               disabled={checked[i] || saving !== null}
-              style={{ width: 24, height: 24, minWidth: 24, maxWidth: 24, minHeight: 24, maxHeight: 24, padding: 0, flexShrink: 0, flexGrow: 0, borderRadius: '50%', border: `2px solid ${checked[i] ? '#22c55e' : saving === i ? Pmuted : '#c5c0b1'}`, background: checked[i] ? '#22c55e' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: checked[i] || saving !== null ? 'default' : 'pointer', transition: 'all 0.2s', marginTop: 2, boxSizing: 'content-box' as const }}>
+              style={{ width: 24, height: 24, minWidth: 24, padding: 0, flexShrink: 0, borderRadius: '50%', border: `2px solid ${checked[i] ? '#22c55e' : saving === i ? Pmuted : '#c5c0b1'}`, background: checked[i] ? '#22c55e' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: checked[i] || saving !== null ? 'default' : 'pointer', transition: 'all 0.2s', boxSizing: 'content-box' as const }}>
               {checked[i] && <Check size={12} color="#fff" strokeWidth={3} />}
               {saving === i && <div style={{ width: 8, height: 8, borderRadius: '50%', border: '2px solid #e8e0d5', borderTopColor: P, animation: 'spin 0.6s linear infinite' }} />}
             </button>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 6 }}>
-                <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 800, textTransform: 'uppercase' as const, letterSpacing: '0.04em', background: impactBg(w.impact), color: impactColor(w.impact), padding: '2px 8px', borderRadius: 100 }}>
-                  {w.impact} impact
-                </span>
+
+            {/* Impact badge */}
+            <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 800, textTransform: 'uppercase' as const, letterSpacing: '0.04em', background: impactBg(w.impact), color: impactColor(w.impact), padding: '2px 8px', borderRadius: 100, flexShrink: 0 }}>
+              {w.impact}
+            </span>
+
+            {/* Action title — truncated when collapsed */}
+            <p style={{ fontFamily: fontB, fontSize: 13, color: checked[i] ? Pmuted : P, margin: 0, lineHeight: 1.4, flex: 1, minWidth: 0, textDecoration: checked[i] ? 'line-through' : 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: expanded[i] ? 'normal' : 'nowrap' }}>
+              {w.action}
+            </p>
+
+            {/* Chevron */}
+            <span style={{ flexShrink: 0, color: Pmuted, fontSize: 14, transition: 'transform 0.2s', display: 'inline-block', transform: expanded[i] ? 'rotate(180deg)' : 'rotate(0deg)' }}>▾</span>
+          </div>
+
+          {/* ── Expanded body ── */}
+          {expanded[i] && (
+            <div style={{ padding: '0 14px 14px 48px', borderTop: `1px solid ${Pborder}` }}>
+              <div style={{ paddingTop: 10, display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 8 }}>
                 {w.platform && (
                   <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 600, background: 'rgba(201,192,177,0.25)', color: Pmuted, padding: '2px 8px', borderRadius: 100 }}>
                     {w.platform}
@@ -1777,21 +1801,16 @@ function EnhancedQuickWinsWidget({ diag, user, onStreakUpdate, maxWins = 3, repo
                   </span>
                 )}
               </div>
-              <p style={{ fontFamily: fontB, fontSize: 14, color: checked[i] ? Pmuted : P, margin: '0 0 4px', lineHeight: 1.6, textDecoration: checked[i] ? 'line-through' : 'none', transition: 'all 0.2s' }}>
-                {w.action}
-              </p>
               {w.where && !checked[i] && (
-                <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '0 0 4px', display: 'flex', alignItems: 'center', gap: 4 }}>
+                <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '0 0 6px', lineHeight: 1.5 }}>
                   <span style={{ opacity: 0.7 }}>Where:</span> {w.where}
                 </p>
               )}
-              <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, color: '#c05a00', margin: 0 }}>
+              <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, color: '#c05a00', margin: 0, lineHeight: 1.5 }}>
                 {w.expectedImpact ?? impactLabel(w.impact)}
               </p>
             </div>
-          </div>
-          </div>
-
+          )}
         </div>
       ))}
 
