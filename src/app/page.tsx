@@ -1550,7 +1550,7 @@ export default function Page() {
             </h2>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <span style={{ fontFamily: fontB, fontSize: 14, color: !billingAnnual ? Text : Muted, fontWeight: !billingAnnual ? 700 : 400 }}>Monthly</span>
-              <button onClick={() => setBillingAnnual(b => !b)} style={{ width: 46, height: 25, borderRadius: 100, background: billingAnnual ? Dark : Border, position: 'relative', border: 'none', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}>
+              <button onClick={() => setBillingAnnual(b => !b)} style={{ width: 46, height: 25, borderRadius: 100, background: billingAnnual ? Dark : Border, position: 'relative', border: 'none', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0, padding: 0, display: 'block', WebkitAppearance: 'none', appearance: 'none' } as React.CSSProperties}>
                 <div style={{ width: 19, height: 19, borderRadius: '50%', background: '#fff', position: 'absolute', top: 3, left: billingAnnual ? 24 : 3, transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
               </button>
               <span style={{ fontFamily: fontB, fontSize: 14, color: billingAnnual ? Text : Muted, fontWeight: billingAnnual ? 700 : 400 }}>
