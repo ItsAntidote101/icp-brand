@@ -259,6 +259,8 @@ export async function GET(req: NextRequest) {
         benchmarks,
         opportunity,
         recommendation,
+        region,
+        generatedAt: now,
         scoreTrend: icpScore !== null ? {
           current: icpScore, prev: prevScore, topQuickWin, predictedGain,
         } : undefined,

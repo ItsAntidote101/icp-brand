@@ -1222,7 +1222,7 @@ ${cta('Open Dashboard', url)}`
 
 export async function sendPersonalisedWeeklyIntelligenceEmail({
   to, name, weekOf, insights, benchmarks, opportunity, recommendation,
-  scoreTrend,
+  scoreTrend, region, generatedAt,
 }: {
   to: string
   name: string
@@ -1232,9 +1232,43 @@ export async function sendPersonalisedWeeklyIntelligenceEmail({
   opportunity: string
   recommendation: string
   scoreTrend?: { current: number; prev: number | null; topQuickWin?: string; predictedGain?: number }
+  region?: string
+  generatedAt?: string
 }) {
   const first = name?.split(' ')[0] ?? 'there'
-  const weekLabel = new Date(weekOf).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+
+  // ── Time-aware greeting based on region ──────────────────────────────────
+  function regionTimezone(r: string): string {
+    const s = (r ?? '').toLowerCase()
+    if (s.includes('kenya') || s.includes('nairobi') || s.includes('east africa')) return 'Africa/Nairobi'
+    if (s.includes('nigeria') || s.includes('lagos'))                               return 'Africa/Lagos'
+    if (s.includes('south africa') || s.includes('johannesburg') || s.includes('cape')) return 'Africa/Johannesburg'
+    if (s.includes('ghana') || s.includes('accra'))                                 return 'Africa/Accra'
+    if (s.includes('uk') || s.includes('united kingdom') || s.includes('london'))  return 'Europe/London'
+    if (s.includes('us') || s.includes('united states') || s.includes('america'))  return 'America/New_York'
+    return 'Africa/Nairobi'
+  }
+  function timeGreeting(tz: string): string {
+    try {
+      const h = parseInt(new Intl.DateTimeFormat('en', { hour: 'numeric', hour12: false, timeZone: tz }).format(new Date()), 10)
+      if (h >= 5  && h < 12) return 'Good morning'
+      if (h >= 12 && h < 17) return 'Good afternoon'
+      if (h >= 17 && h < 21) return 'Good evening'
+      return 'Hi'
+    } catch { return 'Hi' }
+  }
+  const greeting = timeGreeting(regionTimezone(region ?? ''))
+
+  // ── Date label — use actual generation timestamp, not week start ─────────
+  const genDate   = generatedAt ? new Date(generatedAt) : new Date()
+  const dayLabel  = genDate.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+  const shortDate = genDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+  function truncate(s: string, max = 160): string {
+    if (!s || s.length <= max) return s
+    return s.slice(0, max).replace(/\s+\S*$/, '') + '…'
+  }
 
   // Insight type → { accent colour, label, bg }
   const typeStyle: Record<string, { accent: string; label: string; bg: string; text: string }> = {
@@ -1257,9 +1291,9 @@ export async function sendPersonalisedWeeklyIntelligenceEmail({
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#18110a;margin-bottom:0;">
   <tr>
     <td style="padding:32px 40px 24px 40px;">
-      <p style="margin:0 0 20px;font-size:10px;font-weight:700;letter-spacing:0.16em;color:rgba(255,255,255,0.35);font-family:${font};text-transform:uppercase;">&#9632;&nbsp; WEEKLY INTELLIGENCE BRIEFING</p>
-      <h1 style="margin:0 0 4px;color:#ffffff;font-size:24px;font-weight:800;letter-spacing:-0.5px;line-height:1.2;font-family:${font};">Good morning, ${escapeHtml(first)}.</h1>
-      <p style="margin:0;color:rgba(255,255,255,0.45);font-size:13px;font-family:${font};">Week of ${weekLabel}</p>
+      <p style="margin:0 0 20px;font-size:10px;font-weight:700;letter-spacing:0.16em;color:rgba(255,255,255,0.35);font-family:${font};text-transform:uppercase;">&#9632;&nbsp; INTELLIGENCE BRIEFING</p>
+      <h1 style="margin:0 0 4px;color:#ffffff;font-size:24px;font-weight:800;letter-spacing:-0.5px;line-height:1.2;font-family:${font};">${escapeHtml(greeting)}, ${escapeHtml(first)}.</h1>
+      <p style="margin:0;color:rgba(255,255,255,0.45);font-size:13px;font-family:${font};">As of ${dayLabel}</p>
     </td>
   </tr>
   ${scoreTrend ? `
@@ -1295,27 +1329,27 @@ export async function sendPersonalisedWeeklyIntelligenceEmail({
   </tr>
 </table>` : ''
 
-  // ── INSIGHTS (up to 5, colour-coded by type) ──────────────────────────────
-  const insightCards = insights.slice(0, 5).map((ins, i) => {
-    const s = typeStyle[ins.type ?? ''] ?? defaultStyle
-    const meta = [ins.source, ins.timeLabel].filter(Boolean).join(' &middot; ')
+  // ── INSIGHTS (3 max for email, colour-coded by type) ─────────────────────
+  const insightCards = insights.slice(0, 3).map((ins) => {
+    const s    = typeStyle[ins.type ?? ''] ?? defaultStyle
+    const time = ins.timeLabel ?? ''
     return `
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px;border:1px solid rgba(24,17,10,0.09);">
   <tr>
     <td style="border-left:4px solid ${s.accent};padding:16px 20px;background-color:#fff;">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
         <tr>
-          <td style="padding-bottom:6px;">
-            <span style="display:inline-block;background:${s.bg};color:${s.text};font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;font-family:${font};padding:3px 7px;">${s.label}</span>
-            ${meta ? `<span style="font-size:11px;color:rgba(24,17,10,0.38);font-family:${font};margin-left:8px;">${meta}</span>` : ''}
+          <td style="padding-bottom:7px;">
+            <span style="display:inline-block;background:${s.bg};color:${s.text};font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;font-family:${font};padding:3px 8px;">${s.label}</span>
+            ${time ? `<span style="font-size:11px;color:rgba(24,17,10,0.35);font-family:${font};margin-left:8px;">${time}</span>` : ''}
           </td>
         </tr>
         <tr>
           <td>
-            <p style="margin:0 0 5px;color:#18110a;font-size:14px;font-weight:700;line-height:1.35;font-family:${font};">${escapeHtml(ins.title)}</p>
-            <p style="margin:0;color:rgba(24,17,10,0.6);font-size:13px;line-height:1.55;font-family:${font};">${escapeHtml(ins.body)}</p>
-            ${ins.implication ? `<p style="margin:8px 0 0;font-size:12px;color:rgba(24,17,10,0.5);font-family:${font};font-style:italic;">Implication: ${escapeHtml(ins.implication)}</p>` : ''}
-            ${ins.recommendation ? `<p style="margin:8px 0 0;font-size:12px;color:${s.text};font-family:${font};font-weight:600;">&#8594; ${escapeHtml(ins.recommendation)}</p>` : ''}
+            <p style="margin:0 0 6px;color:#18110a;font-size:15px;font-weight:700;line-height:1.3;font-family:${font};">${escapeHtml(ins.title)}</p>
+            <p style="margin:0;color:rgba(24,17,10,0.65);font-size:14px;line-height:1.6;font-family:${font};">${escapeHtml(truncate(ins.body, 160))}</p>
+            ${ins.implication ? `<p style="margin:9px 0 0;font-size:13px;color:rgba(24,17,10,0.5);font-family:${font};font-style:italic;">${escapeHtml(truncate(ins.implication, 120))}</p>` : ''}
+            ${ins.recommendation ? `<p style="margin:9px 0 0;font-size:13px;color:${s.text};font-family:${font};font-weight:600;">&#8594; ${escapeHtml(truncate(ins.recommendation, 120))}</p>` : ''}
           </td>
         </tr>
       </table>
@@ -1356,7 +1390,7 @@ ${hero}
 
 ${topAction}
 
-<p style="margin:0 0 12px;color:#18110a;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;font-family:${font};">MARKET INTELLIGENCE &mdash; ${weekLabel.toUpperCase()}</p>
+<p style="margin:0 0 12px;color:#18110a;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;font-family:${font};">MARKET INTELLIGENCE &mdash; ${shortDate.toUpperCase()}</p>
 ${insightCards}
 
 <p style="margin:28px 0 12px;color:#18110a;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;font-family:${font};">BENCHMARK POSITION</p>
@@ -1370,19 +1404,19 @@ ${insightCards}
   ${benchmarkRows}
 </table>
 
-<p style="margin:0 0 12px;color:#18110a;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;font-family:${font};">TOP OPPORTUNITY</p>
+${opportunity?.trim() ? `<p style="margin:0 0 12px;color:#18110a;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;font-family:${font};">TOP OPPORTUNITY</p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-left:4px solid #d97706;background:rgba(245,158,11,0.06);margin-bottom:16px;">
   <tr><td style="padding:16px 20px;">
-    <p style="margin:0;color:#78350f;font-size:14px;line-height:1.6;font-family:${font};">${escapeHtml(opportunity)}</p>
+    <p style="margin:0;color:#78350f;font-size:14px;line-height:1.65;font-family:${font};">${escapeHtml(opportunity)}</p>
   </td></tr>
-</table>
+</table>` : ''}
 
-<p style="margin:16px 0 12px;color:#18110a;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;font-family:${font};">RECOMMENDED ACTION</p>
+${recommendation?.trim() ? `<p style="margin:16px 0 12px;color:#18110a;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;font-family:${font};">RECOMMENDED ACTION</p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-left:4px solid #16a34a;background:rgba(22,163,74,0.06);margin-bottom:32px;">
   <tr><td style="padding:16px 20px;">
-    <p style="margin:0;color:#14532d;font-size:14px;line-height:1.6;font-family:${font};">&#8594;&nbsp; ${escapeHtml(recommendation)}</p>
+    <p style="margin:0;color:#14532d;font-size:14px;line-height:1.65;font-family:${font};">&#8594;&nbsp; ${escapeHtml(recommendation)}</p>
   </td></tr>
-</table>
+</table>` : ''}
 
 ${cta('Open Full Briefing &rarr;', 'https://idealicp.com/dashboard')}
 
@@ -1392,7 +1426,7 @@ ${cta('Open Full Briefing &rarr;', 'https://idealicp.com/dashboard')}
 
   const { data, error } = await getResend().emails.send({
     from: FROM, to,
-    subject: `Intelligence briefing: ${weekLabel} ${scoreTrend ? `· ICP score ${scoreTrend.current}/100` : ''}`,
+    subject: `Intelligence briefing: ${shortDate}${scoreTrend ? ` · ICP score ${scoreTrend.current}/100` : ''}`,
     html: base(content),
   })
   if (error) console.error('[email] personalised-weekly-intel error:', JSON.stringify(error))

@@ -110,6 +110,9 @@ export async function POST(req: NextRequest) {
       prevScore = getScore(reports[1].report_summary as string)
     }
 
+    // Extract region from briefing data for time-aware greeting
+    const region = (bd.region as string | undefined) ?? ''
+
     await sendPersonalisedWeeklyIntelligenceEmail({
       to: email,
       name: user.full_name ?? '',
@@ -118,6 +121,8 @@ export async function POST(req: NextRequest) {
       benchmarks,
       opportunity,
       recommendation,
+      region,
+      generatedAt: latest.research_date as string,
       scoreTrend: icpScore !== null ? { current: icpScore, prev: prevScore, topQuickWin, predictedGain } : undefined,
     })
 
