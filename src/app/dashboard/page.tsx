@@ -4080,8 +4080,9 @@ function AccountTab({ user, currency, score, reportCount, reports, onSignOut, on
       onUserUpdate({ avatar_url: d.avatar_url })
       showToast('Profile photo updated.')
     } catch (err) {
-      console.error('[avatar upload]', err)
-      showToast('Could not upload photo. Please try again.')
+      const msg = err instanceof Error ? err.message : String(err)
+      console.error('[avatar upload]', msg)
+      showToast(`Upload failed: ${msg.slice(0, 80)}`)
     } finally {
       setAvatarUploading(false)
       if (avatarInputRef.current) avatarInputRef.current.value = ''
