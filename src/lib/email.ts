@@ -705,8 +705,23 @@ ${infoCard(rows.map(([l, v], i) => row(l, v, i === rows.length - 1)).join(''))}`
 
 // ─── Email 12: Weekly intelligence briefing ───────────────────────────────────
 
-type IntelligenceInsight = { title: string; body: string }
-type IntelligenceBenchmark = { name: string; userValue: number | null; industryAvg: number; unit: string }
+type IntelligenceInsight = {
+  title: string
+  body: string
+  type?: string
+  source?: string | null
+  timeLabel?: string
+  implication?: string | null
+  recommendation?: string | null
+}
+type IntelligenceBenchmark = {
+  name: string
+  userValue: number | string | null
+  industryAvg: number | string
+  top10?: number | string | null
+  unit: string
+  higherIsBetter?: boolean
+}
 
 export async function sendWeeklyIntelligenceEmail({
   to, name, weekOf, insights, benchmarks, opportunity, recommendation,
@@ -730,10 +745,15 @@ export async function sendWeeklyIntelligenceEmail({
     </td></tr>`).join('')
 
   const benchmarkRows = benchmarks.slice(0, 4).map((b, i, arr) => {
-    const fmt = (v: number) => b.unit === '%' ? `${v}%` : b.unit === '$' ? `$${v}` : `${v}${b.unit}`
+    const fmt = (v: number | string | null | undefined) => {
+      if (v == null) return '&#8212;'
+      const n = typeof v === 'string' ? parseFloat(v) : v
+      if (isNaN(n)) return String(v)
+      return b.unit === '%' ? `${n}%` : b.unit === '$' ? `$${n}` : `${n}${b.unit}`
+    }
     return `<tr>
       <td style="padding:8px 12px;color:${Muted};font-size:13px;font-family:${font};${i < arr.length - 1 ? `border-bottom:1px solid ${BorderLight};` : ''}">${b.name}</td>
-      <td style="padding:8px 12px;color:${Dark};font-size:13px;font-weight:600;font-family:${font};${i < arr.length - 1 ? `border-bottom:1px solid ${BorderLight};` : ''}">${b.userValue != null ? fmt(b.userValue) : '&#8212;'}</td>
+      <td style="padding:8px 12px;color:${Dark};font-size:13px;font-weight:600;font-family:${font};${i < arr.length - 1 ? `border-bottom:1px solid ${BorderLight};` : ''}">${fmt(b.userValue)}</td>
       <td style="padding:8px 12px;color:${Orange};font-size:13px;font-family:${font};${i < arr.length - 1 ? `border-bottom:1px solid ${BorderLight};` : ''}">${fmt(b.industryAvg)}</td>
     </tr>`
   }).join('')
@@ -1216,94 +1236,163 @@ export async function sendPersonalisedWeeklyIntelligenceEmail({
   const first = name?.split(' ')[0] ?? 'there'
   const weekLabel = new Date(weekOf).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
 
-  const insightRows = insights.slice(0, 3).map((ins, i) => `
-    <tr><td style="padding:10px 0;${i < insights.slice(0, 3).length - 1 ? `border-bottom:1px solid ${BorderLight};` : ''}">
-      <p style="margin:0;color:${Muted};font-size:11px;text-transform:uppercase;letter-spacing:0.07em;font-family:${font};">${i + 1}</p>
-      <p style="margin:2px 0 0;color:${Dark};font-size:14px;font-weight:600;font-family:${font};">${ins.title}</p>
-      <p style="margin:3px 0 0;color:${Muted};font-size:13px;line-height:1.5;font-family:${font};">${ins.body}</p>
-    </td></tr>`).join('')
+  // Insight type → { accent colour, label, bg }
+  const typeStyle: Record<string, { accent: string; label: string; bg: string; text: string }> = {
+    market_movement:    { accent: '#2563eb', label: 'MARKET MOVE',      bg: 'rgba(37,99,235,0.07)',  text: '#1d4ed8' },
+    competitor_strategy:{ accent: '#dc2626', label: 'COMPETITOR',       bg: 'rgba(220,38,38,0.07)',  text: '#991b1b' },
+    opportunity:        { accent: '#16a34a', label: 'OPPORTUNITY',      bg: 'rgba(22,163,74,0.07)',  text: '#166534' },
+    platform_update:    { accent: '#7c3aed', label: 'PLATFORM UPDATE',  bg: 'rgba(124,58,237,0.07)', text: '#5b21b6' },
+  }
+  const defaultStyle = { accent: '#d97706', label: 'INTELLIGENCE', bg: 'rgba(217,119,6,0.07)', text: '#92400e' }
 
-  const benchmarkRows = benchmarks.slice(0, 4).map((b, i, arr) => {
-    const fmt = (v: number) => b.unit === '%' ? `${v}%` : b.unit === '$' ? `$${v}` : `${v}${b.unit}`
+  // ── HERO: dark header with score ──────────────────────────────────────────
+  const scoreDelta   = scoreTrend?.prev != null ? scoreTrend.current - scoreTrend.prev : null
+  const scoreColour  = scoreDelta != null ? (scoreDelta > 0 ? '#4ade80' : scoreDelta < 0 ? '#f87171' : '#fbbf24') : '#fbbf24'
+  const deltaText    = scoreDelta != null && scoreDelta !== 0
+    ? `${scoreDelta > 0 ? '&#8593;' : '&#8595;'} ${Math.abs(scoreDelta)} pts vs last week`
+    : (scoreDelta === 0 ? 'unchanged from last week' : '')
+  const potentialScore = scoreTrend?.predictedGain ? Math.min(100, (scoreTrend.current ?? 0) + scoreTrend.predictedGain) : null
+
+  const hero = `
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#18110a;margin-bottom:0;">
+  <tr>
+    <td style="padding:32px 40px 24px 40px;">
+      <p style="margin:0 0 20px;font-size:10px;font-weight:700;letter-spacing:0.16em;color:rgba(255,255,255,0.35);font-family:${font};text-transform:uppercase;">&#9632;&nbsp; WEEKLY INTELLIGENCE BRIEFING</p>
+      <h1 style="margin:0 0 4px;color:#ffffff;font-size:24px;font-weight:800;letter-spacing:-0.5px;line-height:1.2;font-family:${font};">Good morning, ${escapeHtml(first)}.</h1>
+      <p style="margin:0;color:rgba(255,255,255,0.45);font-size:13px;font-family:${font};">Week of ${weekLabel}</p>
+    </td>
+  </tr>
+  ${scoreTrend ? `
+  <tr>
+    <td style="padding:0 40px 36px 40px;">
+      <table role="presentation" cellpadding="0" cellspacing="0">
+        <tr>
+          <td style="padding-right:36px;vertical-align:top;">
+            <p style="margin:0;font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.4);font-family:${font};">ICP HEALTH SCORE</p>
+            <p style="margin:6px 0 0;font-size:60px;font-weight:900;color:${scoreColour};font-family:${font};line-height:1;letter-spacing:-2px;">${scoreTrend.current}<span style="font-size:22px;font-weight:600;opacity:0.6;">/100</span></p>
+            ${deltaText ? `<p style="margin:6px 0 0;font-size:12px;color:${scoreColour};font-family:${font};font-weight:600;">${deltaText}</p>` : ''}
+          </td>
+          ${potentialScore ? `
+          <td style="border-left:1px solid rgba(255,255,255,0.1);padding-left:36px;vertical-align:top;">
+            <p style="margin:0;font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.4);font-family:${font};">POTENTIAL SCORE</p>
+            <p style="margin:6px 0 0;font-size:60px;font-weight:900;color:#4ade80;font-family:${font};line-height:1;letter-spacing:-2px;">${potentialScore}<span style="font-size:22px;font-weight:600;opacity:0.6;">/100</span></p>
+            <p style="margin:6px 0 0;font-size:12px;color:#4ade80;font-family:${font};font-weight:600;">+${scoreTrend.predictedGain} pts with 1 change</p>
+          </td>` : ''}
+        </tr>
+      </table>
+    </td>
+  </tr>` : ''}
+</table>`
+
+  // ── TOP ACTION (if available) ─────────────────────────────────────────────
+  const topAction = scoreTrend?.topQuickWin ? `
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:rgba(22,163,74,0.08);border-left:4px solid #16a34a;margin-bottom:28px;">
+  <tr>
+    <td style="padding:16px 20px;">
+      <p style="margin:0 0 4px;font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#166534;font-family:${font};">&#9650;&nbsp; YOUR #1 ACTION THIS WEEK</p>
+      <p style="margin:0;color:#14532d;font-size:14px;line-height:1.6;font-family:${font};">${escapeHtml(scoreTrend.topQuickWin)}</p>
+    </td>
+  </tr>
+</table>` : ''
+
+  // ── INSIGHTS (up to 5, colour-coded by type) ──────────────────────────────
+  const insightCards = insights.slice(0, 5).map((ins, i) => {
+    const s = typeStyle[ins.type ?? ''] ?? defaultStyle
+    const meta = [ins.source, ins.timeLabel].filter(Boolean).join(' &middot; ')
+    return `
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px;border:1px solid rgba(24,17,10,0.09);">
+  <tr>
+    <td style="border-left:4px solid ${s.accent};padding:16px 20px;background-color:#fff;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <td style="padding-bottom:6px;">
+            <span style="display:inline-block;background:${s.bg};color:${s.text};font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;font-family:${font};padding:3px 7px;">${s.label}</span>
+            ${meta ? `<span style="font-size:11px;color:rgba(24,17,10,0.38);font-family:${font};margin-left:8px;">${meta}</span>` : ''}
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p style="margin:0 0 5px;color:#18110a;font-size:14px;font-weight:700;line-height:1.35;font-family:${font};">${escapeHtml(ins.title)}</p>
+            <p style="margin:0;color:rgba(24,17,10,0.6);font-size:13px;line-height:1.55;font-family:${font};">${escapeHtml(ins.body)}</p>
+            ${ins.implication ? `<p style="margin:8px 0 0;font-size:12px;color:rgba(24,17,10,0.5);font-family:${font};font-style:italic;">Implication: ${escapeHtml(ins.implication)}</p>` : ''}
+            ${ins.recommendation ? `<p style="margin:8px 0 0;font-size:12px;color:${s.text};font-family:${font};font-weight:600;">&#8594; ${escapeHtml(ins.recommendation)}</p>` : ''}
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>`
+  }).join('')
+
+  // ── BENCHMARK TABLE ───────────────────────────────────────────────────────
+  const benchmarkRows = benchmarks.slice(0, 5).map((b, i, arr) => {
+    const fmt = (v: number | string | null) => {
+      if (v == null) return '&#8212;'
+      const n = typeof v === 'string' ? parseFloat(v) : v
+      if (isNaN(n)) return String(v)
+      return b.unit === '%' ? `${n}%` : b.unit === '$' ? `$${n}` : `${n}${b.unit ?? ''}`
+    }
+    const userN  = typeof b.userValue  === 'number' ? b.userValue  : null
+    const avgN   = typeof b.industryAvg === 'number' ? b.industryAvg : null
+    const isGood = userN != null && avgN != null && (b.higherIsBetter ? userN >= avgN : userN <= avgN)
+    const isBad  = userN != null && avgN != null && !isGood
+    const statusDot = userN != null && avgN != null
+      ? `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${isGood ? '#16a34a' : '#dc2626'};margin-right:5px;vertical-align:middle;"></span>`
+      : ''
+    const divider = i < arr.length - 1 ? `border-bottom:1px solid rgba(24,17,10,0.07);` : ''
     return `<tr>
-      <td style="padding:8px 12px;color:${Muted};font-size:13px;font-family:${font};${i < arr.length - 1 ? `border-bottom:1px solid ${BorderLight};` : ''}">${b.name}</td>
-      <td style="padding:8px 12px;color:${Dark};font-size:13px;font-weight:600;font-family:${font};${i < arr.length - 1 ? `border-bottom:1px solid ${BorderLight};` : ''}">${b.userValue != null ? fmt(b.userValue) : '&#8212;'}</td>
-      <td style="padding:8px 12px;color:${Orange};font-size:13px;font-family:${font};${i < arr.length - 1 ? `border-bottom:1px solid ${BorderLight};` : ''}">${fmt(b.industryAvg)}</td>
+      <td style="padding:10px 14px;${divider}color:rgba(24,17,10,0.6);font-size:13px;font-family:${font};">${b.name}</td>
+      <td style="padding:10px 14px;${divider}font-size:13px;font-weight:700;font-family:${font};color:${isBad ? '#dc2626' : isGood ? '#166534' : '#18110a'};">${statusDot}${fmt(b.userValue)}</td>
+      <td style="padding:10px 14px;${divider}font-size:13px;font-family:${font};color:rgba(24,17,10,0.5);">${fmt(b.industryAvg)}</td>
+      <td style="padding:10px 14px;${divider}font-size:13px;font-weight:600;font-family:${font};color:rgba(24,17,10,0.4);">${fmt(b.top10 as number | null)}</td>
     </tr>`
   }).join('')
 
-  const scoreTrendSection = scoreTrend ? (() => {
-    const delta = scoreTrend.prev !== null ? scoreTrend.current - scoreTrend.prev : null
-    const color = delta !== null ? (delta > 0 ? '#15803d' : delta < 0 ? '#dc2626' : '#d97706') : '#d97706'
-    const arrow = delta !== null ? (delta > 0 ? '&#8593;' : delta < 0 ? '&#8595;' : '&#8594;') : ''
-    return `
-<p style="margin:0 0 10px;color:${Dark};font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;font-family:${font};">Your ICP score this week</p>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1.5px solid ${Border};border-radius:4px;margin-bottom:20px;">
-  <tr>
-    <td style="padding:20px 24px;border-right:1px solid ${BorderLight};text-align:center;width:50%;">
-      <p style="margin:0;color:${Muted};font-size:12px;text-transform:uppercase;letter-spacing:0.07em;font-family:${font};">Current Score</p>
-      <p style="margin:6px 0 0;font-size:36px;font-weight:800;color:${color};font-family:${font};line-height:1;">${scoreTrend.current}</p>
-      ${delta !== null ? `<p style="margin:4px 0 0;font-size:13px;font-weight:600;color:${color};font-family:${font};">${arrow} ${Math.abs(delta)} pts ${delta > 0 ? 'up' : delta < 0 ? 'down' : 'unchanged'}</p>` : ''}
-    </td>
-    <td style="padding:20px 24px;text-align:center;width:50%;">
-      <p style="margin:0;color:${Muted};font-size:12px;text-transform:uppercase;letter-spacing:0.07em;font-family:${font};">Potential score</p>
-      <p style="margin:6px 0 0;font-size:36px;font-weight:800;color:#15803d;font-family:${font};line-height:1;">${scoreTrend.predictedGain ? Math.min(100, scoreTrend.current + scoreTrend.predictedGain) : '?'}</p>
-      ${scoreTrend.predictedGain ? `<p style="margin:4px 0 0;font-size:13px;font-weight:600;color:#15803d;font-family:${font};">+${scoreTrend.predictedGain} if top win done</p>` : ''}
-    </td>
-  </tr>
-</table>
-${scoreTrend.topQuickWin ? `
-<p style="margin:0 0 10px;color:${Dark};font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;font-family:${font};">Your #1 action this week</p>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:rgba(34,197,94,0.07);border:1.5px solid rgba(34,197,94,0.2);border-radius:4px;margin-bottom:20px;">
-  <tr><td style="padding:18px 22px;">
-    <p style="margin:0;color:#166534;font-size:14px;line-height:1.6;font-family:${font};">&rarr; ${escapeHtml(scoreTrend.topQuickWin)}</p>
-  </td></tr>
-</table>` : ''}`
-  })() : ''
-
+  // ── FULL EMAIL BODY ───────────────────────────────────────────────────────
   const content = `
-${ICON.brain}
-${heading('Your Weekly Market Intelligence', 34)}
-${sub(`Hi ${first}, here is what moved in your market this week, ${weekLabel}.`)}
+${hero}
 
-${scoreTrendSection}
+<div style="padding-top:32px;">
 
-<p style="margin:0 0 10px;color:${Dark};font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;font-family:${font};">3 things to know this week</p>
-${infoCard(`<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${insightRows}</table>`)}
+${topAction}
 
-<p style="margin:0 0 10px;color:${Dark};font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;font-family:${font};">Your benchmark position</p>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:${CardBg};border:1.5px solid ${Border};margin-bottom:16px;">
-  <tr><td style="padding:0;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-      <tr>
-        <th style="padding:10px 12px;color:${Muted};font-size:11px;text-align:left;text-transform:uppercase;letter-spacing:0.07em;border-bottom:1.5px solid ${Border};font-family:${font};">Metric</th>
-        <th style="padding:10px 12px;color:${Dark};font-size:11px;text-align:left;text-transform:uppercase;letter-spacing:0.07em;border-bottom:1.5px solid ${Border};font-family:${font};">You</th>
-        <th style="padding:10px 12px;color:${Orange};font-size:11px;text-align:left;text-transform:uppercase;letter-spacing:0.07em;border-bottom:1.5px solid ${Border};font-family:${font};">Industry Avg</th>
-      </tr>
-      ${benchmarkRows}
-    </table>
+<p style="margin:0 0 12px;color:#18110a;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;font-family:${font};">MARKET INTELLIGENCE &mdash; ${weekLabel.toUpperCase()}</p>
+${insightCards}
+
+<p style="margin:28px 0 12px;color:#18110a;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;font-family:${font};">BENCHMARK POSITION</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid rgba(24,17,10,0.1);margin-bottom:28px;">
+  <tr style="background:rgba(24,17,10,0.03);">
+    <th style="padding:9px 14px;color:rgba(24,17,10,0.45);font-size:10px;font-weight:700;text-align:left;text-transform:uppercase;letter-spacing:0.09em;font-family:${font};border-bottom:1px solid rgba(24,17,10,0.1);">Metric</th>
+    <th style="padding:9px 14px;color:#18110a;font-size:10px;font-weight:700;text-align:left;text-transform:uppercase;letter-spacing:0.09em;font-family:${font};border-bottom:1px solid rgba(24,17,10,0.1);">You</th>
+    <th style="padding:9px 14px;color:rgba(24,17,10,0.45);font-size:10px;font-weight:700;text-align:left;text-transform:uppercase;letter-spacing:0.09em;font-family:${font};border-bottom:1px solid rgba(24,17,10,0.1);">Industry Avg</th>
+    <th style="padding:9px 14px;color:rgba(24,17,10,0.35);font-size:10px;font-weight:700;text-align:left;text-transform:uppercase;letter-spacing:0.09em;font-family:${font};border-bottom:1px solid rgba(24,17,10,0.1);">Top 10%</th>
+  </tr>
+  ${benchmarkRows}
+</table>
+
+<p style="margin:0 0 12px;color:#18110a;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;font-family:${font};">TOP OPPORTUNITY</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-left:4px solid #d97706;background:rgba(245,158,11,0.06);margin-bottom:16px;">
+  <tr><td style="padding:16px 20px;">
+    <p style="margin:0;color:#78350f;font-size:14px;line-height:1.6;font-family:${font};">${escapeHtml(opportunity)}</p>
   </td></tr>
 </table>
 
-<p style="margin:0 0 10px;color:${Dark};font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;font-family:${font};">This week's opportunity</p>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(245,158,11,0.07);border:1.5px solid rgba(245,158,11,0.25);margin-bottom:16px;">
-  <tr><td style="padding:18px 22px;">
-    <p style="margin:0;color:#92400e;font-size:14px;line-height:1.6;font-family:${font};">${opportunity}</p>
+<p style="margin:16px 0 12px;color:#18110a;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;font-family:${font};">RECOMMENDED ACTION</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-left:4px solid #16a34a;background:rgba(22,163,74,0.06);margin-bottom:32px;">
+  <tr><td style="padding:16px 20px;">
+    <p style="margin:0;color:#14532d;font-size:14px;line-height:1.6;font-family:${font};">&#8594;&nbsp; ${escapeHtml(recommendation)}</p>
   </td></tr>
 </table>
 
-<p style="margin:0 0 10px;color:${Dark};font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;font-family:${font};">Recommended action this week</p>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(34,197,94,0.07);border:1.5px solid rgba(34,197,94,0.2);margin-bottom:24px;">
-  <tr><td style="padding:18px 22px;">
-    <p style="margin:0;color:#166534;font-size:14px;line-height:1.6;font-family:${font};">&rarr; ${recommendation}</p>
-  </td></tr>
-</table>
+${cta('Open Full Briefing &rarr;', 'https://idealicp.com/dashboard')}
 
-${cta('View Full Briefing', 'https://idealicp.com/dashboard')}`
+<p style="margin:20px 0 0;color:rgba(24,17,10,0.35);font-size:12px;font-family:${font};line-height:1.6;">This briefing is generated weekly from live market data researched specifically for your industry and region. It is only shared with you.</p>
+
+</div>`
 
   const { data, error } = await getResend().emails.send({
     from: FROM, to,
-    subject: `Your weekly market intelligence + ICP score update, ${weekLabel}`,
+    subject: `Intelligence briefing: ${weekLabel} ${scoreTrend ? `· ICP score ${scoreTrend.current}/100` : ''}`,
     html: base(content),
   })
   if (error) console.error('[email] personalised-weekly-intel error:', JSON.stringify(error))
