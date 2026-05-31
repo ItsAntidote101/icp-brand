@@ -1767,9 +1767,9 @@ function EnhancedQuickWinsWidget({ diag, user, onStreakUpdate, maxWins = 3, repo
             <button
               onClick={e => { e.stopPropagation(); if (!checked[i] && saving === null) completeWin(i) }}
               disabled={checked[i] || saving !== null}
-              style={{ width: 24, height: 24, minWidth: 24, padding: 0, flexShrink: 0, borderRadius: '50%', border: `2px solid ${checked[i] ? '#22c55e' : saving === i ? Pmuted : '#c5c0b1'}`, background: checked[i] ? '#22c55e' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: checked[i] || saving !== null ? 'default' : 'pointer', transition: 'all 0.2s', boxSizing: 'content-box' as const }}>
-              {checked[i] && <Check size={12} color="#fff" strokeWidth={3} />}
-              {saving === i && <div style={{ width: 8, height: 8, borderRadius: '50%', border: '2px solid #e8e0d5', borderTopColor: P, animation: 'spin 0.6s linear infinite' }} />}
+              style={{ width: 32, height: 32, minWidth: 32, minHeight: 32, padding: 0, flexShrink: 0, borderRadius: '50%', border: `2.5px solid ${checked[i] ? '#22c55e' : saving === i ? Pmuted : '#c5c0b1'}`, background: checked[i] ? '#22c55e' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: checked[i] || saving !== null ? 'default' : 'pointer', transition: 'all 0.2s', boxSizing: 'border-box' as const }}>
+              {checked[i] && <Check size={14} color="#fff" strokeWidth={3} />}
+              {saving === i && <div style={{ width: 10, height: 10, borderRadius: '50%', border: '2px solid #e8e0d5', borderTopColor: P, animation: 'spin 0.6s linear infinite' }} />}
             </button>
 
             {/* Impact badge */}
@@ -4913,6 +4913,9 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
   const [qError,               setQError]               = useState('')
   const [refreshesToday,       setRefreshesToday]       = useState(0)
   const [showResearchSources,  setShowResearchSources]  = useState(false)
+  const [sendingEmail,         setSendingEmail]         = useState(false)
+  const [emailSent,            setEmailSent]            = useState(false)
+  const [emailError,           setEmailError]           = useState('')
 
   const [, setTick]                                     = useState(0)
   const refreshLock = useRef(false)
@@ -4987,6 +4990,34 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
       setAnswers(prev => [{ q, a: d.answer, sources: d.sources, sourceUrls: d.sourceUrls }, ...prev])
     } catch { setQError('Something went wrong. Please try again.') }
     finally { setQuestionLoading(false) }
+  }
+
+  async function handleSendEmail() {
+    if (sendingEmail || emailSent) return
+    setSendingEmail(true); setEmailError('')
+    try {
+      const res = await fetch('/api/intelligence/send-email', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user.email }),
+      })
+      if (res.ok) {
+        setEmailSent(true)
+        setTimeout(() => setEmailSent(false), 5000)
+      } else {
+        const d = await res.json().catch(() => ({})) as { error?: string; message?: string }
+        if (res.status === 429) {
+          setEmailError(d.message ?? 'Already sent recently. Try again later.')
+        } else {
+          setEmailError('Could not send. Please try again.')
+        }
+        setTimeout(() => setEmailError(''), 5000)
+      }
+    } catch {
+      setEmailError('Could not send — check your connection.')
+      setTimeout(() => setEmailError(''), 5000)
+    } finally {
+      setSendingEmail(false)
+    }
   }
 
   const SUGGESTED = [
@@ -5265,6 +5296,27 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
                   ))}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Send to inbox — only when there's a briefing and user is on paid tier */}
+          {briefing && tier !== 'free' && (
+            <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+              <p style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.35)', margin: 0 }}>
+                Send this briefing to {user.email}
+              </p>
+              <button
+                onClick={handleSendEmail}
+                disabled={sendingEmail || emailSent}
+                style={{ display: 'flex', alignItems: 'center', gap: 7, background: emailSent ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.08)', color: emailSent ? '#4ade80' : 'rgba(255,255,255,0.7)', border: `1px solid ${emailSent ? 'rgba(34,197,94,0.3)' : 'rgba(255,255,255,0.12)'}`, borderRadius: 8, padding: '7px 14px', fontFamily: fontB, fontSize: 12, fontWeight: 600, cursor: sendingEmail || emailSent ? 'default' : 'pointer', transition: 'all 0.2s', whiteSpace: 'nowrap' as const }}>
+                {sendingEmail
+                  ? <><RefreshCw size={12} style={{ animation: 'spin 1s linear infinite' }} /> Sending…</>
+                  : emailSent
+                  ? <><Check size={12} /> Sent to your inbox</>
+                  : <><Send size={12} /> Send to inbox</>
+                }
+              </button>
+              {emailError && <p style={{ fontFamily: fontB, fontSize: 11, color: '#f87171', margin: 0, width: '100%' }}>{emailError}</p>}
             </div>
           )}
         </div>
