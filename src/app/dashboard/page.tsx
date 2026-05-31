@@ -1475,13 +1475,19 @@ function WasteTicker({ diag, report, currency, score, scoreDelta, onTabChange }:
   const band = score !== null ? scoreBand(score) : null
 
   return (
-    <div style={{
+    <>
+      <style>{`
+        .waste-ticker-grid { display: grid; grid-template-columns: 1fr 1fr; }
+        @media (max-width: 639px) {
+          .waste-ticker-grid { grid-template-columns: 1fr; }
+          .waste-ticker-grid > div:first-child { border-right: none !important; border-bottom: 1px solid rgba(255,255,255,0.07); }
+        }
+      `}</style>
+    <div className="waste-ticker-grid" style={{
       background: 'linear-gradient(135deg,#0d0806 0%,#201515 100%)',
       borderRadius: 14,
       overflow: 'hidden',
       boxShadow: '0 4px 24px rgba(201,192,177,0.18)',
-      display: 'grid',
-      gridTemplateColumns: '1fr 1fr',
     }}>
       {/* LEFT — the leak */}
       <div style={{ padding: '28px 28px 24px', borderRight: '1px solid rgba(255,255,255,0.07)' }}>
@@ -1565,6 +1571,7 @@ function WasteTicker({ diag, report, currency, score, scoreDelta, onTabChange }:
         </button>
       </div>
     </div>
+    </>
   )
 }
 
