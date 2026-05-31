@@ -4804,27 +4804,28 @@ function InsightCard({ insight }: { insight: MarketInsight }) {
   const cfg = iconConfig[insight.type]
 
   return (
-    <div style={{ background: '#f8f4f0', border: '1px solid rgba(201,192,177,0.3)', borderRadius: 16, padding: '20px 24px', marginBottom: 12 }}>
-      <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+    <div style={{ background: '#f8f4f0', border: '1px solid rgba(201,192,177,0.3)', borderRadius: 16, padding: 'clamp(14px,3vw,20px) clamp(16px,3vw,24px)', marginBottom: 12, overflow: 'hidden' }}>
+      <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
         <div style={{ width: 34, height: 34, borderRadius: '50%', background: cfg.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           {cfg.icon}
         </div>
-        <div style={{ flex: 1 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 6 }}>
-            <p style={{ fontFamily: "'PolySans Median', system-ui", fontSize: 14, fontWeight: 700, color: '#201515', margin: 0, lineHeight: 1.3 }}>{insight.title}</p>
-            <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          {/* Title row: source wraps below on mobile */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: '4px 8px', marginBottom: 8 }}>
+            <p style={{ fontFamily: "'PolySans Median', system-ui", fontSize: 14, fontWeight: 700, color: '#201515', margin: 0, lineHeight: 1.35, flex: '1 1 180px' }}>{insight.title}</p>
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
               {insight.source && (
-                <span style={{ fontFamily: "'PolySans Neutral', system-ui", fontSize: 10, fontWeight: 700, background: '#fffefb', color: '#605d52', padding: '2px 8px', borderRadius: 100, whiteSpace: 'nowrap' }}>
+                <span style={{ fontFamily: "'PolySans Neutral', system-ui", fontSize: 10, fontWeight: 700, background: '#fffefb', color: '#605d52', padding: '2px 8px', borderRadius: 100, maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
                   {insight.sourceUrl
                     ? <a href={insight.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#605d52', textDecoration: 'underline', cursor: 'pointer' }}>{insight.source}</a>
                     : insight.source
                   }
                 </span>
               )}
-              <span style={{ fontFamily: "'PolySans Neutral', system-ui", fontSize: 10, color: '#939084' }}>{insight.timeLabel}</span>
+              <span style={{ fontFamily: "'PolySans Neutral', system-ui", fontSize: 10, color: '#939084', whiteSpace: 'nowrap' }}>{insight.timeLabel}</span>
             </div>
           </div>
-          <p style={{ fontFamily: "'PolySans Neutral', system-ui", fontSize: 13, color: '#605d52', margin: 0, lineHeight: 1.6 }}>{insight.body}</p>
+          <p style={{ fontFamily: "'PolySans Neutral', system-ui", fontSize: 13, color: '#605d52', margin: 0, lineHeight: 1.6, wordBreak: 'break-word' as const }}>{insight.body}</p>
           {insight.implication && (
             <div style={{ marginTop: 10, background: '#fffefb', borderRadius: 8, padding: '8px 12px' }}>
               <span style={{ fontFamily: "'PolySans Neutral', system-ui", fontSize: 12, fontWeight: 700, color: '#201515' }}>What this means for you: </span>
@@ -4832,7 +4833,7 @@ function InsightCard({ insight }: { insight: MarketInsight }) {
             </div>
           )}
           {insight.recommendation && (
-            <p style={{ fontFamily: "'PolySans Neutral', system-ui", fontSize: 12, fontWeight: 600, color: '#22c55e', margin: '8px 0 0' }}>→ {insight.recommendation}</p>
+            <p style={{ fontFamily: "'PolySans Neutral', system-ui", fontSize: 12, fontWeight: 600, color: '#22c55e', margin: '8px 0 0', wordBreak: 'break-word' as const }}>→ {insight.recommendation}</p>
           )}
         </div>
       </div>
