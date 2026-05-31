@@ -1,6 +1,6 @@
 import { Resend } from 'resend'
 
-const FROM = 'ICP Diagnostic <noreply@idealicp.com>'
+const FROM = 'Ideal ICP <noreply@idealicp.com>'
 
 function escapeHtml(s: string): string {
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;')
@@ -109,7 +109,7 @@ function base(content: string, opts: { loginBtn?: boolean } = { loginBtn: true }
   const showLogin = opts.loginBtn !== false
   return `<!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ICP Diagnostic</title></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ideal ICP</title></head>
 <body style="margin:0;padding:0;background-color:${Warm};font-family:${font};">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:${Warm};">
     <tr><td align="center" style="padding:40px 20px 60px;">
@@ -122,7 +122,7 @@ function base(content: string, opts: { loginBtn?: boolean } = { loginBtn: true }
               <td style="vertical-align:middle;">
                 <table cellpadding="0" cellspacing="0"><tr>
                   <td style="width:22px;height:22px;background:${Orange};vertical-align:middle;font-size:0;"></td>
-                  <td style="padding-left:9px;vertical-align:middle;font-size:15px;font-weight:700;color:${Dark};font-family:${font};letter-spacing:-0.3px;">ICP Diagnostic</td>
+                  <td style="padding-left:9px;vertical-align:middle;font-size:15px;font-weight:700;color:${Dark};font-family:${font};letter-spacing:-0.3px;">Ideal ICP</td>
                 </tr></table>
               </td>
               ${showLogin ? `<td align="right" style="vertical-align:middle;">
@@ -147,7 +147,7 @@ function base(content: string, opts: { loginBtn?: boolean } = { loginBtn: true }
               <td style="vertical-align:middle;">
                 <table cellpadding="0" cellspacing="0"><tr>
                   <td style="width:18px;height:18px;background:${Orange};font-size:0;vertical-align:middle;"></td>
-                  <td style="padding-left:8px;font-size:13px;font-weight:700;color:${Dark};font-family:${font};">ICP Diagnostic</td>
+                  <td style="padding-left:8px;font-size:13px;font-weight:700;color:${Dark};font-family:${font};">Ideal ICP</td>
                 </tr></table>
               </td>
               <td align="right" style="vertical-align:middle;">
@@ -158,14 +158,14 @@ function base(content: string, opts: { loginBtn?: boolean } = { loginBtn: true }
             <!-- Footer row 2: Copyright + links -->
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;padding-top:20px;border-top:1px solid ${BorderLight};"><tr>
               <td style="font-size:12px;color:${Muted};font-family:${font};line-height:1.6;">
-                &copy; ${new Date().getFullYear()} ICP Diagnostic. All rights reserved.<br>Nairobi, Kenya
+                &copy; ${new Date().getFullYear()} Ideal ICP. All rights reserved.<br>Nairobi, Kenya
               </td>
             </tr></table>
 
             <!-- Footer row 3: Fine print -->
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;padding-top:16px;border-top:1px solid ${BorderLight};"><tr>
               <td align="center" style="font-size:12px;color:rgba(24,17,10,0.35);font-family:${font};line-height:1.7;">
-                You received this because you have an account with ICP Diagnostic.<br>
+                You received this because you have an account with Ideal ICP.<br>
                 <a href="https://idealicp.com/privacy" style="color:rgba(24,17,10,0.4);text-decoration:underline;font-family:${font};">Privacy policy</a>
                 &nbsp;&nbsp;&middot;&nbsp;&nbsp;
                 <a href="https://idealicp.com/dashboard" style="color:rgba(24,17,10,0.4);text-decoration:underline;font-family:${font};">Manage account</a>
@@ -236,7 +236,7 @@ export async function sendWelcomeEmail({
 
   const content = `
 ${ICON.check}
-${heading('Your ICP Diagnostic is ready')}
+${heading('Your Ideal ICP is ready')}
 ${sub(`Hi ${first}, your report has been generated. Here is what is inside.`)}
 ${infoCard(`<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
   ${items.map(([label, desc], i) => `<tr><td style="padding:10px 0;${i < items.length - 1 ? `border-bottom:1px solid ${BorderLight};` : ''}">
@@ -249,7 +249,7 @@ ${cta('View Your Report', url)}
 
   const { data, error } = await getResend().emails.send({
     from: FROM, to,
-    subject: 'Your ICP Diagnostic is ready',
+    subject: 'Your Ideal ICP is ready',
     html: base(content),
   })
   if (error) console.error('[email] welcome error:', JSON.stringify(error))
@@ -291,7 +291,7 @@ ${cta('Go to Your Dashboard', url)}`
 
   const { data, error } = await getResend().emails.send({
     from: FROM, to,
-    subject: `Welcome to ICP Diagnostic, Your ${tierLabel} dashboard is ready`,
+    subject: `Welcome to Ideal ICP, Your ${tierLabel} dashboard is ready`,
     html: base(content),
   })
   if (error) console.error('[email] subscription error:', JSON.stringify(error))
@@ -917,7 +917,7 @@ export async function sendAccountCreatedEmail({
 
   const content = `
 ${ICON.shield}
-${heading('Welcome to ICP Diagnostic.')}
+${heading('Welcome to Ideal ICP.')}
 ${sub(`Hi ${first}, your account is ready. Run your first ICP diagnostic and see exactly where you are losing revenue.`)}
 ${infoCard(`<p style="margin:0 0 14px;color:${Orange};font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;font-family:${font};">What you get with a free diagnostic</p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
@@ -935,7 +935,7 @@ ${cta('Run your free diagnostic', url)}`
 
   const { data, error } = await getResend().emails.send({
     from: FROM, to,
-    subject: 'Welcome to ICP Diagnostic',
+    subject: 'Welcome to Ideal ICP',
     html: base(content),
   })
   if (error) console.error('[email] account-created error:', JSON.stringify(error))

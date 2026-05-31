@@ -4,8 +4,8 @@ import { Target, AlertTriangle, TrendingDown, BrainCircuit, Brain, Users, Eye, Z
 import SessionNavButton from '@/components/SessionNavButton'
 
 export const metadata: Metadata = {
-  title: 'About ICP Diagnostic, Built by Media Buyers, for Marketers',
-  description: 'ICP Diagnostic was built by performance media buyers with $2M+ in ad spend managed. Learn about our team, our mission, and why we built the only ICP diagnostic platform built specifically for African and emerging markets.',
+  title: 'About Ideal ICP, Built by Media Buyers, for Marketers',
+  description: 'Ideal ICP was built by performance media buyers with $2M+ in ad spend managed. Learn about our team, our mission, and why we built the only ICP diagnostic platform built specifically for African and emerging markets.',
 }
 
 export const dynamic = 'force-static'
@@ -37,7 +37,7 @@ export default function AboutPage() {
         }}>
           <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
             <div style={{ width: 28, height: 28, background: Orange, flexShrink: 0 }} />
-            <span style={{ fontFamily: font, fontWeight: 700, fontSize: 16, color: '#fff' }}>ICP Diagnostic</span>
+            <span style={{ fontFamily: font, fontWeight: 700, fontSize: 16, color: '#fff' }}>Ideal ICP</span>
           </Link>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 28 }} className="hidden md:flex">
@@ -68,7 +68,7 @@ export default function AboutPage() {
           </h1>
 
           <p style={{ fontFamily: fontB, fontSize: 18, color: 'rgba(255,255,255,0.6)', maxWidth: 600, margin: '0 auto', lineHeight: 1.65 }}>
-            ICP Diagnostic was built by performance media buyers who spent years diagnosing the same problems over and over. We decided to build the tool we always wished existed.
+            Ideal ICP was built by performance media buyers who spent years diagnosing the same problems over and over. We decided to build the tool we always wished existed.
           </p>
 
           {/* Stat chips */}
@@ -263,7 +263,7 @@ export default function AboutPage() {
             "Every business deserves to know exactly where their marketing is breaking, before they spend another shilling finding out the hard way."
           </p>
           <p style={{ fontFamily: fontB, fontSize: 16, color: 'rgba(255,255,255,0.35)', margin: '0 0 48px' }}>
-           , The ICP Diagnostic Team
+           , The Ideal ICP Team
           </p>
           <Link href="/questionnaire" style={{ fontFamily: font, fontWeight: 700, fontSize: 15, color: '#fff', background: Orange, padding: '16px 32px', borderRadius: 6, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
             Get Your Free Diagnosis
@@ -278,7 +278,7 @@ export default function AboutPage() {
 
           <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
             <div style={{ width: 28, height: 28, background: Orange, flexShrink: 0 }} />
-            <span style={{ fontFamily: font, fontWeight: 700, fontSize: 15, color: Dark }}>ICP Diagnostic</span>
+            <span style={{ fontFamily: font, fontWeight: 700, fontSize: 15, color: Dark }}>Ideal ICP</span>
           </Link>
 
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24 }}>
@@ -298,7 +298,7 @@ export default function AboutPage() {
           </div>
 
           <p style={{ fontFamily: fontB, fontSize: 13, color: Muted, margin: 0 }}>
-            &copy; {new Date().getFullYear()} ICP Diagnostic. Built for African and emerging markets.
+            &copy; {new Date().getFullYear()} Ideal ICP. Built for African and emerging markets.
           </p>
         </div>
       </footer>

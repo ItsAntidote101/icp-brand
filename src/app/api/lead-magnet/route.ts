@@ -69,7 +69,7 @@ async function sendCalculatorEmail(to: string, wasteEstimate: number) {
 
 <table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:28px;"><tr>
   <td style="background-color:#6366f1;border-radius:12px;">
-    <a href="${BASE}/questionnaire" style="display:inline-block;padding:14px 28px;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;letter-spacing:-0.2px;">Get Your Free ICP Diagnostic →</a>
+    <a href="${BASE}/questionnaire" style="display:inline-block;padding:14px 28px;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;letter-spacing:-0.2px;">Get Your Free Ideal ICP →</a>
   </td>
 </tr></table>`
 
@@ -112,7 +112,7 @@ async function sendChecklistEmail(to: string) {
 <p style="margin:0 0 6px;color:#9ca3af;font-size:14px;line-height:1.7;">Once you've run through the checklist, get an AI to audit your landing page automatically.</p>
 <table role="presentation" cellpadding="0" cellspacing="0"><tr>
   <td style="border:1px solid rgba(99,102,241,0.4);border-radius:12px;">
-    <a href="${BASE}/questionnaire" style="display:inline-block;padding:12px 24px;color:#a5b4fc;font-size:14px;font-weight:600;text-decoration:none;">Get Your Free ICP Diagnostic</a>
+    <a href="${BASE}/questionnaire" style="display:inline-block;padding:12px 24px;color:#a5b4fc;font-size:14px;font-weight:600;text-decoration:none;">Get Your Free Ideal ICP</a>
   </td>
 </tr></table>`
 

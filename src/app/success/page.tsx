@@ -22,7 +22,7 @@ const TIER_FEATURES: Record<string, string[]> = {
   ],
   pro: [
     'Everything in Starter',
-    'Live landing page audit (AI visits your URL)',
+    'Live landing page audit (our system visits your URL)',
     'Competitor positioning and regional benchmarks',
     'Monthly strategy session with a B2B media buyer',
   ],

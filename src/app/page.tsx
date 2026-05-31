@@ -76,7 +76,7 @@ const TIERS = [
 const FAQS = [
   {
     q: 'What is the difference between free and paid?',
-    a: 'The free report diagnoses your ICP based on your questionnaire answers and gives you your health score, top 3 findings, and quick wins. The paid report goes further: our AI visits your actual landing page, researches your competitors, and benchmarks your metrics with live regional data.',
+    a: 'The free report diagnoses your ICP based on your questionnaire answers and gives you your health score, top 3 findings, and quick wins. The paid report goes further: our team visits your actual landing page, researches your competitors, and benchmarks your metrics with live regional data.',
   },
   {
     q: 'Do you need my ad account access?',
@@ -212,7 +212,7 @@ function DiagStage2({ animKey }: { animKey: number }) {
     <div key={animKey} style={{ border: '1.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)', borderRadius: 4, overflow: 'hidden' }}>
       <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.07)', background: 'rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', gap: 8 }}>
         <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#e8330a', animation: 'diagPulse 1s ease infinite' }} />
-        <span style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>AI engine running — analysing your ICP</span>
+        <span style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>Scoring and benchmarking your ICP</span>
       </div>
       <div style={{ padding: '20px 24px', display: 'flex', gap: 24, alignItems: 'center' }}>
         {/* Score circle */}
@@ -344,7 +344,7 @@ function DiagnosticAnimation() {
 
   const steps = [
     { num: '01', label: 'Answer 22 questions',  sub: '5 minutes · no ad account access' },
-    { num: '02', label: 'AI scores your ICP',   sub: 'Live web intelligence · benchmarked' },
+    { num: '02', label: 'Your ICP gets scored and benchmarked', sub: 'Expert scoring · benchmarked against your market' },
     { num: '03', label: 'Get your report',       sub: 'Instant · reviewed by a media buyer' },
   ]
 
@@ -704,7 +704,7 @@ export default function Page() {
         <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 60 }}>
           <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 9, textDecoration: 'none' }}>
             <div style={{ width: 26, height: 26, borderRadius: 6, background: Orange, flexShrink: 0 }} />
-            <span style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: Text }}>ICP Diagnostic</span>
+            <span style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: Text }}>Ideal ICP</span>
           </Link>
           <div className="hidden md:flex" style={{ gap: 28 }}>
             {[['How It Works', '#how-it-works'], ['Results', '#results'], ['Pricing', '/pricing'], ['FAQ', '#faq']].map(([label, href]) => (
@@ -759,7 +759,7 @@ export default function Page() {
       <section style={{ background: Warm, borderBottom: `1.5px solid ${Border}` }}>
         {/* Headline + CTA — centred */}
         <div style={{ maxWidth: 760, margin: '0 auto', padding: 'clamp(56px,9vw,112px) clamp(20px,5vw,40px) clamp(40px,6vw,72px)', textAlign: 'center' }}>
-          <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 20px' }}>ICP Diagnostic Tool</p>
+          <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 20px' }}>Ideal ICP Tool</p>
           <h1 style={{ fontFamily: fontSerif, fontSize: 'clamp(36px,5.5vw,68px)', fontWeight: 700, color: Text, lineHeight: 1.06, margin: '0 0 24px', letterSpacing: '-0.03em' }}>
             Your targeting is{' '}
             <span style={{ color: Orange }}>leaking money.</span>
@@ -1017,7 +1017,7 @@ export default function Page() {
             {/* Description */}
             <div style={{ padding: 'clamp(28px,4vw,56px)', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 24 }}>
               <p style={{ fontFamily: fontSerif, fontSize: 'clamp(18px,2.5vw,26px)', color: '#fff', lineHeight: 1.45, margin: 0, fontWeight: 600 }}>
-                ICP Diagnostic is where B2B marketers stop guessing and start knowing. Real answers from your numbers, benchmarked against your market.
+                Ideal ICP is where B2B marketers stop guessing and start knowing. Real answers from your numbers, benchmarked against your market.
               </p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'clamp(16px,3vw,32px)' }}>
                 {[['78%', 'of businesses have critical targeting gaps'], ['5 min', 'to a complete ICP health score']].map(([val, label]) => (
@@ -1689,7 +1689,7 @@ export default function Page() {
           <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 24, alignItems: 'center' }}>
             <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 9, textDecoration: 'none' }}>
               <div style={{ width: 24, height: 24, borderRadius: 6, background: Orange, flexShrink: 0 }} />
-              <span style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: '#fff' }}>ICP Diagnostic</span>
+              <span style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: '#fff' }}>Ideal ICP</span>
             </Link>
             <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'center' }}>
               {[['About', '/about'], ['Privacy', '/privacy'], ['Terms', '/terms'], ['Contact', 'mailto:info@idealicp.com']].map(([label, href]) => (
@@ -1698,7 +1698,7 @@ export default function Page() {
             </div>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, alignItems: 'center', borderTop: `1.5px solid ${DarkBorder}`, paddingTop: 20 }}>
-            <span style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.22)' }}>2026 ICP Diagnostic. All rights reserved.</span>
+            <span style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.22)' }}>2026 Ideal ICP. All rights reserved.</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               {[
                 { src: '/images/logos/paystack-logo_1.png',                alt: 'Paystack',    h: 15 },

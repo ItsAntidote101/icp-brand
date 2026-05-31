@@ -168,7 +168,7 @@ export async function POST(req: NextRequest) {
       : `Their ICP score is ${latestScore}/100.`
     : 'They have not yet run a full diagnosis.'
 
-  const systemPrompt = `You are ${buyer.name}, ${buyer.title} at ICP Diagnostic. You are writing a brief monthly check-in message to one of your assigned clients. Write in a direct, professional, warm tone. No generic phrases like "I hope this finds you well." No em dashes or en dashes. No emojis. Keep it under 120 words. Sound like a real person who has reviewed their account data.`
+  const systemPrompt = `You are ${buyer.name}, ${buyer.title} at Ideal ICP. You are writing a brief monthly check-in message to one of your assigned clients. Write in a direct, professional, warm tone. No generic phrases like "I hope this finds you well." No em dashes or en dashes. No emojis. Keep it under 120 words. Sound like a real person who has reviewed their account data.`
 
   const userPrompt = `Write a monthly check-in message for ${monthName} for a client named ${firstName}${user.company_name ? ` at ${user.company_name}` : ''}. They are in the ${industry} industry in ${region}${product ? `, selling ${product}` : ''}. ${scoreLine} Your name is ${buyer.firstName} and your role is ${buyer.title}. The message should acknowledge their current score context, note one specific thing you want them to focus on this month based on the industry/region, and invite them to book a call if they want to go deeper. Sign off with your first name only. Return plain text only, no JSON, no markdown.`
 

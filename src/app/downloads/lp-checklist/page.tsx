@@ -89,7 +89,7 @@ export default function LPChecklistPage() {
       <div className="no-print" style={{ borderBottom: `1.5px solid ${Border}`, padding: '14px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, background: 'rgba(250,246,239,0.96)', backdropFilter: 'blur(12px)', zIndex: 10 }}>
         <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 9, textDecoration: 'none' }}>
           <div style={{ width: 24, height: 24, background: Orange }} />
-          <span style={{ fontFamily: font, fontWeight: 700, fontSize: 15, color: Dark }}>ICP Diagnostic</span>
+          <span style={{ fontFamily: font, fontWeight: 700, fontSize: 15, color: Dark }}>Ideal ICP</span>
         </Link>
         <button onClick={() => window.print()}
           style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: 'none', border: `1.5px solid ${Border}`, padding: '11px 18px', minHeight: 44, fontFamily: fontB, fontSize: 13, fontWeight: 600, color: Dark, cursor: 'pointer' }}>
@@ -165,10 +165,10 @@ export default function LPChecklistPage() {
         {/* Bottom CTA */}
         <div className="no-print" style={{ background: Dark, padding: 'clamp(32px,4vw,48px)', textAlign: 'center' }}>
           <p style={{ fontFamily: font, fontSize: 'clamp(20px,3vw,26px)', fontWeight: 700, color: '#fff', margin: '0 0 12px', lineHeight: 1.2, letterSpacing: '-0.02em' }}>
-            Want our AI to audit your landing page automatically?
+            Want our team to audit your landing page automatically?
           </p>
           <p style={{ fontFamily: fontB, fontSize: 15, color: 'rgba(255,255,255,0.6)', margin: '0 0 28px', lineHeight: 1.6 }}>
-            The ICP Diagnostic visits your landing page, scores it on 6 dimensions, and tells you exactly what to fix first.
+            The Ideal ICP visits your landing page, scores it on 6 dimensions, and tells you exactly what to fix first.
           </p>
           <Link href="/questionnaire"
             style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: Orange, color: '#fff', textDecoration: 'none', fontFamily: font, fontWeight: 700, fontSize: 15, padding: '14px 30px', borderRadius: 6 }}>

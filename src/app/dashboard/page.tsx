@@ -3987,7 +3987,7 @@ function AccountTab({ user, currency, score, reportCount, reports, onSignOut, on
 
   function handleWhatsAppRef() {
     if (!refShareUrl) return
-    const text = encodeURIComponent(`Hey, I've been using this ICP Diagnostic tool to find where my ad targeting is leaking money. Here's a link to get your free score: ${refShareUrl}`)
+    const text = encodeURIComponent(`Hey, I've been using this Ideal ICP tool to find where my ad targeting is leaking money. Here's a link to get your free score: ${refShareUrl}`)
     window.open(`https://wa.me/?text=${text}`, '_blank')
   }
 
@@ -6201,7 +6201,7 @@ export default function DashboardPage() {
         <div style={{ padding: '24px 20px 20px', borderBottom: `1px solid ${Pborder}` }}>
           <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 9, textDecoration: 'none' }}>
             <div style={{ width: 28, height: 28, borderRadius: 4, background: '#e8330a', flexShrink: 0 }} />
-            <span style={{ fontFamily: font, fontWeight: 700, fontSize: 15, color: P }}>ICP Diagnostic</span>
+            <span style={{ fontFamily: font, fontWeight: 700, fontSize: 15, color: P }}>Ideal ICP</span>
           </Link>
         </div>
 

@@ -83,7 +83,7 @@ const PLANS = [
     desc: 'For growing teams that need deep research, competitive intelligence, and campaign-level precision.',
     includes: [
       'Everything in Starter',
-      'Live landing page audit (AI visits your URL)',
+      'Live landing page audit (our system visits your URL)',
       'Competitor positioning analysis',
       'Regional benchmark comparison',
       'Ad copy and CTA audit',
@@ -140,7 +140,7 @@ const COMPARISON: Group[] = [
   {
     group: 'Deep Research (AI-Powered)',
     rows: [
-      { feature: 'Live landing page audit',           cells: [false, false, true, true], note: 'AI visits your actual URL and scores it' },
+      { feature: 'Live landing page audit',           cells: [false, false, true, true], note: 'Our system visits your actual URL and scores it' },
       { feature: 'Competitor positioning analysis',   cells: [false, false, true, true] },
       { feature: 'Regional benchmark comparison',     cells: [false, false, true, true] },
       { feature: 'Ad copy and CTA effectiveness',     cells: [false, false, true, true] },
@@ -260,7 +260,7 @@ export default function PricingPage() {
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 clamp(16px,4vw,40px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 60 }}>
           <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
             <div style={{ width: 28, height: 28, background: Orange, borderRadius: 4, flexShrink: 0 }} />
-            <span style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: Dark }}>ICP Diagnostic</span>
+            <span style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: Dark }}>Ideal ICP</span>
           </Link>
           <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
             <Link href="/" style={{ fontFamily: fontB, fontSize: 14, color: Muted, textDecoration: 'none' }}>Home</Link>
@@ -450,7 +450,7 @@ export default function PricingPage() {
             {[
               { Icon: Target,       title: 'ICP Foundation',          body: 'Who you are targeting, whether your personas match real buyers, and whether your funnel is designed for them.', tier: 'All plans' },
               { Icon: BarChart2,    title: 'Funnel and Metrics',      body: 'Your close rate, CAC, LTV, and how your monthly budget maps to qualified outcomes versus wasted spend.', tier: 'All plans' },
-              { Icon: FileText,     title: 'Landing Page Audit',      body: 'Our AI visits your actual URL, scores your copy, CTA, trust signals, and conversion friction points in real time.', tier: 'Pro and Agency' },
+              { Icon: FileText,     title: 'Landing Page Audit',      body: 'Our system visits your actual URL, scores your copy, CTA, trust signals, and conversion friction points in real time.', tier: 'Pro and Agency' },
               { Icon: Brain,        title: 'Competitive Intelligence', body: 'We research your top 3 competitors, identify their positioning gaps, and benchmark your metrics against your real market.', tier: 'Pro and Agency' },
               { Icon: TrendingDown, title: 'CAC and LTV Projections', body: 'Your exact cost per customer before and after ICP fixes, your LTV:CAC ratio, and the monthly revenue you recover.', tier: 'All plans' },
               { Icon: Users,        title: 'Human Strategy Layer',    body: 'Every diagnosis is reviewed by a B2B media buyer — included free. Pro adds a monthly strategy session with one practitioner. Agency gets the full team actively working on your accounts.', tier: 'All plans' },

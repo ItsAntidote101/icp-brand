@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy | ICP Diagnostic',
-  description: 'How ICP Diagnostic collects, uses, and protects your personal information.',
+  title: 'Privacy Policy | Ideal ICP',
+  description: 'How Ideal ICP collects, uses, and protects your personal information.',
   alternates: { canonical: '/privacy' },
 }
 
@@ -39,7 +39,7 @@ export default function PrivacyPage() {
       }}>
         <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
           <div style={{ width: 28, height: 28, background: '#e8330a', flexShrink: 0 }} />
-          <span style={{ fontFamily: font, fontWeight: 700, fontSize: 16, color: '#fff' }}>ICP Diagnostic</span>
+          <span style={{ fontFamily: font, fontWeight: 700, fontSize: 16, color: '#fff' }}>Ideal ICP</span>
         </Link>
         <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
           <Link href="/terms" style={{ fontFamily: fontB, fontSize: 13, color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>Terms</Link>
@@ -68,7 +68,7 @@ export default function PrivacyPage() {
       <div style={{ maxWidth: 760, margin: '0 auto', padding: 'clamp(40px,6vw,72px) clamp(16px,4vw,24px) clamp(64px,8vw,120px)' }}>
 
         <Section title="1. Who We Are">
-          <Para>ICP Diagnostic operates the website idealicp.com and the ICP Diagnostic platform. We are based in Nairobi, Kenya. For any privacy-related questions, contact us at <a href="mailto:support@idealicp.com" style={{ color: P, fontWeight: 600 }}>support@idealicp.com</a>.</Para>
+          <Para>Ideal ICP operates the website idealicp.com and the Ideal ICP platform. We are based in Nairobi, Kenya. For any privacy-related questions, contact us at <a href="mailto:support@idealicp.com" style={{ color: P, fontWeight: 600 }}>support@idealicp.com</a>.</Para>
         </Section>
 
         <Section title="2. Information We Collect">
@@ -169,11 +169,11 @@ export default function PrivacyPage() {
         </Section>
 
         <Section title="10. Children's Privacy">
-          <Para>ICP Diagnostic is not directed at children under 18. We do not knowingly collect personal information from anyone under 18. If you believe a child has provided us with personal data, please contact us and we will delete it promptly.</Para>
+          <Para>Ideal ICP is not directed at children under 18. We do not knowingly collect personal information from anyone under 18. If you believe a child has provided us with personal data, please contact us and we will delete it promptly.</Para>
         </Section>
 
         <Section title="11. International Transfers">
-          <Para>ICP Diagnostic is based in Kenya, but some of our service providers (Supabase, Resend, Paystack) store and process data in other countries, including the United States and the European Union. By using the platform, you acknowledge that your data may be transferred internationally. We ensure that such providers have appropriate data protection safeguards in place.</Para>
+          <Para>Ideal ICP is based in Kenya, but some of our service providers (Supabase, Resend, Paystack) store and process data in other countries, including the United States and the European Union. By using the platform, you acknowledge that your data may be transferred internationally. We ensure that such providers have appropriate data protection safeguards in place.</Para>
         </Section>
 
         <Section title="12. Links to Other Websites">
@@ -195,7 +195,7 @@ export default function PrivacyPage() {
             lineHeight: 1.8,
             color: Pmuted,
           }}>
-            <strong style={{ color: P, display: 'block', marginBottom: 4 }}>ICP Diagnostic</strong>
+            <strong style={{ color: P, display: 'block', marginBottom: 4 }}>Ideal ICP</strong>
             Nairobi, Kenya<br />
             <a href="mailto:support@idealicp.com" style={{ color: P, fontWeight: 600 }}>support@idealicp.com</a><br />
             <a href="https://idealicp.com" style={{ color: P }}>idealicp.com</a>
@@ -218,7 +218,7 @@ export default function PrivacyPage() {
           <Link href="/terms" style={{ color: Pmuted, textDecoration: 'none' }}>Terms</Link>
           <Link href="/about" style={{ color: Pmuted, textDecoration: 'none' }}>About</Link>
         </div>
-        <p style={{ margin: 0 }}>Copyright {new Date().getFullYear()} ICP Diagnostic. All rights reserved.</p>
+        <p style={{ margin: 0 }}>Copyright {new Date().getFullYear()} Ideal ICP. All rights reserved.</p>
       </footer>
     </div>
   )

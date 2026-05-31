@@ -354,7 +354,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
         <section className="fade-up flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 sm:gap-10 pb-8 sm:pb-10 border-b border-[#c5c0b1]">
           <div className="flex-1">
             <span className="inline-block text-[11px] font-semibold uppercase tracking-widest text-[#e8330a] bg-[rgba(232,51,10,0.08)] border border-[rgba(232,51,10,0.2)] px-3 py-1 rounded-full mb-4">
-              ICP Diagnostic Report
+              Ideal ICP Report
             </span>
             <h1 className="text-3xl sm:text-4xl font-extrabold text-[#201515] leading-tight mb-3">
               {report.health_score < 41

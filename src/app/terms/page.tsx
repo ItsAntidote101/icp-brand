@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Terms and Conditions | ICP Diagnostic',
-  description: 'Terms and conditions governing your use of ICP Diagnostic and idealicp.com.',
+  title: 'Terms and Conditions | Ideal ICP',
+  description: 'Terms and conditions governing your use of Ideal ICP and idealicp.com.',
   alternates: { canonical: '/terms' },
 }
 
@@ -39,7 +39,7 @@ export default function TermsPage() {
       }}>
         <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
           <div style={{ width: 28, height: 28, background: '#e8330a', flexShrink: 0 }} />
-          <span style={{ fontFamily: font, fontWeight: 700, fontSize: 16, color: '#fff' }}>ICP Diagnostic</span>
+          <span style={{ fontFamily: font, fontWeight: 700, fontSize: 16, color: '#fff' }}>Ideal ICP</span>
         </Link>
         <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
           <Link href="/privacy" style={{ fontFamily: fontB, fontSize: 13, color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>Privacy Policy</Link>
@@ -60,7 +60,7 @@ export default function TermsPage() {
           Terms and Conditions
         </h1>
         <p style={{ fontFamily: fontB, fontSize: 15, color: 'rgba(255,255,255,0.65)', maxWidth: 560, margin: '0 auto' }}>
-          Last updated: {LAST_UPDATED}. Please read these terms carefully before using ICP Diagnostic.
+          Last updated: {LAST_UPDATED}. Please read these terms carefully before using Ideal ICP.
         </p>
       </section>
 
@@ -72,8 +72,8 @@ export default function TermsPage() {
           <Para>These terms apply to all users, whether on the free tier or a paid subscription plan.</Para>
         </Section>
 
-        <Section title="2. About ICP Diagnostic">
-          <Para>ICP Diagnostic is a software-as-a-service platform that helps marketing teams identify their ideal customer profile, audit their targeting, and reduce wasted ad spend. The platform is operated by ICP Diagnostic, based in Nairobi, Kenya.</Para>
+        <Section title="2. About Ideal ICP">
+          <Para>Ideal ICP is a software-as-a-service platform that helps marketing teams identify their ideal customer profile, audit their targeting, and reduce wasted ad spend. The platform is operated by Ideal ICP, based in Nairobi, Kenya.</Para>
           <Para>You can reach us at <a href="mailto:info@idealicp.com" style={{ color: P, fontWeight: 600 }}>info@idealicp.com</a>.</Para>
         </Section>
 
@@ -87,7 +87,7 @@ export default function TermsPage() {
         </Section>
 
         <Section title="5. Subscription Plans and Billing">
-          <Para>ICP Diagnostic offers a free plan and paid subscription plans (Starter, Pro, and Agency). Paid plans are billed monthly or annually in Kenyan Shillings (KES) unless otherwise stated at checkout.</Para>
+          <Para>Ideal ICP offers a free plan and paid subscription plans (Starter, Pro, and Agency). Paid plans are billed monthly or annually in Kenyan Shillings (KES) unless otherwise stated at checkout.</Para>
           <Para>All payments are processed securely via Paystack. By subscribing, you authorise Paystack to charge your chosen payment method on a recurring basis at the rate displayed at the time of purchase.</Para>
           <Para>Prices may change at any time. We will give you at least 30 days notice before any price change applies to your existing subscription.</Para>
           <Para>Your subscription renews automatically at the end of each billing period. You may cancel at any time from your dashboard, and your access will continue until the end of the current paid period.</Para>
@@ -116,12 +116,12 @@ export default function TermsPage() {
         </Section>
 
         <Section title="9. Your Data and Content">
-          <Para>You retain ownership of any data, files, or content you upload to the platform (for example, CSV campaign exports). By uploading content, you grant ICP Diagnostic a limited licence to process that content solely for the purpose of generating your diagnostic reports and providing the service.</Para>
+          <Para>You retain ownership of any data, files, or content you upload to the platform (for example, CSV campaign exports). By uploading content, you grant Ideal ICP a limited licence to process that content solely for the purpose of generating your diagnostic reports and providing the service.</Para>
           <Para>We do not sell your data to third parties. See our <Link href="/privacy" style={{ color: P, fontWeight: 600 }}>Privacy Policy</Link> for full details on how we handle your information.</Para>
         </Section>
 
         <Section title="10. Intellectual Property">
-          <Para>All content, software, algorithms, report templates, and design elements on the platform are the property of ICP Diagnostic or its licensors. Nothing in these terms grants you any ownership of platform IP.</Para>
+          <Para>All content, software, algorithms, report templates, and design elements on the platform are the property of Ideal ICP or its licensors. Nothing in these terms grants you any ownership of platform IP.</Para>
           <Para>Reports generated for you are yours to use for your own business purposes. You may not reproduce or redistribute them commercially without permission.</Para>
         </Section>
 
@@ -131,11 +131,11 @@ export default function TermsPage() {
         </Section>
 
         <Section title="12. Disclaimer of Warranties">
-          <Para>ICP Diagnostic is provided on an "as is" and "as available" basis without warranties of any kind, either express or implied. We do not warrant that the platform will be uninterrupted, error-free, or that specific results will be achieved from using it.</Para>
+          <Para>Ideal ICP is provided on an "as is" and "as available" basis without warranties of any kind, either express or implied. We do not warrant that the platform will be uninterrupted, error-free, or that specific results will be achieved from using it.</Para>
         </Section>
 
         <Section title="13. Limitation of Liability">
-          <Para>To the maximum extent permitted by law, ICP Diagnostic and its directors, employees, and contractors shall not be liable for any indirect, incidental, consequential, or punitive damages arising from your use of the platform, including loss of revenue, data, or business opportunities.</Para>
+          <Para>To the maximum extent permitted by law, Ideal ICP and its directors, employees, and contractors shall not be liable for any indirect, incidental, consequential, or punitive damages arising from your use of the platform, including loss of revenue, data, or business opportunities.</Para>
           <Para>Our total liability to you for any claim arising out of these terms shall not exceed the total fees you paid to us in the 3 months preceding the claim.</Para>
         </Section>
 
@@ -167,7 +167,7 @@ export default function TermsPage() {
             lineHeight: 1.8,
             color: Pmuted,
           }}>
-            <strong style={{ color: P, display: 'block', marginBottom: 4 }}>ICP Diagnostic</strong>
+            <strong style={{ color: P, display: 'block', marginBottom: 4 }}>Ideal ICP</strong>
             Nairobi, Kenya<br />
             <a href="mailto:info@idealicp.com" style={{ color: P, fontWeight: 600 }}>info@idealicp.com</a><br />
             <a href="https://idealicp.com" style={{ color: P }}>idealicp.com</a>
@@ -190,7 +190,7 @@ export default function TermsPage() {
           <Link href="/terms" style={{ color: P, textDecoration: 'none', fontWeight: 600 }}>Terms</Link>
           <Link href="/about" style={{ color: Pmuted, textDecoration: 'none' }}>About</Link>
         </div>
-        <p style={{ margin: 0 }}>Copyright {new Date().getFullYear()} ICP Diagnostic. All rights reserved.</p>
+        <p style={{ margin: 0 }}>Copyright {new Date().getFullYear()} Ideal ICP. All rights reserved.</p>
       </footer>
     </div>
   )

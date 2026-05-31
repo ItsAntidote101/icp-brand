@@ -118,7 +118,7 @@ export async function GET(req: NextRequest) {
           } catch { /* noop */ }
 
           const firstName = user.full_name?.split(' ')[0] ?? 'there'
-          const prompt = `You are ${buyer.name}, ${buyer.title} at ICP Diagnostic. Your tone is ${buyer.tone}.
+          const prompt = `You are ${buyer.name}, ${buyer.title} at Ideal ICP. Your tone is ${buyer.tone}.
 
 Write a short, personal first message to ${firstName} (${user.email}) who just completed their ICP diagnostic${score !== null ? ` and scored ${score}/100` : ''}.
 
