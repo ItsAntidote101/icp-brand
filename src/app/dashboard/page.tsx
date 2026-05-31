@@ -6703,8 +6703,10 @@ export default function DashboardPage() {
 
                 {/* Priority action + Quick Wins — shown immediately after the waste hook */}
                 <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4 lg:gap-6">
-                  <TodaysPriorityCard diag={diag} report={latestReport} user={user} onComplete={setStreak} />
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                  <div style={{ minWidth: 0 }}>
+                    <TodaysPriorityCard diag={diag} report={latestReport} user={user} onComplete={setStreak} />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 14, minWidth: 0 }}>
                     <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 -4px' }}>THIS WEEK</p>
                     <EnhancedQuickWinsWidget diag={diag} user={user} onStreakUpdate={setStreak} maxWins={3} reportId={latestReport?.id} />
                     {score !== null && diag.score_predictions && diag.score_predictions.length > 0 && (
