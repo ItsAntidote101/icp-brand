@@ -1826,13 +1826,13 @@ function EnhancedQuickWinsWidget({ diag, user, onStreakUpdate, maxWins = 3, repo
       {wins.length === 0 && <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: 0 }}>No quick wins in this report.</p>}
 
       {badgeToast && (
-        <div style={{ position: 'fixed', bottom: 100, left: '50%', transform: 'translateX(-50%)', zIndex: 300, background: P, color: '#fff', fontFamily: fontB, fontSize: 13, fontWeight: 600, padding: '12px 22px', borderRadius: 100, boxShadow: '0 8px 32px #c5c0b1', whiteSpace: 'nowrap', animation: 'slideUp 0.25s ease both' }}>
+        <div style={{ position: 'fixed', bottom: 88, left: '50%', transform: 'translateX(-50%)', zIndex: 1200, background: P, color: '#fff', fontFamily: fontB, fontSize: 13, fontWeight: 600, padding: '12px 22px', borderRadius: 100, boxShadow: '0 8px 32px rgba(32,21,21,0.25)', maxWidth: 'calc(100vw - 48px)', textAlign: 'center', wordBreak: 'break-word', animation: 'slideUp 0.25s ease both' }}>
           {badgeToast}
         </div>
       )}
 
       {winError && (
-        <div style={{ position: 'fixed', bottom: 100, left: '50%', transform: 'translateX(-50%)', zIndex: 300, background: '#ef4444', color: '#fff', fontFamily: fontB, fontSize: 13, fontWeight: 600, padding: '12px 22px', borderRadius: 100, boxShadow: '0 8px 32px rgba(239,68,68,0.3)', whiteSpace: 'nowrap', animation: 'slideUp 0.25s ease both' }}>
+        <div style={{ position: 'fixed', bottom: 88, left: '50%', transform: 'translateX(-50%)', zIndex: 1200, background: '#ef4444', color: '#fff', fontFamily: fontB, fontSize: 13, fontWeight: 600, padding: '12px 22px', borderRadius: 100, boxShadow: '0 8px 32px rgba(239,68,68,0.3)', maxWidth: 'calc(100vw - 48px)', textAlign: 'center', wordBreak: 'break-word', animation: 'slideUp 0.25s ease both' }}>
           {winError}
         </div>
       )}
@@ -4054,26 +4054,33 @@ function AccountTab({ user, currency, score, reportCount, reports, onSignOut, on
     if (file.size > 5 * 1024 * 1024) { showToast('Image must be under 5 MB.'); return }
     setAvatarUploading(true)
     try {
-      const canvas = document.createElement('canvas')
+      // Resize to 256×256 client-side before upload
       const img = new Image()
       img.src = URL.createObjectURL(file)
       await new Promise<void>(resolve => { img.onload = () => resolve() })
       const size = 256
+      const canvas = document.createElement('canvas')
       canvas.width = size; canvas.height = size
       const ctx = canvas.getContext('2d')!
       const ratio = Math.min(size / img.width, size / img.height)
       const w = img.width * ratio; const h = img.height * ratio
       ctx.drawImage(img, (size - w) / 2, (size - h) / 2, w, h)
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.85)
       URL.revokeObjectURL(img.src)
-      const res = await fetch('/api/user/update', {
-        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ avatar_url: dataUrl }),
-      })
-      if (!res.ok) throw new Error('failed')
-      onUserUpdate({ avatar_url: dataUrl })
+      const blob = await new Promise<Blob>((res, rej) =>
+        canvas.toBlob(b => b ? res(b) : rej(new Error('canvas.toBlob failed')), 'image/jpeg', 0.85)
+      )
+      const fd = new FormData()
+      fd.append('avatar', blob, 'avatar.jpg')
+      const res = await fetch('/api/user/avatar', { method: 'POST', body: fd })
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({})) as { error?: string }
+        throw new Error(d.error ?? 'upload failed')
+      }
+      const d = await res.json() as { avatar_url: string }
+      onUserUpdate({ avatar_url: d.avatar_url })
       showToast('Profile photo updated.')
-    } catch {
+    } catch (err) {
+      console.error('[avatar upload]', err)
       showToast('Could not upload photo. Please try again.')
     } finally {
       setAvatarUploading(false)
@@ -6879,7 +6886,7 @@ export default function DashboardPage() {
 
       {/* ── Cancellation toast ────────────────────────────────────────────── */}
       {cancelToast && (
-        <div style={{ position: 'fixed', bottom: 80, left: '50%', transform: 'translateX(-50%)', zIndex: 200, background: P, color: '#fff', fontFamily: fontB, fontSize: 13, fontWeight: 500, padding: '12px 22px', borderRadius: 100, boxShadow: '0 8px 32px #c5c0b1', whiteSpace: 'nowrap', animation: 'slideUp 0.25s ease both' }}>
+        <div style={{ position: 'fixed', bottom: 88, left: '50%', transform: 'translateX(-50%)', zIndex: 1200, background: P, color: '#fff', fontFamily: fontB, fontSize: 13, fontWeight: 500, padding: '12px 22px', borderRadius: 100, boxShadow: '0 8px 32px rgba(32,21,21,0.25)', maxWidth: 'calc(100vw - 48px)', textAlign: 'center', wordBreak: 'break-word', animation: 'slideUp 0.25s ease both' }}>
           {cancelToast}
         </div>
       )}
