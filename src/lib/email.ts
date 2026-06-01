@@ -1433,3 +1433,56 @@ ${cta('Open Full Briefing &rarr;', 'https://idealicp.com/dashboard')}
   else console.log('[email] personalised-weekly-intel sent id:', data?.id, 'to:', to)
   return { data, error }
 }
+
+// ─── CSV Score Update Email ───────────────────────────────────────────────────
+
+export async function sendCsvScoreUpdateEmail(opts: {
+  to: string
+  name: string
+  fileName: string
+  scoreDelta: number
+  summary: string
+  topRecommendation: string
+}) {
+  const { to, name, fileName, scoreDelta, summary, topRecommendation } = opts
+  const greeting = name ? `Hi ${name.split(' ')[0]},` : 'Hi there,'
+  const deltaSign = scoreDelta > 0 ? `+${scoreDelta}` : `${scoreDelta}`
+  const deltaColor = scoreDelta > 0 ? '#16a34a' : '#dc2626'
+  const deltaLabel = scoreDelta > 0 ? 'potential score improvement' : 'score impact identified'
+
+  const content = `
+${ICON.chart}
+
+<h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:${Dark};font-family:${font};letter-spacing:-0.5px;">Campaign data analysed</h1>
+<p style="margin:0 0 28px;color:${Muted};font-size:15px;font-family:${font};line-height:1.6;">${escapeHtml(greeting)}<br>Your CSV <strong style="color:${Dark};">${escapeHtml(fileName)}</strong> has been analysed.</p>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${CardBg};border:1px solid ${Border};margin-bottom:28px;">
+  <tr>
+    <td style="padding:24px 28px;">
+      <p style="margin:0 0 4px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:${Muted};font-family:${font};">ICP Score Impact</p>
+      <p style="margin:0 0 8px;font-size:44px;font-weight:900;color:${deltaColor};font-family:${font};letter-spacing:-1px;line-height:1;">${deltaSign}</p>
+      <p style="margin:0;font-size:13px;color:${Muted};font-family:${font};">${deltaLabel} from this upload</p>
+    </td>
+  </tr>
+</table>
+
+${summary ? `<p style="margin:0 0 24px;color:${Dark};font-size:15px;font-family:${font};line-height:1.65;">${escapeHtml(summary)}</p>` : ''}
+
+${topRecommendation ? `<p style="margin:0 0 12px;color:${Dark};font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;font-family:${font};">TOP RECOMMENDATION</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-left:4px solid #16a34a;background:rgba(22,163,74,0.06);margin-bottom:32px;">
+  <tr><td style="padding:16px 20px;">
+    <p style="margin:0;color:#14532d;font-size:14px;line-height:1.65;font-family:${font};">&#8594;&nbsp; ${escapeHtml(topRecommendation)}</p>
+  </td></tr>
+</table>` : ''}
+
+${cta('View Full Analysis &rarr;', 'https://idealicp.com/dashboard/csv')}`
+
+  const { data, error } = await getResend().emails.send({
+    from: FROM, to,
+    subject: `CSV analysis complete: ${scoreDelta > 0 ? `${deltaSign} ICP score impact identified` : 'your campaign data is ready'}`,
+    html: base(content),
+  })
+  if (error) console.error('[email] csv-score-update error:', JSON.stringify(error))
+  else console.log('[email] csv-score-update sent id:', data?.id, 'to:', to)
+  return { data, error }
+}

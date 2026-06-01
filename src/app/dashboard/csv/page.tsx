@@ -25,6 +25,11 @@ type ParsedCSV = {
   text: string
 }
 
+type RejectionInfo = {
+  reason: string
+  suggestion: string
+}
+
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const FORMAT_HINTS: Record<CsvFormat, { label: string; cols: string; example: string }> = {
@@ -91,6 +96,8 @@ function CsvUploadInner() {
   const [analysing, setAnalysing]   = useState(false)
   const [analysis, setAnalysis]     = useState<Analysis | null>(null)
   const [apiError, setApiError]     = useState('')
+  const [rejection, setRejection]   = useState<RejectionInfo | null>(null)
+  const [scoreDelta, setScoreDelta] = useState<number | null>(null)
   const [userEmail, setUserEmail]   = useState('')
   const [savedMeta, setSavedMeta]   = useState<{ file: string; created_at: string } | null>(null)
   const [loadingId, setLoadingId]   = useState(false)
@@ -173,6 +180,8 @@ function CsvUploadInner() {
     setAnalysis(null)
     setApiError('')
     setParseError('')
+    setRejection(null)
+    setScoreDelta(null)
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
@@ -182,6 +191,8 @@ function CsvUploadInner() {
     if (!parsed) return
     setAnalysing(true)
     setApiError('')
+    setRejection(null)
+    setScoreDelta(null)
     try {
       const res = await fetch('/api/csv-analysis', {
         method: 'POST',
@@ -193,8 +204,15 @@ function CsvUploadInner() {
         }),
       })
       const json = await res.json()
+      if (res.status === 422 && json.rejected) {
+        setRejection({ reason: json.reason, suggestion: json.suggestion })
+        return
+      }
       if (!res.ok) throw new Error(json.error ?? 'Analysis failed')
       setAnalysis(json.analysis)
+      if (typeof json.scoreDelta === 'number' && json.scoreDelta !== 0) {
+        setScoreDelta(json.scoreDelta)
+      }
       setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
     } catch (err) {
       setApiError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
@@ -353,6 +371,43 @@ function CsvUploadInner() {
           </p>
         )}
 
+        {/* Rejection card */}
+        {rejection && (
+          <div className="bg-[#fffefb] border-2 border-[#e8330a]/40 rounded-lg p-6 space-y-4">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-full bg-[#e8330a]/10 flex items-center justify-center shrink-0 mt-0.5">
+                <svg className="w-5 h-5 text-[#e8330a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[#201515] font-semibold text-base mb-1">File not accepted</p>
+                <p className="text-[#605d52] text-sm leading-relaxed">{rejection.reason}</p>
+              </div>
+            </div>
+            {rejection.suggestion && (
+              <div className="ml-14 bg-[rgba(201,192,177,0.18)] border border-[#c5c0b1] rounded px-4 py-3">
+                <p className="text-xs text-[#939084] uppercase tracking-widest font-semibold mb-1">What to upload instead</p>
+                <p className="text-[#605d52] text-sm leading-relaxed">{rejection.suggestion}</p>
+              </div>
+            )}
+            <div className="ml-14 flex gap-3">
+              <button
+                onClick={reset}
+                className="bg-[#e8330a] hover:opacity-90 text-white font-semibold px-5 py-2.5 rounded text-sm transition-opacity"
+              >
+                Try a different file
+              </button>
+              <Link
+                href="/dashboard"
+                className="bg-[rgba(201,192,177,0.18)] hover:bg-[rgba(201,192,177,0.25)] border border-[#c5c0b1] text-[#939084] hover:text-[#201515] font-medium px-5 py-2.5 rounded text-sm transition-colors"
+              >
+                Back to Dashboard
+              </Link>
+            </div>
+          </div>
+        )}
+
         {/* Preview table */}
         {parsed && parsed.headers.length > 0 && !analysis && (
           <div className="bg-[rgba(201,192,177,0.18)] border border-[#c5c0b1] rounded overflow-hidden">
@@ -432,6 +487,30 @@ function CsvUploadInner() {
         {/* ── Results ── */}
         {analysis && !analysing && (
           <div ref={resultsRef} className="space-y-5">
+
+            {/* Score update banner */}
+            {scoreDelta !== null && scoreDelta !== 0 && (
+              <div className={`flex items-center gap-4 rounded-lg px-5 py-4 border ${scoreDelta > 0 ? 'bg-emerald-500/8 border-emerald-500/25' : 'bg-amber-500/8 border-amber-500/25'}`}>
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${scoreDelta > 0 ? 'bg-emerald-500/15' : 'bg-amber-500/15'}`}>
+                  <svg className={`w-5 h-5 ${scoreDelta > 0 ? 'text-emerald-500' : 'text-amber-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    {scoreDelta > 0
+                      ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                      : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+                    }
+                  </svg>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className={`text-sm font-semibold ${scoreDelta > 0 ? 'text-emerald-700' : 'text-amber-700'}`}>
+                    ICP score updated: <span className="font-black">{scoreDelta > 0 ? `+${scoreDelta}` : scoreDelta} points</span> {scoreDelta > 0 ? 'potential improvement identified' : 'areas to address'}
+                  </p>
+                  <p className={`text-xs mt-0.5 ${scoreDelta > 0 ? 'text-emerald-600/70' : 'text-amber-600/70'}`}>
+                    {scoreDelta > 0
+                      ? 'Implement the recommendations below to unlock this gain. A summary has been sent to your inbox.'
+                      : 'Review the recommendations below to address these issues. A summary has been sent to your inbox.'}
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Summary */}
             {'summary' in analysis && analysis.summary && (
