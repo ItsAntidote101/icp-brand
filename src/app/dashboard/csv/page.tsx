@@ -142,11 +142,17 @@ function CsvUploadInner() {
 
     Papa.parse<string[]>(file, {
       complete(result) {
-        const rows = result.data.filter(r => r.some(c => c.trim()))
+        let rows = result.data.filter(r => r.some(c => c.trim()))
         if (rows.length < 2) {
           setParseError('The CSV appears to be empty or has only one row.')
           return
         }
+
+        // Google Ads / Meta exports prepend metadata rows before the real header.
+        // Find the first row that has 3+ non-empty cells — that's the real header.
+        const headerIdx = rows.findIndex(r => r.filter(c => c.trim()).length >= 3)
+        if (headerIdx > 0) rows = rows.slice(headerIdx)
+
         const headers = rows[0]
         const dataRows = rows.slice(1)
 

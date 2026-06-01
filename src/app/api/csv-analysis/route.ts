@@ -4,6 +4,9 @@ import Anthropic from '@anthropic-ai/sdk'
 import { getSession } from '@/lib/session'
 import { sendCsvScoreUpdateEmail } from '@/lib/email'
 
+export const dynamic = 'force-dynamic'
+export const maxDuration = 120
+
 type CsvAnalysis = {
   summary: string
   top_performers: Array<{ name: string; metric: string; why: string }>
