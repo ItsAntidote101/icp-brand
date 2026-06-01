@@ -274,8 +274,8 @@ Rules:
     }
   }
 
-  // ── Send score update email ───────────────────────────────────────────────
-  if (userId && 'summary' in analysis && scoreDelta !== 0) {
+  // ── Send score update email (only for significant gains) ─────────────────
+  if (userId && 'summary' in analysis && scoreDelta >= 5) {
     const csvAnalysis = analysis as CsvAnalysis
     const topRec = csvAnalysis.recommendations?.[0]
     sendCsvScoreUpdateEmail({
