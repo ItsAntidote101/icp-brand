@@ -3219,9 +3219,11 @@ function FindingsSection({ diag }: { diag: DiagnosisData }) {
   )
 }
 
-function FirstRunDashboard({ user }: { user: UserData }) {
+function FirstRunDashboard({ user, latestCsv }: { user: UserData; latestCsv?: CsvHistoryItem }) {
   const firstName  = user.full_name?.split(' ')[0] ?? null
   const isNewUser  = daysBetween(user.created_at) <= 1
+  const hasCsv     = !!latestCsv?.summary
+
   const reveals = [
     { icon: <Zap size={18} color={P} />,         title: 'ICP Health Score',    body: 'A 0-100 score showing how well your targeting matches your best buyers.' },
     { icon: <AlertCircle size={18} color={P} />, title: 'Monthly Waste Estimate', body: 'How much budget is leaking to audiences that will never convert.' },
@@ -3232,40 +3234,110 @@ function FirstRunDashboard({ user }: { user: UserData }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24, animation: 'fadeUp 0.4s ease both' }}>
 
-      {/* Hero CTA, full-width, impossible to miss */}
-      <div style={{
-        background: 'linear-gradient(135deg,#201515 0%,#2d1e0a 100%)',
-        borderRadius: 12, padding: 'clamp(28px,5vw,48px) clamp(24px,5vw,52px)',
-      }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 28 }}>
-          <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.45)' }}>
-            {isNewUser ? 'Welcome to ICP Brand' : 'Step 1 of 3'}
-          </span>
-          <h2 style={{ fontFamily: font, fontSize: 'clamp(22px,4vw,32px)', fontWeight: 700, color: '#fff', margin: 0, letterSpacing: '-0.02em', lineHeight: 1.2 }}>
-            {firstName ? `${firstName}, where is your ad budget actually going?` : 'Where is your ad budget actually going?'}
-          </h2>
-          <p style={{ fontFamily: fontB, fontSize: 15, color: 'rgba(255,255,255,0.65)', margin: 0, lineHeight: 1.65, maxWidth: 520 }}>
-            Most B2B teams waste 30-60% of their budget targeting people who will never buy. Your ICP diagnostic finds the leak, scores your targeting, and gives you a ranked fix list. Takes 5 minutes.
-          </p>
-        </div>
-
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center' }}>
-          <Link href="/questionnaire"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#fff', color: P, textDecoration: 'none', fontFamily: font, fontWeight: 700, fontSize: 15, padding: '15px 28px', borderRadius: 12, letterSpacing: '-0.2px' }}>
-            Run My First Diagnosis <ArrowRight size={15} />
-          </Link>
-          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-            {[['3 layers', '22 questions'], ['5 minutes', 'Instant results']].map(([a, b]) => (
-              <div key={a} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                <Check size={13} color="rgba(255,255,255,0.5)" />
-                <span style={{ fontFamily: fontB, fontSize: 13, color: 'rgba(255,255,255,0.55)' }}>{a}</span>
-                <span style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>·</span>
-                <span style={{ fontFamily: fontB, fontSize: 13, color: 'rgba(255,255,255,0.55)' }}>{b}</span>
+      {/* CSV result card — shown when they uploaded a file but haven't done the questionnaire */}
+      {hasCsv && latestCsv && (
+        <div style={{ border: `1.5px solid ${Pborder}`, borderRadius: 12, overflow: 'hidden' }}>
+          {/* Header bar */}
+          <div style={{ background: 'linear-gradient(135deg,#201515 0%,#2d1e0a 100%)', padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' as const }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(232,51,10,0.2)', border: '1px solid rgba(232,51,10,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <FileText size={16} color={Accent} />
               </div>
-            ))}
+              <div>
+                <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.45)', margin: '0 0 2px' }}>Campaign Analysis</p>
+                <p style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: '#fff', margin: 0 }}>{latestCsv.file}</p>
+              </div>
+            </div>
+            <span style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>
+              {new Date(latestCsv.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+            </span>
+          </div>
+
+          {/* Summary + stats */}
+          <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <p style={{ fontFamily: fontB, fontSize: 14, color: P, margin: 0, lineHeight: 1.65 }}>{latestCsv.summary}</p>
+
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' as const }}>
+              {latestCsv.budget_waste && (
+                <div style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 8, padding: '10px 14px', flex: 1, minWidth: 140 }}>
+                  <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.08em', color: '#b45309', margin: '0 0 3px' }}>Budget Waste</p>
+                  <p style={{ fontFamily: font, fontSize: 16, fontWeight: 800, color: '#92400e', margin: 0 }}>{latestCsv.budget_waste}</p>
+                </div>
+              )}
+              {latestCsv.recommendations_count > 0 && (
+                <div style={{ background: 'rgba(22,163,74,0.06)', border: '1px solid rgba(22,163,74,0.2)', borderRadius: 8, padding: '10px 14px', flex: 1, minWidth: 140 }}>
+                  <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.08em', color: '#166534', margin: '0 0 3px' }}>Recommendations</p>
+                  <p style={{ fontFamily: font, fontSize: 16, fontWeight: 800, color: '#14532d', margin: 0 }}>{latestCsv.recommendations_count} ranked actions</p>
+                </div>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' as const }}>
+              <Link href={`/dashboard/csv?id=${latestCsv.id}`}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: P, color: '#fff', textDecoration: 'none', fontFamily: fontB, fontWeight: 600, fontSize: 13, padding: '10px 18px', borderRadius: 8 }}>
+                View full analysis <ArrowRight size={13} />
+              </Link>
+              <Link href="/dashboard/csv"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'transparent', color: Pmuted, textDecoration: 'none', fontFamily: fontB, fontWeight: 500, fontSize: 13, padding: '10px 18px', borderRadius: 8, border: `1.5px solid ${Pborder}` }}>
+                Upload another file
+              </Link>
+            </div>
+          </div>
+
+          {/* Nudge to complete questionnaire */}
+          <div style={{ borderTop: `1.5px solid ${Pborder}`, padding: '14px 24px', background: '#f8f4f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' as const }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(232,51,10,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Zap size={13} color={Accent} />
+              </div>
+              <p style={{ fontFamily: fontB, fontSize: 13, color: P, margin: 0 }}>
+                Complete the 5-min questionnaire to get your <strong>ICP Health Score</strong>
+              </p>
+            </div>
+            <Link href="/questionnaire"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: Accent, color: '#fff', textDecoration: 'none', fontFamily: fontB, fontWeight: 700, fontSize: 13, padding: '10px 18px', borderRadius: 8, whiteSpace: 'nowrap' as const, flexShrink: 0 }}>
+              Run Diagnosis <ArrowRight size={13} />
+            </Link>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Hero CTA — full-width if no CSV, compact secondary if CSV exists */}
+      {!hasCsv && (
+        <div style={{
+          background: 'linear-gradient(135deg,#201515 0%,#2d1e0a 100%)',
+          borderRadius: 12, padding: 'clamp(28px,5vw,48px) clamp(24px,5vw,52px)',
+        }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 28 }}>
+            <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.45)' }}>
+              {isNewUser ? 'Welcome to ICP Brand' : 'Step 1 of 3'}
+            </span>
+            <h2 style={{ fontFamily: font, fontSize: 'clamp(22px,4vw,32px)', fontWeight: 700, color: '#fff', margin: 0, letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+              {firstName ? `${firstName}, where is your ad budget actually going?` : 'Where is your ad budget actually going?'}
+            </h2>
+            <p style={{ fontFamily: fontB, fontSize: 15, color: 'rgba(255,255,255,0.65)', margin: 0, lineHeight: 1.65, maxWidth: 520 }}>
+              Most B2B teams waste 30-60% of their budget targeting people who will never buy. Your ICP diagnostic finds the leak, scores your targeting, and gives you a ranked fix list. Takes 5 minutes.
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center' }}>
+            <Link href="/questionnaire"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#fff', color: P, textDecoration: 'none', fontFamily: font, fontWeight: 700, fontSize: 15, padding: '15px 28px', borderRadius: 12, letterSpacing: '-0.2px' }}>
+              Run My First Diagnosis <ArrowRight size={15} />
+            </Link>
+            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+              {[['3 layers', '22 questions'], ['5 minutes', 'Instant results']].map(([a, b]) => (
+                <div key={a} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                  <Check size={13} color="rgba(255,255,255,0.5)" />
+                  <span style={{ fontFamily: fontB, fontSize: 13, color: 'rgba(255,255,255,0.55)' }}>{a}</span>
+                  <span style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>·</span>
+                  <span style={{ fontFamily: fontB, fontSize: 13, color: 'rgba(255,255,255,0.55)' }}>{b}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* What your dashboard reveals after the diagnostic */}
       <div>
@@ -3287,20 +3359,20 @@ function FirstRunDashboard({ user }: { user: UserData }) {
         </div>
       </div>
 
-      {/* Progress rail, shows where they are in the 3-step journey */}
+      {/* Progress rail */}
       <div style={{ background: '#f8f4f0', borderRadius: 12, padding: '20px 24px', border: `1.5px solid ${Pborder}` }}>
         <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 16px' }}>Your journey</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {[
-            { step: 1, label: 'Run your first ICP diagnostic', done: false, active: true },
-            { step: 2, label: 'Review findings and implement quick wins', done: false, active: false },
+            { step: 1, label: hasCsv ? 'Campaign CSV analysed' : 'Run your first ICP diagnostic', done: hasCsv, active: !hasCsv },
+            { step: 2, label: hasCsv ? 'Run your ICP diagnostic to unlock full score' : 'Review findings and implement quick wins', done: false, active: hasCsv },
             { step: 3, label: 'Track your score improving over time', done: false, active: false },
           ].map(({ step, label, done, active }) => (
             <div key={step} style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
               <div style={{ width: 28, height: 28, borderRadius: '50%', background: done ? '#22c55e' : active ? P : Pborder, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 {done ? <Check size={13} color="#fff" /> : <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, color: active ? '#fff' : Pmuted }}>{step}</span>}
               </div>
-              <p style={{ fontFamily: fontB, fontSize: 13, fontWeight: active ? 600 : 400, color: active ? P : Pmuted, margin: 0 }}>{label}</p>
+              <p style={{ fontFamily: fontB, fontSize: 13, fontWeight: active ? 600 : 400, color: active ? P : done ? '#166534' : Pmuted, margin: 0 }}>{label}</p>
             </div>
           ))}
         </div>
@@ -6599,7 +6671,7 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {!dataLoading && !reportsError && !hasReports && user && <FirstRunDashboard user={user} />}
+            {!dataLoading && !reportsError && !hasReports && user && <FirstRunDashboard user={user} latestCsv={csvHistory[0]} />}
 
             {!dataLoading && !reportsError && hasReports && user && (() => {
               const t         = user.subscription_tier
