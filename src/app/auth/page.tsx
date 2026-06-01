@@ -51,6 +51,7 @@ function AuthInner() {
   const searchParams = useSearchParams()
   const defaultTab   = searchParams.get('tab') === 'login' ? 'login' : 'signup'
   const oauthError   = searchParams.get('error')
+  const nextPath     = searchParams.get('next') ?? '/dashboard'
 
   const [tab,    setTab]    = useState<'signup' | 'login'>(defaultTab)
   const [toast,  setToast]  = useState(() => oauthError ? (OAUTH_ERRORS[oauthError] ?? 'Sign-in failed. Please try again.') : '')
@@ -168,7 +169,7 @@ function AuthInner() {
       const json = await res.json() as { success?: boolean; isNew?: boolean; error?: string }
       if (json.success) {
         localStorage.setItem('dashboard_email', activeEmail.trim().toLowerCase())
-        router.push('/dashboard')
+        router.push(nextPath)
       } else {
         setFormError(json.error ?? 'Verification failed. Please try again.')
         setOtp('')
@@ -214,7 +215,7 @@ function AuthInner() {
       )
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: `${window.location.origin}/api/auth/callback` },
+        options: { redirectTo: `${window.location.origin}/api/auth/callback?next=${encodeURIComponent(nextPath)}` },
       })
       if (error) showToast('Google sign-in failed. Please try again.')
     } catch {
