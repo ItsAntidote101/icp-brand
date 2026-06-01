@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
     targetAudience = qd.target_audience ?? ''
     channels       = qd.ad_channels ?? ''
     region         = qd.region ?? qd.country ?? ''
-    companyName    = companyName || qd.company_name ?? ''
+    companyName    = companyName || (qd.company_name ?? '')
   } else if (userId) {
     const { data: rawQ } = await supabase
       .from('questionnaires')
