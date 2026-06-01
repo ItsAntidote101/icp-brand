@@ -109,6 +109,40 @@ function CsvUploadInner() {
     setUserEmail(getStoredEmail())
   }, [])
 
+  // Auto-load a CSV that was dropped on the homepage before sign-in
+  useEffect(() => {
+    if (savedId) return
+    const text = sessionStorage.getItem('pending_csv_text')
+    const name = sessionStorage.getItem('pending_csv_name')
+    if (!text || !name) return
+    sessionStorage.removeItem('pending_csv_text')
+    sessionStorage.removeItem('pending_csv_name')
+
+    setFileName(name)
+    setParseError('')
+    setAnalysis(null)
+    setApiError('')
+
+    // Find the real header row (skip Google/Meta metadata rows)
+    const csvLines = text.split('\n').filter(l => l.trim())
+    const headerIdx = csvLines.findIndex(line => {
+      const cols = line.split(',').filter(c => c.replace(/"/g, '').trim())
+      return cols.length >= 3
+    })
+    const cleanLines = headerIdx > 0 ? csvLines.slice(headerIdx) : csvLines
+
+    // Quick parse to get headers + row count
+    const allRows = cleanLines.map(l =>
+      l.split(',').map(c => c.replace(/^"|"$/g, '').replace(/""/g, '"').trim())
+    )
+    const headers = allRows[0] ?? []
+    const dataRows = allRows.slice(1)
+    const capped = [headers, ...dataRows.slice(0, 500)]
+    const reassembled = capped.map(r => r.map(c => `"${c.replace(/"/g, '""')}"`).join(',')).join('\n')
+
+    setParsed({ headers, rows: dataRows, text: reassembled })
+  }, [savedId])
+
   // Load a saved analysis when ?id= is present
   useEffect(() => {
     if (!savedId) return

@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import {
@@ -426,6 +426,26 @@ export default function Page() {
   const [stickyDismissed, setStickyDismissed] = useState(false)
   const [activeNow,       setActiveNow]       = useState(4)
 
+  const [csvDragOver,   setCsvDragOver]   = useState(false)
+  const [csvFileName,   setCsvFileName]   = useState('')
+  const csvFileRef      = useRef<HTMLInputElement>(null)
+
+  const handleCsvFile = useCallback((file: File) => {
+    if (!file.name.toLowerCase().endsWith('.csv')) return
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const text = e.target?.result as string
+      if (!text) return
+      try {
+        sessionStorage.setItem('pending_csv_text', text)
+        sessionStorage.setItem('pending_csv_name', file.name)
+      } catch { /* sessionStorage unavailable */ }
+      setCsvFileName(file.name)
+      window.location.href = '/auth?next=/dashboard/csv'
+    }
+    reader.readAsText(file)
+  }, [])
+
   const countRef        = useRef<HTMLSpanElement>(null)
   const hasAnimated     = useRef(false)
   const [diagnosisCount,  setDiagnosisCount]  = useState(9400)
@@ -777,6 +797,62 @@ export default function Page() {
           <p style={{ fontFamily: fontB, fontSize: 13, color: Muted, margin: 0 }}>
             {diagnosisCount.toLocaleString()}+ B2B teams diagnosed. One free lifetime diagnosis, no card needed.
           </p>
+
+          {/* ── CSV Hook ── */}
+          <div style={{ marginTop: 36 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
+              <div style={{ flex: 1, height: 1, background: Border }} />
+              <span style={{ fontFamily: fontB, fontSize: 12, color: Muted, whiteSpace: 'nowrap' }}>or skip the questionnaire</span>
+              <div style={{ flex: 1, height: 1, background: Border }} />
+            </div>
+            <input
+              ref={csvFileRef}
+              type="file"
+              accept=".csv"
+              style={{ display: 'none' }}
+              onChange={e => { const f = e.target.files?.[0]; if (f) handleCsvFile(f) }}
+            />
+            <div
+              onDragOver={e => { e.preventDefault(); setCsvDragOver(true) }}
+              onDragLeave={() => setCsvDragOver(false)}
+              onDrop={e => { e.preventDefault(); setCsvDragOver(false); const f = e.dataTransfer.files?.[0]; if (f) handleCsvFile(f) }}
+              onClick={() => csvFileRef.current?.click()}
+              style={{
+                border: `2px dashed ${csvDragOver ? Orange : Border}`,
+                borderRadius: 8,
+                padding: 'clamp(20px,3vw,28px) clamp(16px,4vw,32px)',
+                cursor: 'pointer',
+                background: csvDragOver ? 'rgba(232,51,10,0.04)' : 'transparent',
+                transition: 'border-color 0.15s, background 0.15s',
+                display: 'flex',
+                flexDirection: 'column' as const,
+                alignItems: 'center',
+                gap: 10,
+              }}
+            >
+              <div style={{ width: 44, height: 44, borderRadius: 10, border: `1.5px solid ${Border}`, background: 'rgba(201,192,177,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <FileText size={20} color={Muted} strokeWidth={1.5} />
+              </div>
+              {csvFileName ? (
+                <p style={{ fontFamily: fontB, fontSize: 14, color: Orange, fontWeight: 700, margin: 0 }}>
+                  Redirecting you to sign in…
+                </p>
+              ) : (
+                <>
+                  <p style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: Text, margin: 0 }}>
+                    Drop your Google Ads or Meta CSV here
+                  </p>
+                  <p style={{ fontFamily: fontB, fontSize: 13, color: Muted, margin: 0 }}>
+                    or click to browse · we&apos;ll score your campaigns after you sign in
+                  </p>
+                </>
+              )}
+            </div>
+            <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, marginTop: 10, textAlign: 'center' }}>
+              No questionnaire needed · works with any ad platform export
+            </p>
+          </div>
+
         </div>
         {/* Stats bar — full width, single instance */}
         <div style={{ borderTop: `1.5px solid ${Border}`, display: 'flex' }}>
