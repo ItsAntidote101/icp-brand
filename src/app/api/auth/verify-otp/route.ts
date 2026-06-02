@@ -61,6 +61,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'This account has been cancelled. Contact support if you think this is a mistake.' }, { status: 403 })
       }
       userId = existing.id
+      void db.from('users').update({ last_active_at: new Date().toISOString() }).eq('id', userId)
     } else {
       const fullName = [firstName?.trim(), lastName?.trim()].filter(Boolean).join(' ') || null
 

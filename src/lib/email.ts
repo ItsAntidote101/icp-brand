@@ -1486,3 +1486,193 @@ ${cta('View Full Analysis &rarr;', 'https://idealicp.com/dashboard/csv')}`
   else console.log('[email] csv-score-update sent id:', data?.id, 'to:', to)
   return { data, error }
 }
+
+// ─── Re-engagement Email ──────────────────────────────────────────────────────
+
+export type ReEngageScenario = 'never_started' | 'early_drop' | 'late_drop' | 'csv_only'
+
+export async function sendReEngageEmail(opts: {
+  to: string
+  name?: string
+  scenario: ReEngageScenario
+  questionsAnswered: number
+  totalQuestions: number
+  csvSummary?: string
+  csvBudgetWaste?: string
+  csvFileName?: string
+}) {
+  const { to, name, scenario, questionsAnswered, totalQuestions, csvSummary, csvBudgetWaste, csvFileName } = opts
+  const firstName = name ? name.split(' ')[0] : null
+  const greeting  = firstName ? `Hi ${firstName},` : 'Hi there,'
+  const remaining = totalQuestions - questionsAnswered
+  const pctDone   = Math.round((questionsAnswered / totalQuestions) * 100)
+  const resumeUrl = 'https://idealicp.com/questionnaire'
+
+  const lockedItems = (items: string[]) => items.map(item =>
+    `<tr><td style="padding:8px 0;border-bottom:1px solid ${BorderLight};">
+      <table cellpadding="0" cellspacing="0"><tr>
+        <td style="width:20px;vertical-align:top;padding-top:1px;">
+          <div style="width:16px;height:16px;background:rgba(24,17,10,0.08);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><rect x="3" y="4.5" width="4" height="3.5" rx="0.5" fill="${Muted}"/><path d="M3.5 4.5V3.5a1.5 1.5 0 013 0V4.5" stroke="${Muted}" stroke-width="1" fill="none"/></svg>
+          </div>
+        </td>
+        <td style="padding-left:10px;font-size:14px;color:${Muted};font-family:${font};line-height:1.5;">${item}</td>
+      </tr></table>
+    </td></tr>`
+  ).join('')
+
+  const urgencyBanner = (text: string) =>
+    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:rgba(232,51,10,0.06);border:1.5px solid rgba(232,51,10,0.2);border-radius:4px;margin-bottom:28px;">
+      <tr><td style="padding:14px 18px;">
+        <p style="margin:0;font-size:14px;color:${Orange};font-weight:700;font-family:${font};line-height:1.5;">${text}</p>
+      </td></tr>
+    </table>`
+
+  let subject = ''
+  let content = ''
+
+  if (scenario === 'never_started') {
+    subject = "Your ICP score is 0 — and your ad budget is paying for it"
+    content = `
+${ICON.alert}
+${heading("Every day without your ICP score is budget going to the wrong people.", 26)}
+${sub(`${escapeHtml(greeting)}<br>You signed up — which means you already know something isn't converting the way it should. You're not alone. 73% of ad budgets in East Africa miss their ICP by 2+ audience segments.`)}
+
+${urgencyBanner('Your ICP Health Score is unclaimed. Right now your campaigns have no baseline — so you have no way to know what to fix.')}
+
+<p style="margin:0 0 12px;color:${Dark};font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;font-family:${font};">WHAT'S LOCKED UNTIL YOU COMPLETE THE DIAGNOSTIC</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:32px;">
+  ${lockedItems([
+    'Your ICP Health Score (0–100)',
+    'Budget Efficiency breakdown — where your money is going',
+    'Your 3 highest-priority fixes from your media buyer',
+    'Audience alignment gap report',
+    'Personalised ICP Match Report',
+  ])}
+</table>
+
+<p style="margin:0 0 24px;color:${Dark};font-size:15px;font-family:${font};line-height:1.65;">The diagnostic takes <strong>5 minutes</strong>. 22 questions. One clear score. The longer you wait, the more you're flying blind.</p>
+
+${cta('Get My ICP Score Now →', resumeUrl)}`
+
+  } else if (scenario === 'early_drop') {
+    subject = `You started your ICP diagnostic — but your score is still incomplete`
+    const layerStatus = questionsAnswered <= 7
+      ? 'Your audience profile is less than 30% mapped'
+      : 'Your foundation layer is mapped — the deeper layers are still locked'
+    content = `
+${ICON.pause}
+${heading(`You're ${pctDone}% through — and your score is still 0.`, 26)}
+${sub(`${escapeHtml(greeting)}<br>You answered ${questionsAnswered} of ${totalQuestions} questions before stopping. That's not enough to calculate your ICP Health Score. ${layerStatus}.`)}
+
+${urgencyBanner(`${remaining} questions stand between you and knowing exactly why your campaigns are underperforming.`)}
+
+<p style="margin:0 0 12px;color:${Dark};font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;font-family:${font};">STILL LOCKED FOR YOU</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+  ${lockedItems([
+    'Your ICP Health Score',
+    'Deep audience segment analysis (Layer 2)',
+    'Campaign spend efficiency rating',
+    'Media buyer recommendations tailored to your profile',
+    'Budget waste estimate for your current campaigns',
+  ])}
+</table>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${CardBg};border:1px solid ${Border};border-radius:4px;margin-bottom:28px;">
+  <tr><td style="padding:20px 24px;">
+    <p style="margin:0 0 4px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:${Muted};font-family:${font};">YOUR PROGRESS</p>
+    <div style="background:rgba(24,17,10,0.08);border-radius:100px;height:8px;margin:10px 0;">
+      <div style="background:${Orange};border-radius:100px;height:8px;width:${pctDone}%;"></div>
+    </div>
+    <p style="margin:6px 0 0;font-size:13px;color:${Muted};font-family:${font};">${questionsAnswered}/${totalQuestions} questions answered &mdash; ${remaining} remaining</p>
+  </td></tr>
+</table>
+
+<p style="margin:0 0 24px;color:${Dark};font-size:15px;font-family:${font};line-height:1.65;">Your answers are saved. Pick up exactly where you left off.</p>
+
+${cta(`Continue from Question ${questionsAnswered + 1} →`, resumeUrl)}`
+
+  } else if (scenario === 'late_drop') {
+    subject = `${remaining} question${remaining === 1 ? '' : 's'} from knowing exactly why your ads aren't converting`
+    const layerMsg = questionsAnswered >= 18
+      ? 'You\'ve mapped all 3 layers. Your final answers complete the picture.'
+      : 'Your final layer — ICP validation — is all that\'s left.'
+    content = `
+${ICON.chart}
+${heading(`You're this close to your ICP Health Score.`, 26)}
+${sub(`${escapeHtml(greeting)}<br>You're ${pctDone}% through the diagnostic — only ${remaining} question${remaining === 1 ? '' : 's'} left. ${layerMsg}`)}
+
+${urgencyBanner(`Don't let ${questionsAnswered} answered questions go to waste. Your score is ${100 - pctDone}% away from being calculated.`)}
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${CardBg};border:1px solid ${Border};border-radius:4px;margin-bottom:28px;">
+  <tr><td style="padding:20px 24px;">
+    <p style="margin:0 0 4px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:${Muted};font-family:${font};">DIAGNOSTIC PROGRESS</p>
+    <div style="background:rgba(24,17,10,0.08);border-radius:100px;height:8px;margin:10px 0;">
+      <div style="background:#16a34a;border-radius:100px;height:8px;width:${pctDone}%;"></div>
+    </div>
+    <p style="margin:6px 0 0;font-size:13px;color:${Muted};font-family:${font};">${questionsAnswered}/${totalQuestions} questions &mdash; <strong style="color:#16a34a;">${remaining} to go</strong></p>
+  </td></tr>
+</table>
+
+<p style="margin:0 0 12px;color:${Dark};font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;font-family:${font};">WHAT UNLOCKS WHEN YOU FINISH</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+  ${lockedItems([
+    'Your complete ICP Health Score',
+    'Audience alignment verdict — aligned, borderline, or misaligned',
+    'Top 3 quick wins prioritised by ROI impact',
+    'Full budget efficiency score',
+    'Assigned media buyer review of your profile',
+  ])}
+</table>
+
+<p style="margin:0 0 24px;color:${Dark};font-size:15px;font-family:${font};line-height:1.65;">This close to the finish line, stopping costs more than it saves. Your answers are waiting.</p>
+
+${cta('Finish My Diagnostic →', resumeUrl)}`
+
+  } else {
+    // csv_only
+    const wasteNote = csvBudgetWaste
+      ? `Your campaign data already shows <strong style="color:#dc2626;">${escapeHtml(csvBudgetWaste)}</strong> in estimated budget waste.`
+      : 'Your campaign data has been analysed — and there are patterns worth understanding.'
+    subject = csvBudgetWaste
+      ? `Your campaign shows ${csvBudgetWaste} in budget waste — your ICP score explains why`
+      : `Your campaign data is loaded. Your ICP score takes 5 minutes.`
+    content = `
+${ICON.brain}
+${heading("Your CSV is analysed. The harder question is: why?", 26)}
+${sub(`${escapeHtml(greeting)}<br>${wasteNote} But campaign data alone can't tell you WHY your audience is off. Your ICP score is the missing piece.`)}
+
+${csvSummary ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${CardBg};border:1px solid ${Border};border-radius:4px;margin-bottom:28px;">
+  <tr><td style="padding:20px 24px;">
+    <p style="margin:0 0 8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:${Muted};font-family:${font};">${csvFileName ? escapeHtml(csvFileName) : 'CSV ANALYSIS'}</p>
+    <p style="margin:0;font-size:14px;color:${Dark};font-family:${font};line-height:1.65;">${escapeHtml(csvSummary.slice(0, 180))}${csvSummary.length > 180 ? '…' : ''}</p>
+  </td></tr>
+</table>` : ''}
+
+${urgencyBanner("Your ICP Health Score connects your campaign patterns to your audience profile — and shows you exactly what to fix.")}
+
+<p style="margin:0 0 12px;color:${Dark};font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;font-family:${font};">THE DIAGNOSTIC ADDS</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+  ${lockedItems([
+    'Your ICP Health Score (0–100) — a baseline to improve from',
+    'Audience alignment diagnosis tied to your campaign data',
+    'Your media buyer\'s interpretation of both your CSV and questionnaire',
+    'Prioritised fixes ranked by impact on your specific campaigns',
+    'A weekly score to track as you improve',
+  ])}
+</table>
+
+<p style="margin:0 0 24px;color:${Dark};font-size:15px;font-family:${font};line-height:1.65;">22 questions. 5 minutes. One clear score. Everything else follows from there.</p>
+
+${cta('Get My ICP Health Score →', resumeUrl)}`
+  }
+
+  const { data, error } = await getResend().emails.send({
+    from: FROM, to,
+    subject,
+    html: base(content),
+  })
+  if (error) console.error('[email] re-engage error:', JSON.stringify(error))
+  else console.log('[email] re-engage sent scenario:', scenario, 'id:', data?.id, 'to:', to)
+  return { data, error }
+}

@@ -766,6 +766,7 @@ export default function QuestionnairePage() {
   const [profile,       setProfile]       = useState<Profile>({ name: '', email: '', company: '' })
   const [current,       setCurrent]       = useState(0)
   const [answers,       setAnswers]       = useState<Answers>({})
+  const saveProgressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [prefillIds,    setPrefillIds]    = useState<Set<number>>(new Set())
   const [prefillBanner, setPrefillBanner] = useState(false)
   const [prefillReady,  setPrefillReady]  = useState(false)
@@ -930,6 +931,18 @@ export default function QuestionnairePage() {
     }
   }, [q?.id, q?.type, answers])
 
+  const saveProgress = useCallback((answeredCount: number) => {
+    if (status !== 'authenticated') return
+    if (saveProgressTimer.current) clearTimeout(saveProgressTimer.current)
+    saveProgressTimer.current = setTimeout(() => {
+      fetch('/api/questionnaire/save-progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ questionsAnswered: answeredCount }),
+      }).catch(() => {})
+    }, 500)
+  }, [status])
+
   const navigate = (dir: 'next' | 'back') => {
     if (dir === 'next' && current === 10 && status === 'unauthenticated') {
       setVisible(false)
@@ -944,10 +957,12 @@ export default function QuestionnairePage() {
           const nextLayer = visible_qs[nextIdx].layer
           if (nextLayer !== q.layer && (q.layer === 1 || q.layer === 2)) {
             setLayerDone(q.layer as 1 | 2)
+            saveProgress(nextIdx)
             return
           }
         }
         setCurrent(c => c + 1)
+        saveProgress(nextIdx)
       } else {
         setCurrent(c => c - 1)
       }
