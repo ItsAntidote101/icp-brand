@@ -810,11 +810,12 @@ ${cta('View Full Briefing', 'https://idealicp.com/dashboard')}`
 
 export async function sendEscalationToFounder({
   userName, userEmail, companyName, tier, score, wasteEstimate,
-  urgency, note, conversationTranscript,
+  urgency, note, conversationTranscript, buyerEmail,
 }: {
   userName: string; userEmail: string; companyName?: string
   tier: string; score: number | null; wasteEstimate: string
   urgency: string; note: string; conversationTranscript: string
+  buyerEmail?: string
 }) {
   const content = `
 ${heading('New Escalation Request', 30)}
@@ -842,7 +843,7 @@ ${note ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0
 <p style="margin:0;color:${Muted};font-size:13px;font-family:${font};">Reply via email to respond directly.</p>`
 
   const { data, error } = await getResend().emails.send({
-    from: FROM, to: 'eugene@idealicp.com', replyTo: userEmail,
+    from: FROM, to: buyerEmail || 'eugene@idealicp.com', replyTo: userEmail,
     subject: `Escalation: ${companyName || userName}, ${urgency}`,
     html: base(content, { loginBtn: false }),
   })
@@ -854,11 +855,12 @@ ${note ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0
 // ─── Email 14: Escalation, user confirmation ─────────────────────────────────
 
 export async function sendEscalationConfirmationToUser({
-  to, name, tier, urgency,
+  to, name, tier, urgency, buyerName,
 }: {
-  to: string; name: string; tier: string; urgency: string
+  to: string; name: string; tier: string; urgency: string; buyerName?: string
 }) {
   const first = name?.split(' ')[0] ?? 'there'
+  const buyer = buyerName ?? 'your assigned media buyer'
   const tierKey = tier.toLowerCase()
   const timeline =
     tierKey === 'agency' ? 'Same-day response' :
@@ -868,7 +870,7 @@ export async function sendEscalationConfirmationToUser({
   const content = `
 ${ICON.check}
 ${heading('Your request has been received.')}
-${sub(`Hi ${first}, your escalation has been sent to Eugene.`)}
+${sub(`Hi ${first}, your escalation has been sent to ${buyer}.`)}
 ${infoCard(`<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
   <tr><td style="padding:10px 0;border-bottom:1px solid ${BorderLight};">
     <p style="margin:0;color:${Dark};font-size:14px;font-weight:600;font-family:${font};">Expected response time</p>
@@ -880,7 +882,7 @@ ${infoCard(`<table role="presentation" width="100%" cellpadding="0" cellspacing=
   </td></tr>
   <tr><td style="padding:10px 0;">
     <p style="margin:0;color:${Dark};font-size:14px;font-weight:600;font-family:${font};">How you will hear back</p>
-    <p style="margin:2px 0 0;color:${Muted};font-size:13px;font-family:${font};">Eugene will respond via chat in your dashboard and by email.</p>
+    <p style="margin:2px 0 0;color:${Muted};font-size:13px;font-family:${font};">${buyer} will respond via chat in your dashboard and by email.</p>
   </td></tr>
 </table>`)}
 ${cta('Go to Dashboard', 'https://idealicp.com/dashboard')}`
@@ -898,20 +900,21 @@ ${cta('Go to Dashboard', 'https://idealicp.com/dashboard')}`
 // ─── Email 15: Admin reply, user notification ────────────────────────────────
 
 export async function sendAdminReplyToUser({
-  to, name, reply, dashboardUrl,
+  to, name, reply, dashboardUrl, buyerName,
 }: {
-  to: string; name: string; reply: string; dashboardUrl?: string
+  to: string; name: string; reply: string; dashboardUrl?: string; buyerName?: string
 }) {
   const first = escapeHtml(name?.split(' ')[0] ?? 'there')
+  const buyer = escapeHtml(buyerName ?? 'Your media buyer')
   const url = dashboardUrl ?? 'https://idealicp.com/dashboard'
 
   const content = `
 ${ICON.check}
-${heading('Eugene replied to your question.', 36)}
-${sub(`Hi ${first}, Eugene reviewed your diagnostic and left a reply.`)}
+${heading(`${buyer} replied to your question.`, 36)}
+${sub(`Hi ${first}, ${buyer} reviewed your diagnostic and left a reply.`)}
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(232,51,10,0.05);border:1.5px solid rgba(232,51,10,0.2);border-radius:4px;margin-bottom:20px;">
   <tr><td style="padding:20px 24px;">
-    <p style="margin:0 0 10px;color:${Orange};font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;font-family:${font};">Reply from Eugene</p>
+    <p style="margin:0 0 10px;color:${Orange};font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;font-family:${font};">Reply from ${buyer}</p>
     <p style="margin:0;color:${Dark};font-size:15px;line-height:1.7;font-family:${font};">${escapeHtml(reply)}</p>
   </td></tr>
 </table>
@@ -919,7 +922,7 @@ ${cta('View in Dashboard', url)}`
 
   const { data, error } = await getResend().emails.send({
     from: FROM, to,
-    subject: 'Eugene replied to your question',
+    subject: `${buyerName ?? 'Your media buyer'} replied to your question`,
     html: base(content),
   })
   if (error) console.error('[email] admin reply user error:', JSON.stringify(error))

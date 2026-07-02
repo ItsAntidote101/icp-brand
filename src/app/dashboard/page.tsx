@@ -13,6 +13,7 @@ import {
   Users, Search, Filter, DollarSign, Gift,
 } from 'lucide-react'
 import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis, YAxis, ReferenceLine, CartesianGrid, LabelList } from 'recharts'
+import { MEDIA_BUYERS, getAssignedBuyer, type MediaBuyer } from '@/lib/buyers'
 
 // ─── Tokens ───────────────────────────────────────────────────────────────────
 const P       = '#201515'
@@ -37,93 +38,8 @@ function convertAmount(amount: number, fromCurrency: string, toCurrency: string)
 type Tab = 'overview' | 'audience' | 'search' | 'funnel' | 'economics' | 'intelligence' | 'reports' | 'account'
 
 // ─── Media Buyer Roster ───────────────────────────────────────────────────────
-
-type MediaBuyer = {
-  name:         string
-  firstName:    string
-  title:        string
-  speciality:   string
-  regions:      string[]
-  industries:   string[]
-  avatarColor:  string
-  initials:     string
-  yearsExp:     number
-  bio:          string
-  calLink:      string
-}
-
-const MEDIA_BUYERS: MediaBuyer[] = [
-  {
-    name: 'Eugene Kariuki', firstName: 'Eugene', initials: 'EK', avatarColor: '#201515',
-    title: 'B2B Media Buyer', speciality: 'B2B SaaS, Fintech, East Africa paid acquisition',
-    regions: ['Kenya', 'Uganda', 'Tanzania', 'East Africa'],
-    industries: ['SaaS', 'Fintech', 'B2B', 'Technology'],
-    yearsExp: 7,
-    bio: '7 years running Meta and Google for B2B SaaS and fintech companies across East Africa. Specialist in M-Pesa-integrated funnels and WhatsApp lead qualification.',
-    calLink: 'https://calendly.com/idealicp/eugene-review',
-  },
-  {
-    name: 'Aisha Mensah', firstName: 'Aisha', initials: 'AM', avatarColor: '#7c3aed',
-    title: 'E-commerce Media Buyer', speciality: 'DTC, e-commerce, West Africa performance',
-    regions: ['West Africa (Nigeria, Ghana)', 'Nigeria', 'Ghana'],
-    industries: ['E-commerce', 'DTC', 'Retail', 'FMCG', 'Consumer'],
-    yearsExp: 6,
-    bio: '6 years scaling DTC and e-commerce brands in Nigeria and Ghana. Built Meta Shopping and Google Performance Max campaigns generating 4x+ ROAS for over 40 brands.',
-    calLink: 'https://calendly.com/idealicp/aisha-review',
-  },
-  {
-    name: 'David Osei', firstName: 'David', initials: 'DO', avatarColor: '#0369a1',
-    title: 'Growth Media Buyer', speciality: 'B2B services, professional services, Southern Africa',
-    regions: ['South Africa', 'Global/Multiple Regions'],
-    industries: ['Professional Services', 'Consulting', 'Finance', 'Insurance', 'B2B Services'],
-    yearsExp: 8,
-    bio: '8 years in B2B lead generation for professional services firms. Managed LinkedIn and Google budgets from KES 50,000 to KES 2M per month across South Africa and global markets.',
-    calLink: 'https://calendly.com/idealicp/david-review',
-  },
-  {
-    name: 'Grace Nakato', firstName: 'Grace', initials: 'GN', avatarColor: '#065f46',
-    title: 'Local & SME Media Buyer', speciality: 'Local businesses, healthcare, education, SMEs',
-    regions: ['Kenya', 'Uganda', 'Tanzania'],
-    industries: ['Healthcare', 'Education', 'Local Services', 'Hospitality', 'Real Estate'],
-    yearsExp: 5,
-    bio: '5 years growing local and SME brands in East Africa. Expert in Google Local, Meta lead ads, and low-budget high-efficiency campaigns for businesses under KES 200,000/month.',
-    calLink: 'https://calendly.com/idealicp/grace-review',
-  },
-  {
-    name: 'Marcus Webb', firstName: 'Marcus', initials: 'MW', avatarColor: '#9a3412',
-    title: 'International Media Buyer', speciality: 'UK, Europe, North America B2B and SaaS',
-    regions: ['UK & Ireland', 'Europe (non-UK)', 'North America (US/Canada)', 'Middle East', 'Southeast Asia', 'South Asia (India/Pakistan)', 'Latin America', 'Australia & New Zealand'],
-    industries: [],
-    yearsExp: 9,
-    bio: '9 years managing international paid acquisition for B2B and SaaS companies across the UK, Europe, and North America. Specialist in multi-market funnel optimisation and LinkedIn ABM.',
-    calLink: 'https://calendly.com/idealicp/marcus-review',
-  },
-]
-
-function getAssignedBuyer(region: string, industry: string, tier: string): MediaBuyer {
-  const reg = region ?? ''
-  const ind = industry ?? ''
-
-  // Find by region match first
-  const byRegion = MEDIA_BUYERS.filter(b =>
-    b.regions.some(r => reg.includes(r) || r.includes(reg))
-  )
-
-  if (byRegion.length === 1) return byRegion[0]
-
-  // Narrow by industry if multiple region matches
-  if (byRegion.length > 1) {
-    const byIndustry = byRegion.find(b =>
-      b.industries.length === 0 || b.industries.some(i => ind.toLowerCase().includes(i.toLowerCase()))
-    )
-    if (byIndustry) return byIndustry
-    return byRegion[0]
-  }
-
-  // Default: Eugene for paid tiers, Marcus for international
-  if (tier === 'agency' || tier === 'pro') return MEDIA_BUYERS[0]
-  return MEDIA_BUYERS[4]
-}
+// MEDIA_BUYERS and getAssignedBuyer now live in src/lib/buyers.ts (shared with
+// the buyer inbox API routes and the media_buyers table seed).
 
 // ─── Buyer Avatar ─────────────────────────────────────────────────────────────
 
@@ -5486,9 +5402,10 @@ type ChatMsg = {
   role: 'user' | 'assistant' | 'media_buyer'
   content: string
   timestamp: Date
+  buyerName?: string | null
 }
 
-function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: number | null; diag: DiagnosisData; activeTab: Tab }) {
+function ChatWidget({ user, score, diag, activeTab, buyer }: { user: UserData; score: number | null; diag: DiagnosisData; activeTab: Tab; buyer: MediaBuyer }) {
   const [isOpen,            setIsOpen]            = useState(false)
   const [messages,          setMessages]          = useState<ChatMsg[]>([])
   const [input,             setInput]             = useState('')
@@ -5578,17 +5495,34 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
 
   useEffect(() => {
     if (isOpen && !initialized) {
-      const staleNote = topFinding ? ` Your top unresolved finding is "${topFinding.title}".` : ''
-      const welcome: ChatMsg = {
-        id: 'welcome',
-        role: 'assistant',
-        content: `${firstName}, I have read your full diagnostic. Your ICP score is ${score ?? '?'}/100 and you are losing an estimated ${waste} per month on misaligned targeting.${staleNote}\n\nWhat do you want to work on?`,
-        timestamp: new Date(),
-      }
-      setMessages([welcome])
-      setLastSuggestions(welcomeSuggestions)
       setInitialized(true)
-      setHasUnread(false)
+      void (async () => {
+        let history: ChatMsg[] = []
+        try {
+          const res = await fetch('/api/chat/history')
+          const data = await res.json() as { messages?: Array<{ id: string; role: ChatMsg['role']; content: string; buyerName: string | null; createdAt: string }> }
+          history = (data.messages ?? []).map(m => ({
+            id: m.id, role: m.role, content: m.content, buyerName: m.buyerName,
+            timestamp: new Date(m.createdAt),
+          }))
+        } catch {
+          // fall back to a fresh welcome below
+        }
+
+        if (history.length > 0) {
+          setMessages(history)
+        } else {
+          const staleNote = topFinding ? ` Your top unresolved finding is "${topFinding.title}".` : ''
+          const welcome: ChatMsg = {
+            id: 'welcome',
+            role: 'assistant',
+            content: `${firstName}, I have read your full diagnostic. Your ICP score is ${score ?? '?'}/100 and you are losing an estimated ${waste} per month on misaligned targeting.${staleNote}\n\nWhat do you want to work on?`,
+            timestamp: new Date(),
+          }
+          setMessages([welcome])
+        }
+        setLastSuggestions(welcomeSuggestions)
+      })()
     }
     if (isOpen) {
       setHasUnread(false)
@@ -5644,7 +5578,7 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
     try {
       const transcript = messages
         .filter(m => m.id !== 'typing')
-        .map(m => `${m.role === 'user' ? 'User' : m.role === 'media_buyer' ? 'Eugene' : 'AI'}: ${m.content}`)
+        .map(m => `${m.role === 'user' ? 'User' : m.role === 'media_buyer' ? (m.buyerName ?? buyer.name) : 'AI'}: ${m.content}`)
         .join('\n')
       await fetch('/api/chat/escalate', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -5655,7 +5589,7 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
       const confirmMsg: ChatMsg = {
         id: Date.now() + 'confirm',
         role: 'assistant',
-        content: `Request sent. Eugene will review your diagnostic and respond via this chat and email. You'll get a notification when he replies.`,
+        content: `Request sent. ${buyer.firstName} will review your diagnostic and respond via this chat and email. You'll get a notification when they reply.`,
         timestamp: new Date(),
       }
       setMessages(prev => [...prev, confirmMsg])
@@ -5734,7 +5668,7 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
               return (
                 <div key={msg.id} style={{ display: 'flex', flexDirection: 'column', alignItems: isUser ? 'flex-end' : 'flex-start', gap: 4 }}>
                   {isMediaBuyer && (
-                    <span style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, paddingLeft: 4 }}>Eugene · Media Buyer</span>
+                    <span style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, paddingLeft: 4 }}>{msg.buyerName ?? buyer.name} · Media Buyer</span>
                   )}
 
                   <div style={{
@@ -5788,10 +5722,10 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
               <div style={{ background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <UserCheck size={18} color={P} />
-                  <span style={{ fontFamily: font, fontSize: 15, fontWeight: 600, color: P }}>Connect with Eugene</span>
+                  <span style={{ fontFamily: font, fontSize: 15, fontWeight: 600, color: P }}>Connect with {buyer.firstName}</span>
                 </div>
                 <p style={{ fontFamily: fontB, fontSize: 13, color: P, margin: 0, lineHeight: 1.6 }}>
-                  {"I'll package this conversation and your diagnostic for Eugene to review. He typically responds within 24 hours for Pro subscribers and same-day for Agency subscribers."}
+                  {`I'll package this conversation and your diagnostic for ${buyer.firstName} to review. They typically respond within 24 hours for Pro subscribers and same-day for Agency subscribers.`}
                 </p>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button onClick={() => setShowEscalation(true)} style={{ flex: 1, background: P, color: '#fff', border: 'none', borderRadius: 10, padding: '10px 0', fontFamily: fontB, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Request Human Review</button>
@@ -5815,7 +5749,7 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
                 <textarea
                   value={escalationNote}
                   onChange={e => setEscalationNote(e.target.value)}
-                  placeholder="Anything specific for Eugene? (optional)"
+                  placeholder={`Anything specific for ${buyer.firstName}? (optional)`}
                   rows={2}
                   style={{ fontFamily: fontB, fontSize: 13, color: P, background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 10, padding: '10px 12px', resize: 'none', outline: 'none' }}
                 />
@@ -7065,7 +6999,7 @@ export default function DashboardPage() {
       )}
 
       {/* ── Chat Widget ───────────────────────────────────────────────────── */}
-      {user && <ChatWidget user={user} score={score} diag={diag} activeTab={activeTab} />}
+      {user && <ChatWidget user={user} score={score} diag={diag} activeTab={activeTab} buyer={assignedBuyer} />}
 
       {/* ── Mobile bottom tab bar (lg:hidden) ─────────────────────────────── */}
       <div className="lg:hidden" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'rgba(255,255,255,0.96)', backdropFilter: 'blur(20px)', borderTop: `1px solid ${Pborder}`, zIndex: 50, overflowX: 'auto' }}>
