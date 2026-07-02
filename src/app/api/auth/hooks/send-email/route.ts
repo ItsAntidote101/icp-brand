@@ -22,11 +22,16 @@ type SendEmailHookPayload = {
 }
 
 export async function POST(req: NextRequest) {
-  const secret = process.env.SUPABASE_AUTH_HOOK_SECRET
-  if (!secret) {
+  const rawSecret = process.env.SUPABASE_AUTH_HOOK_SECRET
+  if (!rawSecret) {
     console.error('[auth/hooks/send-email] SUPABASE_AUTH_HOOK_SECRET is not set')
     return NextResponse.json({ error: { http_code: 500, message: 'Hook not configured' } }, { status: 500 })
   }
+  // Supabase displays the secret as "v1,whsec_...", but standardwebhooks'
+  // Webhook constructor only strips a leading "whsec_" — it doesn't know
+  // about Supabase's "v1," prefix, so verification silently fails unless
+  // that part is stripped first.
+  const secret = rawSecret.replace(/^v1,/, '')
 
   const rawBody = await req.text()
 
