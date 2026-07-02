@@ -21,13 +21,19 @@ export async function POST(req: NextRequest) {
     const normalised = email.toLowerCase().trim()
 
     // Buyer accounts are provisioned by hand (media_buyers table), not self-signup.
-    const { data: buyer } = await db
+    const { data: buyer, error: buyerErr } = await db
       .from('media_buyers')
       .select('id, active')
       .eq('email', normalised)
       .maybeSingle()
 
-    if (!buyer || !buyer.active) {
+    if (buyerErr || !buyer || !buyer.active) {
+      console.error('[buyer/auth/send-otp] buyer lookup:', {
+        normalised,
+        buyer,
+        buyerErr,
+        supabaseProjectRef: process.env.NEXT_PUBLIC_SUPABASE_URL?.match(/https:\/\/(.+)\.supabase\.co/)?.[1],
+      })
       return NextResponse.json({ notFound: true }, { status: 404 })
     }
 

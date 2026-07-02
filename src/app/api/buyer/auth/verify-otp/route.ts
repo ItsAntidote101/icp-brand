@@ -46,6 +46,12 @@ export async function POST(req: NextRequest) {
       .maybeSingle()
 
     if (buyerErr || !buyer || !buyer.active) {
+      console.error('[buyer/auth/verify-otp] buyer lookup:', {
+        verifiedEmail,
+        buyer,
+        buyerErr,
+        supabaseProjectRef: process.env.NEXT_PUBLIC_SUPABASE_URL?.match(/https:\/\/(.+)\.supabase\.co/)?.[1],
+      })
       return NextResponse.json({ error: 'This email is not registered as a media buyer.' }, { status: 403 })
     }
 
