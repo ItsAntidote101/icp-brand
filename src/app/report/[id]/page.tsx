@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import { track } from '@/lib/track'
 
 type Tier = 'Starter' | 'Pro' | 'Agency'
 
@@ -239,6 +240,11 @@ export default function ReportPage({ params }: { params: { id: string } }) {
   const [isSubscribed,     setIsSubscribed]     = useState(false)
   const [buyerIntro,       setBuyerIntro]       = useState<BuyerIntro | null>(null)
   const [showBreakdown,    setShowBreakdown]    = useState(false)
+  const [callPhone,        setCallPhone]        = useState('')
+  const [callTime,         setCallTime]         = useState('Weekday morning')
+  const [callNote,         setCallNote]         = useState('')
+  const [callStatus,       setCallStatus]       = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
+  const [callError,        setCallError]        = useState('')
   const emailRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -256,6 +262,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
         }
 
         if (reportRes.ok) {
+          track('report_viewed', { reportId: params.id })
           const data = await reportRes.json()
           if (data.isSubscribed) setIsSubscribed(true)
           const d = data.report?.diagnosis ?? {}
@@ -289,6 +296,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
   }
 
   const handleSubscribe = async () => {
+    track('checkout_started', { tier: selectedTier })
     if (!email.trim()) { setSubscribeError('Please enter your email address.'); return }
     setSubscribing(true)
     setSubscribeError('')
@@ -307,19 +315,35 @@ export default function ReportPage({ params }: { params: { id: string } }) {
     }
   }
 
+  const requestCall = async () => {
+    setCallStatus('sending')
+    setCallError('')
+    try {
+      const res = await fetch('/api/call-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reportId: params.id, whatsapp: callPhone, preferredTime: callTime, notes: callNote }),
+      })
+      if (res.status === 401) {
+        window.location.href = `/auth?tab=login&next=${encodeURIComponent(`/report/${params.id}`)}`
+        return
+      }
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error((data as { error?: string }).error ?? 'Something went wrong')
+      track('call_requested', { reportId: params.id })
+      setCallStatus('sent')
+    } catch (err) {
+      setCallError(err instanceof Error ? err.message : 'Something went wrong')
+      setCallStatus('error')
+    }
+  }
+
   if (loading) return <LoadingSkeleton />
   if (!report)  return <LoadingSkeleton />
 
   const criticalCount = report.findings.filter(f => f.severity === 'Critical').length
   const weakDimensions = report.breakdown.filter(b => b.score < 50)
 
-  // Initials color palette for buyers
-  const BUYER_COLORS: Record<string, string> = {
-    EK: '#201515', AM: '#7c3aed', DO: '#0369a1', GN: '#065f46', MW: '#9a3412',
-  }
-  const buyerColor = buyerIntro
-    ? (BUYER_COLORS[buyerIntro.buyer_initials] ?? '#201515')
-    : '#201515'
 
   return (
     <div className="min-h-screen bg-[#fffefb] text-[#201515]">
@@ -549,45 +573,71 @@ export default function ReportPage({ params }: { params: { id: string } }) {
           </section>
         )}
 
-        {/* ── SECTION 6 · Media Buyer Teaser ────────────────────────────── */}
-        <section className="fade-up no-print" style={{ animationDelay: '0.22s' }}>
-          <div className="bg-[#201515] rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center gap-6">
-            <div className="flex-shrink-0">
-              {buyerIntro ? (
-                <BuyerAvatar initials={buyerIntro.buyer_initials} color={buyerColor} />
-              ) : (
-                <div className="w-11 h-11 rounded-full bg-[rgba(255,255,255,0.15)] flex items-center justify-center">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-                  </svg>
-                </div>
-              )}
-            </div>
-            <div className="flex-1">
-              {buyerIntro ? (
-                <>
-                  <p className="text-[11px] font-bold uppercase tracking-widest text-[rgba(255,255,255,0.45)] mb-1">Message from your media buyer</p>
-                  <p className="text-white font-semibold text-sm mb-0.5">{buyerIntro.buyer_name} has reviewed your report</p>
-                  <p className="text-[rgba(255,255,255,0.6)] text-sm leading-relaxed line-clamp-2">
-                    {buyerIntro.message.slice(0, 140)}{buyerIntro.message.length > 140 ? '…' : ''}
+        {/* ── SECTION 6 · Free call with Eugene (main next step) ─────────── */}
+        <section id="book-call" className="fade-up no-print" style={{ animationDelay: '0.22s' }}>
+          <div className="bg-[#201515] rounded-2xl p-6 sm:p-8">
+            <div className="flex items-start gap-4 mb-5">
+              <BuyerAvatar initials="EK" color="#e8330a" />
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-widest text-[#e8330a] mb-1">Your next step, free</p>
+                <h2 className="text-white font-extrabold text-xl sm:text-2xl leading-tight mb-1">Talk your report through with Eugene</h2>
+                <p className="text-[rgba(255,255,255,0.6)] text-sm leading-relaxed max-w-xl">
+                  A free 20-minute call with a Nairobi media buyer who runs Google and Meta campaigns for lead-generating businesses. We go through your findings and agree what to fix first. No obligation.
+                </p>
+                {buyerIntro && (
+                  <p className="text-[rgba(255,255,255,0.45)] text-xs leading-relaxed mt-3 line-clamp-2 italic">
+                    &ldquo;{buyerIntro.message.slice(0, 160)}{buyerIntro.message.length > 160 ? '…' : ''}&rdquo;
                   </p>
-                </>
-              ) : (
-                <>
-                  <p className="text-[11px] font-bold uppercase tracking-widest text-[rgba(255,255,255,0.45)] mb-1">Your dedicated media buyer</p>
-                  <p className="text-white font-semibold text-sm mb-0.5">A media buyer is reviewing your report</p>
-                  <p className="text-[rgba(255,255,255,0.6)] text-sm leading-relaxed">
-                    Based on your region and industry, a specialist has been assigned to your account. Expect a personalised message within the next few hours.
-                  </p>
-                </>
-              )}
+                )}
+              </div>
             </div>
-            <div className="flex-shrink-0 w-full sm:w-auto">
-              <Link href="/dashboard"
-                className="block w-full sm:w-auto text-center bg-white text-[#201515] font-semibold text-sm px-5 py-2.5 rounded-xl hover:opacity-90 transition-opacity whitespace-nowrap">
-                {buyerIntro ? 'Read full message →' : 'Go to Dashboard →'}
-              </Link>
-            </div>
+
+            {callStatus === 'sent' ? (
+              <div className="rounded-xl border border-[rgba(34,197,94,0.3)] bg-[rgba(34,197,94,0.08)] p-5">
+                <p className="text-white font-semibold text-sm mb-1">Request sent.</p>
+                <p className="text-[rgba(255,255,255,0.65)] text-sm">Eugene will message you on WhatsApp to agree a time. A confirmation is on its way to your inbox.</p>
+              </div>
+            ) : (
+              <form
+                onSubmit={e => { e.preventDefault(); if (callStatus !== 'sending') requestCall() }}
+                className="grid sm:grid-cols-[1fr_1fr_auto] gap-3 items-end"
+              >
+                <label className="block">
+                  <span className="block text-[11px] font-semibold uppercase tracking-widest text-[rgba(255,255,255,0.45)] mb-1.5">WhatsApp number</span>
+                  <input
+                    type="tel" inputMode="tel" required autoComplete="tel"
+                    value={callPhone} onChange={e => setCallPhone(e.target.value)}
+                    placeholder="0712 345 678"
+                    className="w-full rounded-xl bg-white text-[#201515] text-sm px-4 py-3 outline-none focus:ring-2 focus:ring-[#e8330a]"
+                  />
+                </label>
+                <label className="block">
+                  <span className="block text-[11px] font-semibold uppercase tracking-widest text-[rgba(255,255,255,0.45)] mb-1.5">Best time</span>
+                  <select
+                    value={callTime} onChange={e => setCallTime(e.target.value)}
+                    className="w-full rounded-xl bg-white text-[#201515] text-sm px-4 py-3 outline-none focus:ring-2 focus:ring-[#e8330a]"
+                  >
+                    {['Weekday morning', 'Weekday afternoon', 'Weekday evening', 'Saturday'].map(t => <option key={t}>{t}</option>)}
+                  </select>
+                </label>
+                <button
+                  type="submit" disabled={callStatus === 'sending' || callPhone.trim().length < 9}
+                  className="rounded-xl bg-[#e8330a] text-white font-semibold text-sm px-6 py-3 hover:opacity-90 transition-opacity disabled:opacity-50 whitespace-nowrap"
+                >
+                  {callStatus === 'sending' ? 'Sending…' : 'Request my free call'}
+                </button>
+                <label className="block sm:col-span-3">
+                  <span className="block text-[11px] font-semibold uppercase tracking-widest text-[rgba(255,255,255,0.45)] mb-1.5">Anything Eugene should know? (optional)</span>
+                  <input
+                    type="text" maxLength={500}
+                    value={callNote} onChange={e => setCallNote(e.target.value)}
+                    placeholder="e.g. Our Meta leads stopped picking up calls last month"
+                    className="w-full rounded-xl bg-[rgba(255,255,255,0.08)] border border-[rgba(255,255,255,0.12)] text-white placeholder:text-[rgba(255,255,255,0.35)] text-sm px-4 py-3 outline-none focus:ring-2 focus:ring-[#e8330a]"
+                  />
+                </label>
+                {callStatus === 'error' && <p className="sm:col-span-3 text-sm text-[#fca5a5]">{callError}</p>}
+              </form>
+            )}
           </div>
         </section>
 
@@ -644,7 +694,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
               <div className="relative -mt-10 z-10">
                 <div className="bg-[#201515] border border-[rgba(232,51,10,0.2)] rounded-2xl p-7 sm:p-10 text-center shadow-2xl">
                   <span className="inline-block text-[11px] font-semibold uppercase tracking-widest text-[#e8330a] bg-[rgba(232,51,10,0.1)] border border-[rgba(232,51,10,0.25)] px-3 py-1 rounded-full mb-5">
-                    Unlock Full Analysis
+                    Prefer to fix it yourself? Unlock the full plan
                   </span>
                   <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-3 leading-tight">
                     {weakDimensions.length > 0
@@ -665,11 +715,11 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                         },
                         {
                           name: 'Pro' as Tier, highlight: true,
-                          features: ['Everything in Starter', 'Live landing page audit', 'Regional and competitor benchmarks', 'Monthly session with your buyer'],
+                          features: ['Everything in Starter', 'Live landing page audit', 'Regional and competitor benchmarks', 'Onboarding call with Eugene'],
                         },
                         {
                           name: 'Agency' as Tier, highlight: false,
-                          features: ['Everything in Pro', 'Team of media buyers on your account', 'White-label reports', 'Dedicated account manager'],
+                          features: ['Everything in Pro', 'Unlimited client diagnoses', 'White-label reports', 'Monthly call with Eugene'],
                         },
                       ]
                     ).map(tier => (

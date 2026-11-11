@@ -4,7 +4,8 @@ import { sendReEngageEmail, type ReEngageScenario } from '@/lib/email'
 
 export const dynamic = 'force-dynamic'
 
-const TOTAL_QUESTIONS = 22
+// The free diagnosis is the short 10-question version (see QUICK_QUESTION_IDS)
+const TOTAL_QUESTIONS = 10
 
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization')
@@ -84,7 +85,7 @@ export async function GET(req: NextRequest) {
       scenario = 'csv_only'
     } else if (questionsAnswered === 0) {
       scenario = 'never_started'
-    } else if (questionsAnswered < 10) {
+    } else if (questionsAnswered < 5) {
       scenario = 'early_drop'
     } else {
       scenario = 'late_drop'

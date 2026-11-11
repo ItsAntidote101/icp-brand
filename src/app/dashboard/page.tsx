@@ -493,7 +493,7 @@ const TIER_PRICE_KES: Record<string, number> = { starter: 6500, pro: 13000, agen
 const TIER_DESC: Record<string, string> = {
   starter: 'Monthly ICP diagnostic with full report, findings, and quick wins.',
   pro:     'Everything in Starter plus priority re-diagnosis and campaign CSV analysis.',
-  agency:  'Everything in Pro plus a team of B2B media buyers, white-label reports, and a dedicated account manager.',
+  agency:  'Everything in Pro plus unlimited client diagnoses, white-label reports and a monthly strategy call with Eugene.',
   free:    'Basic ICP diagnostic based on questionnaire answers only.',
 }
 
@@ -2502,7 +2502,7 @@ function FunnelTab({ diag, hasReports, score, isSubscribed, buyer, onUpgrade }: 
         <Card style={{ background: '#f8f4f0' }}>
           <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: '0 0 12px' }}>Landing Page Review</p>
           <p style={{ fontFamily: fontB, fontSize: 14, color: '#605d52', lineHeight: 1.75, margin: '0 0 16px' }}>
-            Pro subscribers get a dedicated media buyer to review their actual landing page: offer clarity, CTA effectiveness, trust signals, and conversion fixes.
+            Pro includes a live audit of your actual landing page: offer clarity, CTA effectiveness, trust signals, and conversion fixes.
           </p>
           <button onClick={onUpgrade} style={{ fontFamily: font, fontWeight: 600, fontSize: 13, background: Accent, color: '#fff', border: 'none', cursor: 'pointer', padding: '10px 20px', borderRadius: 10 }}>
             Upgrade to Pro →
@@ -3272,7 +3272,7 @@ function FirstRunDashboard({ user, latestCsv }: { user: UserData; latestCsv?: Cs
               Run My First Diagnosis <ArrowRight size={15} />
             </Link>
             <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-              {[['3 layers', '22 questions'], ['5 minutes', 'Instant results']].map(([a, b]) => (
+              {[['10 questions', 'About 3 minutes'], ['Free', 'Instant results']].map(([a, b]) => (
                 <div key={a} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                   <Check size={13} color="rgba(255,255,255,0.5)" />
                   <span style={{ fontFamily: fontB, fontSize: 13, color: 'rgba(255,255,255,0.55)' }}>{a}</span>
@@ -3470,12 +3470,11 @@ const PLAN_FEATURES: Record<string, string[]> = {
   ],
   agency: [
     'Everything in Pro',
-    'Team of B2B media buyers on your account',
-    'Monthly strategy sessions (full team)',
-    'White-label reports produced by account team',
+    'Unlimited diagnoses across client accounts',
+    'Monthly strategy call with Eugene',
+    'White-label reports with your branding',
     'Multi-client account coordination',
-    'Dedicated account manager (founder-led)',
-    'Onboarding call with your dedicated media buyer',
+    'Founder-led support',
     'Custom billing and invoicing',
     'Priority support',
   ],

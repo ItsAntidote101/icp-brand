@@ -12,7 +12,7 @@ export async function GET() {
 
   const { data: user } = await supabase
     .from('users')
-    .select('full_name, email')
+    .select('full_name, email, subscription_tier')
     .eq('email', session.email)
     .single()
 
@@ -20,5 +20,6 @@ export async function GET() {
     loggedIn: true,
     email: session.email,
     name: user?.full_name ?? null,
+    tier: user?.subscription_tier ?? 'free',
   })
 }

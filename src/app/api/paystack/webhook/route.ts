@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import crypto from 'crypto'
 import { claimPayment } from '@/lib/payments'
+import { recordFunnelEvent } from '@/lib/funnel'
 
 export async function POST(req: NextRequest) {
   const rawBody = await req.text()
@@ -53,6 +54,7 @@ export async function POST(req: NextRequest) {
 
     if (claim.ok) {
       const p = claim.row
+      await recordFunnelEvent(supabase, { event: 'paid', meta: { tier: p.tier, kind: p.kind, amountKes: Math.round(data.amount / 100), reference: p.reference, via: 'webhook' } })
       const isProration = p.kind === 'proration'
       const update: Record<string, unknown> = {
         email:              p.email,

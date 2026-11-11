@@ -74,9 +74,9 @@ export default function AboutPage() {
           {/* Stat chips */}
           <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 16, marginTop: 56 }}>
             {[
-              { value: '22',    label: 'Diagnostic questions' },
+              { value: '10',    label: 'Questions, about 3 minutes' },
               { value: '3',     label: 'Layers: ICP, pipeline, sales' },
-              { value: '5 min', label: 'To your ICP score' },
+              { value: 'KES',   label: 'Priced and benchmarked for Kenya' },
             ].map((stat) => (
               <div key={stat.value} style={{ background: Warm, border: `1.5px solid ${Border}`, padding: '16px 24px', textAlign: 'center', minWidth: 140 }}>
                 <div style={{ fontFamily: font, fontWeight: 700, fontSize: 28, color: Dark, lineHeight: 1.1 }}>{stat.value}</div>

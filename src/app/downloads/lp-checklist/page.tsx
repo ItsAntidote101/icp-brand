@@ -165,7 +165,7 @@ export default function LPChecklistPage() {
         {/* Bottom CTA */}
         <div className="no-print" style={{ background: Dark, padding: 'clamp(32px,4vw,48px)', textAlign: 'center' }}>
           <p style={{ fontFamily: font, fontSize: 'clamp(20px,3vw,26px)', fontWeight: 700, color: '#fff', margin: '0 0 12px', lineHeight: 1.2, letterSpacing: '-0.02em' }}>
-            Want our team to audit your landing page automatically?
+            Want your landing page audited automatically?
           </p>
           <p style={{ fontFamily: fontB, fontSize: 15, color: 'rgba(255,255,255,0.6)', margin: '0 0 28px', lineHeight: 1.6 }}>
             The Ideal ICP visits your landing page, scores it on 6 dimensions, and tells you exactly what to fix first.
