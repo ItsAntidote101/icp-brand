@@ -27,6 +27,7 @@ npm run dev                  # http://localhost:3000
 | `CRON_SECRET` | Vercel sends this to `/api/cron/*`; requests without it are rejected |
 | `ADMIN_SECRET` | `x-admin-key` header for `/api/admin/*` and `/api/email/send` |
 | `NEXT_PUBLIC_APP_URL` | Public site URL, e.g. `https://idealicp.com` |
+| `NEXT_PUBLIC_GTM_ID` | Google Tag Manager container (GTM-PPF3ZCLQ). All pixels live in GTM. Funnel steps are pushed to `dataLayer`: `landing_view`, `questionnaire_started`, `questionnaire_completed`, `report_viewed`, `call_requested`, `checkout_started`, `purchase` |
 | `NEXT_PUBLIC_BUYER_CALENDAR_URL` | Optional. Booking link for media buyer review calls |
 | `RE_ENGAGE_DELAY_HOURS`, `RE_ENGAGE_REPEAT_DAYS` | Optional. Timing for the re-engagement emails |
 
