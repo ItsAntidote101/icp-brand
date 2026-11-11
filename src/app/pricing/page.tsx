@@ -501,9 +501,7 @@ export default function PricingPage() {
                 <span style={{ fontFamily: fontB, fontSize: 12, color: '#22c55e', fontWeight: 600 }}>Buyer review included on every plan</span>
               </div>
               {[
-                { initials: 'EW', name: 'Eugene W.', role: 'Senior Buyer' },
-                { initials: 'AO', name: 'Amara O.', role: 'Growth Strategist' },
-                { initials: 'DK', name: 'David K.', role: 'Funnel Specialist' },
+                { initials: 'EK', name: 'Eugene K.', role: 'Founder and B2B Media Buyer' },
               ].map(({ initials, name, role }) => (
                 <div key={initials} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <div style={{ width: 36, height: 36, borderRadius: '50%', background: Dark, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
