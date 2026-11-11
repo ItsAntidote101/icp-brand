@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { sendSubscriptionEmail, sendUpgradeToUser, sendUpgradeToFounder } from '@/lib/email'
 import { claimPayment } from '@/lib/payments'
-import { recordFunnelEvent } from '@/lib/funnel'
+import { activatePayment, paymentReturnPath } from '@/lib/activate-payment'
 
 export async function GET(req: NextRequest) {
   const reference = req.nextUrl.searchParams.get('reference') ?? req.nextUrl.searchParams.get('trxref')
@@ -56,177 +55,24 @@ export async function GET(req: NextRequest) {
 
   if (!claim.ok) {
     if (claim.reason === 'already_processed') {
-      // Refresh / back button / webhook got there first: nothing to do
+      // The webhook (or a refresh) got there first and already activated the
+      // plan. Still send them to the right page so the purchase is recorded.
+      const { data: row } = await supabase
+        .from('paystack_payments')
+        .select('reference, email, tier, kind, status, paid_amount')
+        .eq('reference', reference)
+        .maybeSingle()
+      if (row && row.status === 'paid') {
+        return NextResponse.redirect(`${base}${paymentReturnPath(row, Math.round((row.paid_amount ?? 0) / 100))}`)
+      }
       return NextResponse.redirect(`${base}/dashboard`)
     }
     console.error('[verify] payment rejected:', claim.reason, 'reference:', reference)
     return NextResponse.redirect(`${base}/cancel?reason=${encodeURIComponent(claim.reason)}`)
   }
 
-  const payment  = claim.row
-  const email    = payment.email
-  const tier     = payment.tier.charAt(0).toUpperCase() + payment.tier.slice(1)
-  const metadata = payment.meta ?? {}
-
   // Amount actually charged (in KES, from Paystack cents)
   const amountKes = Math.round(((txData.amount as number) ?? 0) / 100)
-  await recordFunnelEvent(supabase, { event: 'paid', meta: { tier: payment.tier, kind: payment.kind, amountKes, reference } })
-
-  // Fetch existing user
-  const { data: existingUser, error: lookupError } = await supabase
-    .from('users')
-    .select('id, full_name, company_name, renewal_date, subscription_tier')
-    .eq('email', email)
-    .single()
-
-  if (lookupError && lookupError.code !== 'PGRST116') {
-    console.warn('[verify] users lookup error:', lookupError)
-  }
-
-  const upgradeFrom  = metadata.upgrade_from || existingUser?.subscription_tier || 'free'
-
-  // For proration upgrades, keep the existing renewal date unchanged.
-  // For new subscriptions (including free->paid), set renewal_date = now + 30 days.
-  const isProration  = payment.kind === 'proration'
-  const renewalDate  = isProration
-    ? (metadata.existing_renewal_date || existingUser?.renewal_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString())
-    : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-
-  const userId = existingUser?.id ?? null
-
-  if (isProration) {
-    // Paid upgrade: update tier only, keep renewal_date as-is
-    const { error: updateErr } = await supabase
-      .from('users')
-      .update({
-        subscription_tier:  tier.toLowerCase(),
-        billing_status:     'active',
-        scheduled_tier:     null,
-        scheduled_tier_date: null,
-        paystack_reference: reference,
-        updated_at:         new Date().toISOString(),
-      })
-      .eq('email', email)
-
-    if (updateErr) {
-      console.error('[verify] users proration upgrade error:', JSON.stringify(updateErr))
-    }
-
-    // Update subscriptions table
-    if (userId) {
-      await supabase
-        .from('subscriptions')
-        .update({ tier: tier.toLowerCase(), billing_status: 'active' })
-        .eq('user_id', userId)
-
-      // Record the upgrade payment in billing history
-      await supabase
-        .from('billing_history')
-        .insert({
-          user_id:    userId,
-          date:       new Date().toISOString(),
-          plan:       tier.toLowerCase(),
-          amount_kes: amountKes,
-          status:     'paid',
-        })
-    }
-
-    // Send upgrade confirmation emails (non-blocking)
-    const name = existingUser?.full_name ?? undefined
-    const company = existingUser?.company_name ?? undefined
-    const daysLeft = Math.max(0, Math.ceil(
-      (new Date(renewalDate).getTime() - Date.now()) / 86_400_000
-    ))
-
-    Promise.allSettled([
-      sendUpgradeToUser({
-        to:          email,
-        name:        name ?? '',
-        oldTier:     upgradeFrom,
-        newTier:     tier.toLowerCase(),
-        topUpKes:    amountKes,
-        renewalDate: renewalDate,
-      }),
-      sendUpgradeToFounder({
-        userName:      name ?? email,
-        userEmail:     email,
-        companyName:   company,
-        oldTier:       upgradeFrom,
-        newTier:       tier.toLowerCase(),
-        topUpKes:      amountKes,
-        daysRemaining: daysLeft,
-        renewalDate:   renewalDate,
-      }),
-    ]).catch(e => console.error('[verify] upgrade emails failed:', e))
-
-    const tierParam = encodeURIComponent(tier)
-    return NextResponse.redirect(`${base}/dashboard?upgrade=success&tier=${tierParam}&ref=${encodeURIComponent(reference)}&amount=${amountKes}`)
-  }
-
-  // New subscription (free->paid or first-time subscriber)
-  const upsertPayload = {
-    email,
-    ...(existingUser?.full_name ? { full_name: existingUser.full_name } : {}),
-    subscription_tier:  tier.toLowerCase(),
-    billing_status:     'active',
-    renewal_date:       renewalDate,
-    paystack_reference: reference,
-    updated_at:         new Date().toISOString(),
-  }
-
-  const { data: upsertData, error: upsertError } = await supabase
-    .from('users')
-    .upsert(upsertPayload, { onConflict: 'email' })
-    .select('id')
-    .single()
-
-  if (upsertError) {
-    console.error('[verify] users upsert error:', JSON.stringify(upsertError))
-  }
-
-  const newUserId = upsertData?.id ?? userId
-
-  if (newUserId) {
-    const subscriptionPayload = {
-      user_id:        newUserId,
-      tier:           tier.toLowerCase(),
-      billing_status: 'active',
-      renewal_date:   renewalDate,
-      created_at:     new Date().toISOString(),
-    }
-
-    const { error: subError } = await supabase
-      .from('subscriptions')
-      .insert([subscriptionPayload])
-      .select('id')
-      .single()
-
-    if (subError) {
-      console.error('[verify] subscriptions insert error:', JSON.stringify(subError))
-    }
-
-    // Record in billing_history
-    await supabase
-      .from('billing_history')
-      .insert({
-        user_id:    newUserId,
-        date:       new Date().toISOString(),
-        plan:       tier.toLowerCase(),
-        amount_kes: amountKes,
-        status:     'paid',
-      })
-  }
-
-  // Send subscription confirmation email (non-blocking)
-  sendSubscriptionEmail({
-    to:          email,
-    name:        existingUser?.full_name ?? undefined,
-    tier,
-    renewalDate,
-    baseUrl:     base,
-  }).catch(e => console.error('[verify] subscription email failed:', e))
-
-  const tierParam  = encodeURIComponent(tier)
-  const emailParam = encodeURIComponent(email)
-  return NextResponse.redirect(`${base}/success?email=${emailParam}&tier=${tierParam}&ref=${encodeURIComponent(reference)}`)
+  await activatePayment(supabase, claim.row, amountKes, base, 'verify')
+  return NextResponse.redirect(`${base}${paymentReturnPath(claim.row, amountKes)}`)
 }
