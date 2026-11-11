@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import crypto from 'crypto'
 import { claimPayment } from '@/lib/payments'
-import { recordFunnelEvent } from '@/lib/funnel'
+import { activatePayment } from '@/lib/activate-payment'
 
 export async function POST(req: NextRequest) {
   const rawBody = await req.text()
@@ -53,36 +53,8 @@ export async function POST(req: NextRequest) {
     })
 
     if (claim.ok) {
-      const p = claim.row
-      await recordFunnelEvent(supabase, { event: 'paid', meta: { tier: p.tier, kind: p.kind, amountKes: Math.round(data.amount / 100), reference: p.reference, via: 'webhook' } })
-      const isProration = p.kind === 'proration'
-      const update: Record<string, unknown> = {
-        email:              p.email,
-        subscription_tier:  p.tier,
-        billing_status:     'active',
-        paystack_reference: p.reference,
-        updated_at:         new Date().toISOString(),
-      }
-      if (!isProration) {
-        update.renewal_date = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-      }
-      const { data: u, error: upsertError } = await supabase
-        .from('users')
-        .upsert(update, { onConflict: 'email' })
-        .select('id')
-        .single()
-
-      if (upsertError) {
-        console.error('[webhook] charge.success Supabase upsert error:', upsertError)
-      } else if (u?.id) {
-        await supabase.from('billing_history').insert({
-          user_id:    u.id,
-          date:       new Date().toISOString(),
-          plan:       p.tier,
-          amount_kes: Math.round(data.amount / 100),
-          status:     'paid',
-        })
-      }
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://idealicp.com'
+      await activatePayment(supabase, claim.row, Math.round(data.amount / 100), appUrl, 'webhook')
     } else if (claim.reason !== 'already_processed') {
       console.error('[webhook] charge.success rejected:', claim.reason, 'reference:', data.reference)
     }
