@@ -414,6 +414,79 @@ ${infoCard([
   return { data, error }
 }
 
+// ─── Free 20-minute review call (main ask after the free report) ────────────
+
+function kvRows(rows: [string, string][]): string {
+  return rows.map(([k, v]) => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:8px;"><tr>
+  <td style="color:${Muted};font-size:13px;width:150px;font-family:${font};">${k}</td>
+  <td style="color:${Dark};font-size:13px;font-weight:600;font-family:${font};">${v}</td>
+</tr></table>`).join('')
+}
+
+export async function sendCallRequestToFounder({
+  userName, userEmail, companyName, whatsapp, preferredTime, notes, reportUrl, score, waste, topFinding, industry, adSpend,
+}: {
+  userName: string; userEmail: string; companyName: string; whatsapp: string; preferredTime: string
+  notes: string; reportUrl: string; score: number | null; waste: string; topFinding: string
+  industry: string; adSpend: string
+}) {
+  const content = `
+${heading('New free call request', 30)}
+<p style="margin:0 0 24px;color:${Muted};font-size:15px;line-height:1.7;font-family:${font};">Someone finished their free diagnosis and wants to talk it through.</p>
+${infoCard(`<p style="margin:0 0 12px;color:${Orange};font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;font-family:${font};">Lead</p>
+${kvRows([
+  ['Name', escapeHtml(userName || 'Not given')],
+  ['Company', escapeHtml(companyName || 'Not given')],
+  ['WhatsApp', escapeHtml(whatsapp)],
+  ['Email', escapeHtml(userEmail)],
+  ['Best time', escapeHtml(preferredTime || 'Any time')],
+  ['Industry', escapeHtml(industry || 'Not given')],
+  ['Monthly ad spend', escapeHtml(adSpend || 'Not given')],
+])}`)}
+${infoCard(`<p style="margin:0 0 12px;color:${Orange};font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;font-family:${font};">Their report</p>
+${kvRows([
+  ['ICP score', score !== null ? `${score}/100` : 'n/a'],
+  ['Estimated waste', escapeHtml(waste || 'n/a')],
+  ['Top finding', escapeHtml(topFinding || 'n/a')],
+])}
+<p style="margin:12px 0 0;font-size:13px;font-family:${font};"><a href="${reportUrl}" style="color:${Orange};text-decoration:none;font-weight:600;">Open the full report</a></p>`)}
+${notes ? infoCard(`<p style="margin:0 0 8px;color:${Orange};font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;font-family:${font};">Their note</p><p style="margin:0;color:${Dark};font-size:14px;line-height:1.6;font-family:${font};">${escapeHtml(notes)}</p>`) : ''}
+<p style="margin:16px 0 0;color:${Muted};font-size:13px;font-family:${font};">Reply to this email to reach them, or message them on WhatsApp.</p>`
+
+  const { data, error } = await getResend().emails.send({
+    from: FROM,
+    to: 'eugene@idealicp.com',
+    replyTo: userEmail,
+    subject: `Call request: ${companyName || userName || userEmail}${score !== null ? ` (score ${score})` : ''}`,
+    html: base(content, { loginBtn: false }),
+  })
+  if (error) console.error('[email] call request founder error:', JSON.stringify(error))
+  return { data, error }
+}
+
+export async function sendCallConfirmationToUser({ to, name }: { to: string; name: string }) {
+  const first = name?.split(' ')[0] || 'there'
+  const content = `
+${ICON.check}
+${heading('Got it. Let\'s talk it through.')}
+${sub(`Hi ${escapeHtml(first)}, your request for a free 20-minute call is in. Eugene will message you on WhatsApp to agree a time.`)}
+${infoCard(kvRows([
+  ['Before the call', 'Eugene reads your report, so there is nothing to prepare.'],
+  ['On the call', 'We go through your findings and agree what to fix first.'],
+  ['Cost', 'Free. No obligation to buy anything.'],
+]))}
+<p style="margin:0;color:${Muted};font-size:13px;font-family:${font};">Need to change something? Just reply to this email.</p>`
+
+  const { data, error } = await getResend().emails.send({
+    from: FROM, to,
+    replyTo: 'eugene@idealicp.com',
+    subject: 'Your free call request is in',
+    html: base(content),
+  })
+  if (error) console.error('[email] call confirmation error:', JSON.stringify(error))
+  return { data, error }
+}
+
 // ─── Email 6: Cancellation, user confirmation ────────────────────────────────
 
 export async function sendCancellationToUser({
@@ -1551,7 +1624,7 @@ ${urgencyBanner('Your ICP Health Score is unclaimed. Right now your campaigns ha
   ])}
 </table>
 
-<p style="margin:0 0 24px;color:${Dark};font-size:15px;font-family:${font};line-height:1.65;">The diagnostic takes <strong>5 minutes</strong>. 22 questions. One clear score. The longer you wait, the more you're flying blind.</p>
+<p style="margin:0 0 24px;color:${Dark};font-size:15px;font-family:${font};line-height:1.65;">The diagnostic takes <strong>about 3 minutes</strong>. 10 questions. One clear score. The longer you wait, the more you're flying blind.</p>
 
 ${cta('Get My ICP Score Now →', resumeUrl)}`
 
@@ -1662,7 +1735,7 @@ ${urgencyBanner("Your ICP Health Score connects your campaign patterns to your a
   ])}
 </table>
 
-<p style="margin:0 0 24px;color:${Dark};font-size:15px;font-family:${font};line-height:1.65;">22 questions. 5 minutes. One clear score. Everything else follows from there.</p>
+<p style="margin:0 0 24px;color:${Dark};font-size:15px;font-family:${font};line-height:1.65;">10 questions. About 3 minutes. One clear score. Everything else follows from there.</p>
 
 ${cta('Get My ICP Health Score →', resumeUrl)}`
   }

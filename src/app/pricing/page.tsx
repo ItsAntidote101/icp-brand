@@ -42,14 +42,14 @@ const PLANS = [
     highlight: false,
     cta: 'Start free diagnosis',
     href: '/questionnaire',
-    desc: 'One lifetime diagnosis. See exactly where your targeting leaks money. A media buyer reviews your report.',
+    desc: 'One lifetime diagnosis. See exactly where your targeting leaks money. Book a free 20-minute call with a media buyer to go through it.',
     includes: [
       'ICP health score (0-100)',
       'Top 3 critical findings',
       '3 quick wins for this week',
       'CAC and LTV:CAC estimate',
       'Monthly waste estimate',
-      'Media buyer reviews your report',
+      'Free 20-minute call with a media buyer',
       '1 lifetime diagnosis',
     ],
   },
@@ -91,7 +91,7 @@ const PLANS = [
       'Daily AI market briefings',
       'Competitive landscape tracking',
       'Priority in-dashboard support',
-      'Monthly strategy session (media buyer)',
+      'Onboarding call with Eugene to set priorities',
       '20 diagnoses per month',
     ],
   },
@@ -100,18 +100,16 @@ const PLANS = [
     tag: 'For teams',
     monthly: 26000, annualMonthly: 21600, annual: 260000,
     highlight: false,
-    cta: 'Talk to our team',
+    cta: 'Talk to Eugene',
     href: '/questionnaire',
-    desc: 'A retained team of B2B media buyers working on your client accounts. You get the platform plus the people.',
+    desc: 'For agencies and consultants running ads for several clients. Unlimited diagnoses, white-label reports and founder-led support.',
     includes: [
       'Everything in Pro',
       'Unlimited diagnoses across all client accounts',
-      'Dedicated account manager (founder-led)',
-      'Team of B2B media buyers on your account',
-      'White-label reports produced by your account team',
+      'Founder-led support',
+      'White-label reports with your branding',
       'Multi-client account coordination',
-      'Onboarding call with your dedicated media buyer',
-      'Monthly strategy sessions (full team, not one person)',
+      'Monthly strategy call with Eugene',
       'Custom billing and invoicing',
     ],
   },
@@ -164,8 +162,8 @@ const COMPARISON: Group[] = [
     rows: [
       { feature: 'Print-ready report',                        cells: [false, true, true, true], note: 'Save as PDF via your browser print function' },
       { feature: 'Diagnostic data export (CSV)',              cells: [false, true, true, true] },
-      { feature: 'Multi-client account coordination',         cells: [false, false, false, true], note: 'Your account manager coordinates across all client accounts' },
-      { feature: 'White-label reports',                       cells: [false, false, false, true], note: 'Produced and formatted by your account team' },
+      { feature: 'Multi-client account coordination',         cells: [false, false, false, true], note: 'Run and track diagnoses for each client from one account' },
+      { feature: 'White-label reports',                       cells: [false, false, false, true], note: 'Reports carry your agency branding' },
       { feature: 'Custom branded client reports',             cells: [false, false, false, true], note: 'Your branding, your clients' },
       { feature: 'Data retained while account is active',     cells: [true, true, true, true] },
     ],
@@ -173,14 +171,12 @@ const COMPARISON: Group[] = [
   {
     group: 'Human Support and Access',
     rows: [
-      { feature: 'Media buyer reviews your report',            cells: [true, true, true, true], note: 'Every diagnosis is read by a practitioner, included on all tiers' },
-      { feature: 'Personal follow-up if critical gap found',   cells: [true, true, true, true], note: 'Within 24 hours of your diagnosis completing' },
+      { feature: 'Free 20-minute call to review your report', cells: [true, true, true, true], note: 'Book it from your report page' },
       { feature: 'AI chat in dashboard',                       cells: [false, true, true, true] },
       { feature: 'Priority in-dashboard support',              cells: [false, false, true, true] },
-      { feature: 'Monthly strategy session',                   cells: [false, false, true, true], note: 'A real B2B media buyer reviews your findings with you' },
-      { feature: 'Onboarding call with dedicated media buyer', cells: [false, false, false, true] },
-      { feature: 'Dedicated account manager (founder-led)',    cells: [false, false, false, true] },
-      { feature: 'Full team of B2B media buyers',             cells: [false, false, false, true], note: 'Multiple practitioners actively working on your accounts' },
+      { feature: 'Onboarding call with Eugene',                cells: [false, false, true, true], note: 'A real media buyer goes through your findings and sets priorities with you' },
+      { feature: 'Monthly strategy call with Eugene',          cells: [false, false, false, true] },
+      { feature: 'Founder-led support',                        cells: [false, false, false, true] },
       { feature: 'Custom billing and invoicing',               cells: [false, false, false, true] },
     ],
   },
@@ -190,7 +186,7 @@ const COMPARISON: Group[] = [
       { feature: 'Dashboard access',           cells: [true, true, true, true] },
       { feature: 'Score history and trends',   cells: [false, true, true, true] },
       { feature: 'Milestone tracking',         cells: [false, true, true, true] },
-      { feature: 'Client accounts managed',    cells: ['1', '1', '1', 'Unlimited'], note: 'Agency: coordinated by your dedicated account manager' },
+      { feature: 'Client accounts managed',    cells: ['1', '1', '1', 'Unlimited'], note: 'Agency: one account for all your clients' },
     ],
   },
 ]
@@ -285,7 +281,7 @@ export default function PricingPage() {
               ICP diagnostic plans.
             </h1>
             <p style={{ fontFamily: fontB, fontSize: 15, color: Muted, margin: 0, maxWidth: 380, lineHeight: 1.7 }}>
-              Start free. Get your health score and top findings at no cost. Upgrade for ongoing intelligence, deep research, and human strategy sessions.
+              Start free. Get your health score and top findings at no cost. Upgrade for ongoing intelligence, deep research, and time with a real media buyer.
             </p>
           </div>
 
@@ -453,7 +449,7 @@ export default function PricingPage() {
               { Icon: FileText,     title: 'Landing Page Audit',      body: 'Our system visits your actual URL, scores your copy, CTA, trust signals, and conversion friction points in real time.', tier: 'Pro and Agency' },
               { Icon: Brain,        title: 'Competitive Intelligence', body: 'We research your top 3 competitors, identify their positioning gaps, and benchmark your metrics against your real market.', tier: 'Pro and Agency' },
               { Icon: TrendingDown, title: 'CAC and LTV Projections', body: 'Your exact cost per customer before and after ICP fixes, your LTV:CAC ratio, and the monthly revenue you recover.', tier: 'All plans' },
-              { Icon: Users,        title: 'Human Strategy Layer',    body: 'Every diagnosis is reviewed by a B2B media buyer, included free. Pro adds a monthly strategy session with one practitioner. Agency gets the full team actively working on your accounts.', tier: 'All plans' },
+              { Icon: Users,        title: 'Human Strategy Layer',    body: 'Every diagnosis is reviewed by a B2B media buyer, included free. Pro adds an onboarding call with Eugene. Agency adds a monthly strategy call.', tier: 'All plans' },
               { Icon: Zap,          title: 'Weekly Intelligence',     body: 'Every week your dashboard updates with new signals: audience drift, competitive moves, benchmark changes, and fresh quick wins.', tier: 'Starter and above' },
               { Icon: Shield,       title: 'Ongoing Monitoring',      body: 'Your ICP health score refreshes monthly. If your targeting drifts or the market shifts, you find out before your CAC spikes.', tier: 'Starter and above' },
             ].map(({ Icon, title, body, tier }) => (
@@ -478,9 +474,9 @@ export default function PricingPage() {
             {[
               { q: 'Can I upgrade or downgrade at any time?', a: 'Yes. Changes take effect immediately. If you upgrade mid-cycle you are charged the prorated difference. If you downgrade, the change applies at the next billing date.' },
               { q: 'What happens if I exceed my monthly diagnosis limit?', a: 'You can purchase additional diagnoses at KES 3,000 each, or upgrade to the next plan. Your existing data and reports are never deleted.' },
-              { q: 'Is the media buyer session a real human?', a: 'Yes. Pro subscribers get a monthly 45-minute video call with a B2B media buyer from our team. Agency subscribers get access to a team of media buyers, not just one, who actively work on their client accounts alongside them.' },
+              { q: 'Is the media buyer session a real human?', a: 'Yes. Eugene is a Nairobi-based media buyer running Google and Meta campaigns. Every free report gets the option of a free 20-minute call, Pro includes an onboarding call, and Agency includes a monthly strategy call.' },
               { q: 'How does the annual discount work?', a: 'Annual billing gives you 10 months for the price of 12 (two months free). You pay the full annual amount upfront. Refunds are available within the first 14 days.' },
-              { q: 'What does the free diagnosis include exactly?', a: 'Your ICP health score (0-100), your top 3 critical findings with brief descriptions, 3 quick wins you can act on this week, a CAC estimate, and a monthly waste estimate. A B2B media buyer on our team also reviews your report, if they spot a critical gap, they follow up personally within 24 hours. No credit card required. One lifetime diagnosis on the free tier.' },
+              { q: 'What does the free diagnosis include exactly?', a: 'Your ICP health score (0-100), your top 3 critical findings with brief descriptions, 3 quick wins you can act on this week, a CAC estimate, and a monthly waste estimate. You can also book a free 20-minute call with Eugene, a Nairobi media buyer, to go through it. No credit card required. One lifetime diagnosis on the free tier.' },
             ].map(({ q, a }, i) => (
               <div key={i} style={{ borderTop: `1.5px solid ${Border}`, padding: '24px 0' }}>
                 <p style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: Text, margin: '0 0 10px' }}>{q}</p>
@@ -538,7 +534,7 @@ export default function PricingPage() {
               Stop guessing. <span style={{ color: Orange }}>Start diagnosing.</span>
             </h2>
             <p style={{ fontFamily: fontB, fontSize: 15, color: DarkMuted, margin: 0, lineHeight: 1.65, maxWidth: 440 }}>
-              Your first diagnosis is free. No card, no setup, no agency. Just 22 questions, a complete picture of where your ad spend is going, and a media buyer reading your results.
+              Your first diagnosis is free. No card, no setup, no agency. Just 10 questions, a complete picture of where your ad spend is going, and a media buyer reading your results.
             </p>
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14 }}>

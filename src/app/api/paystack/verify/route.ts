@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { sendSubscriptionEmail, sendUpgradeToUser, sendUpgradeToFounder } from '@/lib/email'
 import { claimPayment } from '@/lib/payments'
+import { recordFunnelEvent } from '@/lib/funnel'
 
 export async function GET(req: NextRequest) {
   const reference = req.nextUrl.searchParams.get('reference') ?? req.nextUrl.searchParams.get('trxref')
@@ -69,6 +70,7 @@ export async function GET(req: NextRequest) {
 
   // Amount actually charged (in KES, from Paystack cents)
   const amountKes = Math.round(((txData.amount as number) ?? 0) / 100)
+  await recordFunnelEvent(supabase, { event: 'paid', meta: { tier: payment.tier, kind: payment.kind, amountKes, reference } })
 
   // Fetch existing user
   const { data: existingUser, error: lookupError } = await supabase

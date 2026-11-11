@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import SocialProofToast from '@/components/SocialProofToast'
 import { useSession } from '@/hooks/useSession'
+import { track } from '@/lib/track'
 export const dynamic = 'force-static'
 
 // ── Zapier-style palette ──────────────────────────────────────────────────────
@@ -32,7 +33,7 @@ const TIERS = [
     annual: 'Free',
     annualMonthly: 'Free',
     desc: 'One lifetime diagnosis. See exactly where your targeting leaks money.',
-    bullets: ['ICP health score (0-100)', 'Top 3 findings with severity', '3 quick wins action plan', 'Media buyer reviews your report'],
+    bullets: ['ICP health score (0-100)', 'Top 3 findings with severity', '3 quick wins action plan', 'Free 20-minute call with a media buyer'],
     cta: 'Get Free Diagnosis',
     href: '/questionnaire',
     highlight: false,
@@ -42,7 +43,7 @@ const TIERS = [
     monthly: 'KES 6,500',
     annual: 'KES 65,000',
     annualMonthly: 'KES 5,400',
-    desc: 'For solo founders and small teams running their first serious paid campaigns.',
+    desc: 'For businesses running their own ads that want the full fix plan and a monthly check-up.',
     bullets: ['Monthly ICP health monitoring', 'Critical findings with fixes', 'Quick wins action plan'],
     cta: 'Start Free Diagnosis',
     href: '/questionnaire',
@@ -64,9 +65,9 @@ const TIERS = [
     monthly: 'KES 26,000',
     annual: 'KES 260,000',
     annualMonthly: 'KES 21,600',
-    desc: 'A retained team of B2B media buyers working on your accounts. White-label reports, unlimited diagnoses, and a dedicated account manager.',
-    bullets: ['Everything in Pro', 'Team of B2B media buyers on your account', 'White-label reports and multi-client coordination'],
-    cta: 'Contact Our Team',
+    desc: 'For agencies and consultants running ads for several clients. Unlimited diagnoses, white-label reports and founder-led support.',
+    bullets: ['Everything in Pro', 'Unlimited diagnoses across client accounts', 'White-label reports and a monthly call with Eugene'],
+    cta: 'Talk to Eugene',
     href: '/questionnaire',
     highlight: false,
   },
@@ -75,7 +76,7 @@ const TIERS = [
 const FAQS = [
   {
     q: 'What is the difference between free and paid?',
-    a: 'The free report diagnoses your ICP based on your questionnaire answers and gives you your health score, top 3 findings, and quick wins. The paid report goes further: our team visits your actual landing page, researches your competitors, and benchmarks your metrics with live regional data.',
+    a: 'The free report diagnoses your ICP based on your questionnaire answers and gives you your health score, top 3 findings, and quick wins. The paid report goes further: our system visits your actual landing page, researches your competitors, and benchmarks your metrics with live regional data.',
   },
   {
     q: 'Do you need my ad account access?',
@@ -99,15 +100,15 @@ const FAQS = [
   },
   {
     q: 'Does a real person review my report?',
-    a: 'Yes. Every diagnosis is reviewed by a practising B2B media buyer. If they identify a critical targeting gap, they will follow up directly with a personal note within 24 hours. This is included on the free tier, no upgrade required to receive the review.',
+    a: 'Yes. Eugene is a practising media buyer in Nairobi. After your free report you can book a free 20-minute call with him to go through your findings and decide what to fix first. No upgrade needed.',
   },
 ]
 
 const USE_CASES = [
-  'Fix bad targeting', 'Stop wasted budget', 'Find your real ICP', 'Score your campaigns',
-  'Benchmark vs competitors', 'Get weekly intelligence', 'Fix landing page friction',
-  'Diagnose in 5 minutes', 'Qualify better leads', 'Cut CPL in half', 'Lower your CAC',
-  'Improve LTV:CAC ratio', 'Identify top ICP segments', 'Reduce churn from bad-fit customers',
+  'Stop paying for junk leads', "Find out why leads don't buy", 'Stop wasted ad budget',
+  'Fix your Meta targeting', 'Fix your Google keywords', 'Qualify better leads',
+  'Know your real cost per customer', 'Fix landing page friction', 'Diagnose in 3 minutes',
+  'Benchmarked for Kenya', 'Lower your CAC', 'Improve LTV:CAC ratio',
 ]
 
 // ── Button helpers ────────────────────────────────────────────────────────────
@@ -164,7 +165,7 @@ function DiagStage1({ animKey }: { animKey: number }) {
         <div style={{ flex: 1, height: 3, background: 'rgba(255,255,255,0.08)', borderRadius: 2, overflow: 'hidden' }}>
           <div style={{ width: '50%', height: '100%', background: '#e8330a', borderRadius: 2 }} />
         </div>
-        <span style={{ fontFamily: fontB, fontSize: 10, color: 'rgba(255,255,255,0.35)' }}>11 / 22 answered</span>
+        <span style={{ fontFamily: fontB, fontSize: 10, color: 'rgba(255,255,255,0.35)' }}>5 / 10 answered</span>
       </div>
       {/* Q&A rows */}
       <div style={{ padding: '4px 0 8px' }}>
@@ -335,7 +336,7 @@ function DiagnosticAnimation() {
   }, [stage])
 
   const steps = [
-    { num: '01', label: 'Answer 22 questions',  sub: '5 minutes · no ad account access' },
+    { num: '01', label: 'Answer 10 questions',  sub: 'About 3 minutes · no ad account access' },
     { num: '02', label: 'Your ICP gets scored and benchmarked', sub: 'Expert scoring · benchmarked against your market' },
     { num: '03', label: 'Get your report',       sub: 'Instant · reviewed by a media buyer' },
   ]
@@ -441,6 +442,8 @@ export default function Page() {
   // Public counters only appear once there is real volume behind them.
   // Below this we just don't show a number rather than inflate it.
   const showLiveStats   = diagnosisCount >= 50
+
+  useEffect(() => { track('landing_view') }, [])
   const diagCountRef    = useRef<HTMLSpanElement>(null)
   const prevWaste       = useRef(0)
   const outputCanvasRef = useRef<HTMLCanvasElement>(null)
@@ -703,7 +706,7 @@ export default function Page() {
             ) : (
               <>
                 <Link href="/auth?tab=login" style={{ fontFamily: fontB, fontSize: 14, color: Muted, textDecoration: 'none', fontWeight: 500, padding: '8px 14px' }}>Log in</Link>
-                <Link href="/questionnaire" className="btn-primary" style={{ ...btnPrimary, fontSize: 14, padding: '9px 18px' }}>Get free diagnostic</Link>
+                <Link href="/questionnaire" className="btn-primary" style={{ ...btnPrimary, fontSize: 14, padding: '9px 18px' }}>Get free diagnosis</Link>
               </>
             )}
           </div>
@@ -729,7 +732,7 @@ export default function Page() {
               <Link href="/dashboard" onClick={() => setMobileOpen(false)} style={{ ...btnPrimary, justifyContent: 'center', fontSize: 17 }}>Go to Dashboard</Link>
             ) : (
               <>
-                <Link href="/questionnaire" onClick={() => setMobileOpen(false)} style={{ ...btnPrimary, justifyContent: 'center', fontSize: 17 }}>Get free diagnostic</Link>
+                <Link href="/questionnaire" onClick={() => setMobileOpen(false)} style={{ ...btnPrimary, justifyContent: 'center', fontSize: 17 }}>Get free diagnosis</Link>
                 <Link href="/auth?tab=login" onClick={() => setMobileOpen(false)} style={{ fontFamily: fontB, fontSize: 15, fontWeight: 500, color: Muted, textDecoration: 'none', textAlign: 'center', padding: '12px 0' }}>Log in</Link>
               </>
             )}
@@ -741,23 +744,23 @@ export default function Page() {
       <section style={{ background: Warm, borderBottom: `1.5px solid ${Border}` }}>
         {/* Headline + CTA — centred */}
         <div style={{ maxWidth: 760, margin: '0 auto', padding: 'clamp(56px,9vw,112px) clamp(20px,5vw,40px) clamp(40px,6vw,72px)', textAlign: 'center' }}>
-          <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 20px' }}>Ideal ICP Tool</p>
+          <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 20px' }}>For Kenyan businesses running ads to get leads</p>
           <h1 style={{ fontFamily: fontSerif, fontSize: 'clamp(36px,5.5vw,68px)', fontWeight: 700, color: Text, lineHeight: 1.06, margin: '0 0 24px', letterSpacing: '-0.03em' }}>
-            Your targeting is{' '}
-            <span style={{ color: Orange }}>leaking money.</span>
-            {' '}Find out exactly where.
+            Getting leads that{' '}
+            <span style={{ color: Orange }}>never buy?</span>
+            {' '}Find out where your ad budget is leaking.
           </h1>
           <p style={{ fontFamily: fontB, fontSize: 'clamp(15px,1.8vw,18px)', color: Muted, lineHeight: 1.7, margin: '0 auto 36px', maxWidth: 560 }}>
-            Answer 22 questions. Get a scored ICP health report, ranked findings, and a fix plan, reviewed by a B2B media buyer. Free. No ad account access needed.
+            Answer 10 questions about your ads and sales. In about 3 minutes you get a scored report on why your leads aren&apos;t turning into customers, what it&apos;s costing you in KES, and the first fixes to make. Reviewed by a Nairobi media buyer. Free, and no ad account access needed.
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center', marginBottom: 20 }}>
             <Link href="/questionnaire" className="btn-primary" style={btnPrimary}>
-              Get free diagnostic <ArrowRight size={16} />
+              Get my free diagnosis <ArrowRight size={16} />
             </Link>
             <a href="#how-it-works" className="btn-ghost" style={btnGhost}>See how it works</a>
           </div>
           <p style={{ fontFamily: fontB, fontSize: 13, color: Muted, margin: 0 }}>
-            {showLiveStats ? `${diagnosisCount.toLocaleString()} B2B diagnoses run so far. ` : ''}One free lifetime diagnosis, no card needed.
+            {showLiveStats ? `${diagnosisCount.toLocaleString()} diagnoses run so far. ` : ''}Built for real estate, financial services, education and professional services. No card needed.
           </p>
 
           {/* ── CSV Hook ── */}
@@ -861,7 +864,7 @@ export default function Page() {
         <div className="container" style={{ paddingTop: 'clamp(56px,8vw,96px)', paddingBottom: 'clamp(56px,8vw,96px)' }}>
           <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 16px', textAlign: 'center' }}>How the platform works</p>
           <h2 style={{ fontFamily: fontSerif, fontSize: 'clamp(28px,4vw,52px)', fontWeight: 700, color: Dark, textAlign: 'center', margin: '0 0 56px', lineHeight: 1.1, maxWidth: 640, marginLeft: 'auto', marginRight: 'auto' }}>
-            22 questions. A complete <span style={{ color: Orange }}>growth diagnosis.</span>
+            10 questions. A clear answer on <span style={{ color: Orange }}>why your leads don&apos;t buy.</span>
           </h2>
 
           {/* 6-column analysis grid */}
@@ -964,7 +967,7 @@ export default function Page() {
           {[
             { Icon: Shield, title: 'No ad account access', body: 'No Google OAuth. No Meta permissions. Zero.' },
             { Icon: Globe,  title: 'Kenya-first, expanding',  body: 'Built for Kenya. Tanzania, Uganda, Nigeria, South Africa and more coming soon.' },
-            { Icon: Users,  title: 'Reviewed by a media buyer', body: 'Every diagnosis is reviewed by a practitioner. If they spot a critical gap, expect a personal follow-up within 24 hours.' },
+            { Icon: Users,  title: 'A real media buyer, on call', body: 'Book a free 20-minute call with Eugene to go through your report and pick your first fixes.' },
             { Icon: Lock,   title: 'Your data is private',  body: 'Stored securely. Never shared. Never sold.' },
           ].map(({ Icon, title, body }) => (
             <div key={title} style={{ padding: 'clamp(24px,3vw,36px)', borderRight: `1.5px solid ${Border}`, borderBottom: `1.5px solid ${Border}` }}>
@@ -1035,7 +1038,7 @@ export default function Page() {
           {/* 4 tiles */}
           <div style={{ gridTemplateColumns: 'repeat(2, 1fr)', borderLeft: `1.5px solid ${DarkBorder}` }} className="proof-tiles block md:grid">
             {[
-              { Icon: Zap,       title: '22 questions across 3 targeting layers', body: 'No ad account access. No agency. Takes 5 minutes from sign-up to your first scored finding.' },
+              { Icon: Zap,       title: '10 questions, about 3 minutes', body: 'No ad account access and no agency. Just what you sell, what you spend and what comes back.' },
               { Icon: BarChart2, title: 'A ranked fix list, not a 40-page report', body: 'Every finding names the platform, exactly where to change it, the expected impact and the effort, so you know what to do first.' },
               { Icon: Target,    title: 'Benchmarked against your market', body: 'Cost and budget benchmarks calibrated to your region, from Nairobi and Lagos to London and New York.' },
               { Icon: TrendingDown, title: 'Your real CAC and LTV:CAC, worked out', body: 'Calculated from your budget, lead volume, close rate and deal size, and checked against the 3:1 B2B benchmark.' },
@@ -1081,9 +1084,9 @@ export default function Page() {
           <div style={{ border: `1.5px solid ${Border}`, borderRadius: 0, gridTemplateColumns: 'repeat(3, 1fr)', overflow: 'hidden', marginBottom: 0 }}
                className="hidden md:grid">
             {[
-              { num: '01', Icon: FileText, title: 'Answer 22 questions', body: 'Tell us about your targeting and funnel. No ad account access needed. Takes around 5 minutes.', chip: '5 minutes', chipBg: 'rgba(232,51,10,0.1)' },
+              { num: '01', Icon: FileText, title: 'Answer 10 questions', body: 'Tell us what you sell, what you spend on ads and what comes back. No ad account access needed.', chip: '3 minutes', chipBg: 'rgba(232,51,10,0.1)' },
               { num: '02', Icon: Zap,      title: 'Get your report',      body: 'Your ICP health score, monthly waste estimate, CAC analysis, and top findings ranked by revenue impact.', chip: 'Instant',   chipBg: 'rgba(232,51,10,0.1)' },
-              { num: '03', Icon: ArrowRight, title: 'Fix what is broken', body: 'Follow the prioritised action plan. Subscribe for ongoing monitoring, weekly intelligence, and CAC tracking.', chip: 'Start today', chipBg: 'rgba(232,51,10,0.1)' },
+              { num: '03', Icon: ArrowRight, title: 'Talk it through', body: 'Book a free 20-minute call with Eugene to go through your report and decide what to fix first.', chip: 'Free call', chipBg: 'rgba(232,51,10,0.1)' },
             ].map(({ num, Icon, title, body, chip, chipBg }, i) => (
               <div key={i} style={{ borderLeft: i > 0 ? `1.5px solid ${Border}` : 'none', padding: '36px 28px 36px', display: 'flex', flexDirection: 'column', gap: 0, position: 'relative', overflow: 'hidden' }}>
                 {/* Ghost number watermark */}
@@ -1104,9 +1107,9 @@ export default function Page() {
           {/* Mobile: stacked with border separator */}
           <div className="md:hidden" style={{ border: `1.5px solid ${Border}`, borderRadius: 0, overflow: 'hidden' }}>
             {[
-              { num: '01', Icon: FileText,  title: 'Answer 22 questions', body: 'No ad account needed. Takes 5 minutes.', chip: '5 minutes' },
+              { num: '01', Icon: FileText,  title: 'Answer 10 questions', body: 'No ad account needed. About 3 minutes.', chip: '3 minutes' },
               { num: '02', Icon: Zap,       title: 'Get your report',      body: 'Health score, CAC analysis, and ranked findings instantly.', chip: 'Instant' },
-              { num: '03', Icon: ArrowRight, title: 'Fix what is broken',  body: 'Follow the action plan and track your progress.', chip: 'Start today' },
+              { num: '03', Icon: ArrowRight, title: 'Talk it through',  body: 'Free 20-minute call with Eugene to plan your fixes.', chip: 'Free call' },
             ].map(({ num, Icon, title, body, chip }, i) => (
               <div key={i} style={{ borderTop: i > 0 ? `1.5px solid ${Border}` : 'none', padding: '24px 20px', display: 'flex', gap: 16, alignItems: 'flex-start' }}>
                 <div style={{ width: 36, height: 36, borderRadius: 7, border: `1.5px solid ${Border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -1129,7 +1132,7 @@ export default function Page() {
             <div>
               <p style={{ fontFamily: fontB, fontSize: 11, color: Muted, fontWeight: 700, margin: '0 0 14px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Your free report includes</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 24px' }}>
-                {['ICP health score (0-100)', 'Monthly waste estimate', 'Top 3 findings with fixes', 'Quick wins for this week', 'CAC and LTV:CAC projection', 'Media buyer reviews your report'].map((item, idx) => (
+                {['ICP health score (0-100)', 'Monthly waste estimate', 'Top 3 findings with fixes', 'Quick wins for this week', 'CAC and LTV:CAC projection', 'Free 20-minute call with a media buyer'].map((item, idx) => (
                   <div key={idx} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                     <Check size={13} color={Orange} />
                     <span style={{ fontFamily: fontB, fontSize: 14, color: Text }}>{item}</span>
@@ -1161,7 +1164,7 @@ export default function Page() {
               </h2>
             </div>
             <p style={{ fontFamily: fontB, fontSize: 14, color: DarkMuted, margin: 0, maxWidth: 340, lineHeight: 1.7 }}>
-              Every diagnosis is reviewed by a practising B2B media buyer. If they spot a critical gap, you get a personal follow-up within 24 hours. Included on the free tier.
+              After your report, book a free 20-minute call with Eugene, a practising media buyer in Nairobi, to go through it and decide what to fix first. Free on every plan.
             </p>
           </div>
 

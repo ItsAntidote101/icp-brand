@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from '@/hooks/useSession'
+import { track } from '@/lib/track'
 
 // Questions that are stable across re-diagnoses and can be pre-filled.
 // Excluded (always fresh): Q9 ad channels, Q12 targeting, Q13 spend, Q14 leads, Q15 lead quality, Q18 mobile, Q20 differentiation, Q21 close rate
@@ -227,8 +228,16 @@ function isB2C(answers: Answers): boolean {
   const m = answers[23] as string | undefined
   return !!m && !m.startsWith('B2B')
 }
-function getVisibleQuestions(answers: Answers): Question[] {
-  return QUESTIONS.filter(q => !q.showIf || q.showIf(answers))
+// Free diagnosis asks only the questions that drive the score: what they sell,
+// to whom, what it's worth, what they spend and what comes back. About 10
+// questions per path (deal size vs order value depends on the sales model).
+// Paying users, or anyone opening /questionnaire?full=1, get the full set.
+const QUICK_QUESTION_IDS = new Set([1, 2, 23, 4, 6, 25, 9, 13, 14, 15, 21])
+
+function getVisibleQuestions(answers: Answers, quick = false): Question[] {
+  return QUESTIONS.filter(q =>
+    (!quick || QUICK_QUESTION_IDS.has(q.id)) && (!q.showIf || q.showIf(answers)),
+  )
 }
 
 const XP_PER_Q = 10
@@ -762,7 +771,13 @@ type PrefillPayload = {
 
 export default function QuestionnairePage() {
   const router = useRouter()
-  const { status } = useSession()
+  const session = useSession()
+  const { status } = session
+  const [fullParam, setFullParam] = useState(false)
+  useEffect(() => {
+    try { setFullParam(new URLSearchParams(window.location.search).get('full') === '1') } catch { /* ignore */ }
+  }, [])
+  const fullMode = fullParam || (session.status === 'authenticated' && session.tier !== 'free')
   const [step,          setStep]          = useState<'welcome' | 'questions'>('welcome')
   const [showGate,      setShowGate]      = useState(false)
   const [showFreeTierGate, setShowFreeTierGate] = useState(false)
@@ -838,7 +853,11 @@ export default function QuestionnairePage() {
     return () => clearTimeout(t)
   }, [current])
 
-  const visible_qs = getVisibleQuestions(answers)
+  useEffect(() => {
+    if (step === 'questions') track('questionnaire_started', { quick: !fullMode })
+  }, [step]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const visible_qs = getVisibleQuestions(answers, !fullMode)
   const q          = visible_qs[current]
   const totalQ     = visible_qs.length
   const isLast     = current === visible_qs.length - 1
@@ -857,6 +876,7 @@ export default function QuestionnairePage() {
   const layerLen   = layerLengths[layerIdx]
   const posInLayer = current - layerStart + 1
   const overallPct = Math.round(((current + 1) / totalQ) * 100)
+  const layersShown = ([1, 2, 3] as const).filter(l => visible_qs.some(vq => vq.layer === l))
 
   const rawAnswer = q ? answers[q.id] : undefined
   const textVal   = (rawAnswer as string)   ?? ''
@@ -947,7 +967,7 @@ export default function QuestionnairePage() {
   }, [status])
 
   const navigate = (dir: 'next' | 'back') => {
-    if (dir === 'next' && current === 10 && status === 'unauthenticated') {
+    if (dir === 'next' && fullMode && current === 10 && status === 'unauthenticated') {
       setVisible(false)
       setTimeout(() => setShowGate(true), 160)
       return
@@ -990,11 +1010,14 @@ export default function QuestionnairePage() {
       timerRefs.current.push(t)
     })
 
+    // Short version skips the region question: Kenya is the only live market
+    const submittedAnswers: Answers = fullMode ? answers : { 11: 'Kenya', ...answers }
+
     try {
       const qRes  = await fetch('/api/questionnaire', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ answers, profile }),
+        body: JSON.stringify({ answers: submittedAnswers, profile }),
       })
       const qData = await qRes.json()
       if (!qRes.ok) throw new Error(qData.error || 'Failed to save questionnaire')
@@ -1002,7 +1025,7 @@ export default function QuestionnairePage() {
       const dRes  = await fetch('/api/diagnostic', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ questionnaireId: qData.id, responses: answers, profile }),
+        body: JSON.stringify({ questionnaireId: qData.id, responses: submittedAnswers, profile }),
       })
       let dData: Record<string, unknown> = {}
       const contentType = dRes.headers.get('content-type') ?? ''
@@ -1016,6 +1039,7 @@ export default function QuestionnairePage() {
 
       localStorage.setItem('dashboard_email', profile.email.trim().toLowerCase())
       if (profile.name) localStorage.setItem('dashboard_name', profile.name)
+      track('questionnaire_completed', { quick: !fullMode })
       router.push(`/report/${dData.id}`)
     } catch (err) {
       timerRefs.current.forEach(clearTimeout)
@@ -1205,7 +1229,7 @@ export default function QuestionnairePage() {
               Let&apos;s get started, tell us about yourself
             </h2>
             <div className="flex flex-wrap gap-2 mb-6">
-              {['3 layers', '22 questions', '5 minutes', 'Instant results'].map(chip => (
+              {(fullMode ? ['3 layers', '22 questions', '5 minutes', 'Instant results'] : ['10 questions', 'About 3 minutes', 'Instant results']).map(chip => (
                 <span key={chip} className="inline-block text-xs font-semibold text-[#e8330a] bg-[rgba(201,192,177,0.18)] border border-[#c5c0b1] rounded-full px-3 py-1">{chip}</span>
               ))}
             </div>
@@ -1414,7 +1438,7 @@ export default function QuestionnairePage() {
           {/* Progress */}
           <div className="px-6 pt-6">
             <div className="flex gap-2 mb-4">
-              {([1, 2, 3] as const).map(l => (
+              {layersShown.map(l => (
                 <div key={l} className={`flex-1 flex flex-col gap-1.5 px-3 py-2 rounded-lg border transition-all ${l === q.layer ? `border ${layerColors.border[l]} bg-[rgba(201,192,177,0.18)]` : l < q.layer ? 'border-[#c5c0b1] bg-[rgba(201,192,177,0.12)]' : 'border-[rgba(201,192,177,0.25)] bg-transparent'}`}>
                   <div className="flex items-center justify-between">
                     <span className={`text-[10px] font-semibold uppercase tracking-widest ${l === q.layer ? layerColors.text[l] : l < q.layer ? 'text-[#939084]' : 'text-[#939084]'}`}>
@@ -1439,7 +1463,7 @@ export default function QuestionnairePage() {
               </div>
               <span className="text-xs text-[#939084] tabular-nums w-8 text-right">{overallPct}%</span>
             </div>
-            <p className="text-xs text-[#939084] mb-6">Layer {q.layer} of 3, {q.layerName}</p>
+            <p className="text-xs text-[#939084] mb-6">Layer {q.layer} of {layersShown.length}, {q.layerName}</p>
           </div>
 
           {/* Question card */}

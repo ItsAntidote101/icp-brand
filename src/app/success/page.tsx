@@ -24,13 +24,13 @@ const TIER_FEATURES: Record<string, string[]> = {
     'Everything in Starter',
     'Live landing page audit (our system visits your URL)',
     'Competitor positioning and regional benchmarks',
-    'Monthly strategy session with a B2B media buyer',
+    'Onboarding call with Eugene to set your priorities',
   ],
   agency: [
     'Everything in Pro',
-    'Team of B2B media buyers on your account',
-    'White-label reports produced by your account team',
-    'Dedicated account manager and unlimited diagnoses',
+    'Unlimited diagnoses across client accounts',
+    'White-label reports with your branding',
+    'Monthly strategy call with Eugene',
   ],
 }
 
