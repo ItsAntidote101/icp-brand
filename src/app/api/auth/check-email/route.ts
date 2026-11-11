@@ -1,47 +1,49 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { createSessionToken, sessionCookieOptions } from '@/lib/session'
+import { getSession } from '@/lib/session'
 
+export const dynamic = 'force-dynamic'
+
+// Used by the dashboard to restore a remembered login.
+// SECURITY: this endpoint used to issue a session cookie for any email it was
+// given, which let anyone log in as any user. It now only confirms an email
+// that already matches a verified session and never creates a session itself.
+// Sessions are only issued by /api/auth/verify-otp and /api/auth/callback.
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    let { email } = body as { email?: unknown }
+    const { email } = body as { email?: unknown }
 
     if (!email || typeof email !== 'string') {
       return NextResponse.json({ error: 'email is required' }, { status: 400 })
     }
 
-    email = email.trim().toLowerCase()
+    const normalised = email.trim().toLowerCase()
+    const session = await getSession()
+    if (!session || session.email.toLowerCase() !== normalised) {
+      return NextResponse.json({ status: 'unauthenticated' }, { status: 401 })
+    }
 
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
     if (!serviceKey) throw new Error('SUPABASE_SERVICE_ROLE_KEY is required')
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
-      serviceKey
-    )
+    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL ?? '', serviceKey)
 
     const { data: user, error } = await supabase
       .from('users')
       .select('id, email, full_name, company_name, subscription_tier, billing_status, renewal_date, created_at')
-      .eq('email', email)
-      .single()
+      .eq('id', session.userId)
+      .maybeSingle()
 
     if (error) {
-      if (error.code === 'PGRST116') {
-        return NextResponse.json({ status: 'not_found' }, { status: 404 })
-      }
       console.error('[check-email] error looking up user')
       return NextResponse.json({ error: 'Internal error' }, { status: 500 })
     }
-
+    if (!user) return NextResponse.json({ status: 'not_found' }, { status: 404 })
     if (user.billing_status !== 'active') {
       return NextResponse.json({ status: 'inactive' }, { status: 200 })
     }
 
-    const token = createSessionToken(user.email, user.id)
-    const res = NextResponse.json({ status: 'active', user }, { status: 200 })
-    res.cookies.set(sessionCookieOptions(token))
-    return res
+    return NextResponse.json({ status: 'active', user }, { status: 200 })
   } catch {
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })
   }

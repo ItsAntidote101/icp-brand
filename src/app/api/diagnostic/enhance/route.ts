@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import Anthropic from '@anthropic-ai/sdk'
+import { getSession } from '@/lib/session'
 
 export const maxDuration = 300
 export const dynamic = 'force-dynamic'
@@ -61,6 +62,13 @@ export async function POST(req: NextRequest) {
       .maybeSingle()
 
     if (!diagnostic) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
+    // Only the report owner can trigger a (paid) AI enhancement
+    const session = await getSession()
+    const ownerId = (diagnostic.questionnaires as Record<string, unknown> | null)?.user_id ?? diagnostic.user_id
+    if (!session || !ownerId || session.userId !== ownerId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
     // Resolve existing diagnosis
     const existingDiag: Record<string, unknown> =

@@ -4,6 +4,7 @@ import {
   sendDowngradeScheduledToUser, sendDowngradeScheduledToFounder,
 } from '@/lib/email'
 import { getSession } from '@/lib/session'
+import { recordPendingPayment } from '@/lib/payments'
 
 export const dynamic = 'force-dynamic'
 
@@ -119,6 +120,21 @@ export async function POST(req: NextRequest) {
         if (!paystackRes.ok || !paystackData.status || !paystackData.data) {
           console.error('[change-plan] Paystack init failed:', JSON.stringify(paystackData))
           return NextResponse.json({ error: 'Payment initialization failed. Please try again.' }, { status: 502 })
+        }
+
+        const recorded = await recordPendingPayment(supabase, {
+          reference:      paystackData.data.reference,
+          email:          userEmail,
+          tier:           newTier,
+          kind:           upgradeType,
+          expectedAmount: chargeKes * 100,
+          meta: {
+            upgrade_from:          currentTier,
+            existing_renewal_date: upgradeType === 'proration' ? (renewalIso ?? '') : '',
+          },
+        })
+        if (!recorded) {
+          return NextResponse.json({ error: 'Payment initialization failed. Please try again.' }, { status: 500 })
         }
 
         return NextResponse.json({

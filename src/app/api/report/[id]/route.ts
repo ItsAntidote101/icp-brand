@@ -48,7 +48,7 @@ export async function GET(
         const summaryObj = typeof reportRow.report_summary === 'string'
           ? (() => { try { return JSON.parse(reportRow.report_summary) } catch { return {} } })()
           : reportRow.report_summary
-        diagnostic = { id: params.id, diagnosis: summaryObj, questionnaire_id: reportRow.questionnaire_id, questionnaires: null }
+        diagnostic = { id: params.id, diagnosis: summaryObj, questionnaire_id: reportRow.questionnaire_id, user_id: reportRow.user_id, questionnaires: null }
       }
     }
 
@@ -59,11 +59,18 @@ export async function GET(
   }
 
   // ── Ownership check ────────────────────────────────────────────────────
+  // A report that belongs to an account is only visible to that account.
+  // Reports with no owner (anonymous questionnaire) stay viewable by link.
   const session = await getSession()
-  if (session) {
-    const questionnaire = diagnostic.questionnaires as Record<string, unknown> | null
-    const reportEmail = (questionnaire?.email as string | undefined)?.toLowerCase()
-    if (reportEmail && reportEmail !== session.email) {
+  const ownerId =
+    ((diagnostic.questionnaires as Record<string, unknown> | null)?.user_id as string | undefined) ??
+    (diagnostic.user_id as string | undefined) ??
+    null
+  if (ownerId) {
+    if (!session) {
+      return NextResponse.json({ error: 'Login required' }, { status: 401 })
+    }
+    if (session.userId !== ownerId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
   }

@@ -1,24 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server'
+import dns from 'node:dns/promises'
+import net from 'node:net'
 
 export const dynamic = 'force-dynamic'
 
-const BLOCKED = [
-  'localhost', '127.0.0.1', '0.0.0.0', '::1', '[::1]', '[::]',
-  '169.254.169.254', // AWS metadata
-]
+// Resolve the hostname and refuse anything that lands on a private,
+// loopback, link-local or metadata address. Checking the resolved IP (not the
+// text of the hostname) also blocks tricks like decimal IPs or DNS names that
+// point at 127.0.0.1.
+function isPrivateIp(ip: string): boolean {
+  if (net.isIPv4(ip)) {
+    const [a, b] = ip.split('.').map(Number)
+    return (
+      a === 0 || a === 10 || a === 127 ||
+      (a === 100 && b >= 64 && b <= 127) ||   // CGNAT
+      (a === 169 && b === 254) ||             // link-local / cloud metadata
+      (a === 172 && b >= 16 && b <= 31) ||
+      (a === 192 && b === 168) ||
+      a >= 224                                // multicast / reserved
+    )
+  }
+  const v6 = ip.toLowerCase()
+  if (v6 === '::' || v6 === '::1') return true
+  if (v6.startsWith('::ffff:')) return isPrivateIp(v6.slice(7))
+  return v6.startsWith('fc') || v6.startsWith('fd') || v6.startsWith('fe80')
+}
 
-function isBlockedHost(hostname: string): boolean {
-  const h = hostname.toLowerCase()
-  if (BLOCKED.includes(h)) return true
-  if (h.startsWith('192.168.')) return true
-  if (h.startsWith('10.')) return true
-  if (h.startsWith('172.16.') || /^172\.(1[6-9]|2\d|3[01])\./.test(h)) return true
-  if (h.startsWith('::ffff:127.')) return true
-  if (h.startsWith('::ffff:192.168.')) return true
-  if (h.startsWith('::ffff:10.')) return true
-  if (h.startsWith('0.')) return true
-  if (h.startsWith('169.254.')) return true
-  return false
+async function isBlockedHost(hostname: string): Promise<boolean> {
+  const h = hostname.replace(/^\[|\]$/g, '')
+  if (h === 'localhost' || h.endsWith('.localhost') || h.endsWith('.internal')) return true
+  try {
+    const addrs = await dns.lookup(h, { all: true })
+    return addrs.length === 0 || addrs.some(a => isPrivateIp(a.address))
+  } catch {
+    return true
+  }
 }
 
 function extractMeta(html: string, name: string): string {
@@ -64,7 +80,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Only http/https URLs are allowed' }, { status: 400 })
   }
 
-  if (isBlockedHost(parsed.hostname)) {
+  if (await isBlockedHost(parsed.hostname)) {
     return NextResponse.json({ error: 'URL not allowed' }, { status: 400 })
   }
 
@@ -75,7 +91,12 @@ export async function GET(req: NextRequest) {
     const res = await fetch(parsed.toString(), {
       signal: controller.signal,
       headers: { 'User-Agent': 'ICPDiagnostic/1.0 (preview fetch)' },
+      redirect: 'manual', // a public URL must not bounce us to an internal one
     })
+    if (res.status >= 300 && res.status < 400) {
+      clearTimeout(timeout)
+      return NextResponse.json({ error: 'Redirects are not followed. Use the final URL.' }, { status: 422 })
+    }
     clearTimeout(timeout)
     if (!res.ok) {
       return NextResponse.json({ error: `Fetch failed: ${res.status}` }, { status: 422 })

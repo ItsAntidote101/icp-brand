@@ -1,26 +1,14 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { cookies } from 'next/headers'
-import { createHmac } from 'crypto'
+import { getSession } from '@/lib/session'
 
 export const dynamic = 'force-dynamic'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'http://localhost', process.env.SUPABASE_SERVICE_ROLE_KEY || 'build-placeholder')
 
-function verifySession(token: string): { email: string } | null {
-  const secret = process.env.SESSION_SECRET ?? 'fallback-secret'
-  try {
-    const [payload, sig] = token.split('.')
-    const expected = createHmac('sha256', secret).update(payload).digest('base64url')
-    if (sig !== expected) return null
-    return JSON.parse(Buffer.from(payload, 'base64url').toString())
-  } catch { return null }
-}
 
 export async function GET() {
-  const cookieStore = await cookies()
-  const token = cookieStore.get('icp_session')?.value
-  const session = token ? verifySession(token) : null
+  const session = await getSession()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const email = session.email

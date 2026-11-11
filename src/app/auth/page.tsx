@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { safeNextPath } from '@/lib/safe-redirect'
 import { Check, ArrowLeft, Mail } from 'lucide-react'
 
 const Warm   = '#fffefb'
@@ -32,7 +33,7 @@ function AuthInner() {
   const router       = useRouter()
   const searchParams = useSearchParams()
   const defaultTab   = searchParams.get('tab') === 'login' ? 'login' : 'signup'
-  const nextPath     = searchParams.get('next') ?? '/dashboard'
+  const nextPath     = safeNextPath(searchParams.get('next'))
 
   const [tab,    setTab]    = useState<'signup' | 'login'>(defaultTab)
   const [toast,  setToast]  = useState('')

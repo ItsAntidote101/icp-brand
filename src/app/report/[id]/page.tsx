@@ -249,6 +249,12 @@ export default function ReportPage({ params }: { params: { id: string } }) {
           fetch('/api/monthly-checkin?type=intro'),
         ])
 
+        if (reportRes.status === 401) {
+          // Report belongs to an account: send them to log in, then back here
+          window.location.href = `/auth?tab=login&next=${encodeURIComponent(`/report/${params.id}`)}`
+          return
+        }
+
         if (reportRes.ok) {
           const data = await reportRes.json()
           if (data.isSubscribed) setIsSubscribed(true)
