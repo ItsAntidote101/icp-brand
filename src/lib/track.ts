@@ -8,7 +8,7 @@ type Utm = Record<string, string>
 const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'fbclid', 'gclid']
 
 declare global {
-  interface Window { fbq?: (...args: unknown[]) => void }
+  interface Window { dataLayer?: Record<string, unknown>[] }
 }
 
 function store(): Storage | null {
@@ -46,11 +46,12 @@ export function captureUtm(): Utm {
   return saved
 }
 
-// Meta Pixel standard events for the steps that matter to ad optimisation
-const PIXEL_EVENTS: Record<string, string> = {
-  questionnaire_completed: 'Lead',
-  call_requested: 'Schedule',
-  checkout_started: 'InitiateCheckout',
+// Push an event to Google Tag Manager. GTM decides which pixels fire on it.
+export function pushDataLayer(data: Record<string, unknown>): void {
+  try {
+    window.dataLayer = window.dataLayer || []
+    window.dataLayer.push(data)
+  } catch { /* ignore */ }
 }
 
 export function track(event: string, meta?: Record<string, unknown>): void {
@@ -63,7 +64,7 @@ export function track(event: string, meta?: Record<string, unknown>): void {
       meta: meta ?? null,
     })
     fetch('/api/track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, keepalive: true }).catch(() => {})
-    const pixelEvent = PIXEL_EVENTS[event]
-    if (pixelEvent && typeof window.fbq === 'function') window.fbq('track', pixelEvent)
+    // Same step to GTM, e.g. event: 'questionnaire_completed'
+    pushDataLayer({ event, ...(meta ?? {}) })
   } catch { /* tracking must never break the page */ }
 }

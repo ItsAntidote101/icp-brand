@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import localFont from 'next/font/local'
 import './globals.css'
-import MetaPixel from '@/components/MetaPixel'
+import GoogleTagManager from '@/components/GoogleTagManager'
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -105,7 +105,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className={geistMono.variable}>
         {children}
-        <MetaPixel />
+        <GoogleTagManager />
       </body>
     </html>
   )

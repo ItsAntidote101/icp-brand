@@ -2,6 +2,7 @@
 
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useEffect, Suspense } from 'react'
+import { pushDataLayer } from '@/lib/track'
 import Link from 'next/link'
 import { CheckCircle, ArrowRight, LayoutDashboard } from 'lucide-react'
 
@@ -46,6 +47,19 @@ function SuccessContent() {
   useEffect(() => {
     if (email) localStorage.setItem('dashboard_email', email)
   }, [email])
+
+  // Purchase event for GTM (Meta Purchase, Google Ads conversion, GA4).
+  // Fired once per payment reference, even if the page is refreshed.
+  useEffect(() => {
+    if (!ref) return
+    try {
+      const key = `icp_purchase_${ref}`
+      if (sessionStorage.getItem(key)) return
+      sessionStorage.setItem(key, '1')
+    } catch { /* ignore */ }
+    const VALUE: Record<string, number> = { starter: 6500, pro: 13000, agency: 26000 }
+    pushDataLayer({ event: 'purchase', transaction_id: ref, value: VALUE[tier] ?? 0, currency: 'KES', tier })
+  }, [ref, tier])
 
   function handleDashboard() {
     if (email) localStorage.setItem('dashboard_email', email)
