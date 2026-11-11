@@ -1191,11 +1191,11 @@ export default function Page() {
               {/* Sender row */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <div style={{ width: 40, height: 40, borderRadius: '50%', background: Orange, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <span style={{ fontFamily: font, fontSize: 13, fontWeight: 700, color: '#fff' }}>EW</span>
+                  <span style={{ fontFamily: font, fontSize: 13, fontWeight: 700, color: '#fff' }}>EK</span>
                 </div>
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontFamily: font, fontSize: 13, fontWeight: 700, color: '#fff', margin: 0 }}>Eugene W.</p>
-                  <p style={{ fontFamily: fontB, fontSize: 11, color: DarkMuted, margin: 0 }}>Senior Media Buyer · sent 2h after diagnosis</p>
+                  <p style={{ fontFamily: font, fontSize: 13, fontWeight: 700, color: '#fff', margin: 0 }}>Eugene K.</p>
+                  <p style={{ fontFamily: fontB, fontSize: 11, color: DarkMuted, margin: 0 }}>Founder and B2B Media Buyer · example follow-up</p>
                 </div>
                 <div style={{ background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: 100, padding: '3px 10px', flexShrink: 0 }}>
                   <span style={{ fontFamily: fontB, fontSize: 11, color: '#22c55e', fontWeight: 600 }}>NEW</span>
