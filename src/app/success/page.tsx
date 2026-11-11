@@ -2,7 +2,7 @@
 
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useEffect, Suspense } from 'react'
-import { pushDataLayer } from '@/lib/track'
+import { pushWithUserData } from '@/lib/track'
 import Link from 'next/link'
 import { CheckCircle, ArrowRight, LayoutDashboard } from 'lucide-react'
 
@@ -58,8 +58,8 @@ function SuccessContent() {
       sessionStorage.setItem(key, '1')
     } catch { /* ignore */ }
     const VALUE: Record<string, number> = { starter: 6500, pro: 13000, agency: 26000 }
-    pushDataLayer({ event: 'purchase', transaction_id: ref, value: VALUE[tier] ?? 0, currency: 'KES', tier })
-  }, [ref, tier])
+    void pushWithUserData({ event: 'purchase', transaction_id: ref, value: VALUE[tier] ?? 0, currency: 'KES', tier }, { email })
+  }, [ref, tier, email])
 
   function handleDashboard() {
     if (email) localStorage.setItem('dashboard_email', email)

@@ -12,7 +12,7 @@ import {
   Star, Flame, AlertTriangle, Camera, Pencil,
   Users, Search, Filter, DollarSign, Gift,
 } from 'lucide-react'
-import { pushDataLayer } from '@/lib/track'
+import { pushWithUserData } from '@/lib/track'
 import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis, YAxis, ReferenceLine, CartesianGrid, LabelList } from 'recharts'
 
 // ─── Tokens ───────────────────────────────────────────────────────────────────
@@ -5901,7 +5901,7 @@ export default function DashboardPage() {
       const key = `icp_purchase_${ref}`
       if (sessionStorage.getItem(key)) return
       sessionStorage.setItem(key, '1')
-      pushDataLayer({
+      void pushWithUserData({
         event: 'purchase',
         transaction_id: ref,
         value: Number(p.get('amount')) || 0,

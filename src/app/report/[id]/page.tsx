@@ -296,7 +296,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
   }
 
   const handleSubscribe = async () => {
-    track('checkout_started', { tier: selectedTier })
+    track('checkout_started', { tier: selectedTier }, { email })
     if (!email.trim()) { setSubscribeError('Please enter your email address.'); return }
     setSubscribing(true)
     setSubscribeError('')
@@ -330,7 +330,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
       }
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error((data as { error?: string }).error ?? 'Something went wrong')
-      track('call_requested', { reportId: params.id })
+      track('call_requested', { reportId: params.id }, { phone: callPhone })
       setCallStatus('sent')
     } catch (err) {
       setCallError(err instanceof Error ? err.message : 'Something went wrong')
