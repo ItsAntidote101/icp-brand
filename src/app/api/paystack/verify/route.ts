@@ -160,7 +160,7 @@ export async function GET(req: NextRequest) {
     ]).catch(e => console.error('[verify] upgrade emails failed:', e))
 
     const tierParam = encodeURIComponent(tier)
-    return NextResponse.redirect(`${base}/dashboard?upgrade=success&tier=${tierParam}`)
+    return NextResponse.redirect(`${base}/dashboard?upgrade=success&tier=${tierParam}&ref=${encodeURIComponent(reference)}&amount=${amountKes}`)
   }
 
   // New subscription (free->paid or first-time subscriber)

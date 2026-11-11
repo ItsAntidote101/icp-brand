@@ -12,6 +12,7 @@ import {
   Star, Flame, AlertTriangle, Camera, Pencil,
   Users, Search, Filter, DollarSign, Gift,
 } from 'lucide-react'
+import { pushDataLayer } from '@/lib/track'
 import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis, YAxis, ReferenceLine, CartesianGrid, LabelList } from 'recharts'
 
 // ─── Tokens ───────────────────────────────────────────────────────────────────
@@ -5890,6 +5891,26 @@ function HelpFAQItem({ question, answer, font, fontB, P, Pmuted, Pborder }: {
 }
 
 export default function DashboardPage() {
+  // Plan upgrades return here from Paystack (not /success), so fire the GTM
+  // purchase event here too. Once per payment reference.
+  useEffect(() => {
+    try {
+      const p = new URLSearchParams(window.location.search)
+      const ref = p.get('ref')
+      if (p.get('upgrade') !== 'success' || !ref) return
+      const key = `icp_purchase_${ref}`
+      if (sessionStorage.getItem(key)) return
+      sessionStorage.setItem(key, '1')
+      pushDataLayer({
+        event: 'purchase',
+        transaction_id: ref,
+        value: Number(p.get('amount')) || 0,
+        currency: 'KES',
+        tier: (p.get('tier') ?? '').toLowerCase(),
+      })
+    } catch { /* ignore */ }
+  }, [])
+
   const router = useRouter()
 
   const [authStep, setAuthStep] = useState<'checking' | 'dashboard'>('checking')
