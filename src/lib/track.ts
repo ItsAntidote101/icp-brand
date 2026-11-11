@@ -54,7 +54,54 @@ export function pushDataLayer(data: Record<string, unknown>): void {
   } catch { /* ignore */ }
 }
 
-export function track(event: string, meta?: Record<string, unknown>): void {
+// ---- Enhanced conversions (Google Ads) ----
+// Email and phone are normalised and SHA-256 hashed in the browser before they
+// reach the dataLayer, so GTM and the pixels never see them in plain text.
+type Contact = { email?: string | null; phone?: string | null }
+
+async function sha256(text: string): Promise<string | null> {
+  try {
+    if (!text || typeof crypto === 'undefined' || !crypto.subtle) return null
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text))
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('')
+  } catch { return null }
+}
+
+// Kenyan numbers to E.164 (+2547...), the format Google requires before hashing.
+function toE164(raw: string): string | null {
+  let d = raw.replace(/[^0-9+]/g, '')
+  if (d.startsWith('+')) return d.length >= 10 ? d : null
+  d = d.replace(/\D/g, '')
+  if (d.startsWith('254')) return `+${d}`
+  if (d.startsWith('0') && d.length === 10) return `+254${d.slice(1)}`
+  if ((d.startsWith('7') || d.startsWith('1')) && d.length === 9) return `+254${d}`
+  return null
+}
+
+function storedEmail(): string | null {
+  return store()?.getItem('dashboard_email') ?? null
+}
+
+export async function hashedUserData(contact?: Contact): Promise<Record<string, string> | null> {
+  const email = (contact?.email || storedEmail() || '').trim().toLowerCase()
+  const phone = contact?.phone ? toE164(contact.phone) : null
+  const out: Record<string, string> = {}
+  const he = email.includes('@') ? await sha256(email) : null
+  const hp = phone ? await sha256(phone) : null
+  if (he) out.sha256_email_address = he
+  if (hp) out.sha256_phone_number = hp
+  return Object.keys(out).length ? out : null
+}
+
+// Push an event with hashed user data attached (when we know who the visitor is).
+export async function pushWithUserData(data: Record<string, unknown>, contact?: Contact): Promise<void> {
+  const user_data = await hashedUserData(contact)
+  // Reset first so an older visitor's hash never sticks to this event.
+  pushDataLayer({ user_data: undefined })
+  pushDataLayer(user_data ? { ...data, user_data } : data)
+}
+
+export function track(event: string, meta?: Record<string, unknown>, contact?: Contact): void {
   try {
     const body = JSON.stringify({
       event,
@@ -65,6 +112,6 @@ export function track(event: string, meta?: Record<string, unknown>): void {
     })
     fetch('/api/track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, keepalive: true }).catch(() => {})
     // Same step to GTM, e.g. event: 'questionnaire_completed'
-    pushDataLayer({ event, ...(meta ?? {}) })
+    void pushWithUserData({ event, ...(meta ?? {}) }, contact)
   } catch { /* tracking must never break the page */ }
 }

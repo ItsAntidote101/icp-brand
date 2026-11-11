@@ -1039,7 +1039,7 @@ export default function QuestionnairePage() {
 
       localStorage.setItem('dashboard_email', profile.email.trim().toLowerCase())
       if (profile.name) localStorage.setItem('dashboard_name', profile.name)
-      track('questionnaire_completed', { quick: !fullMode })
+      track('questionnaire_completed', { quick: !fullMode }, { email: profile.email })
       router.push(`/report/${dData.id}`)
     } catch (err) {
       timerRefs.current.forEach(clearTimeout)
