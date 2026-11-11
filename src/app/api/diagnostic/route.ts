@@ -214,8 +214,52 @@ export async function POST(req: NextRequest) {
   })
 
   const body = await req.json()
-  const { questionnaireId, responses, profile } = body
-  const email: string = (profile?.email as string) ?? ''
+  const { questionnaireId, profile } = body as { questionnaireId?: string; profile?: { name?: string; company?: string } }
+
+  // ── Resolve everything from the saved questionnaire, never from the client ──
+  // Previously the usage limit was looked up from whatever email the browser
+  // sent, so leaving the email out meant unlimited (paid) AI calls.
+  if (!questionnaireId || typeof questionnaireId !== 'string') {
+    return NextResponse.json({ error: 'questionnaireId is required' }, { status: 400 })
+  }
+
+  const { data: qRow } = await supabase
+    .from('questionnaires')
+    .select('id, user_id, responses')
+    .eq('id', questionnaireId)
+    .maybeSingle()
+
+  if (!qRow) {
+    return NextResponse.json({ error: 'Questionnaire not found' }, { status: 404 })
+  }
+  if (!qRow.user_id) {
+    return NextResponse.json({ error: 'An email address is required to run a diagnosis.' }, { status: 400 })
+  }
+
+  // One diagnosis per questionnaire: retries return the existing result
+  // instead of paying for another AI call.
+  const { data: existingDiag } = await supabase
+    .from('diagnostics')
+    .select('id, diagnosis')
+    .eq('questionnaire_id', questionnaireId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  if (existingDiag) {
+    return NextResponse.json({ id: existingDiag.id, diagnosis: existingDiag.diagnosis }, { status: 200 })
+  }
+
+  const { data: owner } = await supabase
+    .from('users')
+    .select('email')
+    .eq('id', qRow.user_id)
+    .maybeSingle()
+
+  const responses = ((qRow.responses as Record<string, unknown> | null) ?? {}) as Record<string | number, unknown>
+  const email: string = owner?.email ?? ''
+  if (!email) {
+    return NextResponse.json({ error: 'Account not found for this questionnaire.' }, { status: 400 })
+  }
 
   // ── Subscription check + monthly diagnosis limit ─────────────────────────
   const MONTHLY_LIMITS: Record<string, number> = { free: 1, starter: 3, pro: 20, agency: Infinity }

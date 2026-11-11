@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import Anthropic from '@anthropic-ai/sdk'
-import { cookies } from 'next/headers'
-import { createHmac } from 'crypto'
+import { getSession } from '@/lib/session'
 
 export const dynamic     = 'force-dynamic'
 export const maxDuration = 60
@@ -10,15 +9,6 @@ export const maxDuration = 60
 const supabase  = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'http://localhost', process.env.SUPABASE_SERVICE_ROLE_KEY || 'build-placeholder')
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
-function verifySession(token: string): { email: string } | null {
-  const secret = process.env.SESSION_SECRET ?? 'fallback-secret'
-  try {
-    const [payload, sig] = token.split('.')
-    const expected = createHmac('sha256', secret).update(payload).digest('base64url')
-    if (sig !== expected) return null
-    return JSON.parse(Buffer.from(payload, 'base64url').toString())
-  } catch { return null }
-}
 
 const BUYERS: Record<string, { name: string; firstName: string; title: string }> = {
   'EK': { name: 'Eugene Kariuki',  firstName: 'Eugene',  title: 'Senior Media Buyer, East Africa' },
@@ -50,9 +40,7 @@ function stripDashes(v: unknown): unknown {
 }
 
 export async function GET(req: NextRequest) {
-  const cookieStore = await cookies()
-  const token = cookieStore.get('icp_session')?.value
-  const session = token ? verifySession(token) : null
+  const session = await getSession()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { data: user, error: userErr } = await supabase
@@ -93,9 +81,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const cookieStore = await cookies()
-  const token = cookieStore.get('icp_session')?.value
-  const session = token ? verifySession(token) : null
+  const session = await getSession()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { data: user, error: userErr } = await supabase

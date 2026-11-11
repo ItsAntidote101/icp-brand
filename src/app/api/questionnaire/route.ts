@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { createSessionToken, sessionCookieOptions } from '@/lib/session'
+import { createSessionToken, sessionCookieOptions, getSession, UNVERIFIED_SESSION_MS } from '@/lib/session'
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,9 +19,14 @@ export async function POST(req: NextRequest) {
     }
 
     let userId: string | null = null
+    // Only a brand-new account created right here gets a (short, unverified) session.
+    // Submitting someone else's email must never log you in as them.
+    let createdNewUser = false
+    const session = await getSession()
 
     if (profile?.email) {
       const normalizedEmail = profile.email.trim().toLowerCase()
+      const ownsEmail = !!session && session.email.toLowerCase() === normalizedEmail
 
       // ── Check whether the user already exists ──────────────────────────
       const { data: existing, error: lookupError } = await supabase
@@ -35,7 +40,12 @@ export async function POST(req: NextRequest) {
         console.error('[questionnaire] users lookup error:', JSON.stringify(lookupError))
       }
 
-      if (existing) {
+      if (existing && !ownsEmail) {
+        // ── Existing account, but this visitor is not logged in as it ──────
+        // Link the answers to the account (the owner sees them after logging in)
+        // but do not touch their profile and do not issue a session.
+        userId = existing.id
+      } else if (existing) {
         // ── Existing user, only update safe profile fields ────────────────
         const { data: updated, error: updateError } = await supabase
           .from('users')
@@ -74,6 +84,7 @@ export async function POST(req: NextRequest) {
           console.error('[questionnaire] users insert error:', JSON.stringify(insertError))
         } else {
           userId = inserted?.id ?? null
+          createdNewUser = !!userId
         }
       }
     }
@@ -96,8 +107,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Internal error' }, { status: 500 })
     }
 
-    // Write named fields to questionnaire_responses for AI context (non-blocking)
-    if (profile?.email) {
+    // Write named fields to questionnaire_responses for AI context (non-blocking).
+    // Only when the visitor owns this email, so nobody can overwrite another
+    // user's AI context by submitting the questionnaire with their address.
+    const mayWriteContext = createdNewUser ||
+      (!!session && !!profile?.email && session.email.toLowerCase() === profile.email.trim().toLowerCase())
+    if (profile?.email && mayWriteContext) {
       const namedData = {
         industry:         answers[2] ?? null,
         business_type:    answers[2] ?? null,
@@ -120,8 +135,9 @@ export async function POST(req: NextRequest) {
     }
 
     const res = NextResponse.json({ id: data.id, message: 'Questionnaire saved' }, { status: 201 })
-    if (profile?.email && userId) {
-      res.cookies.set(sessionCookieOptions(createSessionToken(profile.email.trim().toLowerCase(), userId)))
+    if (profile?.email && userId && createdNewUser) {
+      const token = createSessionToken(profile.email.trim().toLowerCase(), userId, UNVERIFIED_SESSION_MS)
+      res.cookies.set(sessionCookieOptions(token, UNVERIFIED_SESSION_MS))
     }
     return res
   } catch (err) {

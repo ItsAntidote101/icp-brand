@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { sendSubscriptionEmail, sendUpgradeToUser, sendUpgradeToFounder } from '@/lib/email'
+import { claimPayment } from '@/lib/payments'
 
 export async function GET(req: NextRequest) {
   const reference = req.nextUrl.searchParams.get('reference') ?? req.nextUrl.searchParams.get('trxref')
@@ -14,7 +15,7 @@ export async function GET(req: NextRequest) {
   // Verify with Paystack
   let verifyData: Record<string, unknown>
   try {
-    const verifyRes = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
+    const verifyRes = await fetch(`https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`, {
       headers: {
         Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY ?? ''}`,
       },
@@ -34,12 +35,6 @@ export async function GET(req: NextRequest) {
 
   const txData   = verifyData.data as Record<string, unknown>
   const customer = txData.customer as { email: string }
-  const metadata = txData.metadata as Record<string, string> | undefined
-  const email    = customer.email
-  const tier     = metadata?.tier ?? 'Starter'
-
-  // Amount actually charged (in KES, from Paystack cents)
-  const amountKes = Math.round(((txData.amount as number) ?? 0) / 100)
 
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
   if (!serviceKey) throw new Error('SUPABASE_SERVICE_ROLE_KEY is required')
@@ -47,6 +42,33 @@ export async function GET(req: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
     serviceKey
   )
+
+  // ── Claim the payment exactly once, against what WE expected to be paid ──
+  // Never trust Paystack metadata for tier or upgrade type: anyone with the
+  // public key can start a transaction with arbitrary metadata.
+  const claim = await claimPayment(supabase, {
+    reference,
+    amount:   (txData.amount as number) ?? 0,
+    currency: (txData.currency as string) ?? '',
+    email:    customer?.email ?? '',
+  })
+
+  if (!claim.ok) {
+    if (claim.reason === 'already_processed') {
+      // Refresh / back button / webhook got there first: nothing to do
+      return NextResponse.redirect(`${base}/dashboard`)
+    }
+    console.error('[verify] payment rejected:', claim.reason, 'reference:', reference)
+    return NextResponse.redirect(`${base}/cancel?reason=${encodeURIComponent(claim.reason)}`)
+  }
+
+  const payment  = claim.row
+  const email    = payment.email
+  const tier     = payment.tier.charAt(0).toUpperCase() + payment.tier.slice(1)
+  const metadata = payment.meta ?? {}
+
+  // Amount actually charged (in KES, from Paystack cents)
+  const amountKes = Math.round(((txData.amount as number) ?? 0) / 100)
 
   // Fetch existing user
   const { data: existingUser, error: lookupError } = await supabase
@@ -59,15 +81,13 @@ export async function GET(req: NextRequest) {
     console.warn('[verify] users lookup error:', lookupError)
   }
 
-  const isUpgrade    = metadata?.is_upgrade === 'true'
-  const upgradeType  = metadata?.upgrade_type as 'new_subscription' | 'proration' | undefined
-  const upgradeFrom  = metadata?.upgrade_from ?? existingUser?.subscription_tier ?? 'free'
+  const upgradeFrom  = metadata.upgrade_from || existingUser?.subscription_tier || 'free'
 
   // For proration upgrades, keep the existing renewal date unchanged.
   // For new subscriptions (including free->paid), set renewal_date = now + 30 days.
-  const isProration  = isUpgrade && upgradeType === 'proration'
+  const isProration  = payment.kind === 'proration'
   const renewalDate  = isProration
-    ? (metadata?.existing_renewal_date || existingUser?.renewal_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString())
+    ? (metadata.existing_renewal_date || existingUser?.renewal_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString())
     : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
 
   const userId = existingUser?.id ?? null
@@ -206,5 +226,5 @@ export async function GET(req: NextRequest) {
 
   const tierParam  = encodeURIComponent(tier)
   const emailParam = encodeURIComponent(email)
-  return NextResponse.redirect(`${base}/success?email=${emailParam}&tier=${tierParam}&ref=${reference}`)
+  return NextResponse.redirect(`${base}/success?email=${emailParam}&tier=${tierParam}&ref=${encodeURIComponent(reference)}`)
 }

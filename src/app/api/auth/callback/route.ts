@@ -3,12 +3,13 @@ import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
 import { createSessionToken, sessionCookieOptions } from '@/lib/session'
 import { sendAccountCreatedEmail, sendNewSignupToFounder } from '@/lib/email'
+import { safeNextPath } from '@/lib/safe-redirect'
 
 export async function GET(req: NextRequest) {
   const reqUrl = new URL(req.url)
   const { searchParams } = reqUrl
   const code    = searchParams.get('code')
-  const next    = searchParams.get('next') ?? '/dashboard'
+  const next    = safeNextPath(searchParams.get('next'))
   // Always use the origin of the incoming request so this works on any
   // deployment (localhost, Vercel preview, production) without configuration.
   const baseUrl = reqUrl.origin

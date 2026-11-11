@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
+import { recordPendingPayment } from '@/lib/payments'
 
 type Tier = 'Starter' | 'Pro' | 'Agency'
 
@@ -15,15 +17,20 @@ export async function POST(req: NextRequest) {
     tier: Tier
   }
 
-  if (!email || !tier) {
+  if (!email || typeof email !== 'string' || !tier) {
     return NextResponse.json({ error: 'email and tier are required' }, { status: 400 })
   }
 
-  if (!PRICES[tier]) {
+  if (!Object.prototype.hasOwnProperty.call(PRICES, tier)) {
     return NextResponse.json({ error: 'Invalid tier' }, { status: 400 })
   }
 
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!serviceKey) throw new Error('SUPABASE_SERVICE_ROLE_KEY is required')
+  const db = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL ?? '', serviceKey)
+
   const amount = PRICES[tier]
+  const normalisedEmail = email.trim().toLowerCase()
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://idealicp.com'
   const callbackUrl = `${appUrl}/api/paystack/verify`
@@ -35,7 +42,7 @@ export async function POST(req: NextRequest) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      email,
+      email: normalisedEmail,
       amount,
       currency: 'KES',
       callback_url: callbackUrl,
@@ -50,6 +57,19 @@ export async function POST(req: NextRequest) {
       { error: paystackData.message ?? 'Paystack initialization failed' },
       { status: 502 }
     )
+  }
+
+  // Record what we expect to be paid. /verify and the webhook only honour
+  // references that exist here, at this amount, for this email.
+  const recorded = await recordPendingPayment(db, {
+    reference:      paystackData.data.reference,
+    email:          normalisedEmail,
+    tier,
+    kind:           'new_subscription',
+    expectedAmount: amount,
+  })
+  if (!recorded) {
+    return NextResponse.json({ error: 'Could not start payment. Please try again.' }, { status: 500 })
   }
 
   return NextResponse.json({

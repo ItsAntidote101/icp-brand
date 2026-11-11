@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import crypto from 'crypto'
+import { claimPayment } from '@/lib/payments'
 
 export async function POST(req: NextRequest) {
   const rawBody = await req.text()
@@ -12,7 +13,9 @@ export async function POST(req: NextRequest) {
     .update(rawBody)
     .digest('hex')
 
-  if (signature !== expected) {
+  const sigBuf = Buffer.from(signature)
+  const expBuf = Buffer.from(expected)
+  if (!process.env.PAYSTACK_SECRET_KEY || sigBuf.length !== expBuf.length || !crypto.timingSafeEqual(sigBuf, expBuf)) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
   }
 
@@ -31,32 +34,55 @@ export async function POST(req: NextRequest) {
   )
 
   if (event.event === 'charge.success') {
+    // Backup path for when the customer closes the tab before /verify runs.
+    // claimPayment makes sure each payment is applied once, at the amount and
+    // tier we recorded, whichever of /verify or this webhook arrives first.
     const data = event.data as {
       reference: string
-      metadata?: { tier?: string }
+      amount: number
+      currency: string
       customer: { email: string }
     }
 
-    const email = data.customer.email
-    const tier  = data.metadata?.tier ?? 'starter'
-    const renewalDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+    const claim = await claimPayment(supabase, {
+      reference: data.reference,
+      amount:    data.amount,
+      currency:  data.currency,
+      email:     data.customer?.email ?? '',
+    })
 
-    const upsertPayload = {
-      email,
-      subscription_tier:  tier.toLowerCase(),
-      billing_status:     'active',
-      renewal_date:       renewalDate,
-      paystack_reference: data.reference,
-      updated_at:         new Date().toISOString(),
-    }
+    if (claim.ok) {
+      const p = claim.row
+      const isProration = p.kind === 'proration'
+      const update: Record<string, unknown> = {
+        email:              p.email,
+        subscription_tier:  p.tier,
+        billing_status:     'active',
+        paystack_reference: p.reference,
+        updated_at:         new Date().toISOString(),
+      }
+      if (!isProration) {
+        update.renewal_date = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+      }
+      const { data: u, error: upsertError } = await supabase
+        .from('users')
+        .upsert(update, { onConflict: 'email' })
+        .select('id')
+        .single()
 
-    const { error: upsertError } = await supabase
-      .from('users')
-      .upsert(upsertPayload, { onConflict: 'email' })
-      .select()
-
-    if (upsertError) {
-      console.error('[webhook] charge.success Supabase upsert error:', upsertError)
+      if (upsertError) {
+        console.error('[webhook] charge.success Supabase upsert error:', upsertError)
+      } else if (u?.id) {
+        await supabase.from('billing_history').insert({
+          user_id:    u.id,
+          date:       new Date().toISOString(),
+          plan:       p.tier,
+          amount_kes: Math.round(data.amount / 100),
+          status:     'paid',
+        })
+      }
+    } else if (claim.reason !== 'already_processed') {
+      console.error('[webhook] charge.success rejected:', claim.reason, 'reference:', data.reference)
     }
   }
 

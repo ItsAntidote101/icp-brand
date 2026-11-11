@@ -16,6 +16,11 @@ function sign(payload: object): string {
   return `${data}.${sig}`
 }
 
+// Short-lived session for accounts that have not proven they own the email yet
+// (e.g. created by submitting the questionnaire). Full 30-day sessions are only
+// issued after OTP or OAuth verification.
+export const UNVERIFIED_SESSION_MS = 2 * 60 * 60 * 1000 // 2 hours
+
 function verify(token: string): { email: string; userId: string; iat: number } | null {
   const dotIdx = token.lastIndexOf('.')
   if (dotIdx === -1) return null
@@ -29,14 +34,15 @@ function verify(token: string): { email: string; userId: string; iat: number } |
   if (expectedBuf.length !== sigBuf.length || !timingSafeEqual(expectedBuf, sigBuf)) return null
   try {
     const payload = JSON.parse(Buffer.from(data, 'base64url').toString())
-    if (typeof payload.iat !== 'number' || Date.now() - payload.iat > EXPIRY_MS) return null
+    const ttl = typeof payload.ttl === 'number' && payload.ttl > 0 ? Math.min(payload.ttl, EXPIRY_MS) : EXPIRY_MS
+    if (typeof payload.iat !== 'number' || Date.now() - payload.iat > ttl) return null
     if (!payload.email || !payload.userId) return null
     return payload
   } catch { return null }
 }
 
-export function createSessionToken(email: string, userId: string): string {
-  return sign({ email, userId })
+export function createSessionToken(email: string, userId: string, ttlMs?: number): string {
+  return sign(ttlMs ? { email, userId, ttl: ttlMs } : { email, userId })
 }
 
 export async function getSession(): Promise<{ email: string; userId: string } | null> {
@@ -57,14 +63,14 @@ export async function requireSession(): Promise<{ email: string; userId: string 
   return session
 }
 
-export function sessionCookieOptions(token: string) {
+export function sessionCookieOptions(token: string, ttlMs: number = EXPIRY_MS) {
   return {
     name: COOKIE_NAME,
     value: token,
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax' as const,
-    maxAge: EXPIRY_MS / 1000,
+    maxAge: Math.floor(ttlMs / 1000),
     path: '/',
   }
 }

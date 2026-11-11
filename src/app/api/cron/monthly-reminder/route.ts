@@ -21,6 +21,27 @@ export async function GET(req: NextRequest) {
   const now            = new Date()
   const sevenDaysLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
 
+  // ── Expire lapsed paid plans ─────────────────────────────────────────────
+  // Nothing used to downgrade a paid user once renewal_date passed, so Pro
+  // access lasted forever after one payment. After a 3-day grace period the
+  // account drops to free (it stays usable, just without paid features).
+  const GRACE_MS = 3 * 24 * 60 * 60 * 1000
+  const expiryCutoff = new Date(now.getTime() - GRACE_MS).toISOString()
+  const { data: expired, error: expireErr } = await supabase
+    .from('users')
+    .update({ subscription_tier: 'free', updated_at: now.toISOString() })
+    .neq('subscription_tier', 'free')
+    .not('renewal_date', 'is', null)
+    .lt('renewal_date', expiryCutoff)
+    .select('id')
+  if (expireErr) {
+    console.error('[cron] expiry update error:', JSON.stringify(expireErr))
+  } else if (expired && expired.length > 0) {
+    const ids = expired.map((u: { id: string }) => u.id)
+    await supabase.from('subscriptions').update({ billing_status: 'expired', updated_at: now.toISOString() }).in('user_id', ids)
+    console.log('[cron] expired', ids.length, 'lapsed paid plan(s)')
+  }
+
   console.log('[cron] monthly-reminder, range:', now.toISOString(), '→', sevenDaysLater.toISOString())
 
   const { data: users, error: usersError } = await supabase
