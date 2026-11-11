@@ -2,6 +2,9 @@ import { Resend } from 'resend'
 
 const FROM = 'Ideal ICP <noreply@idealicp.com>'
 
+// Where call requests, signups, upgrades and escalations are sent
+const FOUNDER_EMAIL = 'kwata@idealicp.com'
+
 function escapeHtml(s: string): string {
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;')
 }
@@ -370,7 +373,7 @@ ${notes ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="
 
   const { data, error } = await getResend().emails.send({
     from: FROM,
-    to: 'eugene@idealicp.com',
+    to: FOUNDER_EMAIL,
     replyTo: userEmail,
     subject: `New Strategy Session Request from ${companyName || userName}`,
     html: base(content, { loginBtn: false }),
@@ -455,7 +458,7 @@ ${notes ? infoCard(`<p style="margin:0 0 8px;color:${Orange};font-size:11px;font
 
   const { data, error } = await getResend().emails.send({
     from: FROM,
-    to: 'eugene@idealicp.com',
+    to: FOUNDER_EMAIL,
     replyTo: userEmail,
     subject: `Call request: ${companyName || userName || userEmail}${score !== null ? ` (score ${score})` : ''}`,
     html: base(content, { loginBtn: false }),
@@ -479,7 +482,7 @@ ${infoCard(kvRows([
 
   const { data, error } = await getResend().emails.send({
     from: FROM, to,
-    replyTo: 'eugene@idealicp.com',
+    replyTo: FOUNDER_EMAIL,
     subject: 'Your free call request is in',
     html: base(content),
   })
@@ -558,7 +561,7 @@ ${heading('Cancellation alert', 28)}
 <p style="margin:0;color:${Muted};font-size:13px;font-family:${font};">Reply to this email to reach the subscriber directly.</p>`
 
   const { data, error } = await getResend().emails.send({
-    from: FROM, to: 'eugene@idealicp.com', replyTo: userEmail,
+    from: FROM, to: FOUNDER_EMAIL, replyTo: userEmail,
     subject: `Cancellation: ${companyName || userName}`,
     html: base(content, { loginBtn: false }),
   })
@@ -633,7 +636,7 @@ ${topUpKes > 0 ? `<p style="margin:0 0 16px;color:#d97706;font-size:14px;font-we
 ${infoCard(rows.map(([l, v], i) => row(l, v, i === rows.length - 1)).join(''))}`
 
   const { data, error } = await getResend().emails.send({
-    from: FROM, to: 'eugene@idealicp.com', replyTo: userEmail,
+    from: FROM, to: FOUNDER_EMAIL, replyTo: userEmail,
     subject: `Upgrade: ${tierNames[oldTier] ?? oldTier} to ${tierNames[newTier] ?? newTier}${topUpKes > 0 ? `, KES ${topUpKes.toLocaleString()} to collect` : ''}, ${companyName || userName}`,
     html: base(content, { loginBtn: false }),
   })
@@ -701,7 +704,7 @@ ${heading(`Downgrade scheduled: ${tierNames[currentTier] ?? currentTier} to ${ti
 ${infoCard(rows.map(([l, v], i) => row(l, v, i === rows.length - 1)).join(''))}`
 
   const { data, error } = await getResend().emails.send({
-    from: FROM, to: 'eugene@idealicp.com', replyTo: userEmail,
+    from: FROM, to: FOUNDER_EMAIL, replyTo: userEmail,
     subject: `Downgrade scheduled: ${tierNames[currentTier] ?? currentTier} to ${tierNames[newTier] ?? newTier} on ${switchDate}, ${companyName || userName}`,
     html: base(content, { loginBtn: false }),
   })
@@ -767,7 +770,7 @@ ${heading('Subscription paused', 28)}
 ${infoCard(rows.map(([l, v], i) => row(l, v, i === rows.length - 1)).join(''))}`
 
   const { data, error } = await getResend().emails.send({
-    from: FROM, to: 'eugene@idealicp.com', replyTo: userEmail,
+    from: FROM, to: FOUNDER_EMAIL, replyTo: userEmail,
     subject: `Subscription paused: ${companyName || userName}`,
     html: base(content, { loginBtn: false }),
   })
@@ -915,7 +918,7 @@ ${note ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0
 <p style="margin:0;color:${Muted};font-size:13px;font-family:${font};">Reply via email to respond directly.</p>`
 
   const { data, error } = await getResend().emails.send({
-    from: FROM, to: 'eugene@idealicp.com', replyTo: userEmail,
+    from: FROM, to: FOUNDER_EMAIL, replyTo: userEmail,
     subject: `Escalation: ${companyName || userName}, ${urgency}`,
     html: base(content, { loginBtn: false }),
   })
@@ -1053,7 +1056,7 @@ ${heading('New signup', 28)}
 ${infoCard(rows.map(([l, v], i) => row(l, v, i === rows.length - 1)).join(''))}`
 
   const { data, error } = await getResend().emails.send({
-    from: FROM, to: 'eugene@idealicp.com', replyTo: userEmail,
+    from: FROM, to: FOUNDER_EMAIL, replyTo: userEmail,
     subject: `New signup: ${userName || userEmail}${source === 'google' ? ' (Google)' : ''}`,
     html: base(content, { loginBtn: false }),
   })
