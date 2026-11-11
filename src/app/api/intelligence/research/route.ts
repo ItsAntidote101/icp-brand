@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { stripDashes } from '@/lib/strip-dashes'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 import Anthropic from '@anthropic-ai/sdk'
 import { getSession } from '@/lib/session'
 
 export const dynamic    = 'force-dynamic'
 export const maxDuration = 120  // web search calls can take 60-90s
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'http://localhost',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || 'build-placeholder',
-)
+const supabase = supabaseAdmin()
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
@@ -42,17 +40,6 @@ function weekStart(): string {
   d.setUTCHours(0, 0, 0, 0)
   d.setUTCDate(d.getUTCDate() - d.getUTCDay() + 1)
   return d.toISOString().split('T')[0]
-}
-
-function stripDashes(v: unknown): unknown {
-  if (typeof v === 'string') return v.replace(/ — /g, ', ').replace(/— /g, ', ').replace(/—/g, '-').replace(/ – /g, ', ').replace(/–/g, '-')
-  if (Array.isArray(v)) return v.map(stripDashes)
-  if (v !== null && typeof v === 'object') {
-    const o: Record<string, unknown> = {}
-    for (const [k, val] of Object.entries(v as Record<string, unknown>)) o[k] = stripDashes(val)
-    return o
-  }
-  return v
 }
 
 // ─── Full questionnaire profile ───────────────────────────────────────────────

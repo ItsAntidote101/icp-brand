@@ -42,7 +42,7 @@ const PLANS = [
     highlight: false,
     cta: 'Start free diagnosis',
     href: '/questionnaire',
-    desc: 'One lifetime diagnosis. See exactly where your targeting leaks money — a media buyer reviews your report.',
+    desc: 'One lifetime diagnosis. See exactly where your targeting leaks money. A media buyer reviews your report.',
     includes: [
       'ICP health score (0-100)',
       'Top 3 critical findings',
@@ -173,7 +173,7 @@ const COMPARISON: Group[] = [
   {
     group: 'Human Support and Access',
     rows: [
-      { feature: 'Media buyer reviews your report',            cells: [true, true, true, true], note: 'Every diagnosis is read by a practitioner — included on all tiers' },
+      { feature: 'Media buyer reviews your report',            cells: [true, true, true, true], note: 'Every diagnosis is read by a practitioner, included on all tiers' },
       { feature: 'Personal follow-up if critical gap found',   cells: [true, true, true, true], note: 'Within 24 hours of your diagnosis completing' },
       { feature: 'AI chat in dashboard',                       cells: [false, true, true, true] },
       { feature: 'Priority in-dashboard support',              cells: [false, false, true, true] },
@@ -453,7 +453,7 @@ export default function PricingPage() {
               { Icon: FileText,     title: 'Landing Page Audit',      body: 'Our system visits your actual URL, scores your copy, CTA, trust signals, and conversion friction points in real time.', tier: 'Pro and Agency' },
               { Icon: Brain,        title: 'Competitive Intelligence', body: 'We research your top 3 competitors, identify their positioning gaps, and benchmark your metrics against your real market.', tier: 'Pro and Agency' },
               { Icon: TrendingDown, title: 'CAC and LTV Projections', body: 'Your exact cost per customer before and after ICP fixes, your LTV:CAC ratio, and the monthly revenue you recover.', tier: 'All plans' },
-              { Icon: Users,        title: 'Human Strategy Layer',    body: 'Every diagnosis is reviewed by a B2B media buyer — included free. Pro adds a monthly strategy session with one practitioner. Agency gets the full team actively working on your accounts.', tier: 'All plans' },
+              { Icon: Users,        title: 'Human Strategy Layer',    body: 'Every diagnosis is reviewed by a B2B media buyer, included free. Pro adds a monthly strategy session with one practitioner. Agency gets the full team actively working on your accounts.', tier: 'All plans' },
               { Icon: Zap,          title: 'Weekly Intelligence',     body: 'Every week your dashboard updates with new signals: audience drift, competitive moves, benchmark changes, and fresh quick wins.', tier: 'Starter and above' },
               { Icon: Shield,       title: 'Ongoing Monitoring',      body: 'Your ICP health score refreshes monthly. If your targeting drifts or the market shifts, you find out before your CAC spikes.', tier: 'Starter and above' },
             ].map(({ Icon, title, body, tier }) => (
@@ -480,7 +480,7 @@ export default function PricingPage() {
               { q: 'What happens if I exceed my monthly diagnosis limit?', a: 'You can purchase additional diagnoses at KES 3,000 each, or upgrade to the next plan. Your existing data and reports are never deleted.' },
               { q: 'Is the media buyer session a real human?', a: 'Yes. Pro subscribers get a monthly 45-minute video call with a B2B media buyer from our team. Agency subscribers get access to a team of media buyers, not just one, who actively work on their client accounts alongside them.' },
               { q: 'How does the annual discount work?', a: 'Annual billing gives you 10 months for the price of 12 (two months free). You pay the full annual amount upfront. Refunds are available within the first 14 days.' },
-              { q: 'What does the free diagnosis include exactly?', a: 'Your ICP health score (0-100), your top 3 critical findings with brief descriptions, 3 quick wins you can act on this week, a CAC estimate, and a monthly waste estimate. A B2B media buyer on our team also reviews your report — if they spot a critical gap, they follow up personally within 24 hours. No credit card required. One lifetime diagnosis on the free tier.' },
+              { q: 'What does the free diagnosis include exactly?', a: 'Your ICP health score (0-100), your top 3 critical findings with brief descriptions, 3 quick wins you can act on this week, a CAC estimate, and a monthly waste estimate. A B2B media buyer on our team also reviews your report, if they spot a critical gap, they follow up personally within 24 hours. No credit card required. One lifetime diagnosis on the free tier.' },
             ].map(({ q, a }, i) => (
               <div key={i} style={{ borderTop: `1.5px solid ${Border}`, padding: '24px 0' }}>
                 <p style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: Text, margin: '0 0 10px' }}>{q}</p>

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { stripDashes } from '@/lib/strip-dashes'
 import { createClient } from '@supabase/supabase-js'
 import Anthropic from '@anthropic-ai/sdk'
 import { getSession } from '@/lib/session'
@@ -15,17 +16,6 @@ type CsvAnalysis = {
   audience_insights: string[]
   recommendations: Array<{ action: string; impact: string; revenue_upside: string }>
   score_delta?: number
-}
-
-function stripDashes(value: unknown): unknown {
-  if (typeof value === 'string') return value.replace(/ — /g, ', ').replace(/— /g, ', ').replace(/—/g, '-').replace(/ – /g, ', ').replace(/–/g, '-')
-  if (Array.isArray(value)) return value.map(stripDashes)
-  if (value !== null && typeof value === 'object') {
-    const o: Record<string, unknown> = {}
-    for (const [k, v] of Object.entries(value as Record<string, unknown>)) o[k] = stripDashes(v)
-    return o
-  }
-  return value
 }
 
 export async function POST(req: NextRequest) {

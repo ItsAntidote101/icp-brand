@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Ideal ICP
 
-## Getting Started
+Diagnostic tool at [idealicp.com](https://idealicp.com). B2B marketing teams answer a short questionnaire and get a scored ICP health report with ranked fixes, reviewed by a media buyer.
 
-First, run the development server:
+**Stack:** Next.js 14 (App Router), Supabase (Postgres + Auth), Anthropic Claude, Paystack (KES), Resend, hosted on Vercel.
+
+## Run locally
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env.local   # then fill in the values below
+npm run dev                  # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Environment variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Variable | What it's for |
+| --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase public key (login codes) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server-side database access. Never expose to the browser |
+| `JWT_SECRET` | Signs the `icp_session` login cookie |
+| `ANTHROPIC_API_KEY` | AI diagnosis, briefings, chat |
+| `PAYSTACK_SECRET_KEY` | Payments and webhook signature check |
+| `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY` | Paystack client key |
+| `RESEND_API_KEY` | Transactional email |
+| `CRON_SECRET` | Vercel sends this to `/api/cron/*`; requests without it are rejected |
+| `ADMIN_SECRET` | `x-admin-key` header for `/api/admin/*` and `/api/email/send` |
+| `NEXT_PUBLIC_APP_URL` | Public site URL, e.g. `https://idealicp.com` |
+| `NEXT_PUBLIC_BUYER_CALENDAR_URL` | Optional. Booking link for media buyer review calls |
+| `RE_ENGAGE_DELAY_HOURS`, `RE_ENGAGE_REPEAT_DAYS` | Optional. Timing for the re-engagement emails |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Missing Supabase variables now fail loudly at runtime instead of silently.
 
-## Learn More
+## How it fits together
 
-To learn more about Next.js, take a look at the following resources:
+- **Login:** email one-time code (`/api/auth/send-otp`, `/api/auth/verify-otp`) or Google (`/api/auth/callback`). Only those routes issue a 30-day session. Accounts created from the questionnaire get a 2-hour unverified session.
+- **Diagnosis:** `/questionnaire` saves answers (`/api/questionnaire`), then `/api/diagnostic` runs Claude. Limits come from the questionnaire owner's plan, one diagnosis per questionnaire, max 5 new diagnoses per IP per day.
+- **Payments:** every Paystack charge is recorded in `paystack_payments` with the amount and tier the server chose. `/api/paystack/verify` and the webhook each claim a payment once and ignore Paystack metadata.
+- **Crons** (`vercel.json`): reminders and plan expiry, weekly intelligence, smart alerts, post-diagnosis follow-up, re-engagement.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Database
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Schema changes live in `supabase/migrations/`. Apply new ones in the Supabase SQL editor (or with the Supabase CLI) **before** deploying code that depends on them. Row Level Security is on for every table with no public policies, so all access goes through the server.
 
-## Deploy on Vercel
+## Deploying
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Push or merge to `main`. Vercel builds production from `main`, and every other branch gets a preview URL.

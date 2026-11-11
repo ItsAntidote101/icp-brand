@@ -52,77 +52,23 @@ type MediaBuyer = {
   calLink:      string
 }
 
+// One real media buyer. The previous roster (Aisha, David, Grace, Marcus) and
+// the invented bios were made-up people presented as staff.
 const MEDIA_BUYERS: MediaBuyer[] = [
   {
-    name: 'Eugene Kariuki', firstName: 'Eugene', initials: 'EK', avatarColor: '#201515',
-    title: 'B2B Media Buyer', speciality: 'B2B SaaS, Fintech, East Africa paid acquisition',
-    regions: ['Kenya', 'Uganda', 'Tanzania', 'East Africa'],
-    industries: ['SaaS', 'Fintech', 'B2B', 'Technology'],
-    yearsExp: 7,
-    bio: '7 years running Meta and Google for B2B SaaS and fintech companies across East Africa. Specialist in M-Pesa-integrated funnels and WhatsApp lead qualification.',
-    calLink: 'https://calendly.com/idealicp/eugene-review',
-  },
-  {
-    name: 'Aisha Mensah', firstName: 'Aisha', initials: 'AM', avatarColor: '#7c3aed',
-    title: 'E-commerce Media Buyer', speciality: 'DTC, e-commerce, West Africa performance',
-    regions: ['West Africa (Nigeria, Ghana)', 'Nigeria', 'Ghana'],
-    industries: ['E-commerce', 'DTC', 'Retail', 'FMCG', 'Consumer'],
-    yearsExp: 6,
-    bio: '6 years scaling DTC and e-commerce brands in Nigeria and Ghana. Built Meta Shopping and Google Performance Max campaigns generating 4x+ ROAS for over 40 brands.',
-    calLink: 'https://calendly.com/idealicp/aisha-review',
-  },
-  {
-    name: 'David Osei', firstName: 'David', initials: 'DO', avatarColor: '#0369a1',
-    title: 'Growth Media Buyer', speciality: 'B2B services, professional services, Southern Africa',
-    regions: ['South Africa', 'Global/Multiple Regions'],
-    industries: ['Professional Services', 'Consulting', 'Finance', 'Insurance', 'B2B Services'],
-    yearsExp: 8,
-    bio: '8 years in B2B lead generation for professional services firms. Managed LinkedIn and Google budgets from KES 50,000 to KES 2M per month across South Africa and global markets.',
-    calLink: 'https://calendly.com/idealicp/david-review',
-  },
-  {
-    name: 'Grace Nakato', firstName: 'Grace', initials: 'GN', avatarColor: '#065f46',
-    title: 'Local & SME Media Buyer', speciality: 'Local businesses, healthcare, education, SMEs',
-    regions: ['Kenya', 'Uganda', 'Tanzania'],
-    industries: ['Healthcare', 'Education', 'Local Services', 'Hospitality', 'Real Estate'],
-    yearsExp: 5,
-    bio: '5 years growing local and SME brands in East Africa. Expert in Google Local, Meta lead ads, and low-budget high-efficiency campaigns for businesses under KES 200,000/month.',
-    calLink: 'https://calendly.com/idealicp/grace-review',
-  },
-  {
-    name: 'Marcus Webb', firstName: 'Marcus', initials: 'MW', avatarColor: '#9a3412',
-    title: 'International Media Buyer', speciality: 'UK, Europe, North America B2B and SaaS',
-    regions: ['UK & Ireland', 'Europe (non-UK)', 'North America (US/Canada)', 'Middle East', 'Southeast Asia', 'South Asia (India/Pakistan)', 'Latin America', 'Australia & New Zealand'],
+    name: 'Eugene K.', firstName: 'Eugene', initials: 'EK', avatarColor: '#201515',
+    title: 'Founder and B2B Media Buyer', speciality: 'B2B paid acquisition on Google Ads and Meta',
+    regions: [],
     industries: [],
-    yearsExp: 9,
-    bio: '9 years managing international paid acquisition for B2B and SaaS companies across the UK, Europe, and North America. Specialist in multi-market funnel optimisation and LinkedIn ABM.',
-    calLink: 'https://calendly.com/idealicp/marcus-review',
+    yearsExp: 0,
+    bio: 'Runs Google Ads and Meta campaigns for B2B companies, with a background in conversion creative.',
+    calLink: process.env.NEXT_PUBLIC_BUYER_CALENDAR_URL ?? 'https://calendly.com/idealicp/eugene-review',
   },
 ]
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getAssignedBuyer(region: string, industry: string, tier: string): MediaBuyer {
-  const reg = region ?? ''
-  const ind = industry ?? ''
-
-  // Find by region match first
-  const byRegion = MEDIA_BUYERS.filter(b =>
-    b.regions.some(r => reg.includes(r) || r.includes(reg))
-  )
-
-  if (byRegion.length === 1) return byRegion[0]
-
-  // Narrow by industry if multiple region matches
-  if (byRegion.length > 1) {
-    const byIndustry = byRegion.find(b =>
-      b.industries.length === 0 || b.industries.some(i => ind.toLowerCase().includes(i.toLowerCase()))
-    )
-    if (byIndustry) return byIndustry
-    return byRegion[0]
-  }
-
-  // Default: Eugene for paid tiers, Marcus for international
-  if (tier === 'agency' || tier === 'pro') return MEDIA_BUYERS[0]
-  return MEDIA_BUYERS[4]
+  return MEDIA_BUYERS[0]
 }
 
 // ─── Buyer Avatar ─────────────────────────────────────────────────────────────
@@ -310,7 +256,7 @@ function MonthlyCheckinCard({ user, buyer, onUpgrade }: { user: UserData; buyer:
             </div>
             <button onClick={onUpgrade}
               style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: '#e8330a', color: '#fff', borderRadius: 10, padding: '9px 16px', fontFamily: fontB, fontSize: 12, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
-              See {checkin.buyer_name.split(' ')[0]}&apos;s question — upgrade to Starter
+              See {checkin.buyer_name.split(' ')[0]}&apos;s question: upgrade to Starter
             </button>
           </div>
         )}
@@ -538,7 +484,7 @@ const MILESTONE_DEFS: MilestoneDef[] = [
   { key: 'score_climber',       name: 'Score Climber',       description: 'Improved ICP score by 10+ points',     unlock_hint: 'Improve your score 10 points',  Icon: TrendingUp, color: '#3b82f6', actionLink: '/questionnaire',  actionLabel: 'Re-run Diagnosis' },
   { key: 'intelligence_reader', name: 'Intelligence Reader', description: 'Read 5 intelligence briefings',        unlock_hint: 'Open Intelligence tab 5 times', Icon: Brain,      color: '#e8330a', actionLabel: 'Open Intelligence' },
   { key: 'consistent',          name: 'Consistent',          description: 'Ran 3 or more diagnoses',              unlock_hint: 'Complete 3 total diagnoses',    Icon: RefreshCw,  color: '#f97316', actionLink: '/questionnaire',  actionLabel: 'Run Diagnosis' },
-  { key: 'power_user',          name: 'Power User',          description: 'Earned all 5 badges — Master Status',  unlock_hint: 'Earn all other badges first',   Icon: Star,       color: '#f59e0b' },
+  { key: 'power_user',          name: 'Power User',          description: 'Earned all 5 badges: Master Status',  unlock_hint: 'Earn all other badges first',   Icon: Star,       color: '#f59e0b' },
 ]
 
 const TIER_LABEL: Record<string, string> = { starter: 'Starter', pro: 'Pro', agency: 'Agency', free: 'Free' }
@@ -819,19 +765,19 @@ function trajectoryInsight(data: { score: number }[]): { icon: 'up' | 'down' | '
   const swings = gains.filter(g => Math.abs(g) >= 8).length
 
   if (swings >= 2) return {
-    icon: 'volatile', text: 'Scores are fluctuating — inconsistent strategy may be causing variance. Stabilise your targeting first.',
+    icon: 'volatile', text: 'Scores are fluctuating. Inconsistent strategy may be causing variance. Stabilise your targeting first.',
     color: '#d97706', bg: '#fffbeb', border: '#fde68a'
   }
   if (avg >= 6) return {
-    icon: 'up', text: 'Strong upward trajectory. Your targeting is compounding — keep implementing quick wins.',
+    icon: 'up', text: 'Strong upward trajectory. Your targeting is compounding. Keep implementing quick wins.',
     color: '#15803d', bg: '#f0fdf4', border: '#bbf7d0'
   }
   if (avg >= 1) return {
-    icon: 'up', text: 'Steady progress. Consistent small improvements add up — stay the course.',
+    icon: 'up', text: 'Steady progress. Consistent small improvements add up. Stay the course.',
     color: '#2563eb', bg: '#eff6ff', border: '#bfdbfe'
   }
   if (avg <= -4) return {
-    icon: 'down', text: 'Score is declining. Market conditions may have shifted — run a fresh diagnosis to identify what changed.',
+    icon: 'down', text: 'Score is declining. Market conditions may have shifted. Run a fresh diagnosis to identify what changed.',
     color: '#b91c1c', bg: '#fef2f2', border: '#fecaca'
   }
   return {
@@ -882,12 +828,12 @@ function ScoreHistoryWidget({ reports, latestReport, renewalDate, delay, tier, o
               Implement your quick wins, then re-run to see if your score improves.
             </p>
             <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '0 0 18px' }}>
-              Re-diagnosis requires Starter — your baseline is locked in here.
+              Re-diagnosis requires Starter. Your baseline is locked in here.
             </p>
             {onUpgrade && (
               <button onClick={onUpgrade}
                 style={{ fontFamily: font, fontWeight: 600, fontSize: 13, color: '#fff', background: Accent, border: 'none', borderRadius: 10, padding: '9px 18px', cursor: 'pointer', display: 'inline-block', width: 'fit-content' }}>
-                Track My Progress — Upgrade to Starter
+                Track My Progress: Upgrade to Starter
               </button>
             )}
           </>
@@ -1495,7 +1441,7 @@ function WasteTicker({ diag, report, currency, score, scoreDelta, onTabChange }:
           MONEY LOST SINCE DIAGNOSIS
         </p>
         <div style={{ fontFamily: font, fontSize: 'clamp(26px,3vw,40px)', fontWeight: 800, color: displayVal ? '#fff' : 'rgba(255,255,255,0.3)', lineHeight: 1, fontVariantNumeric: 'tabular-nums' as const, margin: '0 0 8px' }}>
-          {displayVal ?? '—'}
+          {displayVal ?? '-'}
         </div>
         <p style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.45)', margin: '0 0 16px', lineHeight: 1.5 }}>
           {waste.amount > 0
@@ -2052,7 +1998,7 @@ function MilestonesSection({ milestones, bonusDiagnoses, onTabSwitch }: { milest
             <div style={{ background: '#f59e0b0d', border: '1px solid #f59e0b30', borderRadius: 10, padding: '12px 16px', marginBottom: 16 }}>
               <p style={{ fontFamily: fontB, fontSize: 13, color: P, margin: '0 0 4px', fontWeight: 600 }}>Reward: +2 Bonus Diagnoses</p>
               <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: 0, lineHeight: 1.5 }}>
-                Earn all 5 badges and we&apos;ll automatically credit 2 extra diagnoses to your monthly allowance — permanently.
+                Earn all 5 badges and we&apos;ll automatically credit 2 extra diagnoses to your monthly allowance, permanently.
               </p>
             </div>
           )}
@@ -2261,7 +2207,7 @@ function TeaserTabOverlay({ tabName, category, diag, onUpgrade }: {
       {topFinding && (
         <div style={{ marginBottom: 0 }}>
           <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 14px' }}>
-            Top {tabName} Finding — from your diagnosis
+            Top {tabName} Finding, from your diagnosis
           </p>
           <div style={{ background: '#fff', border: `1.5px solid ${Pborder}`, borderLeft: `4px solid ${sevColor.text}`, borderRadius: '0 12px 12px 0', padding: '16px 20px', marginBottom: 12 }}>
             <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
@@ -2314,11 +2260,11 @@ function TeaserTabOverlay({ tabName, category, diag, onUpgrade }: {
             Unlock full {tabName} analysis
           </p>
           <p style={{ fontFamily: fontB, fontSize: 13, color: 'rgba(255,255,255,0.6)', margin: 0, lineHeight: 1.55 }}>
-            See all findings, quick wins, and your personalised action plan — plus weekly intelligence briefings.
+            See all findings, quick wins, and your personalised action plan, plus weekly intelligence briefings.
           </p>
         </div>
         <button onClick={onUpgrade} style={{ background: Accent, color: '#fff', border: 'none', borderRadius: 10, padding: '11px 26px', fontFamily: fontB, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
-          Upgrade to Starter — KES 6,500/mo
+          Upgrade to Starter: KES 6,500/mo
         </button>
       </div>
     </div>
@@ -2543,7 +2489,7 @@ function FunnelTab({ diag, hasReports, score, isSubscribed, buyer, onUpgrade }: 
                 Book a Landing Page Review with {buyer.firstName}
               </p>
               <p style={{ fontFamily: fontB, fontSize: 13, color: '#605d52', lineHeight: 1.6, margin: '0 0 16px' }}>
-                Get {buyer.firstName} to review your actual page — offer clarity, CTA, trust signals, and conversion friction — on a 30-minute call.
+                Get {buyer.firstName} to review your actual page (offer clarity, CTA, trust signals, and conversion friction) on a 30-minute call.
               </p>
               <a href={buyer.calLink} target="_blank" rel="noopener noreferrer"
                 style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: P, color: '#fff', textDecoration: 'none', fontFamily: font, fontWeight: 600, fontSize: 13, padding: '10px 20px', borderRadius: 10 }}>
@@ -2556,7 +2502,7 @@ function FunnelTab({ diag, hasReports, score, isSubscribed, buyer, onUpgrade }: 
         <Card style={{ background: '#f8f4f0' }}>
           <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: '0 0 12px' }}>Landing Page Review</p>
           <p style={{ fontFamily: fontB, fontSize: 14, color: '#605d52', lineHeight: 1.75, margin: '0 0 16px' }}>
-            Pro subscribers get a dedicated media buyer to review their actual landing page — offer clarity, CTA effectiveness, trust signals, and conversion fixes.
+            Pro subscribers get a dedicated media buyer to review their actual landing page: offer clarity, CTA effectiveness, trust signals, and conversion fixes.
           </p>
           <button onClick={onUpgrade} style={{ fontFamily: font, fontWeight: 600, fontSize: 13, background: Accent, color: '#fff', border: 'none', cursor: 'pointer', padding: '10px 20px', borderRadius: 10 }}>
             Upgrade to Pro →
@@ -4226,7 +4172,7 @@ function AccountTab({ user, currency, score, reportCount, reports, onSignOut, on
             )}
           </div>
           <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, lineHeight: 1.6, margin: '0 0 16px' }}>
-            Share your link. When a friend completes their first ICP score, you both benefit — you earn a bonus diagnosis you can use any time.
+            Share your link. When a friend completes their first ICP score, you both benefit: you earn a bonus diagnosis you can use any time.
           </p>
 
           {/* Link row */}
@@ -4264,7 +4210,7 @@ function AccountTab({ user, currency, score, reportCount, reports, onSignOut, on
           )}
           {refCount === 0 && (
             <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: 0 }}>
-              No referrals yet. Share your link — every friend who completes their first diagnosis earns you a bonus re-run.
+              No referrals yet. Share your link. Every friend who completes their first diagnosis earns you a bonus re-run.
             </p>
           )}
         </Card>
@@ -5049,7 +4995,7 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
         setTimeout(() => setRefreshError(''), 5000)
       }
     } catch {
-      setRefreshError('Refresh failed — please check your connection and try again.')
+      setRefreshError('Refresh failed, please check your connection and try again.')
       setTimeout(() => setRefreshError(''), 5000)
     } finally {
       setRefreshing(false)
@@ -5093,7 +5039,7 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
         setTimeout(() => setEmailError(''), 5000)
       }
     } catch {
-      setEmailError('Could not send — check your connection.')
+      setEmailError('Could not send. Check your connection.')
       setTimeout(() => setEmailError(''), 5000)
     } finally {
       setSendingEmail(false)
@@ -5531,7 +5477,7 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
     if (score !== null && score < 55) return `Scores below 55 almost always have one fixable root cause. Want me to find yours?`
     if (activeTab === 'economics') return `You're losing ${waste} per month. I can write a prioritised fix plan in 60 seconds.`
     if (activeTab === 'audience') return `I can write Meta or Google audience copy based on your ICP profile right now.`
-    if (activeTab === 'intelligence') return `Ask me anything about your market intelligence — competitors, benchmarks, next moves.`
+    if (activeTab === 'intelligence') return `Ask me anything about your market intelligence: competitors, benchmarks, next moves.`
     if (topFinding) return `Still working on "${topFinding.title}"? Ask me for copy, a test to run, or a step-by-step fix.`
     return `I've read your full diagnostic. What do you want to fix first?`
   }, [score, activeTab, waste, topFinding])
@@ -6288,7 +6234,7 @@ export default function DashboardPage() {
       id: 'first-run',
       icon: <Zap size={15} />, color: '#f59e0b',
       title: 'Run your first diagnosis',
-      body: 'Answer 10 questions and get a full ICP score, audience insights, and media buyer quick wins — takes 3 minutes.',
+      body: 'Answer 10 questions and get a full ICP score, audience insights, and media buyer quick wins. Takes 3 minutes.',
       ts: 'Action needed', actionLabel: 'Start now →',
       action: () => { setShowNotifications(false); window.location.href = '/questionnaire' },
     })
@@ -6300,7 +6246,7 @@ export default function DashboardPage() {
       id: `referral-earned-${referralCount}`,
       icon: <Gift size={15} />, color: '#22c55e',
       title: referralCount === 1 ? 'A friend used your referral link' : `${referralCount} friends used your referral link`,
-      body: `You've earned ${referralBonus} bonus ${referralBonus === 1 ? 'diagnosis' : 'diagnoses'} — re-run your ICP score any time to track your improvement.`,
+      body: `You've earned ${referralBonus} bonus ${referralBonus === 1 ? 'diagnosis' : 'diagnoses'}. Re-run your ICP score any time to track your improvement.`,
       ts: 'Account', actionLabel: 'View referrals →',
       action: () => { setShowNotifications(false); setActiveTab('account') },
     })
@@ -6944,7 +6890,7 @@ export default function DashboardPage() {
             <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#f59e0b', margin: '0 0 8px' }}>Master Status Unlocked</p>
             <h2 style={{ fontFamily: font, fontSize: 24, fontWeight: 700, color: P, margin: '0 0 12px', letterSpacing: '-0.02em' }}>You earned every badge.</h2>
             <p style={{ fontFamily: fontB, fontSize: 14, color: Pmuted, margin: '0 0 24px', lineHeight: 1.7 }}>
-              That&apos;s real commitment to your ICP. As a thank-you, we&apos;ve added <strong>+{bonusDiagnoses} bonus diagnoses</strong> to your monthly allowance — permanently on your account.
+              That&apos;s real commitment to your ICP. As a thank-you, we&apos;ve added <strong>+{bonusDiagnoses} bonus diagnoses</strong> to your monthly allowance, permanently on your account.
             </p>
             <div style={{ background: '#f59e0b0d', border: '1px solid #f59e0b30', borderRadius: 12, padding: '14px 18px', marginBottom: 24 }}>
               <p style={{ fontFamily: fontB, fontSize: 13, color: P, margin: 0, fontWeight: 600 }}>+{bonusDiagnoses} extra diagnoses added to your plan</p>

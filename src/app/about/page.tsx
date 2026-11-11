@@ -135,7 +135,7 @@ export default function AboutPage() {
             The minds behind the diagnostic.
           </h2>
           <p style={{ fontFamily: fontB, fontSize: 17, color: Muted, textAlign: 'center', maxWidth: 600, margin: '0 auto', lineHeight: 1.7 }}>
-            A combination of experienced media buyers and AI research systems working together to give you the most accurate diagnosis possible.
+            A practising media buyer and AI research systems working together to give you the most accurate diagnosis possible.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6" style={{ marginTop: 56 }}>
@@ -148,7 +148,7 @@ export default function AboutPage() {
               <div style={{ fontFamily: font, fontWeight: 700, fontSize: 20, color: Dark, margin: '16px 0 4px' }}>Lead Media Buyer</div>
               <div style={{ fontFamily: fontB, fontSize: 14, color: Orange }}>Founder and Lead Media Buyer</div>
               <p style={{ fontFamily: fontB, fontSize: 14, color: Muted, lineHeight: 1.7, margin: '12px 0 20px' }}>
-                10+ years managing performance campaigns across East Africa, UK, and US. Diagnosed over 50 ICP misalignments before building the tool to do it automatically.
+                Runs Google Ads and Meta campaigns for B2B companies, with a background in conversion creative. Built Ideal ICP to make an expert ICP diagnosis available to every team.
               </p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
                 {['Google Ads', 'Meta Ads', 'East Africa', 'B2B Lead Gen'].map((tag) => (

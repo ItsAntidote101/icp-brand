@@ -72,11 +72,11 @@ const DEMO: ReportData = {
     { title: 'Form Friction Filtering Out Buyers',  severity: 'Warning',  explanation: 'Requiring 7+ fields at the top of funnel is blocking qualified prospects before they can self-identify as a fit.' },
   ],
   breakdown: [
-    { label: 'ICP Alignment',               score: 28, found: 'Targeting 4 different company sizes with identical creative.',           why: 'Each segment has a different pain hierarchy — one message cannot convert all of them.' },
+    { label: 'ICP Alignment',               score: 28, found: 'Targeting 4 different company sizes with identical creative.',           why: 'Each segment has a different pain hierarchy. One message cannot convert all of them.' },
     { label: 'Targeting Accuracy',          score: 41, found: 'Lookalike audiences built from a mixed base including churned accounts.', why: "You're cloning your worst customers alongside your best." },
     { label: 'Channel Efficiency',          score: 55, found: 'Meta receiving 70% of budget but delivering only 30% of qualified leads.', why: 'LinkedIn is severely underinvested given your B2B deal size.' },
     { label: 'Funnel Friction Index',       score: 22, found: '7-field lead form on mobile with no progress indicator.',                  why: 'Every additional form field drops completion by ~8-12% on mobile.' },
-    { label: 'Message to Market Fit',       score: 38, found: 'Landing page headline focuses on features instead of outcomes.',           why: "Buyers don't know they need your feature — they know they have a problem." },
+    { label: 'Message to Market Fit',       score: 38, found: 'Landing page headline focuses on features instead of outcomes.',           why: "Buyers don't know they need your feature; they know they have a problem." },
     { label: 'Budget Reallocation Opportunity', score: 61, found: 'Estimated 40-60% of spend reaching non-ICP audiences.',             why: 'High-intent keywords and job-title targeting could reduce CPA by 35-50%.' },
   ],
   quick_wins: [
@@ -115,12 +115,12 @@ function scoreContext(s: number): string {
 }
 
 function extractShortMoney(text: string | undefined): string {
-  if (!text) return '—'
+  if (!text) return '-'
   const m = text.match(/(?:KES|USD|\$|£|€)\s*[\d,]+(?:\.\d+)?(?:\s*[KMBkmb])?/i)
   return m ? m[0].trim() : text.slice(0, 25)
 }
 function extractShortRatio(text: string | undefined): string {
-  if (!text) return '—'
+  if (!text) return '-'
   const m = text.match(/\d+\.?\d*\s*:\s*1/)
   return m ? m[0] : text.slice(0, 15)
 }
@@ -403,7 +403,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
         <section className="fade-up" style={{ animationDelay: '0.05s' }}>
           <div className="mb-5">
             <h2 className="text-xl font-bold text-[#201515] mb-1">Critical Findings</h2>
-            <p className="text-[#939084] text-sm">Ranked by revenue impact — these are the issues hurting you most right now</p>
+            <p className="text-[#939084] text-sm">Ranked by revenue impact: these are the issues hurting you most right now</p>
           </div>
           <div className="space-y-3">
             {report.findings.map((f, i) => {
@@ -484,7 +484,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
         <section className="fade-up" style={{ animationDelay: '0.15s' }}>
           <div className="mb-5">
             <h2 className="text-xl font-bold text-[#201515] mb-1">Quick Wins</h2>
-            <p className="text-[#939084] text-sm">Actions you can implement this week — no agency required</p>
+            <p className="text-[#939084] text-sm">Actions you can implement this week, no agency required</p>
           </div>
           <div className="space-y-3">
             {report.quick_wins.map((w, i) => (
@@ -616,13 +616,13 @@ export default function ReportPage({ params }: { params: { id: string } }) {
               {/* Blurred locked preview — personalised to their actual weak dimensions */}
               <div className="relative overflow-hidden rounded-2xl border border-[#c5c0b1] bg-[#f8f4f0]">
                 <div className="blur-[3px] pointer-events-none select-none p-7 space-y-4 opacity-60">
-                  <p className="text-[11px] font-bold uppercase tracking-widest text-[#939084]">Locked — Starter required</p>
+                  <p className="text-[11px] font-bold uppercase tracking-widest text-[#939084]">Locked: Starter required</p>
                   <h3 className="text-[#201515] font-bold text-lg">Your Full Analysis & Fix Plan</h3>
                   {weakDimensions.slice(0, 3).map((d, i) => (
                     <div key={i} className="flex gap-3 items-start bg-white rounded-xl p-4 border border-[#c5c0b1]">
                       <div className="w-4 h-4 rounded-full bg-red-100 border border-red-200 flex-shrink-0 mt-0.5" />
                       <div>
-                        <p className="text-xs font-semibold text-[#201515]">{d.label} — Score {d.score}/100</p>
+                        <p className="text-xs font-semibold text-[#201515]">{d.label}: Score {d.score}/100</p>
                         <p className="text-xs text-[#605d52] mt-0.5">Full remediation steps and week-by-week fix plan →</p>
                       </div>
                     </div>

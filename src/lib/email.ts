@@ -1002,7 +1002,7 @@ export async function sendStaleDiagnosisEmail({
   const threshold = tier === 'agency' ? 7 : tier === 'pro' ? 14 : 30
   const scoreContext = lastScore !== undefined
     ? lastScore >= 70
-      ? `Your ICP score of <strong style="color:#15803d;">${lastScore}/100</strong> is strong — keep it fresh.`
+      ? `Your ICP score of <strong style="color:#15803d;">${lastScore}/100</strong> is strong. Keep it fresh.`
       : lastScore >= 40
         ? `Your ICP score of <strong style="color:#d97706;">${lastScore}/100</strong> has room to improve. New data could push it higher.`
         : `Your ICP score of <strong style="color:#dc2626;">${lastScore}/100</strong> needs attention. A lot changes in ${daysSince} days.`
@@ -1029,7 +1029,7 @@ ${cta('Run New Diagnosis', url)}`
 
   const { data, error } = await getResend().emails.send({
     from: FROM, to,
-    subject: `Your ICP diagnosis is ${daysSince} days old — time for a refresh`,
+    subject: `Your ICP diagnosis is ${daysSince} days old: time for a refresh`,
     html: base(content),
   })
   if (error) console.error('[email] stale-diagnosis error:', JSON.stringify(error))
@@ -1065,12 +1065,12 @@ ${topFinding ? `
 <p style="margin:0 0 10px;color:${Dark};font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;font-family:${font};">Primary cause identified</p>
 ${infoCard(`<p style="margin:0;color:${Dark};font-size:14px;line-height:1.6;font-family:${font};">${escapeHtml(topFinding)}</p>`)}` : ''}
 <p style="margin:0 0 10px;color:${Dark};font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;font-family:${font};">What to do now</p>
-${securityBox(`<p style="margin:0;color:${Muted};font-size:14px;line-height:1.6;font-family:${font};">Open your dashboard to review the full findings and quick wins. Your media buyer has identified the highest-leverage fix — implementing it this week can recover most of the drop.</p>`)}
+${securityBox(`<p style="margin:0;color:${Muted};font-size:14px;line-height:1.6;font-family:${font};">Open your dashboard to review the full findings and quick wins. Your media buyer has identified the highest-leverage fix. Implementing it this week can recover most of the drop.</p>`)}
 ${cta('Review My Dashboard', url)}`
 
   const { data, error } = await getResend().emails.send({
     from: FROM, to,
-    subject: `Your ICP score dropped ${drop} points — here is what happened`,
+    subject: `Your ICP score dropped ${drop} points. Here is what happened`,
     html: base(content),
   })
   if (error) console.error('[email] score-drop error:', JSON.stringify(error))
@@ -1092,7 +1092,7 @@ export async function sendIntelligenceNudgeEmail({
   const content = `
 ${ICON.brain}
 ${heading('Your intelligence brief is waiting', 36)}
-${sub(`Hi ${first}, your weekly market intelligence for the week of ${weekLabel} is ready — and you have not checked it yet.`)}
+${sub(`Hi ${first}, your weekly market intelligence for the week of ${weekLabel} is ready, and you have not checked it yet.`)}
 ${topInsight ? `
 <p style="margin:0 0 10px;color:${Dark};font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;font-family:${font};">This week's top signal</p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:rgba(245,158,11,0.07);border:1.5px solid rgba(245,158,11,0.25);border-radius:4px;margin-bottom:20px;">
@@ -1110,7 +1110,7 @@ ${cta('Read My Briefing', url)}`
 
   const { data, error } = await getResend().emails.send({
     from: FROM, to,
-    subject: `You have not read your market briefing — here is what you are missing`,
+    subject: `You have not read your market briefing. Here is what you are missing`,
     html: base(content),
   })
   if (error) console.error('[email] intel-nudge error:', JSON.stringify(error))
@@ -1130,10 +1130,10 @@ export async function sendPostDiagnosis48hEmail({
   const first = name?.split(' ')[0] ?? 'there'
   const scoreHtml = score !== undefined
     ? score >= 70
-      ? `You scored <strong style="color:#15803d;">${score}/100</strong> — excellent position.`
+      ? `You scored <strong style="color:#15803d;">${score}/100</strong>. Excellent position.`
       : score >= 40
-        ? `You scored <strong style="color:#d97706;">${score}/100</strong> — there is a clear path to improve.`
-        : `You scored <strong style="color:#dc2626;">${score}/100</strong> — your dashboard has the exact steps to fix this.`
+        ? `You scored <strong style="color:#d97706;">${score}/100</strong>. There is a clear path to improve.`
+        : `You scored <strong style="color:#dc2626;">${score}/100</strong>. Your dashboard has the exact steps to fix this.`
     : `Your full results are in your dashboard.`
 
   const content = `
@@ -1150,12 +1150,12 @@ ${topAction ? `
     <p style="margin:0;color:#166534;font-size:14px;line-height:1.6;font-family:${font};">&rarr; ${escapeHtml(topAction)}</p>
   </td></tr>
 </table>` : ''}
-${securityBox(`<p style="margin:0;color:${Muted};font-size:14px;line-height:1.6;font-family:${font};">The highest-leverage work happens in the first 7 days. Your media buyer has ranked your fixes by impact — the ones at the top can move your score by 5-10 points this week alone.</p>`)}
+${securityBox(`<p style="margin:0;color:${Muted};font-size:14px;line-height:1.6;font-family:${font};">The highest-leverage work happens in the first 7 days. Your media buyer has ranked your fixes by impact. The ones at the top can move your score by 5-10 points this week alone.</p>`)}
 ${cta('Review My Dashboard', url)}`
 
   const { data, error } = await getResend().emails.send({
     from: FROM, to,
-    subject: `48 hours later — have you actioned your #1 quick win?`,
+    subject: `48 hours later: have you actioned your #1 quick win?`,
     html: base(content),
   })
   if (error) console.error('[email] 48h-followup error:', JSON.stringify(error))
@@ -1177,7 +1177,7 @@ export async function sendPostDiagnosis7dEmail({
   const predictedScore = (score && predictedGain) ? Math.min(100, score + predictedGain) : null
 
   const statusBlock = done === 0
-    ? securityBox(`<p style="margin:0;color:${Muted};font-size:14px;line-height:1.6;font-family:${font};">It looks like you have not started on your quick wins yet. No judgment — but every day you wait, your budget keeps burning at the same inefficiency rate your diagnostic measured.</p>`)
+    ? securityBox(`<p style="margin:0;color:${Muted};font-size:14px;line-height:1.6;font-family:${font};">It looks like you have not started on your quick wins yet. No judgment, but every day you wait, your budget keeps burning at the same inefficiency rate your diagnostic measured.</p>`)
     : infoCard(`<p style="margin:0;color:${Dark};font-size:14px;line-height:1.6;font-family:${font};">You have completed <strong>${done} quick win${done > 1 ? 's' : ''}</strong> since your diagnosis. That is real progress.</p>`)
 
   const content = `
@@ -1532,19 +1532,19 @@ export async function sendReEngageEmail(opts: {
   let content = ''
 
   if (scenario === 'never_started') {
-    subject = "Your ICP score is 0 — and your ad budget is paying for it"
+    subject = "Your ICP score is 0, and your ad budget is paying for it"
     content = `
 ${ICON.alert}
 ${heading("Every day without your ICP score is budget going to the wrong people.", 26)}
-${sub(`${escapeHtml(greeting)}<br>You signed up — which means you already know something isn't converting the way it should. You're not alone. 73% of ad budgets in East Africa miss their ICP by 2+ audience segments.`)}
+${sub(`${escapeHtml(greeting)}<br>You signed up, which means you already know something isn't converting the way it should. You're not alone.`)}
 
-${urgencyBanner('Your ICP Health Score is unclaimed. Right now your campaigns have no baseline — so you have no way to know what to fix.')}
+${urgencyBanner('Your ICP Health Score is unclaimed. Right now your campaigns have no baseline, so you have no way to know what to fix.')}
 
 <p style="margin:0 0 12px;color:${Dark};font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;font-family:${font};">WHAT'S LOCKED UNTIL YOU COMPLETE THE DIAGNOSTIC</p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:32px;">
   ${lockedItems([
-    'Your ICP Health Score (0–100)',
-    'Budget Efficiency breakdown — where your money is going',
+    'Your ICP Health Score (0-100)',
+    'Budget Efficiency breakdown: where your money is going',
     'Your 3 highest-priority fixes from your media buyer',
     'Audience alignment gap report',
     'Personalised ICP Match Report',
@@ -1556,13 +1556,13 @@ ${urgencyBanner('Your ICP Health Score is unclaimed. Right now your campaigns ha
 ${cta('Get My ICP Score Now →', resumeUrl)}`
 
   } else if (scenario === 'early_drop') {
-    subject = `You started your ICP diagnostic — but your score is still incomplete`
+    subject = `You started your ICP diagnostic, but your score is still incomplete`
     const layerStatus = questionsAnswered <= 7
       ? 'Your audience profile is less than 30% mapped'
-      : 'Your foundation layer is mapped — the deeper layers are still locked'
+      : 'Your foundation layer is mapped. The deeper layers are still locked'
     content = `
 ${ICON.pause}
-${heading(`You're ${pctDone}% through — and your score is still 0.`, 26)}
+${heading(`You're ${pctDone}% through, and your score is still 0.`, 26)}
 ${sub(`${escapeHtml(greeting)}<br>You answered ${questionsAnswered} of ${totalQuestions} questions before stopping. That's not enough to calculate your ICP Health Score. ${layerStatus}.`)}
 
 ${urgencyBanner(`${remaining} questions stand between you and knowing exactly why your campaigns are underperforming.`)}
@@ -1596,11 +1596,11 @@ ${cta(`Continue from Question ${questionsAnswered + 1} →`, resumeUrl)}`
     subject = `${remaining} question${remaining === 1 ? '' : 's'} from knowing exactly why your ads aren't converting`
     const layerMsg = questionsAnswered >= 18
       ? 'You\'ve mapped all 3 layers. Your final answers complete the picture.'
-      : 'Your final layer — ICP validation — is all that\'s left.'
+      : 'Your final layer, ICP validation, is all that\'s left.'
     content = `
 ${ICON.chart}
 ${heading(`You're this close to your ICP Health Score.`, 26)}
-${sub(`${escapeHtml(greeting)}<br>You're ${pctDone}% through the diagnostic — only ${remaining} question${remaining === 1 ? '' : 's'} left. ${layerMsg}`)}
+${sub(`${escapeHtml(greeting)}<br>You're ${pctDone}% through the diagnostic. Only ${remaining} question${remaining === 1 ? '' : 's'} left. ${layerMsg}`)}
 
 ${urgencyBanner(`Don't let ${questionsAnswered} answered questions go to waste. Your score is ${100 - pctDone}% away from being calculated.`)}
 
@@ -1618,7 +1618,7 @@ ${urgencyBanner(`Don't let ${questionsAnswered} answered questions go to waste. 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
   ${lockedItems([
     'Your complete ICP Health Score',
-    'Audience alignment verdict — aligned, borderline, or misaligned',
+    'Audience alignment verdict: aligned, borderline, or misaligned',
     'Top 3 quick wins prioritised by ROI impact',
     'Full budget efficiency score',
     'Assigned media buyer review of your profile',
@@ -1633,9 +1633,9 @@ ${cta('Finish My Diagnostic →', resumeUrl)}`
     // csv_only
     const wasteNote = csvBudgetWaste
       ? `Your campaign data already shows <strong style="color:#dc2626;">${escapeHtml(csvBudgetWaste)}</strong> in estimated budget waste.`
-      : 'Your campaign data has been analysed — and there are patterns worth understanding.'
+      : 'Your campaign data has been analysed, and there are patterns worth understanding.'
     subject = csvBudgetWaste
-      ? `Your campaign shows ${csvBudgetWaste} in budget waste — your ICP score explains why`
+      ? `Your campaign shows ${csvBudgetWaste} in budget waste. Your ICP score explains why`
       : `Your campaign data is loaded. Your ICP score takes 5 minutes.`
     content = `
 ${ICON.brain}
@@ -1649,12 +1649,12 @@ ${csvSummary ? `<table role="presentation" width="100%" cellpadding="0" cellspac
   </td></tr>
 </table>` : ''}
 
-${urgencyBanner("Your ICP Health Score connects your campaign patterns to your audience profile — and shows you exactly what to fix.")}
+${urgencyBanner("Your ICP Health Score connects your campaign patterns to your audience profile, and shows you exactly what to fix.")}
 
 <p style="margin:0 0 12px;color:${Dark};font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;font-family:${font};">THE DIAGNOSTIC ADDS</p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
   ${lockedItems([
-    'Your ICP Health Score (0–100) — a baseline to improve from',
+    'Your ICP Health Score (0-100): a baseline to improve from',
     'Audience alignment diagnosis tied to your campaign data',
     'Your media buyer\'s interpretation of both your CSV and questionnaire',
     'Prioritised fixes ranked by impact on your specific campaigns',

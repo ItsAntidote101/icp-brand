@@ -1,13 +1,10 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 30
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'http://localhost',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || 'build-placeholder',
-)
+const supabase = supabaseAdmin()
 
 type EventType = 'diagnosis' | 'subscription' | 'waste_found' | 'score_improved' | 'weekly_stat'
 
@@ -41,58 +38,9 @@ function regionToCity(region: string | undefined): string {
   return 'their region'
 }
 
-const SEEDED: SocialProofEvent[] = [
-  {
-    id: 'seed-1', type: 'diagnosis',
-    message: 'Someone in Nairobi just completed their ICP diagnosis',
-    subtext: '3 minutes ago', iconColor: '#302161',
-  },
-  {
-    id: 'seed-2', type: 'waste_found',
-    message: 'A founder just discovered KES 58,000 in monthly waste',
-    subtext: '12 minutes ago', iconColor: '#ef4444',
-  },
-  {
-    id: 'seed-3', type: 'diagnosis',
-    message: 'Someone in Lagos just completed their ICP diagnosis',
-    subtext: '28 minutes ago', iconColor: '#302161',
-  },
-  {
-    id: 'seed-4', type: 'subscription',
-    message: 'A marketing team in Johannesburg just subscribed to Pro',
-    subtext: '1 hour ago', iconColor: '#22c55e',
-  },
-  {
-    id: 'seed-5', type: 'score_improved',
-    message: 'A B2B founder improved their ICP score from 34 to 67',
-    subtext: '2 hours ago', iconColor: '#a855f7',
-  },
-  {
-    id: 'seed-6', type: 'diagnosis',
-    message: 'Someone in Kampala just completed their ICP diagnosis',
-    subtext: '3 hours ago', iconColor: '#302161',
-  },
-  {
-    id: 'seed-7', type: 'waste_found',
-    message: 'A startup just found KES 42,000 in wasted ad spend',
-    subtext: '4 hours ago', iconColor: '#ef4444',
-  },
-  {
-    id: 'seed-8', type: 'subscription',
-    message: 'A marketing head just subscribed to Agency plan',
-    subtext: '5 hours ago', iconColor: '#22c55e',
-  },
-  {
-    id: 'seed-9', type: 'diagnosis',
-    message: 'Someone in London just completed their ICP diagnosis',
-    subtext: '6 hours ago', iconColor: '#302161',
-  },
-  {
-    id: 'seed-10', type: 'weekly_stat',
-    message: '63 ICP diagnoses completed this week',
-    subtext: 'Join them today', iconColor: '#302161',
-  },
-]
+// Only real events are ever shown. The old seeded list ("Someone in Nairobi
+// just...", "63 diagnoses this week") was invented activity, which is
+// misleading advertising. No real events means no toast at all.
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr]
@@ -125,6 +73,7 @@ export async function GET() {
         .from('users')
         .select('id, created_at, subscription_tier')
         .eq('billing_status', 'active')
+        .neq('subscription_tier', 'free')
         .gte('created_at', since48h)
         .order('created_at', { ascending: false })
         .limit(5),
@@ -196,17 +145,11 @@ export async function GET() {
       })
     }
 
-    // Seed when fewer than 5 real events
-    const combined = realEvents.length >= 5
-      ? realEvents
-      : [...realEvents, ...SEEDED]
-
-    const events = shuffle(combined).slice(0, 15)
+    const events = shuffle(realEvents).slice(0, 15)
 
     return NextResponse.json({ events })
   } catch (err) {
     console.error('[social-proof] error:', err)
-    // Always return seeded events as fallback
-    return NextResponse.json({ events: shuffle(SEEDED) })
+    return NextResponse.json({ events: [] })
   }
 }

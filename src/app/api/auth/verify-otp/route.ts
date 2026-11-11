@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 import { createClient } from '@supabase/supabase-js'
 import { createSessionToken, sessionCookieOptions } from '@/lib/session'
 import { sendAccountCreatedEmail, sendNewSignupToFounder } from '@/lib/email'
@@ -10,10 +11,7 @@ const supabaseAuth = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
 )
 
-const db = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'http://localhost',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || 'build-placeholder',
-)
+const db = supabaseAdmin()
 
 export async function POST(req: NextRequest) {
   try {
