@@ -1,34 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 import Anthropic from '@anthropic-ai/sdk'
 import { sendPostDiagnosis48hEmail, sendPostDiagnosis7dEmail } from '@/lib/email'
 
 export const dynamic     = 'force-dynamic'
 export const maxDuration = 120
 
-const supabase  = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'http://localhost',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || 'build-placeholder',
-)
+const supabase  = supabaseAdmin()
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://idealicp.com'
 
-const BUYERS: Record<string, { name: string; initials: string; title: string; tone: string }> = {
-  EK: { name: 'Eugene Kariuki',  initials: 'EK', title: 'Senior Media Buyer, East Africa',     tone: 'direct and practical, references Nairobi/Kenya market specifics' },
-  AM: { name: 'Aisha Mensah',    initials: 'AM', title: 'Senior Media Buyer, West Africa',     tone: 'energetic and data-focused, references Lagos/Accra market context' },
-  DO: { name: 'David Osei',      initials: 'DO', title: 'Performance Strategist, South Africa', tone: 'analytical and precise, references Johannesburg/Cape Town context' },
-  GN: { name: 'Grace Nakato',    initials: 'GN', title: 'Paid Social Lead, East Africa',       tone: 'warm but results-focused, strong on Meta/social commerce' },
-  MW: { name: 'Marcus Webb',     initials: 'MW', title: 'Global Performance Lead',             tone: 'strategic and senior, references global patterns' },
-}
+// One real media buyer. The old roster (Aisha Mensah, David Osei, Grace Nakato,
+// Marcus Webb) were invented people writing emails to customers.
+const BUYER = { name: 'Eugene K.', initials: 'EK', title: 'Founder and B2B Media Buyer', tone: 'direct and practical, references the customer\'s own market' }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function assignBuyer(region: string, industry: string, tier: string) {
-  const r = region.toLowerCase(); const i = industry.toLowerCase()
-  if (tier === 'agency') return BUYERS.MW
-  if (r.includes('west') || r.includes('ghana') || r.includes('nigeria') || r.includes('lagos') || r.includes('accra')) return BUYERS.AM
-  if (r.includes('south') || r.includes('johannesburg') || r.includes('cape') || r.includes('durban')) return BUYERS.DO
-  if (i.includes('ecommerce') || i.includes('e-commerce') || i.includes('retail')) return BUYERS.GN
-  return BUYERS.EK
+  return BUYER
 }
 
 function getScore(summary: string): number | null {
@@ -190,7 +179,7 @@ Rules:
           ...((d.funnel   as Record<string, unknown>)?.findings as Array<{severity: string; title: string; explanation: string}> ?? []),
         ]
         const critical = allFindings.find(f => f.severity === 'Critical') ?? allFindings[0]
-        if (critical) topFinding = `${critical.title} — ${critical.explanation}`
+        if (critical) topFinding = `${critical.title}: ${critical.explanation}`
 
         // Top quick win from score_predictions if available, else top-level quick_wins
         const preds = d.score_predictions as Array<{ action: string; predictedDelta: number; impact: string }> | undefined

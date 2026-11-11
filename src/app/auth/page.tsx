@@ -334,10 +334,6 @@ function AuthInner() {
             </div>
           ))}
         </div>
-
-        <p style={{ fontFamily: fontB, fontSize: 13, color: 'rgba(255,255,255,0.3)', marginTop: 52 }}>
-          Trusted by 200+ B2B teams
-        </p>
       </div>
 
       {/* Right column */}
@@ -394,7 +390,7 @@ function AuthInner() {
                       <svg style={{ animation: 'spin 0.8s linear infinite' }} width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" opacity="0.25"/><path fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" opacity="0.75"/></svg>
                       Sending code...
                     </>
-                  ) : 'Get started — send me a code'}
+                  ) : 'Get started: send me a code'}
                 </button>
 
                 <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, textAlign: 'center', margin: '4px 0 0', lineHeight: 1.6 }}>

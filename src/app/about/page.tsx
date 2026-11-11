@@ -4,8 +4,8 @@ import { Target, AlertTriangle, TrendingDown, BrainCircuit, Brain, Users, Eye, Z
 import SessionNavButton from '@/components/SessionNavButton'
 
 export const metadata: Metadata = {
-  title: 'About Ideal ICP, Built by Media Buyers, for Marketers',
-  description: 'Ideal ICP was built by performance media buyers with $2M+ in ad spend managed. Learn about our team, our mission, and why we built the only ICP diagnostic platform built specifically for African and emerging markets.',
+  title: 'About Ideal ICP, Built by a Media Buyer, for Marketers',
+  description: 'Ideal ICP was built by a performance media buyer. Learn about the team, the mission, and why we built an ICP diagnostic platform for African and emerging markets.',
 }
 
 export const dynamic = 'force-static'
@@ -68,15 +68,15 @@ export default function AboutPage() {
           </h1>
 
           <p style={{ fontFamily: fontB, fontSize: 18, color: 'rgba(255,255,255,0.6)', maxWidth: 600, margin: '0 auto', lineHeight: 1.65 }}>
-            Ideal ICP was built by performance media buyers who spent years diagnosing the same problems over and over. We decided to build the tool we always wished existed.
+            Ideal ICP was built by a performance media buyer who kept finding the same problems in ad accounts. So we built the tool we always wished existed.
           </p>
 
           {/* Stat chips */}
           <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 16, marginTop: 56 }}>
             {[
-              { value: '$2M+', label: 'In ad spend managed' },
-              { value: '10+',  label: 'Years of combined experience' },
-              { value: '50+',  label: 'Diagnoses completed' },
+              { value: '22',    label: 'Diagnostic questions' },
+              { value: '3',     label: 'Layers: ICP, pipeline, sales' },
+              { value: '5 min', label: 'To your ICP score' },
             ].map((stat) => (
               <div key={stat.value} style={{ background: Warm, border: `1.5px solid ${Border}`, padding: '16px 24px', textAlign: 'center', minWidth: 140 }}>
                 <div style={{ fontFamily: font, fontWeight: 700, fontSize: 28, color: Dark, lineHeight: 1.1 }}>{stat.value}</div>
@@ -97,7 +97,7 @@ export default function AboutPage() {
                 The same problem. Every single client.
               </h2>
               <p style={{ fontFamily: fontB, fontSize: 17, color: Muted, lineHeight: 1.75, margin: '0 0 20px' }}>
-                After years of managing ad campaigns across East Africa, the UK, and the US, we kept seeing the same pattern. Businesses spending serious money on ads. Getting little to nothing back. Blaming their agency. Blaming the platform. Blaming their budget.
+                Running ad campaigns for B2B companies, we kept seeing the same pattern. Businesses spending serious money on ads. Getting little to nothing back. Blaming their agency. Blaming the platform. Blaming their budget.
               </p>
               <p style={{ fontFamily: fontB, fontSize: 17, color: Muted, lineHeight: 1.75, margin: '0 0 20px' }}>
                 The real problem was almost always the same. They were targeting the wrong people with the wrong message on the wrong landing page. Their ICP was broken. And nobody had ever told them that clearly.
@@ -135,7 +135,7 @@ export default function AboutPage() {
             The minds behind the diagnostic.
           </h2>
           <p style={{ fontFamily: fontB, fontSize: 17, color: Muted, textAlign: 'center', maxWidth: 600, margin: '0 auto', lineHeight: 1.7 }}>
-            A combination of experienced media buyers and AI research systems working together to give you the most accurate diagnosis possible.
+            A practising media buyer and AI research systems working together to give you the most accurate diagnosis possible.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6" style={{ marginTop: 56 }}>
@@ -148,7 +148,7 @@ export default function AboutPage() {
               <div style={{ fontFamily: font, fontWeight: 700, fontSize: 20, color: Dark, margin: '16px 0 4px' }}>Lead Media Buyer</div>
               <div style={{ fontFamily: fontB, fontSize: 14, color: Orange }}>Founder and Lead Media Buyer</div>
               <p style={{ fontFamily: fontB, fontSize: 14, color: Muted, lineHeight: 1.7, margin: '12px 0 20px' }}>
-                10+ years managing performance campaigns across East Africa, UK, and US. Diagnosed over 50 ICP misalignments before building the tool to do it automatically.
+                Runs Google Ads and Meta campaigns for B2B companies, with a background in conversion creative. Built Ideal ICP to make an expert ICP diagnosis available to every team.
               </p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
                 {['Google Ads', 'Meta Ads', 'East Africa', 'B2B Lead Gen'].map((tag) => (

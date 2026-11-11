@@ -1,25 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { stripDashes } from '@/lib/strip-dashes'
 import { createClient } from '@supabase/supabase-js'
 import Anthropic from '@anthropic-ai/sdk'
 import { getSession } from '@/lib/session'
 
 export const maxDuration = 300
 export const dynamic = 'force-dynamic'
-
-function stripDashes(value: unknown): unknown {
-  if (typeof value === 'string') {
-    return value
-      .replace(/ — /g, ', ').replace(/— /g, ', ').replace(/—/g, '-')
-      .replace(/ – /g, ', ').replace(/–/g, '-')
-  }
-  if (Array.isArray(value)) return value.map(stripDashes)
-  if (value !== null && typeof value === 'object') {
-    const out: Record<string, unknown> = {}
-    for (const [k, v] of Object.entries(value as Record<string, unknown>)) out[k] = stripDashes(v)
-    return out
-  }
-  return value
-}
 
 function extractJSON(text: string): Record<string, unknown> | null {
   try { return JSON.parse(text) as Record<string, unknown> } catch { /* continue */ }

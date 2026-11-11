@@ -1,42 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { stripDashes } from '@/lib/strip-dashes'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 import Anthropic from '@anthropic-ai/sdk'
 import { getSession } from '@/lib/session'
 
 export const dynamic     = 'force-dynamic'
 export const maxDuration = 60
 
-const supabase  = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'http://localhost', process.env.SUPABASE_SERVICE_ROLE_KEY || 'build-placeholder')
+const supabase  = supabaseAdmin()
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
 
-const BUYERS: Record<string, { name: string; firstName: string; title: string }> = {
-  'EK': { name: 'Eugene Kariuki',  firstName: 'Eugene',  title: 'Senior Media Buyer, East Africa' },
-  'AM': { name: 'Aisha Mensah',    firstName: 'Aisha',   title: 'Senior Media Buyer, West Africa' },
-  'DO': { name: 'David Osei',      firstName: 'David',   title: 'Performance Strategist, Southern Africa' },
-  'GN': { name: 'Grace Nakato',    firstName: 'Grace',   title: 'Paid Social Lead, East Africa' },
-  'MW': { name: 'Marcus Webb',     firstName: 'Marcus',  title: 'Global Performance Lead' },
-}
+// One real media buyer (see dashboard MEDIA_BUYERS). The old roster was invented.
+const BUYER = { name: 'Eugene K.', firstName: 'Eugene', title: 'Founder and B2B Media Buyer' }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getBuyerByRegionIndustry(region: string, industry: string, tier: string) {
-  const r = region.toLowerCase()
-  const i = industry.toLowerCase()
-  if (tier === 'agency') return BUYERS['MW']
-  if (r.includes('west') || r.includes('ghana') || r.includes('nigeria') || r.includes('lagos') || r.includes('accra')) return BUYERS['AM']
-  if (r.includes('south') || r.includes('johannesburg') || r.includes('cape town') || r.includes('durban')) return BUYERS['DO']
-  if (i.includes('ecommerce') || i.includes('e-commerce') || i.includes('retail')) return BUYERS['GN']
-  return BUYERS['EK']
-}
-
-function stripDashes(v: unknown): unknown {
-  if (typeof v === 'string') return v.replace(/ — /g, ', ').replace(/— /g, ', ').replace(/—/g, '-').replace(/ – /g, ', ').replace(/–/g, '-')
-  if (Array.isArray(v)) return v.map(stripDashes)
-  if (v !== null && typeof v === 'object') {
-    const o: Record<string, unknown> = {}
-    for (const [k, val] of Object.entries(v as Record<string, unknown>)) o[k] = stripDashes(val)
-    return o
-  }
-  return v
+  return BUYER
 }
 
 export async function GET(req: NextRequest) {

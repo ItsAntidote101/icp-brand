@@ -1,7 +1,6 @@
 'use client'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import {
   ArrowRight, Check, Menu, X, ChevronDown, ChevronUp,
   Shield, Globe, Users, Lock, Zap, BarChart2, Target, FileText,
@@ -33,7 +32,7 @@ const TIERS = [
     annual: 'Free',
     annualMonthly: 'Free',
     desc: 'One lifetime diagnosis. See exactly where your targeting leaks money.',
-    bullets: ['ICP health score (0–100)', 'Top 3 findings with severity', '3 quick wins action plan', 'Media buyer reviews your report'],
+    bullets: ['ICP health score (0-100)', 'Top 3 findings with severity', '3 quick wins action plan', 'Media buyer reviews your report'],
     cta: 'Get Free Diagnosis',
     href: '/questionnaire',
     highlight: false,
@@ -96,11 +95,11 @@ const FAQS = [
   },
   {
     q: 'Is there really a free diagnosis?',
-    a: 'Yes. You get one lifetime diagnosis at no cost, with no credit card required. You will receive your ICP health score, top 3 findings, a quick wins plan, and a personal review from a member of our B2B media buying team. Upgrade to Starter when you are ready to run monthly re-diagnoses and track your improvement over time.',
+    a: 'Yes. You get one lifetime diagnosis at no cost, with no credit card required. You will receive your ICP health score, top 3 findings, a quick wins plan, and a personal review from a B2B media buyer. Upgrade to Starter when you are ready to run monthly re-diagnoses and track your improvement over time.',
   },
   {
     q: 'Does a real person review my report?',
-    a: 'Yes. Every diagnosis is reviewed by a practitioner on our B2B media buying team. If they identify a critical targeting gap, they will follow up directly with a personal note within 24 hours. This is included on the free tier — no upgrade required to receive the review.',
+    a: 'Yes. Every diagnosis is reviewed by a practising B2B media buyer. If they identify a critical targeting gap, they will follow up directly with a personal note within 24 hours. This is included on the free tier, no upgrade required to receive the review.',
   },
 ]
 
@@ -115,13 +114,6 @@ const USE_CASES = [
 const btnPrimary: React.CSSProperties = {
   display: 'inline-flex', alignItems: 'center', gap: 8,
   background: Orange, color: '#fff', border: 'none',
-  borderRadius: 6, padding: '13px 22px',
-  fontFamily: font, fontSize: 15, fontWeight: 700,
-  cursor: 'pointer', textDecoration: 'none', whiteSpace: 'nowrap',
-}
-const btnDark: React.CSSProperties = {
-  display: 'inline-flex', alignItems: 'center', gap: 8,
-  background: Dark, color: '#fff', border: 'none',
   borderRadius: 6, padding: '13px 22px',
   fontFamily: font, fontSize: 15, fontWeight: 700,
   cursor: 'pointer', textDecoration: 'none', whiteSpace: 'nowrap',
@@ -152,7 +144,7 @@ function DiagStage1({ animKey }: { animKey: number }) {
   const rows = [
     { q: 'What industry are you in?',     a: 'B2B SaaS / Tech',                delay: 0.15 },
     { q: 'Monthly ad spend?',             a: 'KES 180,000 / month',             delay: 0.65 },
-    { q: 'Primary target audience?',      a: 'Kenya · SMEs · 50–200 employees', delay: 1.15 },
+    { q: 'Primary target audience?',      a: 'Kenya · SMEs · 50-200 employees', delay: 1.15 },
     { q: 'Biggest targeting challenge?',  a: 'Reaching decision-makers only',   delay: 1.65 },
   ]
   return (
@@ -162,7 +154,7 @@ function DiagStage1({ animKey }: { animKey: number }) {
         <div style={{ display: 'flex', gap: 6 }}>
           {['#e8330a','#f59e0b','#22c55e'].map((c,i) => <div key={i} style={{ width: 9, height: 9, borderRadius: '50%', background: c, opacity: 0.8 }} />)}
         </div>
-        <span style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.3)', flex: 1, textAlign: 'center' }}>ICP Questionnaire — Step 2 of 4</span>
+        <span style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.3)', flex: 1, textAlign: 'center' }}>ICP Questionnaire: Step 2 of 4</span>
         <div style={{ display: 'flex', gap: 4 }}>
           {[50,35,50].map((w,i) => <div key={i} style={{ width: w, height: 3, background: i === 1 ? '#e8330a' : 'rgba(255,255,255,0.12)', borderRadius: 2 }} />)}
         </div>
@@ -268,8 +260,8 @@ function DiagStage3({ animKey }: { animKey: number }) {
     { sev: 'Warning',  color: '#f59e0b', bg: 'rgba(245,158,11,0.07)',  border: 'rgba(245,158,11,0.2)',  title: 'No SME-specific messaging detected', impact: 'Losing mid-market segment', delay: 0.9 },
   ]
   const wins = [
-    { text: 'Narrow audience to 25–44 decision-makers in SMEs', delay: 1.4 },
-    { text: 'Rewrite CTA to "Book a 20-min demo" — test vs current', delay: 1.8 },
+    { text: 'Narrow audience to 25-44 decision-makers in SMEs', delay: 1.4 },
+    { text: 'Rewrite CTA to "Book a 20-min demo" and test against current', delay: 1.8 },
     { text: 'Add pain-point headline above fold targeting ops leads', delay: 2.2 },
   ]
   return (
@@ -407,7 +399,6 @@ export default function Page() {
   const [mobileOpen,      setMobileOpen]      = useState(false)
   const [billingAnnual,   setBillingAnnual]   = useState(false)
   const [openFaq,         setOpenFaq]         = useState<number | null>(null)
-  const [activeTestimonial, setActiveTestimonial] = useState(0)
   const [calcBudget,      setCalcBudget]      = useState('')
   const [calcLeads,       setCalcLeads]       = useState('')
   const [calcCloseRate,   setCalcCloseRate]   = useState('')
@@ -424,7 +415,6 @@ export default function Page() {
   const pendingMetrics = useRef<typeof calcMetrics>(null)
   const [showStickyBar,   setShowStickyBar]   = useState(false)
   const [stickyDismissed, setStickyDismissed] = useState(false)
-  const [activeNow,       setActiveNow]       = useState(4)
 
   const [csvDragOver,   setCsvDragOver]   = useState(false)
   const [csvFileName,   setCsvFileName]   = useState('')
@@ -446,11 +436,13 @@ export default function Page() {
     reader.readAsText(file)
   }, [])
 
-  const countRef        = useRef<HTMLSpanElement>(null)
-  const hasAnimated     = useRef(false)
-  const [diagnosisCount,  setDiagnosisCount]  = useState(9400)
+  const [diagnosisCount,  setDiagnosisCount]  = useState(0)
+  const [wasteKes,        setWasteKes]        = useState(0)
+  // Public counters only appear once there is real volume behind them.
+  // Below this we just don't show a number rather than inflate it.
+  const showLiveStats   = diagnosisCount >= 50
   const diagCountRef    = useRef<HTMLSpanElement>(null)
-  const prevDiagCount   = useRef(9400)
+  const prevWaste       = useRef(0)
   const outputCanvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
@@ -466,25 +458,6 @@ export default function Page() {
     if (sessionStorage.getItem('sticky_dismissed')) setStickyDismissed(true)
   }, [])
 
-  useEffect(() => {
-    const el = countRef.current
-    if (!el) return
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting && !hasAnimated.current) {
-        hasAnimated.current = true
-        const target = 47000; const duration = 2000; const start = performance.now()
-        const tick = (now: number) => {
-          const progress = Math.min((now - start) / duration, 1)
-          el.textContent = 'KES ' + Math.floor(progress * target).toLocaleString()
-          if (progress < 1) requestAnimationFrame(tick)
-          else el.textContent = 'KES 47,000'
-        }
-        requestAnimationFrame(tick)
-      }
-    }, { threshold: 0.5 })
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [])
 
   const animateWaste = (from: number, to: number, duration = 1800) => {
     const el = diagCountRef.current
@@ -501,38 +474,27 @@ export default function Page() {
   }
 
   useEffect(() => {
-    // Animate on first mount (count up from 0)
-    animateWaste(0, diagnosisCount * 47000, 2800)
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    // Animate when count changes after mount
-    const prev = prevDiagCount.current
-    if (prev !== diagnosisCount) {
-      animateWaste(prev * 47000, diagnosisCount * 47000, 900)
-      prevDiagCount.current = diagnosisCount
+    // Animate the real waste total whenever it changes
+    const prev = prevWaste.current
+    if (prev !== wasteKes) {
+      animateWaste(prev, wasteKes, prev === 0 ? 2800 : 900)
+      prevWaste.current = wasteKes
     }
-  }, [diagnosisCount]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [wasteKes]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const fetchCount = async () => {
       try {
         const res = await fetch('/api/stats')
         if (!res.ok) return
-        const { count } = await res.json()
-        if (typeof count === 'number' && count !== prevDiagCount.current) {
-          setDiagnosisCount(count)
-        }
+        const { count, wasteKes: waste } = await res.json()
+        if (typeof count === 'number') setDiagnosisCount(count)
+        if (typeof waste === 'number') setWasteKes(waste)
       } catch { /* keep current value */ }
     }
     fetchCount()
     const interval = setInterval(fetchCount, 30000)
     return () => clearInterval(interval)
-  }, [])
-
-  useEffect(() => {
-    const t = setInterval(() => setActiveNow(Math.floor(Math.random() * 6) + 2), 11000)
-    return () => clearInterval(t)
   }, [])
 
   useEffect(() => {
@@ -786,7 +748,7 @@ export default function Page() {
             {' '}Find out exactly where.
           </h1>
           <p style={{ fontFamily: fontB, fontSize: 'clamp(15px,1.8vw,18px)', color: Muted, lineHeight: 1.7, margin: '0 auto 36px', maxWidth: 560 }}>
-            Answer 22 questions. Get a scored ICP health report, ranked findings, and a fix plan — reviewed by a B2B media buyer. Free. No ad account access needed.
+            Answer 22 questions. Get a scored ICP health report, ranked findings, and a fix plan, reviewed by a B2B media buyer. Free. No ad account access needed.
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center', marginBottom: 20 }}>
             <Link href="/questionnaire" className="btn-primary" style={btnPrimary}>
@@ -795,7 +757,7 @@ export default function Page() {
             <a href="#how-it-works" className="btn-ghost" style={btnGhost}>See how it works</a>
           </div>
           <p style={{ fontFamily: fontB, fontSize: 13, color: Muted, margin: 0 }}>
-            {diagnosisCount.toLocaleString()}+ B2B teams diagnosed. One free lifetime diagnosis, no card needed.
+            {showLiveStats ? `${diagnosisCount.toLocaleString()} B2B diagnoses run so far. ` : ''}One free lifetime diagnosis, no card needed.
           </p>
 
           {/* ── CSV Hook ── */}
@@ -1002,7 +964,7 @@ export default function Page() {
           {[
             { Icon: Shield, title: 'No ad account access', body: 'No Google OAuth. No Meta permissions. Zero.' },
             { Icon: Globe,  title: 'Kenya-first, expanding',  body: 'Built for Kenya. Tanzania, Uganda, Nigeria, South Africa and more coming soon.' },
-            { Icon: Users,  title: 'Reviewed by media buyers', body: 'Every diagnosis is reviewed by a practitioner. If they spot a critical gap, expect a personal follow-up within 24 hours.' },
+            { Icon: Users,  title: 'Reviewed by a media buyer', body: 'Every diagnosis is reviewed by a practitioner. If they spot a critical gap, expect a personal follow-up within 24 hours.' },
             { Icon: Lock,   title: 'Your data is private',  body: 'Stored securely. Never shared. Never sold.' },
           ].map(({ Icon, title, body }) => (
             <div key={title} style={{ padding: 'clamp(24px,3vw,36px)', borderRight: `1.5px solid ${Border}`, borderBottom: `1.5px solid ${Border}` }}>
@@ -1037,58 +999,22 @@ export default function Page() {
               No guesswork here. <span style={{ color: Orange }}>Just real data.</span>
             </p>
 
-            {/* Live indicator */}
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, marginBottom: 20, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 100, padding: '6px 14px 6px 10px' }}>
-              <span style={{ position: 'relative', width: 10, height: 10, flexShrink: 0 }}>
-                <span className="live-ring" style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: '#22c55e', animation: 'liveRing 1.4s ease-out infinite' }} />
-                <span className="live-dot" style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: '#22c55e', animation: 'livePulse 1.4s ease-in-out infinite' }} />
-              </span>
-              <span style={{ fontFamily: fontB, fontSize: 13, color: '#22c55e', fontWeight: 600 }}>
-                {activeNow} diagnoses running right now
-              </span>
-            </div>
-
+            {showLiveStats && wasteKes > 0 && (
+              <>
             {/* Giant counter */}
-            <span ref={diagCountRef} style={{ fontFamily: fontSerif, fontSize: 'clamp(48px,10vw,112px)', fontWeight: 700, color: '#fff', lineHeight: 1, display: 'block', marginBottom: 12, letterSpacing: '-0.02em' }}>KES 0</span>
+            <span ref={diagCountRef} style={{ fontFamily: fontSerif, fontSize: 'clamp(48px,10vw,112px)', fontWeight: 700, color: '#fff', lineHeight: 1, display: 'block', marginBottom: 12, letterSpacing: '-0.02em' }}>{'KES ' + wasteKes.toLocaleString()}</span>
             <p style={{ fontFamily: fontB, fontSize: 15, color: Orange, fontWeight: 500, margin: '0 0 8px' }}>
-              in monthly ad spend waste identified across East Africa (and counting)
+              in estimated monthly ad spend waste identified so far
             </p>
             <p style={{ fontFamily: fontB, fontSize: 13, color: DarkMuted, margin: 0 }}>
-              Across {diagnosisCount.toLocaleString()}+ B2B diagnoses completed on the platform
+              Across {diagnosisCount.toLocaleString()} B2B diagnoses completed on the platform
             </p>
+              </>
+            )}
           </div>
 
           {/* Chart + description row */}
-          <div style={{ gridTemplateColumns: '1fr 1fr', borderBottom: `1.5px solid ${DarkBorder}` }} className="block md:grid">
-
-            {/* Growth chart */}
-            <div className="proof-chart-col" style={{ borderRight: `1.5px solid ${DarkBorder}`, padding: 'clamp(28px,4vw,48px)' }}>
-              <p style={{ fontFamily: fontB, fontSize: 11, color: DarkMuted, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 20px' }}>Diagnoses completed over time</p>
-              <svg viewBox="0 0 540 200" style={{ width: '100%', height: 'auto', display: 'block' }} aria-hidden="true">
-                <defs>
-                  <linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={Orange} stopOpacity="0.18" />
-                    <stop offset="100%" stopColor={Orange} stopOpacity="0" />
-                  </linearGradient>
-                </defs>
-                {/* Grid lines */}
-                {[40, 80, 120, 160].map(y => (
-                  <line key={y} x1="0" y1={y} x2="540" y2={y} stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
-                ))}
-                {/* Fill area */}
-                <path d="M 20,182 C 80,178 140,170 200,155 C 270,135 330,108 390,75 C 440,48 490,28 520,14 L 520,190 L 20,190 Z"
-                  fill="url(#chartFill)" />
-                {/* Line */}
-                <path d="M 20,182 C 80,178 140,170 200,155 C 270,135 330,108 390,75 C 440,48 490,28 520,14"
-                  fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2" strokeLinecap="round" />
-                {/* Orange tip dot */}
-                <circle cx="520" cy="14" r="5" fill={Orange} />
-                <circle cx="520" cy="14" r="9" fill={Orange} fillOpacity="0.25" />
-                {/* Axis labels */}
-                <text x="20" y="198" fill="rgba(255,255,255,0.3)" fontSize="11" fontFamily="sans-serif">Jan 2024</text>
-                <text x="480" y="198" fill="rgba(255,255,255,0.3)" fontSize="11" fontFamily="sans-serif" textAnchor="end">Today</text>
-              </svg>
-            </div>
+          <div style={{ borderBottom: `1.5px solid ${DarkBorder}` }}>
 
             {/* Description */}
             <div style={{ padding: 'clamp(28px,4vw,56px)', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 24 }}>
@@ -1096,7 +1022,7 @@ export default function Page() {
                 Ideal ICP is where B2B marketers stop guessing and start knowing. Real answers from your numbers, benchmarked against your market.
               </p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'clamp(16px,3vw,32px)' }}>
-                {[['78%', 'of businesses have critical targeting gaps'], ['5 min', 'to a complete ICP health score']].map(([val, label]) => (
+                {[['3 layers', 'ICP fit, pipeline and sales conversion'], ['5 min', 'to a complete ICP health score']].map(([val, label]) => (
                   <div key={val}>
                     <p style={{ fontFamily: fontSerif, fontSize: 28, fontWeight: 700, color: Orange, margin: '0 0 4px' }}>{val}</p>
                     <p style={{ fontFamily: fontB, fontSize: 12, color: DarkMuted, margin: 0, lineHeight: 1.5 }}>{label}</p>
@@ -1110,9 +1036,9 @@ export default function Page() {
           <div style={{ gridTemplateColumns: 'repeat(2, 1fr)', borderLeft: `1.5px solid ${DarkBorder}` }} className="proof-tiles block md:grid">
             {[
               { Icon: Zap,       title: '22 questions across 3 targeting layers', body: 'No ad account access. No agency. Takes 5 minutes from sign-up to your first scored finding.' },
-              { Icon: BarChart2, title: '43% average CAC reduction after fixing ICP', body: 'Reported by businesses that completed their first diagnosis and acted on the top two findings.' },
-              { Icon: Target,    title: 'KES 47,000 average monthly waste identified', body: 'Per business, per month. Found in audience mismatch, landing page friction, and funnel leaks.' },
-              { Icon: TrendingDown, title: 'LTV:CAC ratio below 3:1 in 6 out of 10 audits', body: 'The B2B benchmark is 3:1. Most businesses we see are between 1.2 and 2.1 before the fix.' },
+              { Icon: BarChart2, title: 'A ranked fix list, not a 40-page report', body: 'Every finding names the platform, exactly where to change it, the expected impact and the effort, so you know what to do first.' },
+              { Icon: Target,    title: 'Benchmarked against your market', body: 'Cost and budget benchmarks calibrated to your region, from Nairobi and Lagos to London and New York.' },
+              { Icon: TrendingDown, title: 'Your real CAC and LTV:CAC, worked out', body: 'Calculated from your budget, lead volume, close rate and deal size, and checked against the 3:1 B2B benchmark.' },
             ].map(({ Icon, title, body }, i) => (
               <div key={i} style={{ padding: 'clamp(24px,3vw,36px)', borderRight: `1.5px solid ${DarkBorder}`, borderTop: `1.5px solid ${DarkBorder}`, borderBottom: `1.5px solid ${DarkBorder}` }}>
                 <div style={{ width: 32, height: 32, borderRadius: 6, border: `1.5px solid ${DarkBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
@@ -1227,7 +1153,7 @@ export default function Page() {
             <div>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 16, background: 'rgba(34,197,94,0.09)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 100, padding: '5px 14px 5px 10px' }}>
                 <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', flexShrink: 0, display: 'inline-block' }} />
-                <span style={{ fontFamily: fontB, fontSize: 12, color: '#22c55e', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.09em' }}>Real buyers. Real reviews.</span>
+                <span style={{ fontFamily: fontB, fontSize: 12, color: '#22c55e', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.09em' }}>A real buyer. A real review.</span>
               </div>
               <h2 style={{ fontFamily: fontSerif, fontSize: 'clamp(28px,4.5vw,52px)', color: '#fff', fontWeight: 700, margin: 0, lineHeight: 1.08 }}>
                 Your score doesn&apos;t sit in a database.<br />
@@ -1235,7 +1161,7 @@ export default function Page() {
               </h2>
             </div>
             <p style={{ fontFamily: fontB, fontSize: 14, color: DarkMuted, margin: 0, maxWidth: 340, lineHeight: 1.7 }}>
-              Every diagnosis is reviewed by a practitioner on our B2B media buying team. If they spot a critical gap, you get a personal follow-up within 24 hours — included on the free tier.
+              Every diagnosis is reviewed by a practising B2B media buyer. If they spot a critical gap, you get a personal follow-up within 24 hours. Included on the free tier.
             </p>
           </div>
 
@@ -1245,9 +1171,7 @@ export default function Page() {
             {/* Left: buyer roster */}
             <div className="buyer-roster" style={{ borderRight: `1.5px solid ${DarkBorder}`, display: 'flex', flexDirection: 'column' }}>
               {[
-                { initials: 'EW', name: 'Eugene W.', role: 'Senior B2B Media Buyer', note: 'KES 85M+ in B2B ad spend managed. Specialises in Kenya and East Africa SaaS.' },
-                { initials: 'AO', name: 'Amara O.', role: 'Growth Strategist', note: 'Fintech and professional services. Nigeria and South Africa markets.' },
-                { initials: 'DK', name: 'David K.', role: 'B2B Funnel Specialist', note: 'Landing page and funnel analysis. 300+ conversion audits completed.' },
+                { initials: 'EK', name: 'Eugene K.', role: 'Founder and B2B Media Buyer', note: 'Runs Google Ads and Meta campaigns for B2B companies, with a background in conversion creative.' },
               ].map(({ initials, name, role, note }, i) => (
                 <div key={i} style={{ padding: 'clamp(20px,3vw,28px)', borderTop: i > 0 ? `1.5px solid ${DarkBorder}` : 'none', display: 'flex', gap: 16, alignItems: 'flex-start' }}>
                   <div style={{ width: 44, height: 44, borderRadius: '50%', background: Orange, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -1281,7 +1205,7 @@ export default function Page() {
               {/* Visible message */}
               <div style={{ background: 'rgba(255,255,255,0.05)', border: `1.5px solid ${DarkBorder}`, borderRadius: 8, padding: '20px 22px' }}>
                 <p style={{ fontFamily: fontB, fontSize: 14, color: 'rgba(255,255,255,0.85)', lineHeight: 1.75, margin: 0 }}>
-                  &ldquo;I reviewed your targeting score. Your search intent mapping has a gap that is likely costing 30–40% of your monthly ad budget. I have flagged two specific channels where your ICP match drops below 40%.
+                  &ldquo;I reviewed your targeting score. Your search intent mapping has a gap that is likely costing 30-40% of your monthly ad budget. I have flagged two specific channels where your ICP match drops below 40%.
                 </p>
               </div>
 
@@ -1306,141 +1230,6 @@ export default function Page() {
           </div>
         </div>
       </section>
-
-      {/* ── TESTIMONIAL ─────────────────────────────────────────────────── */}
-      {(() => {
-        const testimonials = [
-          {
-            company:   'GREENFIELD DIGITAL',
-            quote:     'I did not need a new campaign. I needed someone to tell me my landing page was broken. The diagnosis did that in 5 minutes, and gave me a ranked list of exactly what to fix first.',
-            name:      'James M.',
-            title:     'Marketing Manager, Nairobi',
-            stats:     [{ val: '14 to 3', label: 'Form fields cut after diagnosis' }, { val: '+12', label: 'Qualified leads in week one' }],
-            image:     '/images/Holder-2.png',
-          },
-          {
-            company:   'NOVA CONSULTING',
-            quote:     'We were spending KES 180,000 a month on ads and getting maybe four good leads. After the ICP fix, same budget, nineteen leads. The difference was just knowing who we were actually talking to.',
-            name:      'Aisha K.',
-            title:     'Head of Growth, Mombasa',
-            stats:     [{ val: '4x', label: 'Lead volume on same budget' }, { val: '61%', label: 'Reduction in cost per lead' }],
-            image:     '/images/Holder-3.png',
-          },
-          {
-            company:   'APEX FINSERV',
-            quote:     'The CAC analysis alone was worth it. We had no idea our LTV:CAC was sitting at 1.4:1. Now we are at 3.8:1 and the sales team finally has a clear picture of who to go after.',
-            name:      'David O.',
-            title:     'CEO, Apex Finserv',
-            stats:     [{ val: '1.4 to 3.8', label: 'LTV:CAC ratio improvement' }, { val: '38%', label: 'Lower customer acquisition cost' }],
-            image:     '/images/Holder-4.png',
-          },
-        ]
-        const t = testimonials[activeTestimonial]
-        const total = testimonials.length
-        return (
-          <section id="results" style={{ background: Warm, borderBottom: `1.5px solid ${Border}` }}>
-            <div className="container" style={{ paddingTop: 'clamp(56px,7vw,88px)', paddingBottom: 'clamp(56px,7vw,88px)' }}>
-
-              {/* Aggregate stats bar */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0, border: `1.5px solid ${Border}`, borderRadius: 0, marginBottom: 52, background: '#fff', overflow: 'hidden' }} className="testimonial-stats">
-                {[
-                  { val: '+23 pts', label: 'Average ICP score improvement in 60 days' },
-                  { val: '61%', label: 'Average reduction in cost per lead after first fix' },
-                  { val: '3.8:1', label: 'Average LTV:CAC ratio after 90 days on platform' },
-                  { val: '11 days', label: 'Median time to first measurable result' },
-                ].map(({ val, label }, i) => (
-                  <div key={i} style={{ padding: 'clamp(20px,3vw,32px) clamp(16px,2.5vw,28px)', borderRight: i < 3 ? `1.5px solid ${Border}` : 'none', borderBottom: `1.5px solid ${Border}` }}>
-                    <p style={{ fontFamily: fontSerif, fontSize: 'clamp(22px,2.5vw,34px)', fontWeight: 700, color: Orange, margin: '0 0 6px' }}>{val}</p>
-                    <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, margin: 0, lineHeight: 1.5 }}>{label}</p>
-                  </div>
-                ))}
-              </div>
-
-              {/* Section header */}
-              <div style={{ textAlign: 'center', marginBottom: 52 }}>
-                <h2 style={{ fontFamily: fontSerif, fontSize: 'clamp(26px,4vw,48px)', fontWeight: 700, color: Text, margin: '0 0 14px', lineHeight: 1.1 }}>
-                  <span style={{ color: Orange }}>Built for B2B marketers,</span><br />from first-time founders to scaling teams.
-                </h2>
-                <p style={{ fontFamily: fontB, fontSize: 15, color: Muted, margin: 0, lineHeight: 1.6 }}>
-                  Real results from marketers who stopped guessing and started diagnosing.
-                </p>
-              </div>
-
-              {/* Testimonial card */}
-              <div style={{ border: `1.5px solid ${Border}`, borderRadius: 0, overflow: 'hidden', gridTemplateColumns: '1fr 1fr', background: '#fff' }} className="block md:grid">
-
-                {/* Left: quote panel */}
-                <div className="testimonial-left" style={{ display: 'flex', flexDirection: 'column' }}>
-
-                  {/* Company tag */}
-                  <div style={{ padding: '28px 36px 24px', borderBottom: `1.5px solid ${Border}` }}>
-                    <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.14em', color: Text, margin: 0 }}>{t.company}</p>
-                  </div>
-
-                  {/* Quote */}
-                  <div style={{ padding: '32px 36px 28px', flex: 1 }}>
-                    <p style={{ fontFamily: fontSerif, fontSize: 40, color: Orange, lineHeight: 1, margin: '0 0 16px', fontWeight: 700 }}>"</p>
-                    <p style={{ fontFamily: fontSerif, fontSize: 'clamp(17px,2vw,22px)', color: Text, lineHeight: 1.55, margin: '0 0 28px' }}>
-                      {t.quote}
-                    </p>
-                    <p style={{ fontFamily: fontB, fontSize: 13, color: Muted, margin: 0, lineHeight: 1.5 }}>
-                      {t.name}, {t.title}
-                    </p>
-                  </div>
-
-                  {/* Stats */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderTop: `1.5px solid ${Border}` }}>
-                    {t.stats.map(({ val, label }, i) => (
-                      <div key={i} style={{ padding: '24px 28px', borderRight: i === 0 ? `1.5px solid ${Border}` : 'none' }}>
-                        <p style={{ fontFamily: fontSerif, fontSize: 'clamp(22px,2.5vw,32px)', fontWeight: 700, color: Orange, margin: '0 0 5px' }}>{val}</p>
-                        <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, margin: 0, lineHeight: 1.5 }}>{label}</p>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* CTA row */}
-                  <div style={{ padding: '20px 28px', borderTop: `1.5px solid ${Border}` }}>
-                    <Link href="/questionnaire" style={{ display: 'inline-flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
-                      <span style={{ width: 36, height: 36, borderRadius: '50%', border: `1.5px solid ${Border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <ArrowRight size={15} color={Text} />
-                      </span>
-                      <span style={{ fontFamily: fontB, fontSize: 14, fontWeight: 600, color: Text }}>Get your free diagnosis</span>
-                    </Link>
-                  </div>
-                </div>
-
-                {/* Right: image, hidden on mobile */}
-                <div className="hidden md:block" style={{ position: 'relative', minHeight: 420, background: '#e8e0d8', overflow: 'hidden' }}>
-                  <Image
-                    src={t.image}
-                    alt={t.company}
-                    fill
-                    style={{ objectFit: 'cover', objectPosition: 'center' }}
-                  />
-                  {/* Company overlay */}
-                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(201,192,177,0.45)' }}>
-                    <p style={{ fontFamily: fontSerif, fontSize: 'clamp(18px,2.5vw,28px)', fontWeight: 700, color: '#fff', letterSpacing: '0.12em', textTransform: 'uppercase', textAlign: 'center', margin: 0, textShadow: '0 2px 12px rgba(0,0,0,0.3)' }}>
-                      {t.company}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Nav row */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10, marginTop: 24 }}>
-                <span style={{ fontFamily: fontB, fontSize: 13, color: Muted, marginRight: 8 }}>{activeTestimonial + 1} / {total}</span>
-                {[{ dir: -1, icon: <ArrowRight size={16} color={Text} style={{ transform: 'rotate(180deg)' }} /> }, { dir: 1, icon: <ArrowRight size={16} color={Text} /> }].map(({ dir, icon }, i) => (
-                  <button key={i} onClick={() => setActiveTestimonial(n => (n + dir + total) % total)}
-                    style={{ width: 40, height: 40, borderRadius: '50%', border: `1.5px solid ${Border}`, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                    {icon}
-                  </button>
-                ))}
-              </div>
-
-            </div>
-          </section>
-        )
-      })()}
 
       {/* ── BUSINESS OUTCOMES CALCULATOR ────────────────────────────────── */}
       <section id="calculator" style={{ background: Dark, borderBottom: `1.5px solid ${DarkBorder}` }}>

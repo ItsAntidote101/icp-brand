@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 import {
   sendStaleDiagnosisEmail,
   sendScoreDropAlertEmail,
@@ -9,10 +9,7 @@ import {
 export const dynamic     = 'force-dynamic'
 export const maxDuration = 120
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'http://localhost',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || 'build-placeholder',
-)
+const supabase = supabaseAdmin()
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://idealicp.com'
 
@@ -114,7 +111,7 @@ export async function GET(req: NextRequest) {
               ...((d.search   as Record<string, unknown>)?.findings as Array<{severity: string; title: string; explanation: string}> ?? []),
             ]
             const critical = findings.find(f => f.severity === 'Critical')
-            if (critical) topFinding = `${critical.title} — ${critical.explanation}`
+            if (critical) topFinding = `${critical.title}: ${critical.explanation}`
           } catch { /* noop */ }
 
           await sendScoreDropAlertEmail({

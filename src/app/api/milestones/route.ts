@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 import { getSession } from '@/lib/session'
 
 export const dynamic = 'force-dynamic'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'http://localhost',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || 'build-placeholder',
-)
+const supabase = supabaseAdmin()
 
 const ALL_MILESTONES = [
   { key: 'first_diagnosis',     name: 'First Diagnosis',      description: 'Complete your first ICP diagnostic',         unlock_hint: 'Run your first diagnosis' },

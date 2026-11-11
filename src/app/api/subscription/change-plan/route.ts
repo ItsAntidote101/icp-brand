@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 import {
   sendDowngradeScheduledToUser, sendDowngradeScheduledToFounder,
 } from '@/lib/email'
@@ -8,10 +8,7 @@ import { recordPendingPayment } from '@/lib/payments'
 
 export const dynamic = 'force-dynamic'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'http://localhost',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || 'build-placeholder',
-)
+const supabase = supabaseAdmin()
 
 const TIER_PRICE_KES: Record<string, number> = { starter: 6500, pro: 13000, agency: 26000, free: 0 }
 const TIER_ORDER = ['free', 'starter', 'pro', 'agency']

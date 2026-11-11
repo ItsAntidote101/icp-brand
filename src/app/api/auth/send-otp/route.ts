@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 import { createClient } from '@supabase/supabase-js'
 
 export const dynamic = 'force-dynamic'
@@ -10,10 +11,7 @@ const supabaseAuth = createClient(
 )
 
 // Service role for checking our users table
-const db = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'http://localhost',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || 'build-placeholder',
-)
+const db = supabaseAdmin()
 
 export async function POST(req: NextRequest) {
   try {

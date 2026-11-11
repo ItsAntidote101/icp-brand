@@ -484,16 +484,17 @@ function WelcomePanel({ diagCount }: { diagCount: number }) {
 
       {/* Social proof */}
       <div className="flex flex-col gap-2 pt-2 border-t border-[#c5c0b1]">
-        <div className="flex items-center gap-2">
-          <span className="relative flex h-2 w-2 flex-shrink-0">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-          </span>
-          <span className="text-xs text-[#605d52]">
-            <span className="font-bold text-[#201515] tabular-nums">{diagCount.toLocaleString()}+</span> diagnoses run
-          </span>
-        </div>
-        <p className="text-xs text-[#939084]">Average waste found: <span className="text-[#201515] font-semibold">KES 47,000/mo</span></p>
+        {diagCount >= 50 && (
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-2 w-2 flex-shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+            </span>
+            <span className="text-xs text-[#605d52]">
+              <span className="font-bold text-[#201515] tabular-nums">{diagCount.toLocaleString()}</span> diagnoses run
+            </span>
+          </div>
+        )}
         <p className="text-xs text-[#939084]">Takes 5 minutes. Free. No credit card.</p>
       </div>
     </div>
@@ -636,10 +637,12 @@ function QuestionPanel({
 
       {/* Social proof */}
       <div className="flex flex-col gap-1.5 pt-2 border-t border-[#c5c0b1]">
-        <p className="text-xs text-[#939084]">
-          <span className="text-[#201515] font-semibold tabular-nums">{diagCount.toLocaleString()}+</span> businesses diagnosed
-        </p>
-        <p className="text-xs text-[#939084]">Average waste found: <span className="text-[#201515] font-semibold">KES 47,000/mo</span></p>
+        {diagCount >= 50 && (
+          <p className="text-xs text-[#939084]">
+            <span className="text-[#201515] font-semibold tabular-nums">{diagCount.toLocaleString()}</span> businesses diagnosed
+          </p>
+        )}
+        <p className="text-xs text-[#939084]">Takes 5 minutes. Free. No credit card.</p>
       </div>
     </div>
   )
@@ -778,7 +781,7 @@ export default function QuestionnairePage() {
   const [urlVerifyStatus, setUrlVerifyStatus] = useState<'idle' | 'checking' | 'verified' | 'failed'  >('idle')
   const [urlVerifyTitle, setUrlVerifyTitle] = useState('')
   const [urlWarning, setUrlWarning] = useState(false)
-  const [diagCount,     setDiagCount]     = useState(9400)
+  const [diagCount,     setDiagCount]     = useState(0)
   const [emailTouched,  setEmailTouched]  = useState(false)
   const [emailMxStatus, setEmailMxStatus] = useState<'idle' | 'checking' | 'ok' | 'fail'>('idle')
   const timerRefs = useRef<ReturnType<typeof setTimeout>[]>([])
@@ -789,7 +792,7 @@ export default function QuestionnairePage() {
   useEffect(() => {
     fetch('/api/stats')
       .then(r => r.ok ? r.json() : null)
-      .then((d: { count?: number } | null) => { if (d?.count) setDiagCount(d.count) })
+      .then((d: { count?: number | null } | null) => { if (typeof d?.count === 'number') setDiagCount(d.count) })
       .catch(() => {})
   }, [])
 
@@ -1009,7 +1012,7 @@ export default function QuestionnairePage() {
         const text = await dRes.text()
         if (!dRes.ok) throw new Error(dRes.status === 504 ? 'The diagnostic is taking longer than expected. Please try again.' : (text.slice(0, 120) || 'Failed to generate diagnostic'))
       }
-      if (!dRes.ok) throw new Error((dData.error as string) || (dData.message as string) || 'Failed to generate diagnostic')
+      if (!dRes.ok) throw new Error((dData.message as string) || (dData.error as string) || 'Failed to generate diagnostic')
 
       localStorage.setItem('dashboard_email', profile.email.trim().toLowerCase())
       if (profile.name) localStorage.setItem('dashboard_name', profile.name)
@@ -1154,12 +1157,12 @@ export default function QuestionnairePage() {
             Your baseline ICP score is saved in your dashboard. To re-run after implementing your quick wins and track whether your score has improved, you need Starter.
           </p>
           <p className="text-[#939084] text-xs mb-8">
-            Starter — KES 6,500/month. Includes 3 diagnoses/month, weekly intelligence briefings, and full category analysis.
+            Starter: KES 6,500/month. Includes 3 diagnoses/month, weekly intelligence briefings, and full category analysis.
           </p>
           <div className="flex flex-col gap-3">
             <a href="/pricing"
               className="block w-full bg-[#e8330a] text-white font-semibold text-sm rounded-lg py-3.5 px-6 text-center hover:opacity-90 transition-opacity">
-              Upgrade to Starter — Track My Progress
+              Upgrade to Starter: Track My Progress
             </a>
             <a href="/dashboard"
               className="block w-full bg-transparent text-[#605d52] font-medium text-sm rounded-lg py-3 px-6 text-center border border-[rgba(201,192,177,0.5)] hover:border-[#201515] transition-colors">
@@ -1503,7 +1506,7 @@ export default function QuestionnairePage() {
               {!urlWarning && urlVerifyStatus === 'verified' && (
                 <div className="mb-4 flex items-center gap-2 px-4 py-2 rounded border border-green-400/40 bg-green-50 text-sm text-green-700">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}><path d="M20 6 9 17l-5-5"/></svg>
-                  <span className="flex-1 truncate">Site verified{urlVerifyTitle ? ` — ${urlVerifyTitle}` : ''}. Some answers have been pre-filled — review and edit if needed.</span>
+                  <span className="flex-1 truncate">Site verified{urlVerifyTitle ? `: ${urlVerifyTitle}` : ''}. Some answers have been pre-filled, review and edit if needed.</span>
                 </div>
               )}
 

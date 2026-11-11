@@ -1,26 +1,32 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 
 export const dynamic = 'force-dynamic'
 
+// Real platform numbers only. This used to fall back to a hardcoded 9,400
+// whenever the query failed, which then showed on the site as "9,400+ teams".
 export async function GET() {
   try {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
-    const { count, error } = await supabase
-      .from('diagnostics')
-      .select('*', { count: 'exact', head: true })
+    const supabase = supabaseAdmin()
 
+    const [{ count, error }, { data: waste }] = await Promise.all([
+      supabase.from('diagnostics').select('*', { count: 'exact', head: true }),
+      supabase.from('social_proof_events').select('waste_amount').eq('event_type', 'waste_found'),
+    ])
     if (error) throw error
 
-    return NextResponse.json({ count: count ?? 0 }, {
+    const wasteKes = (waste ?? []).reduce(
+      (sum: number, r: { waste_amount: number | null }) => sum + (Number(r.waste_amount) || 0),
+      0,
+    )
+
+    return NextResponse.json({ count: count ?? 0, wasteKes }, {
       headers: { 'Cache-Control': 'no-store' },
     })
-  } catch {
-    // Return a safe fallback so the counter still displays something
-    return NextResponse.json({ count: 9400 }, {
+  } catch (err) {
+    console.error('[stats] error:', err)
+    return NextResponse.json({ count: null, wasteKes: null }, {
+      status: 503,
       headers: { 'Cache-Control': 'no-store' },
     })
   }

@@ -17,14 +17,14 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   title: 'Ideal ICP | Expert ICP Scoring for Marketing Teams in Africa and Beyond',
-  description: 'Get a free expert ICP score in 5 minutes. Identify targeting gaps, funnel friction, and budget waste. Reviewed by B2B media buyers. Used by marketing teams across Kenya, Nigeria, South Africa, UK and US.',
+  description: 'Get a free expert ICP score in 5 minutes. Identify targeting gaps, funnel friction, and budget waste. Reviewed by a B2B media buyer. Built for marketing teams in Kenya, Nigeria, South Africa, the UK and US.',
   metadataBase: new URL('https://idealicp.com'),
   alternates: {
     canonical: '/',
   },
   openGraph: {
     title: 'Ideal ICP | Free ICP Audit Tool for Marketing Teams',
-    description: 'Get a free expert ICP score in 5 minutes. Reviewed by B2B media buyers. Used by marketing teams across Africa, UK and US.',
+    description: 'Get a free expert ICP score in 5 minutes. Reviewed by a B2B media buyer. Built for marketing teams in Africa, the UK and US.',
     url: 'https://idealicp.com',
     type: 'website',
     images: [{ url: '/images/og-image.png', width: 1200, height: 630 }],
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Ideal ICP | Free ICP Audit Tool',
-    description: 'Get a free expert ICP score in 5 minutes. Reviewed by B2B media buyers.',
+    description: 'Get a free expert ICP score in 5 minutes. Reviewed by a B2B media buyer.',
     images: ['/images/og-image.png'],
   },
 }
@@ -41,7 +41,7 @@ const softwareSchema = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
   name: 'Ideal ICP',
-  description: 'Expert ICP scoring for marketing teams. Get a free audit of your targeting, funnel, and ad spend in 5 minutes. Reviewed by B2B media buyers.',
+  description: 'Expert ICP scoring for marketing teams. Get a free audit of your targeting, funnel, and ad spend in 5 minutes. Reviewed by a B2B media buyer.',
   url: 'https://idealicp.com',
   applicationCategory: 'BusinessApplication',
   operatingSystem: 'Web',

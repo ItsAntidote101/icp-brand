@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 import { Resend } from 'resend'
 
 export const dynamic = 'force-dynamic'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'http://localhost',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || 'build-placeholder',
-)
+const supabase = supabaseAdmin()
 const resend = new Resend(process.env.RESEND_API_KEY || 're_build_placeholder')
 const FROM   = 'ICP Brand <noreply@idealicp.com>'
 const BASE   = 'https://idealicp.com'

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { stripDashes } from '@/lib/strip-dashes'
 import { createClient } from '@supabase/supabase-js'
 import Anthropic from '@anthropic-ai/sdk'
 import { sendWelcomeEmail } from '@/lib/email'
@@ -7,24 +8,6 @@ export const maxDuration = 120
 export const dynamic = 'force-dynamic'
 
 // Strip em/en dashes from any string recursively so they never appear in stored data
-function stripDashes(value: unknown): unknown {
-  if (typeof value === 'string') {
-    return value
-      .replace(/ — /g, ', ')
-      .replace(/— /g, ', ')
-      .replace(/—/g, '-')
-      .replace(/ – /g, ', ')
-      .replace(/–/g, '-')
-  }
-  if (Array.isArray(value)) return value.map(stripDashes)
-  if (value !== null && typeof value === 'object') {
-    const out: Record<string, unknown> = {}
-    for (const [k, v] of Object.entries(value as Record<string, unknown>)) out[k] = stripDashes(v)
-    return out
-  }
-  return value
-}
-
 function extractJSON(text: string): unknown {
   // 1. Direct parse
   try { return JSON.parse(text) } catch { /* continue */ }
@@ -259,6 +242,30 @@ export async function POST(req: NextRequest) {
   const email: string = owner?.email ?? ''
   if (!email) {
     return NextResponse.json({ error: 'Account not found for this questionnaire.' }, { status: 400 })
+  }
+
+  // ── Per-IP rate limit ─────────────────────────────────────────────────────
+  // Each new email gets one free diagnosis, so without this anyone could burn
+  // AI credit by inventing email addresses. 5 new diagnoses per IP per day is
+  // plenty for a real team sharing an office connection.
+  const clientIp =
+    req.headers.get('x-real-ip') ??
+    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+    null
+  const DAILY_IP_LIMIT = 5
+  if (clientIp) {
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+    const { count: ipCount } = await supabase
+      .from('diagnostics')
+      .select('id', { count: 'exact', head: true })
+      .eq('client_ip', clientIp)
+      .gte('created_at', since)
+    if ((ipCount ?? 0) >= DAILY_IP_LIMIT) {
+      return NextResponse.json({
+        error: 'rate_limited',
+        message: 'Too many diagnoses from this network today. Please try again tomorrow.',
+      }, { status: 429 })
+    }
   }
 
   // ── Subscription check + monthly diagnosis limit ─────────────────────────
@@ -1174,6 +1181,8 @@ Rules:
     .insert([
       {
         questionnaire_id: questionnaireId,
+        user_id: qRow.user_id,
+        client_ip: clientIp,
         diagnosis,
         created_at: new Date().toISOString(),
       },
