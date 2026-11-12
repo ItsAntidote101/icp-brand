@@ -50,6 +50,27 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
+    // AI chat is a paid feature (see pricing), and each reply costs money,
+    // so cap messages per day. It used to be open to every account, unlimited.
+    const DAILY_CHAT_LIMIT: Record<string, number> = { starter: 30, pro: 60, agency: 100 }
+    const dailyLimit = DAILY_CHAT_LIMIT[user.subscription_tier] ?? 0
+    if (dailyLimit === 0) {
+      return NextResponse.json({ error: 'upgrade_required', message: 'AI chat is included from the Starter plan.' }, { status: 403 })
+    }
+    const dayStart = new Date(); dayStart.setUTCHours(0, 0, 0, 0)
+    const { count: sentToday } = await supabase
+      .from('chat_messages')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .eq('role', 'user')
+      .gte('created_at', dayStart.toISOString())
+    if ((sentToday ?? 0) >= dailyLimit) {
+      return NextResponse.json({ error: 'daily_limit', message: `You have used today's ${dailyLimit} chat messages. It resets at midnight UTC (3am Nairobi).` }, { status: 429 })
+    }
+    if (typeof message !== 'string' || message.length > 4000) {
+      return NextResponse.json({ error: 'Message too long' }, { status: 400 })
+    }
+
     // Parallel fetch: questionnaire + last 5 reports + intelligence
     const [qRes, rRes, iRes] = await Promise.all([
       supabase

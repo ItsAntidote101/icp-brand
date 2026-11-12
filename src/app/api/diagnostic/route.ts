@@ -3,6 +3,7 @@ import { stripDashes } from '@/lib/strip-dashes'
 import { createClient } from '@supabase/supabase-js'
 import Anthropic from '@anthropic-ai/sdk'
 import { sendWelcomeEmail } from '@/lib/email'
+import { fetchLandingPage, describeLandingPage } from '@/lib/safe-fetch'
 
 export const maxDuration = 120
 export const dynamic = 'force-dynamic'
@@ -373,6 +374,12 @@ export async function POST(req: NextRequest) {
     ? ((leadsNum * 0.15) * ltvNum).toFixed(0)
     : null
 
+  // Paid reports: actually load the landing page so the assessment is based on
+  // what a visitor sees, not a guess from the domain name.
+  const landingPageBlock = isSubscriber && landingPageUrl
+    ? describeLandingPage(await fetchLandingPage(landingPageUrl))
+    : ''
+
   const regionContext = buildRegionContext(geographicRegion)
   const primaryChannel = adChannels.split(',')[0]?.trim() || 'Meta'
 
@@ -423,8 +430,8 @@ PRE-COMPUTED METRICS (use these as the user's actual data in benchmarks):
 - Estimated monthly ad waste: ${monthlyWaste ? `${monthlyWaste} (35% of non-converting spend)` : 'Cannot compute'}
 - Revenue opportunity if ICP improved 15%: ${revenueOppty ? `${revenueOppty}` : 'Cannot compute'}
 
-${landingPageUrl ? `LANDING PAGE: ${landingPageUrl} was provided. Based on the URL domain and the business description above, assess likely offer clarity, CTA effectiveness, and conversion readiness in landing_page_assessment.` : ''}
-Use your knowledge of ${geographicRegion} benchmarks in the ${industry || 'relevant'} industry for all benchmark fields. Include realistic competitor names typical of this region and industry in competitor_insights.
+${landingPageBlock || (landingPageUrl ? '' : 'LANDING PAGE: none provided. Say so in landing_page_assessment instead of guessing.')}
+Use your knowledge of ${geographicRegion} benchmarks in the ${industry || 'relevant'} industry for benchmark fields, and describe them as typical ranges, not measured data. Do not name specific competitor companies: competitor research with real sources happens separately in the Intelligence tab. In competitor_insights describe the type of competition only.
 
 Return this exact JSON structure:
 {
@@ -536,7 +543,7 @@ Return this exact JSON structure:
   "funnel": {
     "score": <integer 0-100>,
     "summary": "<2 sentences specific to landing page performance and conversion friction>",
-    "landing_page_assessment": "<detailed assessment of the landing page based on web research, cover offer clarity, CTA effectiveness, trust signals, mobile readiness, and conversion barriers>",
+    "landing_page_assessment": "<assessment based only on the LANDING PAGE CHECK above: offer clarity, CTA, trust signals and conversion barriers, quoting real headlines or buttons>",
     "findings": [
       {
         "title": "<finding tied to landing page structure or CTA, Q10, Q16>",
@@ -728,8 +735,8 @@ Return this exact JSON structure:
       "why": "<copy from economics.breakdown[0].why>"
     }
   ],
-  "competitor_insights": "<1-2 sentences on the competitive landscape in this region/industry>",
-  "regional_benchmarks": "<1-2 sentences on current CPC/CPA benchmarks for ${geographicRegion} in this category>"
+  "competitor_insights": "<1-2 sentences on the type of competition in this region/industry, no company names>",
+  "regional_benchmarks": "<1-2 sentences on typical CPC/CPA ranges for ${geographicRegion} in this category, framed as typical ranges>"
 }
 
 Rules:
@@ -739,7 +746,7 @@ Rules:
 - breakdown (top-level): exactly 6 items in the order listed, scores must match the corresponding category breakdown scores
 - All scores must reflect the actual questionnaire responses, do not return generic numbers
 - Reference ${geographicRegion} explicitly in at least 2 category analyses
-- Use your expert knowledge to populate landing_page_assessment, keyword_analysis, competitor_insights, and regional_benchmarks with region-specific and industry-specific insights
+- landing_page_assessment must come only from the LANDING PAGE CHECK. Never invent page content, competitor names, or statistics you were not given
 - Keep ALL text fields to 1 sentence maximum. No exceptions.
 - Every quick_win (in all sections) must include platform, where, expectedImpact, and effort fields. Never use vague language like "your platform" -- always name the exact platform. The action must name the user's actual channels (${adChannels}), region (${geographicRegion}), and business model. The expectedImpact must reference real numbers from estimatedCpa (${estimatedCpa}), monthlyWaste (${monthlyWaste}), revenueOppty (${revenueOppty}), or ltvCacRatio (${ltvCacRatio}) where available
 - DATA INTEGRITY: If the landing page URL is a test/placeholder domain (e.g. test.com, example.com, localhost, abc.com, yoursite.com, or any domain that is clearly not a real business), set landing_page_assessment to exactly: "URL appears to be a test or placeholder — provide your real landing page URL for an accurate assessment." and do not fabricate any page analysis. If questionnaire data contains implausible values (e.g. 0% or 100% conversion rate, zero ad budget with thousands of leads, monthly budget above $500,000 for an apparent small business), flag the anomaly in executive_summary and base scores conservatively rather than building analysis on unreliable inputs`

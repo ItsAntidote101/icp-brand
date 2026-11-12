@@ -30,7 +30,13 @@ export async function POST(req: NextRequest) {
 
     const { data: user, error } = await supabase
       .from('users')
-      .select('id, email, full_name, company_name, subscription_tier, billing_status, renewal_date, created_at')
+      .select(`
+      id, email, full_name, company_name, subscription_tier, billing_status,
+      renewal_date, created_at, paused_until, cancelled_at, has_unread_reply, avatar_url,
+      current_streak, longest_streak, total_fixes_completed,
+      last_seen_intelligence_at, last_seen_overview_at,
+      scheduled_tier, scheduled_tier_date
+    `)
       .eq('id', session.userId)
       .maybeSingle()
 
@@ -39,7 +45,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Internal error' }, { status: 500 })
     }
     if (!user) return NextResponse.json({ status: 'not_found' }, { status: 404 })
-    if (user.billing_status !== 'active') {
+    if (user.billing_status !== 'active' && user.billing_status !== 'paused') {
       return NextResponse.json({ status: 'inactive' }, { status: 200 })
     }
 

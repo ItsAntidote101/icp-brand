@@ -15,7 +15,7 @@ const Pborder = '#c5c0b1'
 const font    = "'PolySans Median', -apple-system, system-ui, sans-serif"
 const fontB   = "'PolySans Neutral', -apple-system, system-ui, sans-serif"
 
-const LAST_UPDATED = '22 May 2025'
+const LAST_UPDATED = '11 November 2026'
 
 export default function TermsPage() {
   return (
@@ -88,9 +88,9 @@ export default function TermsPage() {
 
         <Section title="5. Subscription Plans and Billing">
           <Para>Ideal ICP offers a free plan and paid subscription plans (Starter, Pro, and Agency). Paid plans are billed monthly or annually in Kenyan Shillings (KES) unless otherwise stated at checkout.</Para>
-          <Para>All payments are processed securely via Paystack. By subscribing, you authorise Paystack to charge your chosen payment method on a recurring basis at the rate displayed at the time of purchase.</Para>
+          <Para>All payments are processed securely via Paystack. Each payment covers 30 days of your chosen plan at the price shown when you pay. We do not store your card or charge you automatically.</Para>
           <Para>Prices may change at any time. We will give you at least 30 days notice before any price change applies to your existing subscription.</Para>
-          <Para>Your subscription renews automatically at the end of each billing period. You may cancel at any time from your dashboard, and your access will continue until the end of the current paid period.</Para>
+          <Para>Plans do not renew automatically. Before your 30 days end we remind you by email and in your dashboard, and you renew by paying for the next 30 days. If you do not renew, your account moves to the free plan and your reports stay saved. You may cancel at any time from your dashboard; your access continues until the end of the period you paid for.</Para>
         </Section>
 
         <Section title="6. Refunds">

@@ -29,8 +29,8 @@ const TIER_FEATURES: Record<string, string[]> = {
   ],
   agency: [
     'Everything in Pro',
-    'Unlimited diagnoses across client accounts',
-    'White-label reports with your branding',
+    'Unlimited diagnoses, one per client',
+    'White-label reports (coming soon)',
     'Monthly strategy call with Eugene',
   ],
 }

@@ -32,9 +32,15 @@ export async function activatePayment(
 
   const upgradeFrom = metadata.upgrade_from || existingUser?.subscription_tier || 'free'
   const isProration = payment.kind === 'proration'
+  // Renewing early adds 30 days to the current paid period instead of
+  // throwing away the days the customer already paid for.
+  const MONTH_MS = 30 * 24 * 60 * 60 * 1000
+  const currentEnd = existingUser?.renewal_date && existingUser.subscription_tier && existingUser.subscription_tier !== 'free'
+    ? new Date(existingUser.renewal_date).getTime()
+    : 0
   const renewalDate = isProration
-    ? (metadata.existing_renewal_date || existingUser?.renewal_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString())
-    : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+    ? (metadata.existing_renewal_date || existingUser?.renewal_date || new Date(Date.now() + MONTH_MS).toISOString())
+    : new Date(Math.max(Date.now(), currentEnd) + MONTH_MS).toISOString()
 
   if (isProration) {
     // Paid upgrade: change tier only, keep the renewal date
@@ -80,6 +86,8 @@ export async function activatePayment(
       subscription_tier:  tier.toLowerCase(),
       billing_status:     'active',
       renewal_date:       renewalDate,
+      cancelled_at:       null,
+      paused_until:       null,
       paystack_reference: reference,
       updated_at:         new Date().toISOString(),
     }, { onConflict: 'email' })

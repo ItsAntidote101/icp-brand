@@ -14,7 +14,7 @@ export async function GET() {
     .from('users')
     .select(`
       id, email, full_name, company_name, subscription_tier, billing_status,
-      renewal_date, created_at, paused_until, has_unread_reply, avatar_url,
+      renewal_date, created_at, paused_until, cancelled_at, has_unread_reply, avatar_url,
       current_streak, longest_streak, total_fixes_completed,
       last_seen_intelligence_at, last_seen_overview_at,
       scheduled_tier, scheduled_tier_date
@@ -26,7 +26,9 @@ export async function GET() {
     return NextResponse.json({ error: 'User not found' }, { status: 404 })
   }
 
-  if (user.billing_status !== 'active') {
+  // 'paused' accounts keep dashboard access (pause is no longer offered, but
+  // older paused rows must not be locked out). Only closed accounts are blocked.
+  if (user.billing_status !== 'active' && user.billing_status !== 'paused') {
     return NextResponse.json({ error: 'Inactive' }, { status: 403 })
   }
 

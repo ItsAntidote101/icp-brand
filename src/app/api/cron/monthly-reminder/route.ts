@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { sendReminderEmail } from '@/lib/email'
+import { sendRenewalReminderEmail, sendPlanEndedEmail } from '@/lib/email'
 
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization')
@@ -16,10 +16,9 @@ export async function GET(req: NextRequest) {
     serviceKey
   )
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://idealicp.com'
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.idealicp.com'
 
   const now            = new Date()
-  const sevenDaysLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
 
   // ── Expire lapsed paid plans ─────────────────────────────────────────────
   // Nothing used to downgrade a paid user once renewal_date passed, so Pro
@@ -33,67 +32,49 @@ export async function GET(req: NextRequest) {
     .neq('subscription_tier', 'free')
     .not('renewal_date', 'is', null)
     .lt('renewal_date', expiryCutoff)
-    .select('id')
+    .select('id, email, full_name, cancelled_at')
   if (expireErr) {
     console.error('[cron] expiry update error:', JSON.stringify(expireErr))
   } else if (expired && expired.length > 0) {
     const ids = expired.map((u: { id: string }) => u.id)
     await supabase.from('subscriptions').update({ billing_status: 'expired', updated_at: now.toISOString() }).in('user_id', ids)
     console.log('[cron] expired', ids.length, 'lapsed paid plan(s)')
+    // Tell them, unless they cancelled on purpose
+    for (const u of expired as { email: string; full_name: string | null; cancelled_at: string | null }[]) {
+      if (u.cancelled_at) continue
+      await sendPlanEndedEmail({ to: u.email, name: u.full_name ?? undefined, baseUrl })
+    }
   }
 
-  console.log('[cron] monthly-reminder, range:', now.toISOString(), '→', sevenDaysLater.toISOString())
-
+  // ── Renewal reminders ────────────────────────────────────────────────────
+  // Plans do not charge automatically, so we ask exactly twice: 7 days and
+  // 1 day before the paid period ends. (This used to send a generic
+  // check-in email every day for the last 7 days, with no way to pay.)
   const { data: users, error: usersError } = await supabase
     .from('users')
-    .select('id, email, full_name')
+    .select('id, email, full_name, subscription_tier, renewal_date')
     .eq('billing_status', 'active')
+    .neq('subscription_tier', 'free')
+    .is('cancelled_at', null)
     .gte('renewal_date', now.toISOString())
-    .lte('renewal_date', sevenDaysLater.toISOString())
+    .lte('renewal_date', new Date(now.getTime() + 8 * 24 * 60 * 60 * 1000).toISOString())
 
   if (usersError) {
     console.error('[cron] users query error:', JSON.stringify(usersError))
     return NextResponse.json({ error: usersError.message }, { status: 500 })
   }
 
-  console.log('[cron] found', users?.length ?? 0, 'users to remind')
-
-  type Result = { email: string; success: boolean; error?: string }
-  const results: Result[] = []
-
-  for (const user of users ?? []) {
-    const { data: reportRows } = await supabase
-      .from('reports')
-      .select('report_summary')
-      .eq('user_id', user.id)
-      .order('generated_at', { ascending: false })
-      .limit(1)
-
-    let lastScore: number | undefined
-    if (reportRows?.[0]) {
-      try {
-        const d = JSON.parse(reportRows[0].report_summary)
-        lastScore = typeof d?.health_score === 'number' ? d.health_score : undefined
-      } catch { /* ignore */ }
-    }
-
-    const result = await sendReminderEmail({
-      to:    user.email,
-      name:  user.full_name ?? undefined,
-      lastScore,
-      baseUrl,
+  let sent = 0, failed = 0
+  for (const u of users ?? []) {
+    const daysLeft = Math.ceil((new Date(u.renewal_date as string).getTime() - now.getTime()) / 86_400_000)
+    if (daysLeft !== 7 && daysLeft !== 1) continue
+    const r = await sendRenewalReminderEmail({
+      to: u.email, name: u.full_name ?? undefined, tier: u.subscription_tier,
+      renewalDate: u.renewal_date as string, daysLeft, baseUrl,
     })
-
-    results.push({
-      email:   user.email,
-      success: !result.error,
-      ...(result.error ? { error: String(result.error) } : {}),
-    })
+    if (r.error) failed++; else sent++
   }
 
-  const sent   = results.filter(r => r.success).length
-  const failed = results.filter(r => !r.success).length
-  console.log('[cron] done, sent:', sent, '| failed:', failed)
-
-  return NextResponse.json({ sent, failed, results }, { status: 200 })
+  console.log('[cron] renewal reminders sent:', sent, '| failed:', failed)
+  return NextResponse.json({ expired: expired?.length ?? 0, sent, failed }, { status: 200 })
 }

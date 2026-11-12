@@ -123,9 +123,11 @@ function BuyerProfileCard({ buyer, tier, region, industry }: {
       {/* Body */}
       <div style={{ padding: '20px 24px' }}>
         <div style={{ display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' }}>
-          <span style={{ fontFamily: fontB, fontSize: 11, background: BgAlt, color: Pmuted, border: `1px solid ${Pborder}`, borderRadius: 100, padding: '3px 10px' }}>
-            {buyer.yearsExp} years experience
-          </span>
+          {buyer.yearsExp > 0 && (
+            <span style={{ fontFamily: fontB, fontSize: 11, background: BgAlt, color: Pmuted, border: `1px solid ${Pborder}`, borderRadius: 100, padding: '3px 10px' }}>
+              {buyer.yearsExp} years experience
+            </span>
+          )}
           {(region || buyer.regions[0]) && (
             <span style={{ fontFamily: fontB, fontSize: 11, background: BgAlt, color: Pmuted, border: `1px solid ${Pborder}`, borderRadius: 100, padding: '3px 10px' }}>
               {region ?? buyer.regions[0]}
@@ -149,9 +151,9 @@ function BuyerProfileCard({ buyer, tier, region, industry }: {
         ) : (
           <div style={{ background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 12, padding: '14px 16px', textAlign: 'center' as const }}>
             <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '0 0 8px' }}>
-              {tierLabel} plan includes chat access only. Upgrade to Pro to book a live review call with {buyer.firstName}.
+              {tier === 'free' ? 'Your free 20-minute call is booked from your report page.' : `${tierLabel} includes AI chat.`} Pro adds an onboarding call with {buyer.firstName} to set your priorities.
             </p>
-            <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 600, color: Accent, margin: 0 }}>Pro: KES 13,000/mo includes monthly call</p>
+            <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 600, color: Accent, margin: 0 }}>Pro: KES 13,000/mo includes an onboarding call</p>
           </div>
         )}
       </div>
@@ -272,6 +274,7 @@ type UserData = {
   company_name: string | null; subscription_tier: string
   billing_status: string; renewal_date: string | null
   created_at: string; paused_until?: string | null
+  cancelled_at?: string | null
   avatar_url?: string | null
   has_unread_reply?: boolean | null
   current_streak?: number; longest_streak?: number
@@ -457,19 +460,12 @@ function convertMoneyText(text: string | undefined, toCurrency: string): string 
   return extractMoneyDisplay(text)
 }
 
-const DIMS = ['Audience Targeting', 'Landing Page', 'Message-Market Fit', 'Budget Allocation', 'Funnel Conversion', 'Creative Relevance']
-const DVAR = [10, -15, 5, -8, 12, -5]
-const DPEN = [0.8, 1.2, 0.6, 1.0, 0.9, 0.7]
-
-function deriveDimensions(diag: DiagnosisData, base: number) {
-  const fs = getFindings(diag)
-  const cn = fs.filter(f => f.severity === 'Critical').length
-  const wn = fs.filter(f => f.severity === 'Warning').length
-  return DIMS.map((name, i) => {
-    const penalty = (cn * 10 + wn * 5) * DPEN[i]
-    const score   = Math.max(5, Math.min(95, Math.round(base + DVAR[i] - penalty / DIMS.length)))
-    return { name, score }
-  })
+// The 6 dimension scores come from the AI diagnosis itself (diag.breakdown).
+// They used to be invented here as the overall score plus fixed offsets.
+function realDimensions(diag: DiagnosisData): { name: string; score: number; why?: string }[] {
+  return (diag.breakdown ?? [])
+    .filter(b => b && typeof b.score === 'number' && b.label)
+    .map(b => ({ name: b.label, score: Math.max(0, Math.min(100, Math.round(b.score))), why: b.why }))
 }
 
 // ─── Milestones ───────────────────────────────────────────────────────────────
@@ -494,7 +490,7 @@ const TIER_PRICE_KES: Record<string, number> = { starter: 6500, pro: 13000, agen
 const TIER_DESC: Record<string, string> = {
   starter: 'Monthly ICP diagnostic with full report, findings, and quick wins.',
   pro:     'Everything in Starter plus priority re-diagnosis and campaign CSV analysis.',
-  agency:  'Everything in Pro plus unlimited client diagnoses, white-label reports and a monthly strategy call with Eugene.',
+  agency:  'Everything in Pro plus unlimited diagnoses (one per client) and a monthly strategy call with Eugene.',
   free:    'Basic ICP diagnostic based on questionnaire answers only.',
 }
 
@@ -721,18 +717,19 @@ function ScorePredictionWidget({ diag, score, delay }: { diag: DiagnosisData; sc
   )
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function PerformanceBreakdownWidget({ diag, score, delay }: { diag: DiagnosisData; score: number; delay: number }) {
   const [mounted, setMounted] = useState(false)
   useEffect(() => { const t = setTimeout(() => setMounted(true), 120); return () => clearTimeout(t) }, [])
-  const dims = deriveDimensions(diag, score)
+  const dims = realDimensions(diag)
   return (
     <Card delay={delay}>
       <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: '0 0 4px' }}>Performance Breakdown</p>
-      <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 22px' }}>6 dimensions of your ICP health</p>
+      <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 22px' }}>{dims.length ? `${dims.length} dimensions scored from your diagnosis` : 'No breakdown in this report. Run a new diagnosis to get one.'}</p>
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         {dims.map((d, i) => (
           <div key={d.name} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-            <span style={{ fontFamily: fontB, fontSize: 15, color: P, width: 150, flexShrink: 0 }}>{d.name}</span>
+            <span title={d.why} style={{ fontFamily: fontB, fontSize: 15, color: P, width: 150, flexShrink: 0 }}>{d.name}</span>
             <div style={{ flex: 1, height: 10, background: '#f3f4f6', borderRadius: 100, overflow: 'hidden' }}>
               <div style={{
                 height: '100%', borderRadius: 100, background: scoreColor(d.score),
@@ -3329,6 +3326,75 @@ function FirstRunDashboard({ user, latestCsv }: { user: UserData; latestCsv?: Cs
   )
 }
 
+// ─── Renewal banner ───────────────────────────────────────────────────────────
+// Plans are paid month by month through Paystack (M-Pesa or card) and do not
+// charge automatically. This is how a customer pays for their next month.
+function RenewalBanner({ user, onUpgrade }: { user: UserData; onUpgrade: () => void }) {
+  const [busy, setBusy] = useState(false)
+  const [err, setErr]   = useState('')
+  const tier = user.subscription_tier
+  const end  = user.renewal_date ? new Date(user.renewal_date) : null
+  if (!end || isNaN(end.getTime())) return null
+  const daysLeft = Math.ceil((end.getTime() - Date.now()) / 86_400_000)
+  const lapsed   = tier === 'free' && daysLeft < 0 && daysLeft > -60
+  const dueSoon  = tier !== 'free' && daysLeft <= 7
+  if (!lapsed && !dueSoon) return null
+
+  const label = TIER_LABEL[tier] ?? tier
+  const price = TIER_PRICE_KES[tier] ?? 0
+  const cancelled = !!user.cancelled_at
+
+  async function renew() {
+    setBusy(true); setErr('')
+    try {
+      const res = await fetch('/api/paystack/initialize', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user.email, tier: label }),
+      })
+      const j = await res.json() as { authorization_url?: string; error?: string }
+      if (!res.ok || !j.authorization_url) throw new Error(j.error ?? 'Could not start payment')
+      window.location.href = j.authorization_url
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'Could not start payment')
+      setBusy(false)
+    }
+  }
+
+  const title = lapsed
+    ? `Your paid plan ended on ${formatDate(user.renewal_date as string)}`
+    : daysLeft < 0
+      ? `Your ${label} plan ended on ${formatDate(user.renewal_date as string)}`
+      : daysLeft <= 1
+        ? `Your ${label} plan ends ${daysLeft <= 0 ? 'today' : 'tomorrow'}`
+        : `Your ${label} plan ends in ${daysLeft} days`
+  const body = lapsed
+    ? 'Your reports are saved. Renew to get your full findings, re-diagnoses and intelligence back.'
+    : daysLeft < 0
+      ? `Paid features stay on for a few more days. Renew now to keep them. Renewing adds 30 days.`
+      : cancelled
+        ? `You cancelled, so this plan will not continue after ${formatDate(user.renewal_date as string)}. Changed your mind? Renew below.`
+        : `Plans do not renew automatically. Renew with M-Pesa or card. Paying early adds 30 days to ${formatDate(user.renewal_date as string)}, so you lose nothing.`
+
+  return (
+    <div style={{ background: lapsed || daysLeft < 0 ? '#fef2f2' : '#fffbeb', border: `1px solid ${lapsed || daysLeft < 0 ? '#fecaca' : '#fde68a'}`, borderRadius: 12, padding: '16px 20px', marginBottom: 20, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 14 }}>
+      <div style={{ flex: '1 1 260px', minWidth: 0 }}>
+        <p style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: '0 0 3px' }}>{title}</p>
+        <p style={{ fontFamily: fontB, fontSize: 13, color: '#605d52', margin: 0, lineHeight: 1.5 }}>{body}</p>
+        {err && <p style={{ fontFamily: fontB, fontSize: 12, color: '#b91c1c', margin: '6px 0 0' }}>{err}</p>}
+      </div>
+      {lapsed ? (
+        <button onClick={onUpgrade} style={{ background: P, color: '#fff', border: 'none', borderRadius: 10, padding: '10px 18px', fontFamily: fontB, fontSize: 14, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+          Choose a plan
+        </button>
+      ) : (
+        <button onClick={renew} disabled={busy} style={{ background: P, color: '#fff', border: 'none', borderRadius: 10, padding: '10px 18px', fontFamily: fontB, fontSize: 14, fontWeight: 600, cursor: busy ? 'wait' : 'pointer', whiteSpace: 'nowrap', opacity: busy ? 0.7 : 1 }}>
+          {busy ? 'Opening Paystack…' : `Renew ${label}${price ? ` · KES ${price.toLocaleString()}` : ''}`}
+        </button>
+      )}
+    </div>
+  )
+}
+
 function WelcomeBanner({ user }: { user: UserData }) {
   return (
     <div style={{
@@ -3471,10 +3537,9 @@ const PLAN_FEATURES: Record<string, string[]> = {
   ],
   agency: [
     'Everything in Pro',
-    'Unlimited diagnoses across client accounts',
+    'Unlimited diagnoses, one per client',
     'Monthly strategy call with Eugene',
-    'White-label reports with your branding',
-    'Multi-client account coordination',
+    'White-label reports (coming soon)',
     'Founder-led support',
     'Custom billing and invoicing',
     'Priority support',
@@ -4035,7 +4100,7 @@ function AccountTab({ user, currency, score, reportCount, reports, onSignOut, on
     window.open(`https://wa.me/?text=${text}`, '_blank')
   }
 
-  const isCancelled = user.billing_status === 'cancelled'
+  const isCancelled = !!user.cancelled_at && user.subscription_tier !== 'free'
   const isPaused    = user.billing_status === 'paused'
   const tierLabel   = TIER_LABEL[user.subscription_tier] ?? user.subscription_tier
   const priceKES    = TIER_PRICE_KES[user.subscription_tier] ?? 0
@@ -4152,7 +4217,7 @@ function AccountTab({ user, currency, score, reportCount, reports, onSignOut, on
   const renewalInfo = () => {
     if (isCancelled) return `Cancelled, access until ${user.renewal_date ? formatDate(user.renewal_date) : '-'}`
     if (isPaused)    return `Paused, resumes ${user.paused_until ? formatDate(user.paused_until) : '-'}`
-    return user.renewal_date ? `Renews on ${formatDate(user.renewal_date)}` : '-'
+    return user.renewal_date ? `Paid until ${formatDate(user.renewal_date)}` : '-'
   }
 
   return (
@@ -4371,8 +4436,12 @@ function AccountTab({ user, currency, score, reportCount, reports, onSignOut, on
           {/* Right: actions */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 190 }}>
             {isCancelled ? (
-              <button onClick={onUpgrade} style={{ display: 'block', width: '100%', textAlign: 'center', background: P, color: '#fff', fontFamily: fontB, fontWeight: 600, fontSize: 14, padding: '10px 20px', borderRadius: 10, border: 'none', cursor: 'pointer' }}>
-                Resubscribe →
+              <button onClick={async () => {
+                const res = await fetch('/api/subscription/cancel', { method: 'DELETE' })
+                if (res.ok) { onUserUpdate({ cancelled_at: null }); showToast('Cancellation undone. We will remind you before your plan ends.') }
+                else showToast('Something went wrong. Please try again.')
+              }} style={{ display: 'block', width: '100%', textAlign: 'center', background: P, color: '#fff', fontFamily: fontB, fontWeight: 600, fontSize: 14, padding: '10px 20px', borderRadius: 10, border: 'none', cursor: 'pointer' }}>
+                Undo cancellation
               </button>
             ) : (
               <>
@@ -4385,12 +4454,7 @@ function AccountTab({ user, currency, score, reportCount, reports, onSignOut, on
                     style={{ background: '#fff', color: P, border: `1px solid ${P}`, borderRadius: 10, padding: '10px 20px', fontFamily: fontB, fontSize: 14, fontWeight: 500, cursor: 'pointer' }}>
                     Resume Now
                   </button>
-                ) : (
-                  <button onClick={() => setShowPauseModal(true)}
-                    style={{ background: '#fff', color: P, border: `1px solid ${P}`, borderRadius: 10, padding: '10px 20px', fontFamily: fontB, fontSize: 14, fontWeight: 500, cursor: 'pointer' }}>
-                    Pause for 1 Month
-                  </button>
-                )}
+                ) : null /* Pause removed: plans are paid month by month, so there is nothing to pause. */}
                 {user.subscription_tier !== 'free' && (
                   <button onClick={() => setShowCancelModal(true)}
                     style={{ background: 'transparent', border: 'none', fontFamily: fontB, fontSize: 13, color: '#939084', cursor: 'pointer', textDecoration: 'underline', padding: '4px 0', textAlign: 'left' }}>
@@ -5572,8 +5636,8 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: user.email, message: text.trim(), conversationHistory: history, activeTab }),
       })
-      const data = await res.json() as { reply?: string; needsEscalation?: boolean; suggestedQuestions?: string[] }
-      const reply = data.reply ?? 'Something went wrong. Please try again.'
+      const data = await res.json() as { reply?: string; needsEscalation?: boolean; suggestedQuestions?: string[]; message?: string }
+      const reply = data.reply ?? data.message ?? 'Something went wrong. Please try again.'
       setMessages(prev => prev.filter(m => m.id !== 'typing').concat([{ id: Date.now() + 'a', role: 'assistant', content: reply, timestamp: new Date() }]))
       if (data.needsEscalation) setNeedsEscalation(true)
       if (data.suggestedQuestions?.length) setLastSuggestions(data.suggestedQuestions)
@@ -6594,6 +6658,24 @@ export default function DashboardPage() {
 
         <div style={{ padding: 'clamp(20px,4vw,32px) clamp(14px,4vw,40px) 100px' }}>
 
+        {user && <RenewalBanner user={user} onUpgrade={() => setShowUpgradeModal(true)} />}
+
+        {/* Paid, but the latest report was made on the free plan (10 quick
+            questions, no landing page check). Ask for the full diagnosis. */}
+        {isSubscribed && hasReports && diag && diag.is_deep_research !== true && (
+          <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderLeft: `4px solid ${Accent}`, borderRadius: 12, padding: '16px 20px', marginBottom: 20, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 14 }}>
+            <div style={{ flex: '1 1 260px', minWidth: 0 }}>
+              <p style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: '0 0 3px' }}>Finish your full diagnosis</p>
+              <p style={{ fontFamily: fontB, fontSize: 13, color: '#605d52', margin: 0, lineHeight: 1.5 }}>
+                This report came from the free check, so your Search, Funnel and Economics tabs are thin. Answer about 12 more questions (your earlier answers are filled in) and we will check your real landing page too.
+              </p>
+            </div>
+            <a href="/questionnaire?full=1" style={{ background: P, color: '#fff', borderRadius: 10, padding: '10px 18px', fontFamily: fontB, fontSize: 14, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+              Complete it now
+            </a>
+          </div>
+        )}
+
         {/* Monthly Check-in + Daily Brief, overview tab only */}
         {activeTab === 'overview' && !dataLoading && hasReports && user && (
           <div style={{ marginBottom: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -6772,7 +6854,7 @@ export default function DashboardPage() {
                   <PerformanceBreakdownWidget diag={diag} score={score} delay={200} />
                 )}
                 {!isPro && score !== null && (
-                  <UpgradeGate requiredTier="pro" currentTier={t} feature="Performance Breakdown" description="6-dimension score breakdown across targeting, landing page, budget allocation, and more." onUpgrade={() => setShowUpgradeModal(true)}>
+                  <UpgradeGate requiredTier="pro" currentTier={t} feature="Performance Breakdown" description="Six scores from your diagnosis: ICP alignment, targeting, channel efficiency, funnel friction, messaging and budget." onUpgrade={() => setShowUpgradeModal(true)}>
                     <PerformanceBreakdownWidget diag={diag} score={score} delay={0} />
                   </UpgradeGate>
                 )}
@@ -6864,7 +6946,7 @@ export default function DashboardPage() {
             reportCount={reports.length}
             onSignOut={handleSignOut}
             onCancelled={() => {
-              setUser(prev => prev ? { ...prev, billing_status: 'cancelled', subscription_tier: 'free' } : prev)
+              setUser(prev => prev ? { ...prev, cancelled_at: new Date().toISOString() } : prev)
               const until = user.renewal_date ? formatDate(user.renewal_date) : 'your renewal date'
               setCancelToast(`Subscription cancelled. You have access until ${until}.`)
               setTimeout(() => setCancelToast(''), 5000)
@@ -7031,7 +7113,7 @@ export default function DashboardPage() {
       )}
 
       {/* ── Chat Widget ───────────────────────────────────────────────────── */}
-      {user && <ChatWidget user={user} score={score} diag={diag} activeTab={activeTab} />}
+      {user && isSubscribed && <ChatWidget user={user} score={score} diag={diag} activeTab={activeTab} />}
 
       {/* ── Mobile bottom tab bar (lg:hidden) ─────────────────────────────── */}
       <div className="lg:hidden" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'rgba(255,255,255,0.96)', backdropFilter: 'blur(20px)', borderTop: `1px solid ${Pborder}`, zIndex: 50, overflowX: 'auto' }}>

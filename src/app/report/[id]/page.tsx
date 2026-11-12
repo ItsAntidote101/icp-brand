@@ -719,7 +719,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                         },
                         {
                           name: 'Agency' as Tier, highlight: false,
-                          features: ['Everything in Pro', 'Unlimited client diagnoses', 'White-label reports', 'Monthly call with Eugene'],
+                          features: ['Everything in Pro', 'Unlimited diagnoses, one per client', 'Monthly call with Eugene', 'White-label reports (coming soon)'],
                         },
                       ]
                     ).map(tier => (
@@ -763,7 +763,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                   </div>
 
                   <p className="text-xs text-[rgba(255,255,255,0.3)]">
-                    Secured by Paystack · Cancel anytime · KES pricing, billed monthly
+                    Secured by Paystack · M-Pesa or card · Pay month by month, no contract
                   </p>
                 </div>
               </div>
