@@ -271,9 +271,9 @@ export async function sendSubscriptionEmail({
   const renewal = new Date(renewalDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
 
   const featMap: Record<string, string[]> = {
-    starter: ['Monthly ICP diagnostic report', 'Full 6-dimension score breakdown', 'Specific quick-win recommendations', 'Subscriber dashboard access'],
-    pro:     ['Everything in Starter', 'Priority re-diagnosis turnaround', 'Campaign CSV analysis', 'Score trend tracking'],
-    agency:  ['Everything in Pro', 'Multi-client reporting', 'Dedicated strategy review session', 'White-label report exports'],
+    starter: ['3 diagnoses a month with your real landing page checked', 'All critical findings and the full roadmap', 'Weekly market intelligence', 'AI chat in your dashboard'],
+    pro:     ['Everything in Starter', '20 diagnoses a month and the 6-score performance breakdown', 'Campaign CSV analysis', 'Onboarding call with Eugene'],
+    agency:  ['Everything in Pro', 'Unlimited diagnoses, one per client', 'Monthly strategy call with Eugene', 'White-label reports (coming soon)'],
   }
   const features = featMap[tier.toLowerCase()] ?? featMap.starter
 
@@ -287,7 +287,7 @@ ${features.map(f => `<table role="presentation" width="100%" cellpadding="0" cel
   <td style="color:${Dark};font-size:14px;line-height:1.5;font-family:${font};">${f}</td>
 </tr></table>`).join('')}`)}
 ${securityBox(`<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
-  <td style="color:${Muted};font-size:13px;font-family:${font};">Next renewal</td>
+  <td style="color:${Muted};font-size:13px;font-family:${font};">Paid until (we will remind you before then)</td>
   <td align="right" style="color:${Dark};font-size:13px;font-weight:600;font-family:${font};">${renewal}</td>
 </tr></table>`)}
 ${cta('Go to Your Dashboard', url)}`
@@ -333,6 +333,59 @@ ${cta('Run New Diagnosis', url)}`
   })
   if (error) console.error('[email] reminder error:', JSON.stringify(error))
   else console.log('[email] reminder sent id:', data?.id, 'to:', to)
+  return { data, error }
+}
+
+// ─── Renewal: plans are paid month by month, so we ask before they end ──────
+
+const PLAN_PRICE_KES: Record<string, number> = { starter: 6500, pro: 13000, agency: 26000 }
+
+export async function sendRenewalReminderEmail({
+  to, name, tier, renewalDate, daysLeft, baseUrl,
+}: { to: string; name?: string; tier: string; renewalDate: string; daysLeft: number; baseUrl?: string }) {
+  const url = `${baseUrl ?? 'https://www.idealicp.com'}/dashboard?renew=1`
+  const first = escapeHtml(name?.split(' ')[0] ?? 'there')
+  const t = tier.toLowerCase()
+  const label = t.charAt(0).toUpperCase() + t.slice(1)
+  const price = PLAN_PRICE_KES[t]
+  const end = new Date(renewalDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+  const when = daysLeft <= 1 ? 'tomorrow' : `in ${daysLeft} days`
+
+  const content = `
+${ICON.calendar}
+${heading(`Your ${label} plan ends ${when}`, 38)}
+${sub(`Hi ${first}, your ${label} plan is paid until <strong style="color:${Dark};">${end}</strong>. Plans do not renew automatically, so renew before then to keep your paid features.`)}
+${securityBox(`<p style="margin:0 0 8px;color:${Dark};font-size:14px;font-weight:600;font-family:${font};">${price ? `KES ${price.toLocaleString()} for the next 30 days` : 'Renew for the next 30 days'}</p>
+<p style="margin:0;color:${Muted};font-size:14px;line-height:1.6;font-family:${font};">Pay with M-Pesa or card through Paystack. Renewing early adds 30 days to your current end date, so you lose nothing. If you do not renew, your account moves to the free plan and your reports stay saved.</p>`)}
+${cta(`Renew ${label}`, url)}`
+
+  const { data, error } = await getResend().emails.send({
+    from: FROM, to,
+    subject: `Your ${label} plan ends ${when}`,
+    html: base(content),
+  })
+  if (error) console.error('[email] renewal reminder error:', JSON.stringify(error))
+  return { data, error }
+}
+
+export async function sendPlanEndedEmail({
+  to, name, baseUrl,
+}: { to: string; name?: string; baseUrl?: string }) {
+  const url = `${baseUrl ?? 'https://www.idealicp.com'}/dashboard?renew=1`
+  const first = escapeHtml(name?.split(' ')[0] ?? 'there')
+  const content = `
+${ICON.alert}
+${heading('Your paid plan has ended', 38)}
+${sub(`Hi ${first}, your account is now on the free plan. Your reports and score history are still saved in your dashboard.`)}
+${securityBox(`<p style="margin:0;color:${Muted};font-size:14px;line-height:1.6;font-family:${font};">Renew any time to get your full findings, re-diagnoses and intelligence briefings back.</p>`)}
+${cta('Renew my plan', url)}`
+
+  const { data, error } = await getResend().emails.send({
+    from: FROM, to,
+    subject: 'Your IdealICP plan has ended',
+    html: base(content),
+  })
+  if (error) console.error('[email] plan ended error:', JSON.stringify(error))
   return { data, error }
 }
 
@@ -510,8 +563,8 @@ ${infoCard(`<table role="presentation" width="100%" cellpadding="0" cellspacing=
     <p style="margin:2px 0 0;color:${Muted};font-size:13px;font-family:${font};">All your diagnostics, reports, and score history remain available.</p>
   </td></tr>
   <tr><td style="padding:10px 0;border-bottom:1px solid ${BorderLight};">
-    <p style="margin:0;color:${Dark};font-size:14px;font-weight:600;font-family:${font};">No further charges</p>
-    <p style="margin:2px 0 0;color:${Muted};font-size:13px;font-family:${font};">Your card will not be billed again.</p>
+    <p style="margin:0;color:${Dark};font-size:14px;font-weight:600;font-family:${font};">Nothing more to pay</p>
+    <p style="margin:2px 0 0;color:${Muted};font-size:13px;font-family:${font};">We will not send renewal reminders. After ${accessUntil} your account moves to the free plan.</p>
   </td></tr>
   <tr><td style="padding:10px 0;">
     <p style="margin:0;color:${Dark};font-size:14px;font-weight:600;font-family:${font};">Resubscribe anytime</p>

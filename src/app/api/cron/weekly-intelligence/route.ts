@@ -39,7 +39,7 @@ async function generateBriefingForUser(profile: {
 
 You MUST perform the following web searches before writing any output:
 1. Search "${profile.industry} advertising benchmarks CPC CPA ${profile.region} ${monthYear}"
-2. Search "${profile.industry} competitors ${profile.region} digital marketing 2025"
+2. Search "${profile.industry} competitors ${profile.region} digital marketing ${new Date().getFullYear()}"
 3. Search "${primaryChannel} algorithm update ${monthYear}"
 4. Search "${profile.region} digital advertising market trends ${monthYear}"
 

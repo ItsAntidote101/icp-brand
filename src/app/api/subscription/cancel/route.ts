@@ -7,6 +7,19 @@ export const dynamic = 'force-dynamic'
 
 const supabase = supabaseAdmin()
 
+// Undo a cancellation while the paid period is still running.
+export async function DELETE() {
+  const session = await getSession()
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { error } = await supabase
+    .from('users')
+    .update({ cancelled_at: null, cancellation_reason: null })
+    .eq('id', session.userId)
+  if (error) return NextResponse.json({ error: 'Could not update your plan' }, { status: 500 })
+  await supabase.from('subscriptions').update({ cancelled_at: null }).eq('user_id', session.userId)
+  return NextResponse.json({ success: true })
+}
+
 export async function POST(req: NextRequest) {
   try {
     const session = await getSession()
@@ -34,8 +47,10 @@ export async function POST(req: NextRequest) {
     const { error: userError } = await supabase
       .from('users')
       .update({
-        billing_status: 'cancelled',
-        subscription_tier: 'free',
+        // Plans are paid month by month (no automatic charge), so cancelling
+        // means "don't ask me to renew". The customer keeps what they paid for
+        // until renewal_date; the daily cron then moves them to free. Setting
+        // billing_status to 'cancelled' here used to lock them out instantly.
         cancelled_at: now,
         cancellation_reason: reason ?? null,
       })
@@ -46,7 +61,7 @@ export async function POST(req: NextRequest) {
     // Update subscriptions table (non-fatal if missing)
     const { error: subError } = await supabase
       .from('subscriptions')
-      .update({ billing_status: 'cancelled', cancelled_at: now })
+      .update({ cancelled_at: now })
       .eq('user_id', userData?.id)
 
     if (subError) console.error('[cancel] subscriptions update error:', JSON.stringify(subError))

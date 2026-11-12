@@ -146,7 +146,7 @@ Your job is to produce a highly specific, data-backed market intelligence briefi
 
 You have access to web_search. You MUST perform the following searches before writing any part of your output:
 1. Search "${profile.industry} digital advertising benchmarks ${profile.region} ${monthYear}"
-2. Search "${profile.channels.slice(0, 2).join(' ')} CPC CPM ${profile.region} ${profile.industry} 2025"
+2. Search "${profile.channels.slice(0, 2).join(' ')} CPC CPM ${profile.region} ${profile.industry} ${new Date().getFullYear()}"
 3. Search "${profile.industry} competitors ${profile.region} digital marketing"
 4. Search "${profile.channels[0] ?? 'Meta'} algorithm update ${monthYear}"
 ${profile.landingPage ? `5. Search "${profile.landingPage}" to understand their offer and landing page positioning` : ''}
