@@ -63,7 +63,7 @@ const MEDIA_BUYERS: MediaBuyer[] = [
     industries: [],
     yearsExp: 0,
     bio: 'Runs Google Ads and Meta campaigns for B2B companies, with a background in conversion creative.',
-    calLink: process.env.NEXT_PUBLIC_BUYER_CALENDAR_URL ?? 'https://calendly.com/idealicp/eugene-review',
+    calLink: process.env.NEXT_PUBLIC_BUYER_CALENDAR_URL ?? 'https://calendly.com/ideal-customer-profile/icp-call',
   },
 ]
 
