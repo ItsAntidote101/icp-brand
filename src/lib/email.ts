@@ -389,6 +389,42 @@ ${cta('Renew my plan', url)}`
   return { data, error }
 }
 
+// ─── Monday numbers: the weekly prompt to log last week's results ───────────
+
+export async function sendWeeklyNumbersEmail({
+  to, name, week, lastCpl, change, topFix, baseUrl, unsubscribeUrl,
+}: {
+  to: string; name?: string
+  week: string                       // "10 to 16 Nov"
+  lastCpl?: string                   // "KES 850", from the most recent week logged
+  change?: string                    // "down 12% on the week before"
+  topFix?: string                    // this week's first open fix
+  baseUrl?: string; unsubscribeUrl: string
+}) {
+  const url = `${baseUrl ?? 'https://www.idealicp.com'}/dashboard?checkin=1`
+  const first = escapeHtml(name?.split(' ')[0] ?? 'there')
+
+  const content = `
+${ICON.chart}
+${heading('How did last week go?', 38)}
+${sub(`Hi ${first}, add your numbers for <strong style="color:${Dark};">${escapeHtml(week)}</strong>: ad spend, leads and sales. It takes about 30 seconds and shows your cost per lead straight away.`)}
+${lastCpl ? securityBox(`<p style="margin:0 0 4px;color:${Muted};font-size:13px;font-family:${font};">Last time you logged</p>
+<p style="margin:0;color:${Dark};font-size:22px;font-weight:700;font-family:${font};">${escapeHtml(lastCpl)} per lead</p>
+${change ? `<p style="margin:4px 0 0;color:${Muted};font-size:14px;font-family:${font};">${escapeHtml(change)}</p>` : ''}`) : ''}
+${cta('Add last week\'s numbers', url)}
+${topFix ? `<p style="margin:28px 0 0;color:${Muted};font-size:14px;line-height:1.6;font-family:${font};">Still open this week: <span style="color:${Dark};">${escapeHtml(topFix)}</span></p>` : ''}
+<p style="margin:28px 0 0;color:${Muted};font-size:12px;line-height:1.6;font-family:${font};">You get this once a week, on Mondays. <a href="${unsubscribeUrl}" style="color:${Muted};">Stop these emails</a>.</p>`
+
+  const { data, error } = await getResend().emails.send({
+    from: FROM, to,
+    subject: lastCpl ? `Last time: ${lastCpl} per lead. How was ${week}?` : `Your ad numbers for ${week}: 30 seconds to log`,
+    html: base(content),
+    headers: { 'List-Unsubscribe': `<${unsubscribeUrl}>` },
+  })
+  if (error) console.error('[email] weekly numbers error:', JSON.stringify(error))
+  return { data, error }
+}
+
 // ─── Email 4: Session request, founder notification ─────────────────────────
 
 export async function sendSessionRequestToFounder({

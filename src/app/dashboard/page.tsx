@@ -4066,7 +4066,7 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
         ) : !briefing ? (
           <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 16, padding: '40px 28px', textAlign: 'center', boxShadow: '0 1px 8px rgba(201,192,177,0.18)' }}>
             <Brain size={32} color={Pmuted} style={{ marginBottom: 14 }} />
-            <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: '0 0 8px' }}>Your first briefing will be ready next Monday.</p>
+            <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: '0 0 8px' }}>Your first briefing will be ready next Thursday.</p>
             <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 20px' }}>{"Can't wait? Click Refresh for an on-demand briefing now."}</p>
             <button onClick={handleRefresh} disabled={refreshing}
               style={{ background: P, color: '#fff', border: 'none', borderRadius: 12, padding: '11px 22px', fontFamily: fontB, fontSize: 13, fontWeight: 600, cursor: refreshing ? 'default' : 'pointer', opacity: refreshing ? 0.7 : 1, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
@@ -5299,6 +5299,7 @@ export default function DashboardPage() {
                     onUpgrade={() => setShowUpgradeModal(true)}
                     onRequestCall={() => setShowModal(true)}
                     onFixDone={setStreak}
+                    currency={currency}
                   />
                 </div>
               )
@@ -5472,7 +5473,7 @@ export default function DashboardPage() {
                 { q: 'What is my ICP health score?', a: 'Your ICP (Ideal Customer Profile) health score is a 0-100 score that measures how precisely your ad targeting, messaging, and budget allocation match your actual best buyers. A score below 50 means significant budget is being wasted on audiences unlikely to convert.' },
                 { q: 'How is my monthly waste estimate calculated?', a: 'It is derived from your ICP score, budget size, industry benchmarks, and the specific misalignments found in your diagnostic. It represents the estimated portion of your monthly ad spend reaching audiences with a low probability of converting.' },
                 { q: 'How do I improve my score?', a: 'Start with the quick wins on your Overview tab. Each one is ranked by impact and includes a specific action. After implementing fixes, run a new diagnosis to see your updated score. Most users see a 10-20 point improvement after addressing their top finding.' },
-                { q: 'What is the Intelligence tab?', a: 'The Intelligence tab gives you weekly competitive research for your specific market and region. It shows benchmark CPAs, ad spend trends from competitors, and audience shifts. Starter plan and above gets this automatically each Monday.' },
+                { q: 'What is the Intelligence tab?', a: 'The Intelligence tab gives you weekly competitive research for your specific market and region. It shows benchmark CPAs, ad spend trends from competitors, and audience shifts. Starter plan and above gets this automatically each Thursday.' },
                 { q: 'How does the AI chat work?', a: 'The chat is powered by Claude and has read access to your full diagnostic, findings, quick wins, score history, and market intelligence. It acts as a senior media buyer who knows your account. Use it to write ad copy, get tactical advice, or work through a specific finding.' },
                 { q: 'How do I upgrade or cancel my plan?', a: 'Go to the Account tab and scroll to the Subscription section. You can upgrade, downgrade, or cancel from there. Refunds are not available per our terms, but you retain access until the end of your billing period.' },
                 { q: 'Is my data secure?', a: 'Yes. Your data is stored on Supabase (EU region) with row-level security. Questionnaire answers and reports are tied to your account only. See the Security and Data section in Account settings for export and deletion options.' },

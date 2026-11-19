@@ -62,6 +62,7 @@ export type OverviewProps = {
   onUpgrade:    () => void
   onRequestCall: () => void
   onFixDone:    (streak: number) => void
+  currency:     string
 }
 
 // ─── Shared styles ───────────────────────────────────────────────────────────
@@ -86,6 +87,21 @@ export function DashStyles() {
       .ov-detail dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; }
       .ov-detail dt { color: ${T.faint}; white-space: nowrap; }
       .ov-detail dd { margin: 0; color: ${T.ink}; }
+      .num-grid  { display: grid; grid-template-columns: 1.1fr 1fr; }
+      .num-grid > div + div { border-left: 1px solid ${T.hairline}; }
+      .num-field { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 20px; min-height: 56px; }
+      .num-field label { font: 400 16px/1.3 ${T.font}; color: ${T.ink}; }
+      .num-field input { width: 46%; min-width: 0; text-align: right; font: 400 17px/1.2 ${T.font}; color: ${T.ink}; background: none; border: 0; padding: 10px 0; font-variant-numeric: tabular-nums; }
+      .num-field input::placeholder { color: ${T.faint}; }
+      .num-field input:focus { outline: none; }
+      .num-field:focus-within { background: rgba(201,192,177,0.10); }
+      .num-bars  { display: flex; align-items: flex-end; gap: 6px; height: 64px; }
+      .num-bars span { flex: 1; min-width: 6px; max-width: 28px; border-radius: 5px 5px 2px 2px; background: rgba(201,192,177,0.55); }
+      .num-bars span[data-latest="true"] { background: ${T.ink}; }
+      @media (max-width: 640px) {
+        .num-grid { grid-template-columns: 1fr; }
+        .num-grid > div + div { border-left: 0; border-top: 1px solid ${T.hairline}; }
+      }
       .ov-clamp  { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
       .ov-sep    { height: 1px; background: ${T.hairline}; margin-left: 20px; }
       .ov-btn    { display: inline-flex; align-items: center; justify-content: center; gap: 6px; font: 600 15px/1 ${T.head}; border-radius: 980px; padding: 12px 20px; border: 0; cursor: pointer; text-decoration: none; white-space: nowrap; min-height: 44px; }
@@ -308,6 +324,163 @@ function FindingList({ p }: { p: OverviewProps }) {
   )
 }
 
+// ─── Your numbers: the weekly check-in ───────────────────────────────────────
+// The reason to come back each week. The Monday email asks for last week's
+// spend, leads and sales; saving them shows cost per lead and how it moved.
+type Week = { week_start: string; spend: number; currency: string; leads: number; sales: number }
+
+const money = (n: number, cur: string) => `${cur} ${Math.round(n).toLocaleString()}`
+const cplOf = (w?: Week) => w && w.leads > 0 ? w.spend / w.leads : null
+
+function NumbersCard({ currency }: { currency: string }) {
+  const [weeks, setWeeks]   = useState<Week[] | null>(null)
+  const [due, setDue]       = useState<{ week: string; label: string } | null>(null)
+  const [editing, setEdit]  = useState(false)
+  const [form, setForm]     = useState({ spend: '', leads: '', sales: '' })
+  const [saving, setSaving] = useState(false)
+  const [error, setError]   = useState('')
+  const ref = React.useRef<HTMLElement>(null)
+
+  async function load() {
+    try {
+      const res = await fetch('/api/weekly-checkin')
+      if (!res.ok) throw new Error()
+      const j = await res.json() as { weeks: Week[]; dueWeek: string; dueLabel: string }
+      setWeeks(j.weeks ?? []); setDue({ week: j.dueWeek, label: j.dueLabel })
+    } catch { setWeeks([]) }
+  }
+  useEffect(() => { load() }, [])
+
+  // The Monday email links here with ?checkin=1
+  useEffect(() => {
+    if (!weeks || typeof window === 'undefined') return
+    if (new URLSearchParams(window.location.search).get('checkin') !== '1') return
+    ref.current?.scrollIntoView({ block: 'center' })
+    ref.current?.querySelector('input')?.focus()
+  }, [weeks])
+
+  if (weeks === null || !due) return <section className="ov-card" aria-busy="true" style={{ minHeight: 148 }} />
+
+  const latest  = weeks[0]
+  const logged  = latest?.week_start === due.week
+  const showForm = !logged || editing
+  const num = (v: string) => Number(v.replace(/[^0-9.]/g, ''))
+
+  async function save(e: React.FormEvent) {
+    e.preventDefault()
+    if (form.spend.trim() === '' || form.leads.trim() === '') { setError('Add your ad spend and your leads. Use 0 if there were none.'); return }
+    setSaving(true); setError('')
+    try {
+      const res = await fetch('/api/weekly-checkin', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ spend: num(form.spend), leads: Math.round(num(form.leads)), sales: Math.round(num(form.sales || '0')), currency }),
+      })
+      const j = await res.json() as { error?: string }
+      if (!res.ok) throw new Error(j.error ?? 'Could not save your numbers')
+      setEdit(false); await load()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not save your numbers')
+    } finally { setSaving(false) }
+  }
+
+  function startEdit() {
+    if (latest && logged) setForm({ spend: String(latest.spend), leads: String(latest.leads), sales: String(latest.sales) })
+    setEdit(true)
+  }
+
+  if (showForm) {
+    const fields: { key: 'spend' | 'leads' | 'sales'; label: string; hint: string; mode: 'decimal' | 'numeric' }[] = [
+      { key: 'spend', label: `Ad spend (${currency})`, hint: '0', mode: 'decimal' },
+      { key: 'leads', label: 'Leads',                  hint: '0', mode: 'numeric' },
+      { key: 'sales', label: 'Sales closed',           hint: 'Optional', mode: 'numeric' },
+    ]
+    const prev = cplOf(latest && !logged ? latest : weeks[1])
+    return (
+      <section ref={ref} aria-labelledby="ov-numbers">
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, margin: '0 4px 12px' }}>
+          <h2 id="ov-numbers" className="ov-h2">Last week&apos;s numbers</h2>
+          <span style={{ font: `400 15px/1 ${T.font}`, color: T.muted, whiteSpace: 'nowrap' }}>{due.label}</span>
+        </div>
+        <form className="ov-card" onSubmit={save} style={{ overflow: 'hidden' }}>
+          {fields.map((f, i) => (
+            <div key={f.key}>
+              {i > 0 && <div className="ov-sep" />}
+              <div className="num-field">
+                <label htmlFor={`num-${f.key}`}>{f.label}</label>
+                <input id={`num-${f.key}`} inputMode={f.mode} autoComplete="off" placeholder={f.hint}
+                  value={form[f.key]} onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))} />
+              </div>
+            </div>
+          ))}
+          <div className="ov-sep" style={{ marginLeft: 0 }} />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, padding: '14px 20px', flexWrap: 'wrap' }}>
+            <p style={{ font: `400 14px/1.45 ${T.font}`, color: error ? T.bad : T.muted, margin: 0, flex: '1 1 200px' }} role={error ? 'alert' : undefined}>
+              {error || (prev !== null && latest
+                ? `Last time: ${money(prev, latest.currency)} per lead. Save to see how last week compares.`
+                : 'About 30 seconds. Save to see your cost per lead.')}
+            </p>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {editing && <button type="button" className="ov-btn ov-btn-quiet" onClick={() => { setEdit(false); setError('') }}>Cancel</button>}
+              <button type="submit" className="ov-btn ov-btn-primary" disabled={saving} style={{ opacity: saving ? 0.6 : 1 }}>{saving ? 'Saving' : 'Save numbers'}</button>
+            </div>
+          </div>
+        </form>
+      </section>
+    )
+  }
+
+  // Logged: show the result
+  const cpl   = cplOf(latest)
+  const prior = weeks[1]?.currency === latest.currency ? cplOf(weeks[1]) : null
+  const pct   = cpl !== null && prior !== null && prior > 0 ? Math.round(((cpl - prior) / prior) * 100) : null
+  const series = weeks.filter(w => w.currency === latest.currency).slice(0, 8).reverse()
+  const maxCpl = Math.max(...series.map(w => cplOf(w) ?? 0), 1)
+  const perSale = latest.sales > 0 ? latest.spend / latest.sales : null
+
+  return (
+    <section ref={ref} aria-labelledby="ov-numbers">
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, margin: '0 4px 12px' }}>
+        <h2 id="ov-numbers" className="ov-h2">Last week&apos;s numbers</h2>
+        <button className="ov-link" onClick={startEdit}>Edit</button>
+      </div>
+      <div className="ov-card num-grid">
+        <div style={{ padding: '24px 28px' }}>
+          <p style={{ font: `400 15px/1.2 ${T.font}`, color: T.muted, margin: '0 0 6px' }}>Cost per lead, {due.label}</p>
+          <p style={{ font: `700 clamp(28px,4vw,36px)/1.1 ${T.head}`, letterSpacing: '-0.025em', color: T.ink, margin: '0 0 8px', fontVariantNumeric: 'tabular-nums' }}>
+            {cpl !== null ? money(cpl, latest.currency) : 'No leads'}
+          </p>
+          <p style={{ font: `400 14px/1.45 ${T.font}`, color: T.muted, margin: 0 }}>
+            {cpl === null
+              ? `${money(latest.spend, latest.currency)} spent with no leads. Start with the first fix below.`
+              : pct === null
+                ? 'First week logged. Add next week on Monday to see the change.'
+                : pct === 0
+                  ? 'Same as the week before.'
+                  : <><span style={{ color: pct < 0 ? T.good : T.warn, fontWeight: 600 }}>{pct < 0 ? 'Down' : 'Up'} {Math.abs(pct)}%</span> on the week before{pct < 0 ? '. Lower is better.' : '.'}</>}
+          </p>
+        </div>
+        <div style={{ padding: '24px 28px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 16 }}>
+          <p style={{ font: `400 15px/1.5 ${T.font}`, color: T.ink2, margin: 0 }}>
+            {money(latest.spend, latest.currency)} spent, {latest.leads} {latest.leads === 1 ? 'lead' : 'leads'}
+            {latest.sales > 0 && <>, {latest.sales} {latest.sales === 1 ? 'sale' : 'sales'}{perSale !== null && <> ({money(perSale, latest.currency)} per sale)</>}</>}
+          </p>
+          {series.length > 1 && (
+            <div>
+              <div className="num-bars" role="img" aria-label={`Cost per lead over the last ${series.length} weeks`}>
+                {series.map((w, i) => {
+                  const v = cplOf(w)
+                  return <span key={w.week_start} data-latest={i === series.length - 1} title={v !== null ? money(v, w.currency) : 'No leads'} style={{ height: `${Math.max(6, ((v ?? 0) / maxCpl) * 100)}%` }} />
+                })}
+              </div>
+              <p style={{ font: `400 12px/1.3 ${T.font}`, color: T.faint, margin: '6px 0 0' }}>Cost per lead, last {series.length} weeks</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  )
+}
+
 // ─── Eugene ──────────────────────────────────────────────────────────────────
 function HelpCard({ p }: { p: OverviewProps }) {
   const b = p.buyer
@@ -394,6 +567,8 @@ export default function Overview(p: OverviewProps) {
           </p>
         </div>
       </section>
+
+      <NumbersCard currency={p.currency} />
 
       <div className="ov-two">
         <FixList p={p} fx={fx} />
