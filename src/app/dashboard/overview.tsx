@@ -8,7 +8,7 @@
 // Everything else lives in Diagnosis, Market and Progress.
 
 import React, { useEffect, useState } from 'react'
-import { Check, ChevronRight, ChevronDown, Lock } from 'lucide-react'
+import { Check, ChevronRight, Lock } from 'lucide-react'
 
 // ─── Design tokens (shared with page.tsx by value) ───────────────────────────
 // Brand fonts and colours are unchanged. The calmer feel comes from structure:
@@ -72,7 +72,21 @@ export function DashStyles() {
       .ov-card   { background: ${T.surface}; border-radius: ${T.radius}px; box-shadow: ${T.shadow}; }
       .ov-h2     { font: 700 20px/1.2 ${T.head}; letter-spacing: -0.015em; color: ${T.ink}; margin: 0; }
       .ov-row    { width: 100%; display: flex; align-items: center; gap: 14px; padding: 16px 20px; background: none; border: 0; text-align: left; cursor: pointer; font: 400 16px/1.35 ${T.font}; color: ${T.ink}; min-height: 56px; }
-      .ov-row:hover { background: ${T.fill}; }
+      .ov-item   { transition: background 0.15s; }
+      @media (hover: hover) { .ov-item:hover { background: rgba(201,192,177,0.10); } }
+      .ov-item:active { background: rgba(201,192,177,0.16); }
+      .ov-item[data-open="true"] { background: none; }
+      .ov-chev   { flex-shrink: 0; margin-top: 3px; color: ${T.faint}; transition: transform 0.25s cubic-bezier(0.2,0.8,0.2,1); }
+      .ov-item[data-open="true"] .ov-chev { transform: rotate(90deg); }
+      .ov-disc   { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.3s cubic-bezier(0.2,0.8,0.2,1); }
+      .ov-item[data-open="true"] .ov-disc { grid-template-rows: 1fr; }
+      .ov-disc > div { overflow: hidden; min-height: 0; }
+      .ov-detail { padding: 0 20px 18px; font: 400 14px/1.55 ${T.font}; color: ${T.ink2}; max-width: 64ch; }
+      .ov-detail p { margin: 0 0 10px; }
+      .ov-detail dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; }
+      .ov-detail dt { color: ${T.faint}; white-space: nowrap; }
+      .ov-detail dd { margin: 0; color: ${T.ink}; }
+      .ov-clamp  { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
       .ov-sep    { height: 1px; background: ${T.hairline}; margin-left: 20px; }
       .ov-btn    { display: inline-flex; align-items: center; justify-content: center; gap: 6px; font: 600 15px/1 ${T.head}; border-radius: 980px; padding: 12px 20px; border: 0; cursor: pointer; text-decoration: none; white-space: nowrap; min-height: 44px; }
       .ov-btn-primary   { background: ${T.ink}; color: #fff; }
@@ -139,6 +153,16 @@ function statusLine(p: OverviewProps, done: number): string {
   return 'Your diagnosis is ready.'
 }
 
+// A long instruction becomes a short row title plus the full text in the detail.
+function splitTitle(text: string, max = 84): { title: string; rest: string } {
+  const t = (text ?? '').trim()
+  if (t.length <= max) return { title: t, rest: '' }
+  const stop = t.slice(0, max + 20).search(/[.:;](\s|$)/)
+  if (stop > 24) return { title: t.slice(0, stop), rest: t }
+  const cutAt = t.lastIndexOf(' ', max)
+  return { title: t.slice(0, cutAt > 24 ? cutAt : max) + '…', rest: t }
+}
+
 // ─── This week: the fixes ────────────────────────────────────────────────────
 function useFixes(p: OverviewProps) {
   const key = `qw_${p.reportId}`
@@ -193,37 +217,38 @@ function FixList({ p, fx }: { p: OverviewProps; fx: ReturnType<typeof useFixes> 
         )}
         {p.wins.map((w, i) => {
           const isDone = fx.checked[i], isOpen = open === i
-          const details = [w.platform, w.where].filter(Boolean).join(', ')
+          const { title, rest } = splitTitle(w.action)
+          const where = [w.platform, w.where].filter(Boolean).join(', ')
           return (
-            <div key={i}>
+            <div key={i} className="ov-item" data-open={isOpen}>
               {i > 0 && <div className="ov-sep" style={{ marginLeft: 62 }} />}
               <div style={{ display: 'flex', alignItems: 'flex-start' }}>
                 <button
                   onClick={() => fx.complete(i)} disabled={isDone || fx.saving !== null}
-                  aria-label={isDone ? 'Done' : `Mark as done: ${w.action}`}
-                  style={{ width: 62, minHeight: 56, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 0, cursor: isDone ? 'default' : 'pointer', paddingTop: 2 }}>
+                  aria-label={isDone ? 'Done' : `Mark as done: ${title}`}
+                  style={{ width: 62, minHeight: 56, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 0, cursor: isDone ? 'default' : 'pointer' }}>
                   <span style={{ width: 26, height: 26, borderRadius: '50%', border: isDone ? 'none' : `2px solid ${fx.saving === i ? T.muted : 'rgba(147,144,132,0.6)'}`, background: isDone ? '#22c55e' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s' }}>
                     {isDone && <Check size={15} color="#fff" strokeWidth={3} />}
                   </span>
                 </button>
-                <button className="ov-row" onClick={() => setOpen(isOpen ? null : i)} aria-expanded={isOpen}
-                  style={{ paddingLeft: 0, alignItems: 'flex-start', flexDirection: 'column', gap: 0 }}>
-                  <span style={{ display: 'flex', alignItems: 'flex-start', gap: 10, width: '100%' }}>
-                    <span style={{ flex: 1, color: isDone ? T.muted : T.ink, textDecoration: isDone ? 'line-through' : 'none',
-                      ...(isOpen ? {} : { display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden' }) }}>
-                      {w.action}
-                    </span>
-                    <ChevronDown size={18} color={T.muted} style={{ flexShrink: 0, marginTop: 2, transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
-                  </span>
-                  {isOpen && (
-                    <span style={{ display: 'block', marginTop: 10, font: `400 14px/1.5 ${T.font}`, color: T.ink2 }}>
-                      {details && <span style={{ display: 'block' }}>Where: {details}</span>}
-                      {w.effort && <span style={{ display: 'block' }}>Effort: {w.effort}</span>}
-                      {w.expectedImpact && <span style={{ display: 'block' }}>Expected result: {w.expectedImpact}</span>}
-                      {!details && !w.effort && !w.expectedImpact && <span style={{ color: T.muted }}>No extra detail for this one.</span>}
-                    </span>
-                  )}
+                <button className="ov-row" onClick={() => setOpen(isOpen ? null : i)} aria-expanded={isOpen} style={{ paddingLeft: 0, alignItems: 'flex-start', gap: 10 }}>
+                  <span className="ov-clamp" style={{ flex: 1, color: isDone ? T.faint : T.ink, textDecoration: isDone ? 'line-through' : 'none' }}>{title}</span>
+                  <ChevronRight size={18} className="ov-chev" />
                 </button>
+              </div>
+              <div className="ov-disc" aria-hidden={!isOpen}>
+                <div>
+                  <div className="ov-detail" style={{ paddingLeft: 62 }}>
+                    {rest && <p>{rest}</p>}
+                    {(where || w.effort || w.expectedImpact) ? (
+                      <dl>
+                        {where && <><dt>Where</dt><dd>{where}</dd></>}
+                        {w.effort && <><dt>Effort</dt><dd>{w.effort}</dd></>}
+                        {w.expectedImpact && <><dt>Result</dt><dd>{w.expectedImpact}</dd></>}
+                      </dl>
+                    ) : !rest ? <p style={{ color: T.faint, margin: 0 }}>No extra detail for this one.</p> : null}
+                  </div>
+                </div>
               </div>
             </div>
           )
@@ -252,28 +277,26 @@ function FindingList({ p }: { p: OverviewProps }) {
         {shown.map((f, i) => {
           const isOpen = open === i
           return (
-            <div key={i}>
+            <div key={i} className="ov-item" data-open={isOpen}>
               {i > 0 && <div className="ov-sep" style={{ marginLeft: 44 }} />}
-              <button className="ov-row" onClick={() => setOpen(isOpen ? null : i)} aria-expanded={isOpen} style={{ alignItems: 'flex-start', flexDirection: 'column', gap: 0 }}>
-                <span style={{ display: 'flex', alignItems: 'flex-start', gap: 14, width: '100%' }}>
-                  <span aria-hidden style={{ width: 10, height: 10, borderRadius: '50%', background: sevColor(f.severity), flexShrink: 0, marginTop: 6 }} />
-                  <span style={{ flex: 1, fontWeight: 500 }}>
-                    {f.title}
-                    <span style={{ display: 'block', font: `400 13px/1.3 ${T.font}`, color: T.muted, marginTop: 3 }}>{f.severity}</span>
-                  </span>
-                  <ChevronDown size={18} color={T.muted} style={{ flexShrink: 0, marginTop: 2, transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+              <button className="ov-row" onClick={() => setOpen(isOpen ? null : i)} aria-expanded={isOpen} style={{ alignItems: 'flex-start' }}>
+                <span aria-hidden style={{ width: 10, height: 10, borderRadius: '50%', background: sevColor(f.severity), flexShrink: 0, marginTop: 6 }} />
+                <span style={{ flex: 1, minWidth: 0 }}>
+                  <span className="ov-clamp" style={{ fontWeight: 500 }}>{f.title}</span>
+                  <span style={{ display: 'block', font: `400 13px/1.3 ${T.font}`, color: T.faint, marginTop: 3 }}>{f.severity}</span>
                 </span>
-                {isOpen && (
-                  <span style={{ display: 'block', margin: '10px 0 0 24px', font: `400 14px/1.55 ${T.font}`, color: T.ink2, maxWidth: '62ch' }}>{f.explanation}</span>
-                )}
+                <ChevronRight size={18} className="ov-chev" />
               </button>
+              <div className="ov-disc" aria-hidden={!isOpen}>
+                <div><div className="ov-detail" style={{ paddingLeft: 44 }}><p style={{ margin: 0 }}>{f.explanation}</p></div></div>
+              </div>
             </div>
           )
         })}
         {locked > 0 && (
           <>
             <div className="ov-sep" style={{ marginLeft: 44 }} />
-            <button className="ov-row" onClick={p.onUpgrade}>
+            <button className="ov-row ov-item" onClick={p.onUpgrade}>
               <Lock size={16} color={T.muted} style={{ flexShrink: 0, marginLeft: -3 }} />
               <span style={{ flex: 1, color: T.ink2 }}>{locked} more {locked === 1 ? 'finding' : 'findings'} on Starter</span>
               <ChevronRight size={18} color={T.muted} />
