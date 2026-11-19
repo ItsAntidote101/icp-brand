@@ -4,49 +4,14 @@ import { createClient } from '@supabase/supabase-js'
 import Anthropic from '@anthropic-ai/sdk'
 import { sendWelcomeEmail } from '@/lib/email'
 import { fetchLandingPage, describeLandingPage } from '@/lib/safe-fetch'
+import { parseModelJson } from '@/lib/repair-json'
 
 export const maxDuration = 120
 export const dynamic = 'force-dynamic'
 
 // Strip em/en dashes from any string recursively so they never appear in stored data
 function extractJSON(text: string): unknown {
-  // 1. Direct parse
-  try { return JSON.parse(text) } catch { /* continue */ }
-
-  // 2. ```json ... ``` code block anywhere in the text (most common with web_search responses)
-  const codeBlock = text.match(/```json\s*([\s\S]*?)```/)
-  if (codeBlock) {
-    try { return JSON.parse(codeBlock[1].trim()) } catch { /* continue */ }
-  }
-
-  // 3. Any ``` ... ``` block
-  const anyBlock = text.match(/```\s*([\s\S]*?)```/)
-  if (anyBlock) {
-    try { return JSON.parse(anyBlock[1].trim()) } catch { /* continue */ }
-  }
-
-  // 4. Find outermost { ... } (skipping preamble text)
-  const start = text.indexOf('{')
-  const end   = text.lastIndexOf('}')
-  if (start !== -1 && end !== -1 && start < end) {
-    try { return JSON.parse(text.slice(start, end + 1)) } catch { /* continue */ }
-
-    // 5. Truncated JSON — try to close unclosed braces/brackets
-    let partial  = text.slice(start)
-    let braces   = 0
-    let brackets = 0
-    for (const char of partial) {
-      if (char === '{') braces++
-      if (char === '}') braces--
-      if (char === '[') brackets++
-      if (char === ']') brackets--
-    }
-    partial += ']'.repeat(Math.max(0, brackets))
-    partial += '}'.repeat(Math.max(0, braces))
-    try { return JSON.parse(partial) } catch { /* continue */ }
-  }
-
-  return null
+  return parseModelJson(text)
 }
 
 function isEastAfrica(region: string): boolean {
@@ -747,6 +712,7 @@ Rules:
 - All scores must reflect the actual questionnaire responses, do not return generic numbers
 - Reference ${geographicRegion} explicitly in at least 2 category analyses
 - landing_page_assessment must come only from the LANDING PAGE CHECK. Never invent page content, competitor names, or statistics you were not given
+- LENGTH LIMITS (the client reads this on a phone, and long reports get cut off): executive_summary max 45 words. Every "title" max 9 words. Every "explanation" max 30 words: say what is wrong and what it costs, nothing else. Every "summary" max 30 words. Every quick win "action" max 22 words, starting with a verb. Every "expectedImpact" max 12 words. Any other text field max 30 words. Never repeat the same finding or quick win in two sections
 - Keep ALL text fields to 1 sentence maximum. No exceptions.
 - Every quick_win (in all sections) must include platform, where, expectedImpact, and effort fields. Never use vague language like "your platform" -- always name the exact platform. The action must name the user's actual channels (${adChannels}), region (${geographicRegion}), and business model. The expectedImpact must reference real numbers from estimatedCpa (${estimatedCpa}), monthlyWaste (${monthlyWaste}), revenueOppty (${revenueOppty}), or ltvCacRatio (${ltvCacRatio}) where available
 - DATA INTEGRITY: If the landing page URL is a test/placeholder domain (e.g. test.com, example.com, localhost, abc.com, yoursite.com, or any domain that is clearly not a real business), set landing_page_assessment to exactly: "URL appears to be a test or placeholder — provide your real landing page URL for an accurate assessment." and do not fabricate any page analysis. If questionnaire data contains implausible values (e.g. 0% or 100% conversion rate, zero ad budget with thousands of leads, monthly budget above $500,000 for an apparent small business), flag the anomaly in executive_summary and base scores conservatively rather than building analysis on unreliable inputs`
