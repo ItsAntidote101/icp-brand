@@ -13,6 +13,8 @@ import {
   Users, Search, Filter, DollarSign, Gift,
 } from 'lucide-react'
 import { pushWithUserData } from '@/lib/track'
+import { readStoredReport } from '@/lib/repair-json'
+import Overview, { DashStyles, Segmented, Notice, T as DT } from './overview'
 import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis, YAxis, ReferenceLine, CartesianGrid, LabelList } from 'recharts'
 
 // ─── Tokens ───────────────────────────────────────────────────────────────────
@@ -36,6 +38,9 @@ function convertAmount(amount: number, fromCurrency: string, toCurrency: string)
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Tab = 'overview' | 'audience' | 'search' | 'funnel' | 'economics' | 'intelligence' | 'reports' | 'account'
+const DIAGNOSIS_TABS: Tab[] = ['audience', 'search', 'funnel', 'economics']
+// What the customer sees in the nav. 'audience' stands for all of Diagnosis.
+const NAV_TABS: Tab[] = ['overview', 'audience', 'intelligence', 'reports', 'account']
 
 // ─── Media Buyer Roster ───────────────────────────────────────────────────────
 
@@ -89,184 +94,6 @@ function BuyerAvatar({ buyer, size = 36 }: { buyer: MediaBuyer; size?: number })
 }
 
 // ─── Buyer Profile Card ───────────────────────────────────────────────────────
-
-function BuyerProfileCard({ buyer, tier, region, industry }: {
-  buyer: MediaBuyer; tier: string; region?: string; industry?: string
-}) {
-  const font  = "'PolySans Median', -apple-system, system-ui, sans-serif"
-  const fontB = "'PolySans Neutral', -apple-system, system-ui, sans-serif"
-  const P     = '#201515'
-  const Pmuted  = '#939084'
-  const Pborder = 'rgba(201,192,177,0.3)'
-  const BgAlt   = '#fffefb'
-  const Accent  = '#e8330a'
-
-  const canBook = tier === 'pro' || tier === 'agency'
-  const tierLabel = tier === 'agency' ? 'Agency' : tier === 'pro' ? 'Pro' : tier === 'starter' ? 'Starter' : 'Free'
-
-  return (
-    <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 8px rgba(201,192,177,0.18)' }}>
-      {/* Header */}
-      <div style={{ background: 'linear-gradient(135deg,#201515 0%,#2d1e0a 100%)', padding: '20px 24px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <BuyerAvatar buyer={buyer} size={48} />
-          <div>
-            <p style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: '#fff', margin: '0 0 2px' }}>{buyer.name}</p>
-            <p style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.6)', margin: 0 }}>{buyer.title}</p>
-          </div>
-          <span style={{ marginLeft: 'auto', fontFamily: fontB, fontSize: 10, fontWeight: 700, background: 'rgba(255,255,255,0.15)', color: '#fff', padding: '3px 10px', borderRadius: 100, letterSpacing: '0.08em', textTransform: 'uppercase' as const }}>
-            Your buyer
-          </span>
-        </div>
-      </div>
-
-      {/* Body */}
-      <div style={{ padding: '20px 24px' }}>
-        <div style={{ display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' }}>
-          {buyer.yearsExp > 0 && (
-            <span style={{ fontFamily: fontB, fontSize: 11, background: BgAlt, color: Pmuted, border: `1px solid ${Pborder}`, borderRadius: 100, padding: '3px 10px' }}>
-              {buyer.yearsExp} years experience
-            </span>
-          )}
-          {(region || buyer.regions[0]) && (
-            <span style={{ fontFamily: fontB, fontSize: 11, background: BgAlt, color: Pmuted, border: `1px solid ${Pborder}`, borderRadius: 100, padding: '3px 10px' }}>
-              {region ?? buyer.regions[0]}
-            </span>
-          )}
-        </div>
-
-        <p style={{ fontFamily: fontB, fontSize: 13, color: '#605d52', lineHeight: 1.65, margin: '0 0 20px' }}>{buyer.bio}</p>
-
-        <div style={{ background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 12, padding: '12px 16px', marginBottom: 16 }}>
-          <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.08em', color: Pmuted, margin: '0 0 4px' }}>Speciality</p>
-          <p style={{ fontFamily: fontB, fontSize: 13, color: P, margin: 0 }}>{buyer.speciality}</p>
-        </div>
-
-        {canBook ? (
-          <a href={buyer.calLink} target="_blank" rel="noopener noreferrer"
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: P, color: '#fff', border: 'none', borderRadius: 12, padding: '12px 0', fontFamily: fontB, fontSize: 13, fontWeight: 600, textDecoration: 'none', width: '100%' }}>
-            <Users size={14} />
-            Book a review call with {buyer.firstName}
-          </a>
-        ) : (
-          <div style={{ background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 12, padding: '14px 16px', textAlign: 'center' as const }}>
-            <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '0 0 8px' }}>
-              {tier === 'free' ? 'Your free 20-minute call is booked from your report page.' : `${tierLabel} includes AI chat.`} Pro adds an onboarding call with {buyer.firstName} to set your priorities.
-            </p>
-            <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 600, color: Accent, margin: 0 }}>Pro: KES 13,000/mo includes an onboarding call</p>
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
-function MonthlyCheckinCard({ user, buyer, onUpgrade }: { user: UserData; buyer: MediaBuyer; onUpgrade?: () => void }) {
-  const font    = "'PolySans Median', -apple-system, system-ui, sans-serif"
-  const fontB   = "'PolySans Neutral', -apple-system, system-ui, sans-serif"
-  const P       = '#201515'
-  const Pmuted  = '#939084'
-  const Pborder = 'rgba(201,192,177,0.3)'
-  const isFree  = user.subscription_tier === 'free'
-
-  type CheckinData = { id?: string; message: string; buyer_name: string; buyer_initials: string; created_at: string; is_intro?: boolean }
-  const [checkin,  setCheckin]  = useState<CheckinData | null>(null)
-  const [loading,  setLoading]  = useState(true)
-  const [expanded, setExpanded] = useState(false)
-
-  useEffect(() => {
-    // Free users: show the buyer intro message if it exists
-    if (isFree) {
-      fetch('/api/monthly-checkin?type=intro')
-        .then(r => r.ok ? r.json() : null)
-        .then(j => { if (j?.checkin) setCheckin({ ...j.checkin, is_intro: true }) })
-        .catch(() => {})
-        .finally(() => setLoading(false))
-      return
-    }
-
-    const cacheKey = `monthly_checkin_${user.email}_${new Date().toISOString().slice(0, 7)}`
-    const cached = typeof window !== 'undefined' ? localStorage.getItem(cacheKey) : null
-    if (cached) { try { setCheckin(JSON.parse(cached)); setLoading(false); return } catch {/* noop */} }
-
-    fetch('/api/monthly-checkin')
-      .then(r => r.ok ? r.json() : null)
-      .then(j => {
-        if (j?.checkin) {
-          setCheckin(j.checkin)
-          if (typeof window !== 'undefined') localStorage.setItem(cacheKey, JSON.stringify(j.checkin))
-        } else if (j?.checkin === null) {
-          fetch('/api/monthly-checkin', { method: 'POST' })
-            .then(r => r.ok ? r.json() : null)
-            .then(j2 => {
-              if (j2?.checkin) {
-                setCheckin(j2.checkin)
-                if (typeof window !== 'undefined') localStorage.setItem(cacheKey, JSON.stringify(j2.checkin))
-              }
-            })
-            .catch(() => {/* noop */})
-        }
-      })
-      .catch(() => {/* noop */})
-      .finally(() => setLoading(false))
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user.email, user.subscription_tier])
-
-  if (loading || !checkin) return null
-
-  const label = checkin.is_intro ? 'Message from your media buyer' : 'Monthly Check-in'
-  const timeLabel = checkin.is_intro
-    ? new Date(checkin.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
-    : new Date().toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
-
-  return (
-    <div style={{ background: '#fff', border: `1.5px solid ${checkin.is_intro ? '#e8330a30' : Pborder}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 8px rgba(201,192,177,0.15)', animation: 'fadeUp 0.4s ease both' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-        <BuyerAvatar buyer={buyer} size={34} />
-        <div style={{ flex: 1 }}>
-          <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: '#e8330a', margin: '0 0 1px' }}>{label}</p>
-          <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: 0 }}>From {checkin.buyer_name} · {timeLabel}</p>
-        </div>
-        {checkin.is_intro && (
-          <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, background: '#e8330a', color: '#fff', padding: '3px 8px', borderRadius: 100, letterSpacing: '0.05em' }}>NEW</span>
-        )}
-      </div>
-
-      <p style={{ fontFamily: font, fontSize: 14, color: '#605d52', lineHeight: 1.7, margin: 0, display: expanded ? 'block' : '-webkit-box', WebkitLineClamp: expanded ? undefined : 3, WebkitBoxOrient: expanded ? undefined : 'vertical' as const, overflow: expanded ? 'visible' : 'hidden' }}>
-        {checkin.message}
-      </p>
-
-      {!expanded && checkin.message.length > 240 && (
-        <button onClick={() => setExpanded(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fontB, fontSize: 12, color: P, fontWeight: 600, padding: '6px 0 0', display: 'block', textDecoration: 'underline' }}>
-          Read full message
-        </button>
-      )}
-
-      <div style={{ display: 'flex', gap: 10, marginTop: 16, flexWrap: 'wrap' }}>
-        {(user.subscription_tier === 'pro' || user.subscription_tier === 'agency') && (
-          <a href={buyer.calLink} target="_blank" rel="noopener noreferrer"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: P, color: '#fff', borderRadius: 10, padding: '9px 16px', fontFamily: fontB, fontSize: 12, fontWeight: 600, textDecoration: 'none' }}>
-            <Users size={12} />
-            Book a call with {buyer.firstName}
-          </a>
-        )}
-        {isFree && onUpgrade && (
-          <div style={{ width: '100%' }}>
-            <div style={{ background: 'rgba(232,51,10,0.06)', border: '1px solid rgba(232,51,10,0.2)', borderRadius: 10, padding: '10px 14px', marginBottom: 10 }}>
-              <p style={{ fontFamily: fontB, fontSize: 12, color: '#9a1c00', margin: 0, lineHeight: 1.5 }}>
-                {checkin.buyer_name.split(' ')[0]} has reviewed your score and has a follow-up question for you.
-              </p>
-            </div>
-            <button onClick={onUpgrade}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: '#e8330a', color: '#fff', borderRadius: 10, padding: '9px 16px', fontFamily: fontB, fontSize: 12, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
-              See {checkin.buyer_name.split(' ')[0]}&apos;s question: upgrade to Starter
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
 
 
 type UserData = {
@@ -352,11 +179,8 @@ type DiagnosisData = {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-const parseDiagnosis = (s: string | object | null | undefined): DiagnosisData => {
-  if (!s) return {}
-  if (typeof s === 'object') return s as DiagnosisData
-  try { return JSON.parse(s) } catch { return {} }
-}
+// Also reads older reports that were saved cut off (see lib/repair-json).
+const parseDiagnosis = (s: string | object | null | undefined): DiagnosisData => readStoredReport<DiagnosisData>(s)
 const getScore = (d: DiagnosisData): number | null => {
   const s = d.overall_score ?? d.health_score ?? null
   if (typeof s === 'number') return s
@@ -500,14 +324,12 @@ function Skel({ style }: { style?: React.CSSProperties }) {
   return <div className="animate-pulse" style={{ background: 'rgba(201,192,177,0.3)', borderRadius: 8, ...style }} />
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function Card({ children, style, delay = 0 }: { children: React.ReactNode; style?: React.CSSProperties; delay?: number }) {
   return (
     <div style={{
-      background: '#fff', borderRadius: 16, padding: 28,
-      border: `1px solid ${Pborder}`,
-      boxShadow: '0 2px 20px rgba(201,192,177,0.35)',
-      animation: 'fadeUp 0.4s ease both',
-      animationDelay: `${delay}ms`,
+      background: '#fff', borderRadius: DT.radius, padding: 'clamp(20px,3vw,28px)',
+      boxShadow: DT.shadow,
       ...style,
     }}>
       {children}
@@ -529,7 +351,7 @@ function AnimatedGauge({ score, size = 140 }: { score: number; size?: number }) 
       </svg>
       <div style={{ textAlign: 'center' }}>
         <div style={{ fontFamily: font, fontSize: 38, fontWeight: 800, color: P, lineHeight: 1 }}>{cur}</div>
-        <div style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, marginTop: 2 }}>/100</div>
+        <div style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, marginTop: 2 }}>/100</div>
       </div>
     </div>
   )
@@ -569,155 +391,7 @@ function CountUp({ target, display }: { target: number; display: string }) {
 
 // ─── Widgets ──────────────────────────────────────────────────────────────────
 
-function HealthScoreWidget({ diag, report, delay }: { diag: DiagnosisData; report: ReportRow; delay: number }) {
-  const score = getScore(diag)
-  if (score === null) return null
-  return (
-    <Card delay={delay} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, textAlign: 'center' }}>
-      <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: Pmuted, margin: 0 }}>ICP Health Score</p>
-      <AnimatedGauge score={score} />
-      <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, background: scoreLabelBg(score), color: scoreColor(score), padding: '4px 14px', borderRadius: 100, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
-        {scoreLabel(score)}
-      </span>
-      <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: 0 }}>Updated {formatDate(report.generated_at)}</p>
-    </Card>
-  )
-}
 
-function MonthlyWasteWidget({ diag, currency, delay }: { diag: DiagnosisData; currency: string; delay: number }) {
-  const waste = parseWaste(diag.monthly_waste_estimate ?? diag.economics?.monthly_waste_estimate)
-  const fs    = getFindings(diag)
-  const topF  = fs.find(f => f.severity === 'Critical') ?? fs[0]
-
-  const displayStr = waste.amount > 0 ? convertAmount(waste.amount, waste.fromCurrency, currency) : waste.raw
-  const displayNum = waste.amount > 0
-    ? Math.round(waste.amount / (USD_RATES[waste.fromCurrency] ?? 1) * (USD_RATES[currency] ?? 1))
-    : 0
-  const col = displayNum > 50000 ? '#ef4444' : displayNum > 10000 ? '#f59e0b' : P
-
-  return (
-    <Card delay={delay}>
-      <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: Pmuted, margin: '0 0 10px' }}>Estimated Waste</p>
-      <div style={{ fontFamily: font, fontSize: 44, fontWeight: 800, color: col, lineHeight: 1, margin: '0 0 4px' }}>
-        {waste.amount > 0 ? <CountUp target={displayNum} display={displayStr} /> : waste.raw}
-      </div>
-      <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 18px' }}>per month</p>
-      {topF && (
-        <>
-          <div style={{ height: 1, background: Pborder, margin: '0 0 14px' }} />
-          <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '0 0 5px', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Primary cause</p>
-          <p style={{ fontFamily: font, fontSize: 14, fontWeight: 600, color: P, margin: '0 0 10px', lineHeight: 1.4,
-            display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as React.CSSProperties}>
-            {topF.title}
-          </p>
-        </>
-      )}
-      <a href="#findings" style={{ fontFamily: fontB, fontSize: 13, color: P, textDecoration: 'none', fontWeight: 600, opacity: 0.65 }}>
-        See all findings →
-      </a>
-    </Card>
-  )
-}
-
-function QuickWinsWidget({ diag, delay }: { diag: DiagnosisData; delay: number }) {
-  const wins = (diag.quick_wins ?? []).slice(0, 3)
-  const [checked, setChecked] = useState<boolean[]>(() => wins.map(() => false))
-  const done   = checked.filter(Boolean).length
-  const toggle = (i: number) => setChecked(p => { const n = [...p]; n[i] = !n[i]; return n })
-  return (
-    <Card delay={delay}>
-      <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: Pmuted, margin: '0 0 16px' }}>This Week</p>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 20 }}>
-        {wins.map((w, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-            <button onClick={() => toggle(i)} style={{
-              width: 22, height: 22, borderRadius: '50%',
-              border: `2px solid ${checked[i] ? P : '#c5c0b1'}`,
-              background: checked[i] ? P : 'transparent',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', flexShrink: 0, transition: 'all 0.2s', marginTop: 1,
-            }}>
-              {checked[i] && <Check size={12} color="#fff" strokeWidth={3} />}
-            </button>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', background: impactBg(w.impact), color: impactColor(w.impact), padding: '2px 8px', borderRadius: 100, display: 'inline-block', marginBottom: 5 }}>
-                {w.impact}
-              </span>
-              <p style={{ fontFamily: fontB, fontSize: 13, color: checked[i] ? Pmuted : P, margin: 0, lineHeight: 1.4, textDecoration: checked[i] ? 'line-through' : 'none', transition: 'all 0.2s' }}>
-                {w.action}
-              </p>
-            </div>
-          </div>
-        ))}
-        {wins.length === 0 && <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: 0 }}>No quick wins in this report.</p>}
-      </div>
-      {wins.length > 0 && (
-        <div>
-          <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '0 0 6px' }}>{done}/{wins.length} completed</p>
-          <div style={{ height: 6, background: Pborder, borderRadius: 100, overflow: 'hidden' }}>
-            <div style={{ height: '100%', background: P, borderRadius: 100, width: `${(done / wins.length) * 100}%`, transition: 'width 0.4s ease' }} />
-          </div>
-        </div>
-      )}
-    </Card>
-  )
-}
-
-function ScorePredictionWidget({ diag, score, delay }: { diag: DiagnosisData; score: number; delay: number }) {
-  const preds = diag.score_predictions ?? []
-  if (preds.length === 0) return null
-  const top = preds[0]
-
-  return (
-    <Card delay={delay}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-        <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(34,197,94,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <TrendingUp size={16} color="#16a34a" />
-        </div>
-        <p style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: P, margin: 0 }}>Score potential</p>
-      </div>
-
-      <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
-        <div style={{ flex: 1, background: '#f5f0eb', borderRadius: 12, padding: '14px 16px', textAlign: 'center', border: '1px solid rgba(201,192,177,0.4)' }}>
-          <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Now</p>
-          <p style={{ fontFamily: font, fontSize: 32, fontWeight: 800, color: scoreColor(score), margin: 0, lineHeight: 1 }}>{score}</p>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', color: Pmuted }}>
-          <ArrowRight size={16} />
-        </div>
-        <div style={{ flex: 1, background: 'rgba(34,197,94,0.08)', borderRadius: 12, padding: '14px 16px', textAlign: 'center', border: '1px solid rgba(34,197,94,0.2)', boxShadow: '0 2px 8px rgba(34,197,94,0.15)' }}>
-          <p style={{ fontFamily: fontB, fontSize: 11, color: '#16a34a', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Potential</p>
-          <p style={{ fontFamily: font, fontSize: 32, fontWeight: 800, color: '#16a34a', margin: 0, lineHeight: 1 }}>{top.predictedScore}</p>
-          <p style={{ fontFamily: fontB, fontSize: 11, color: '#16a34a', margin: '2px 0 0', fontWeight: 600 }}>+{top.predictedDelta} pts</p>
-        </div>
-      </div>
-
-      <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: Pmuted, margin: '0 0 8px' }}>Highest-impact action</p>
-      <div style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.18)', borderLeft: '3px solid #16a34a', borderRadius: 10, padding: '12px 14px 12px 11px', marginBottom: 12 }}>
-        <p style={{ fontFamily: fontB, fontSize: 13, color: '#166534', margin: 0, lineHeight: 1.5 }}>&#8594; {top.action}</p>
-      </div>
-      {top.expectedImpact && (
-        <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: 0, lineHeight: 1.5 }}>
-          Expected: {top.expectedImpact}
-        </p>
-      )}
-
-      {preds.length > 1 && (
-        <div style={{ marginTop: 14, borderTop: `1px solid ${Pborder}`, paddingTop: 12 }}>
-          <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.07em' }}>More wins</p>
-          {preds.slice(1).map((p2, i) => (
-            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-              <p style={{ fontFamily: fontB, fontSize: 12, color: P, margin: 0, flex: 1, lineHeight: 1.4, paddingRight: 12 }}>{p2.action}</p>
-              <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, color: '#16a34a', background: 'rgba(34,197,94,0.1)', padding: '2px 8px', borderRadius: 100, whiteSpace: 'nowrap', flexShrink: 0 }}>+{p2.predictedDelta} pts</span>
-            </div>
-          ))}
-        </div>
-      )}
-    </Card>
-  )
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function PerformanceBreakdownWidget({ diag, score, delay }: { diag: DiagnosisData; score: number; delay: number }) {
   const [mounted, setMounted] = useState(false)
   useEffect(() => { const t = setTimeout(() => setMounted(true), 120); return () => clearTimeout(t) }, [])
@@ -805,14 +479,14 @@ function ScoreHistoryWidget({ reports, latestReport, renewalDate, delay, tier, o
             <div style={{ background: BgAlt, borderRadius: 12, padding: '14px 18px', display: 'inline-flex', alignItems: 'center', gap: 10 }}>
               <span style={{ fontFamily: fontB, fontSize: 12, color: Pmuted }}>Baseline</span>
               <span style={{ fontFamily: font, fontSize: 22, fontWeight: 800, color: P }}>{latestScore}<span style={{ fontSize: 13, fontWeight: 500, color: Pmuted }}>/100</span></span>
-              <span style={{ fontFamily: fontB, fontSize: 11, color: Pmuted }}>, {formatDate(latestReport.generated_at)}</span>
+              <span style={{ fontFamily: fontB, fontSize: 12, color: Pmuted }}>, {formatDate(latestReport.generated_at)}</span>
             </div>
             {/* Implied future data points */}
             {isFreeUser && (
               <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', paddingBottom: 4 }}>
                 {[0, 1].map(i => (
                   <div key={i} style={{ background: 'rgba(201,192,177,0.25)', borderRadius: 8, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 6, filter: 'blur(1.5px)', opacity: 0.5 }}>
-                    <span style={{ fontFamily: fontB, fontSize: 11, color: Pmuted }}>Diagnosis {i + 2}</span>
+                    <span style={{ fontFamily: fontB, fontSize: 12, color: Pmuted }}>Diagnosis {i + 2}</span>
                     <span style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: P }}>??</span>
                   </div>
                 ))}
@@ -906,13 +580,13 @@ function ScoreHistoryWidget({ reports, latestReport, renewalDate, delay, tier, o
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
         <div>
           <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: '0 0 4px' }}>Score History</p>
-          <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, color: band.color, background: band.bg, padding: '2px 8px', borderRadius: 100 }}>
+          <span style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, color: band.color, background: band.bg, padding: '2px 8px', borderRadius: 100 }}>
             {band.label}
           </span>
         </div>
         <div style={{ textAlign: 'right' }}>
           <span style={{ fontFamily: font, fontSize: 22, fontWeight: 800, color: filtColor }}>{filtLabel}</span>
-          <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '2px 0 0' }}>
+          <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '2px 0 0' }}>
             {range === 'all' ? `over ${totalDays} days` : range === '90d' ? 'last 90 days' : 'last 30 days'}
           </p>
         </div>
@@ -922,7 +596,7 @@ function ScoreHistoryWidget({ reports, latestReport, renewalDate, delay, tier, o
       <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
         {ranges.map(r => (
           <button key={r.key} onClick={() => setRange(r.key)}
-            style={{ fontFamily: fontB, fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 100, cursor: 'pointer', border: range === r.key ? `1.5px solid ${P}` : `1.5px solid ${Pborder}`, background: range === r.key ? P : 'transparent', color: range === r.key ? '#fff' : Pmuted, transition: 'all 0.15s' }}>
+            style={{ fontFamily: fontB, fontSize: 12, fontWeight: 600, padding: '4px 10px', borderRadius: 100, cursor: 'pointer', border: range === r.key ? `1.5px solid ${P}` : `1.5px solid ${Pborder}`, background: range === r.key ? P : 'transparent', color: range === r.key ? '#fff' : Pmuted, transition: 'all 0.15s' }}>
             {r.label}
           </button>
         ))}
@@ -938,10 +612,10 @@ function ScoreHistoryWidget({ reports, latestReport, renewalDate, delay, tier, o
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke={Pborder} vertical={false} />
-          <XAxis dataKey="date" tick={{ fontFamily: fontB, fontSize: 10, fill: Pmuted }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-          <YAxis domain={[0, 100]} tick={{ fontFamily: fontB, fontSize: 10, fill: Pmuted }} tickLine={false} axisLine={false} ticks={[0, 40, 55, 70, 85, 100]} />
-          <ReferenceLine y={70} stroke="#2563eb" strokeDasharray="4 3" strokeOpacity={0.35} label={{ value: 'Good', position: 'insideTopRight', fontFamily: fontB, fontSize: 9, fill: '#2563eb', opacity: 0.6 }} />
-          <ReferenceLine y={55} stroke="#d97706" strokeDasharray="4 3" strokeOpacity={0.3} label={{ value: 'Avg', position: 'insideTopRight', fontFamily: fontB, fontSize: 9, fill: '#d97706', opacity: 0.6 }} />
+          <XAxis dataKey="date" tick={{ fontFamily: fontB, fontSize: 12, fill: Pmuted }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+          <YAxis domain={[0, 100]} tick={{ fontFamily: fontB, fontSize: 12, fill: Pmuted }} tickLine={false} axisLine={false} ticks={[0, 40, 55, 70, 85, 100]} />
+          <ReferenceLine y={70} stroke="#2563eb" strokeDasharray="4 3" strokeOpacity={0.35} label={{ value: 'Good', position: 'insideTopRight', fontFamily: fontB, fontSize: 12, fill: '#2563eb', opacity: 0.6 }} />
+          <ReferenceLine y={55} stroke="#d97706" strokeDasharray="4 3" strokeOpacity={0.3} label={{ value: 'Avg', position: 'insideTopRight', fontFamily: fontB, fontSize: 12, fill: '#d97706', opacity: 0.6 }} />
           <Area type="monotone" dataKey="score" stroke={P} strokeWidth={2.5} fill="url(#sg)"
             dot={(props) => {
               const { cx, cy, payload } = props as { cx: number; cy: number; payload: { score: number } }
@@ -962,7 +636,7 @@ function ScoreHistoryWidget({ reports, latestReport, renewalDate, delay, tier, o
                 const b = scoreBand(value)
                 return (
                   <text x={x} y={(y as number) - 8} textAnchor="middle"
-                    style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, fill: b.color }}>
+                    style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, fill: b.color }}>
                     {value}
                   </text>
                 )
@@ -977,12 +651,12 @@ function ScoreHistoryWidget({ reports, latestReport, renewalDate, delay, tier, o
               const b = scoreBand(val)
               return (
                 <div style={{ fontFamily: fontB }}>
-                  <p style={{ fontSize: 11, color: Pmuted, margin: '0 0 6px' }}>{label}</p>
+                  <p style={{ fontSize: 12, color: Pmuted, margin: '0 0 6px' }}>{label}</p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span style={{ fontFamily: font, fontSize: 22, fontWeight: 800, color: b.color, lineHeight: 1 }}>{val}</span>
                     <div>
-                      <p style={{ fontSize: 10, color: Pmuted, margin: 0 }}>/ 100</p>
-                      <span style={{ fontSize: 10, fontWeight: 700, color: b.color, background: b.bg, borderRadius: 100, padding: '1px 6px' }}>{b.label}</span>
+                      <p style={{ fontSize: 12, color: Pmuted, margin: 0 }}>/ 100</p>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: b.color, background: b.bg, borderRadius: 100, padding: '1px 6px' }}>{b.label}</span>
                     </div>
                   </div>
                 </div>
@@ -1000,9 +674,9 @@ function ScoreHistoryWidget({ reports, latestReport, renewalDate, delay, tier, o
           { label: 'Days tracked', value: `${totalDays}`, color: P, sub: `${allData.length} diagnoses` },
         ].map(s => (
           <div key={s.label} style={{ background: BgAlt, borderRadius: 10, padding: '10px 12px', textAlign: 'center' }}>
-            <p style={{ fontFamily: fontB, fontSize: 10, color: Pmuted, margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{s.label}</p>
+            <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{s.label}</p>
             <p style={{ fontFamily: font, fontSize: 15, fontWeight: 800, color: s.color, margin: '0 0 2px' }}>{s.value}</p>
-            <p style={{ fontFamily: fontB, fontSize: 10, color: Pmuted, margin: 0 }}>{s.sub}</p>
+            <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: 0 }}>{s.sub}</p>
           </div>
         ))}
       </div>
@@ -1023,7 +697,7 @@ function ScoreHistoryWidget({ reports, latestReport, renewalDate, delay, tier, o
         const gap           = nextThreshold ? nextThreshold - currentScore : 0
         if (!nextThreshold || !nextName) return null
         return (
-          <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '10px 0 0', textAlign: 'center' }}>
+          <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '10px 0 0', textAlign: 'center' }}>
             {gap} point{gap !== 1 ? 's' : ''} away from <strong style={{ color: P }}>{nextName}</strong> tier
           </p>
         )
@@ -1032,50 +706,6 @@ function ScoreHistoryWidget({ reports, latestReport, renewalDate, delay, tier, o
   )
 }
 
-
-function NextDiagnosisWidget({ lastReport, renewalDate, delay }: { lastReport: ReportRow; renewalDate: string | null; delay: number }) {
-  const nextDate = renewalDate
-    ? new Date(renewalDate)
-    : new Date(new Date(lastReport.generated_at).getTime() + 30 * 86_400_000)
-  const daysLeft = Math.ceil((nextDate.getTime() - Date.now()) / 86_400_000)
-  const overdue  = daysLeft <= 0
-  const dueSoon  = daysLeft > 0 && daysLeft <= 7
-  const bg       = overdue ? '#fee2e2' : dueSoon ? '#fef3c7' : '#fff'
-  const col      = overdue ? '#ef4444' : dueSoon ? '#d97706' : P
-
-  return (
-    <Card delay={delay} style={{ background: bg, textAlign: 'center' }}>
-      <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: col, opacity: 0.7, margin: '0 0 10px' }}>Next Diagnosis</p>
-      {overdue ? (
-        <>
-          <span style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, background: '#ef4444', color: '#fff', padding: '3px 12px', borderRadius: 100, display: 'inline-block' }}>Overdue</span>
-          <p style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: '#ef4444', margin: '12px 0' }}>Your diagnosis is overdue</p>
-          <Link href="/questionnaire" style={{ fontFamily: font, fontWeight: 600, fontSize: 13, background: '#ef4444', color: '#fff', padding: '10px 20px', borderRadius: 12, textDecoration: 'none', display: 'inline-block' }}>
-            Run Now →
-          </Link>
-        </>
-      ) : (
-        <>
-          <div style={{ fontFamily: font, fontSize: 52, fontWeight: 800, color: col, lineHeight: 1, margin: '8px 0 4px' }}>{daysLeft}</div>
-          <p style={{ fontFamily: fontB, fontSize: 13, color: col, opacity: 0.7, margin: '0 0 16px' }}>days remaining</p>
-          {dueSoon ? (
-            <>
-              <span style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, background: '#f59e0b', color: '#fff', padding: '3px 12px', borderRadius: 100, display: 'inline-block', marginBottom: 12 }}>Due soon</span>
-              <br />
-              <Link href="/questionnaire" style={{ fontFamily: font, fontWeight: 600, fontSize: 13, background: '#d97706', color: '#fff', padding: '10px 20px', borderRadius: 12, textDecoration: 'none', display: 'inline-block', marginTop: 8 }}>
-                Schedule Now →
-              </Link>
-            </>
-          ) : (
-            <Link href="/questionnaire" style={{ fontFamily: fontB, fontSize: 13, color: col, textDecoration: 'none', border: `1.5px solid ${col}`, borderRadius: 10, padding: '8px 16px', display: 'inline-block', opacity: 0.75 }}>
-              Run Early →
-            </Link>
-          )}
-        </>
-      )}
-    </Card>
-  )
-}
 
 function CampaignInsightsWidget({ delay, history }: { delay: number; history: CsvHistoryItem[] }) {
   if (history.length === 0) {
@@ -1125,13 +755,13 @@ function CampaignInsightsWidget({ delay, history }: { delay: number; history: Cs
                   {item.file}
                 </p>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' as const }}>
-                  <span style={{ fontFamily: fontB, fontSize: 11, color: Pmuted }}>{formatDate(item.created_at)}</span>
+                  <span style={{ fontFamily: fontB, fontSize: 12, color: Pmuted }}>{formatDate(item.created_at)}</span>
                   {item.budget_waste && (
-                    <span style={{ fontFamily: fontB, fontSize: 11, color: '#d97706', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 100, padding: '1px 7px' }}>
+                    <span style={{ fontFamily: fontB, fontSize: 12, color: '#d97706', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 100, padding: '1px 7px' }}>
                       ~{item.budget_waste} waste
                     </span>
                   )}
-                  <span style={{ fontFamily: fontB, fontSize: 11, color: Pmuted }}>
+                  <span style={{ fontFamily: fontB, fontSize: 12, color: Pmuted }}>
                     {item.recommendations_count} recs
                   </span>
                 </div>
@@ -1153,413 +783,6 @@ function CampaignInsightsWidget({ delay, history }: { delay: number; history: Cs
 
 // ─── New Overview Components ──────────────────────────────────────────────────
 
-function DailyBriefCard({ diag, reports, score, hasIntelligence, onTabChange, user, buyer }: {
-  diag: DiagnosisData; reports: ReportRow[]; score: number | null
-  hasIntelligence: boolean; onTabChange: (tab: Tab) => void; user: UserData
-  buyer: MediaBuyer
-}) {
-  const findings   = getFindings(diag)
-  const topFinding = findings[0]
-  const secondF    = findings[1]
-  const waste      = parseWaste(diag.monthly_waste_estimate ?? diag.economics?.monthly_waste_estimate)
-  const daysSince  = reports[0] ? daysBetween(reports[0].generated_at) : 0
-  const prevScore  = reports.length >= 2 ? getScore(parseDiagnosis(reports[1].report_summary)) : null
-  const delta      = score !== null && prevScore !== null ? score - prevScore : null
-
-  const dismissKey = `daily_brief_dismissed_${user.email}_${new Date().toISOString().slice(0, 10)}`
-  const [dismissed, setDismissed] = useState(() => {
-    if (typeof window === 'undefined') return false
-    return !!localStorage.getItem(dismissKey)
-  })
-  const [briefText, setBriefText] = useState<string>('')
-  const [briefLoading, setBriefLoading] = useState(true)
-
-  useEffect(() => {
-    const todayKey = `daily_brief_${user.email}_${new Date().toISOString().slice(0, 10)}`
-    const cached = localStorage.getItem(todayKey)
-    if (cached) {
-      setBriefText(cached)
-      setBriefLoading(false)
-      return
-    }
-    setBriefLoading(true)
-    fetch('/api/daily-brief', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        score,
-        prevScore,
-        topFinding: topFinding?.title ?? null,
-        secondFinding: secondF?.title ?? null,
-        daysSinceDiagnosis: daysSince,
-        monthlyWasteKES: waste.amount,
-        fixesCompleted: user.total_fixes_completed ?? 0,
-        streak: user.current_streak ?? 0,
-        hasNewIntelligence: hasIntelligence,
-        companyName: user.company_name ?? null,
-      }),
-    })
-      .then(r => r.json())
-      .then((d: { brief?: string }) => {
-        if (d.brief) {
-          setBriefText(d.brief)
-          localStorage.setItem(todayKey, d.brief)
-        }
-      })
-      .catch(() => {/* fall through to fallback */})
-      .finally(() => setBriefLoading(false))
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user.email])
-
-  // Fallback text if API fails
-  const fallbackText = useMemo(() => {
-    const dailyWaste = Math.round(waste.amount / 30)
-    const costAccum  = dailyWaste * daysSince
-    if (daysSince >= 14 && score !== null && score < 50)
-      return `Your ICP score has not changed in ${daysSince} days. Your top finding is still unresolved and has cost you an estimated KES ${costAccum.toLocaleString()} since your last diagnosis.`
-    if (delta !== null && delta > 0 && secondF)
-      return `Your ICP score improved ${delta} points since your last report. Your next priority is ${secondF.title}, which is still costing you KES ${dailyWaste.toLocaleString()} per day.`
-    if (hasIntelligence)
-      return `New competitive intelligence is available for your market this week. Check the Intelligence tab for your full briefing.`
-    return `Your baseline ICP score is ${score ?? '?'}/100. You are estimated to be losing KES ${waste.amount.toLocaleString()} per month on misaligned targeting.`
-  }, [waste, daysSince, score, delta, secondF, hasIntelligence])
-
-  const displayText = briefText || (!briefLoading ? fallbackText : '')
-
-  const handleDismiss = () => {
-    setDismissed(true)
-    localStorage.setItem(dismissKey, '1')
-  }
-
-  if (dismissed) return null
-
-  // Since last visit feed items
-  const feedItems = [
-    hasIntelligence ? { color: '#22c55e', text: 'Intelligence updated', time: 'This week' } : null,
-    delta !== null && delta !== 0
-      ? { color: delta > 0 ? '#22c55e' : '#ef4444', text: `Score ${delta > 0 ? '+' : ''}${delta} since last report`, time: daysSince > 0 ? `${daysSince}d ago` : 'Today' }
-      : delta === 0
-      ? { color: '#e8330a', text: `Score unchanged at ${score}`, time: daysSince > 0 ? `${daysSince} days` : 'Today' }
-      : null,
-    topFinding ? { color: '#ef4444', text: `${topFinding.title.slice(0, 32)}${topFinding.title.length > 32 ? '…' : ''} unresolved`, time: daysSince > 0 ? `${daysSince} days` : 'Today' } : null,
-  ].filter(Boolean).slice(0, 3) as { color: string; text: string; time: string }[]
-
-  const statusColor = score === null ? '#f59e0b'
-    : score < 41 && daysSince >= 14 ? '#ef4444'
-    : score < 41 ? '#f59e0b'
-    : score < 71 ? '#f59e0b'
-    : '#22c55e'
-
-  const ctaStyle: React.CSSProperties = {
-    display: 'inline-flex', alignItems: 'center', gap: 6,
-    background: P, color: '#fff', borderRadius: 12, padding: '11px 18px',
-    fontFamily: fontB, fontSize: 13, fontWeight: 600,
-    textDecoration: 'none', border: 'none', cursor: 'pointer',
-    whiteSpace: 'nowrap', flexShrink: 0,
-  }
-
-  return (
-    <div style={{ background: '#fff', borderRadius: 12, borderLeft: `4px solid ${statusColor}`, padding: '20px 24px', boxShadow: '0 2px 16px rgba(201,192,177,0.25)', animation: 'fadeUp 0.4s ease both' }}>
-      <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
-        {/* Left: brief */}
-        <div style={{ flex: '1 1 260px', minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-            <BuyerAvatar buyer={buyer} size={30} />
-            <div>
-              <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: '#e8330a' }}>From {buyer.firstName}</span>
-              <span style={{ fontFamily: fontB, fontSize: 11, color: Pmuted }}> · {new Date().toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
-            </div>
-            <button
-              onClick={handleDismiss}
-              title="Dismiss for today"
-              style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: Pmuted, display: 'flex', alignItems: 'center', flexShrink: 0 }}
-            >
-              <X size={14} />
-            </button>
-          </div>
-          {briefLoading ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
-              <div style={{ height: 14, borderRadius: 6, background: 'rgba(201,192,177,0.3)', width: '92%', animation: 'pulse 1.4s ease-in-out infinite' }} />
-              <div style={{ height: 14, borderRadius: 6, background: 'rgba(201,192,177,0.3)', width: '78%', animation: 'pulse 1.4s ease-in-out infinite' }} />
-            </div>
-          ) : (
-            <p style={{ fontFamily: font, fontSize: 15, color: '#605d52', lineHeight: 1.7, margin: '0 0 16px', fontWeight: 400 }}>{displayText}</p>
-          )}
-          {!briefLoading && (hasIntelligence && !topFinding ? (
-            <button onClick={() => onTabChange('intelligence')} style={ctaStyle}>
-              Read This Week&apos;s Intelligence <ArrowRight size={14} />
-            </button>
-          ) : topFinding ? (
-            <button onClick={() => onTabChange('audience')} style={ctaStyle}>
-              Fix Top Finding <ArrowRight size={14} />
-            </button>
-          ) : (
-            <Link href="/questionnaire" style={ctaStyle}>
-              Run New Diagnosis <ArrowRight size={14} />
-            </Link>
-          ))}
-        </div>
-        {/* Right: since last visit */}
-        {feedItems.length > 0 && (
-          <div style={{ flex: '0 1 200px', minWidth: 160 }}>
-            <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 12px' }}>SINCE YOUR LAST VISIT</p>
-            {feedItems.map((item, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 12 }}>
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: item.color, flexShrink: 0, marginTop: 4 }} />
-                <div>
-                  <p style={{ fontFamily: fontB, fontSize: 12, color: P, margin: '0 0 2px', lineHeight: 1.35 }}>{item.text}</p>
-                  <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: 0 }}>{item.time}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
-function BusinessOutcomesWidget({ diag, currency }: { diag: DiagnosisData; currency: string }) {
-  const bo = diag.business_outcomes ?? diag.economics?.business_outcomes
-  if (!bo || (!bo.cac_current && !bo.ltv_cac_current)) return null
-
-  return (
-    <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 12, padding: 'clamp(20px,3vw,28px)', display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div>
-        <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 4px' }}>Business Outcomes</p>
-        <p style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: P, margin: 0 }}>Projected unit economics after fixing your ICP</p>
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
-        {bo.cac_current && (
-          <div style={{ background: BgAlt, borderRadius: 8, padding: '14px 16px' }}>
-            <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.07em', color: Pmuted, margin: '0 0 8px' }}>Customer Acquisition Cost</p>
-            <p style={{ fontFamily: fontB, fontSize: 12, color: '#dc2626', margin: '0 0 2px' }}>Current</p>
-            <p style={{ fontFamily: font, fontSize: 16, fontWeight: 800, color: P, margin: '0 0 8px', lineHeight: 1.2 }}>{convertMoneyText(bo.cac_current, currency) ?? bo.cac_current}</p>
-            {bo.cac_projected && (
-              <>
-                <p style={{ fontFamily: fontB, fontSize: 12, color: '#16a34a', margin: '0 0 2px' }}>After fix</p>
-                <p style={{ fontFamily: font, fontSize: 16, fontWeight: 800, color: '#16a34a', margin: 0, lineHeight: 1.2 }}>{convertMoneyText(bo.cac_projected, currency) ?? bo.cac_projected}</p>
-              </>
-            )}
-          </div>
-        )}
-
-        {bo.ltv_cac_current && (
-          <div style={{ background: BgAlt, borderRadius: 8, padding: '14px 16px' }}>
-            <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.07em', color: Pmuted, margin: '0 0 8px' }}>LTV : CAC Ratio</p>
-            <p style={{ fontFamily: fontB, fontSize: 12, color: '#d97706', margin: '0 0 2px' }}>Current</p>
-            <p style={{ fontFamily: font, fontSize: 16, fontWeight: 800, color: P, margin: '0 0 8px', lineHeight: 1.2 }}>{bo.ltv_cac_current}</p>
-            {bo.ltv_cac_projected && (
-              <>
-                <p style={{ fontFamily: fontB, fontSize: 12, color: '#16a34a', margin: '0 0 2px' }}>After fix</p>
-                <p style={{ fontFamily: font, fontSize: 16, fontWeight: 800, color: '#16a34a', margin: 0, lineHeight: 1.2 }}>{bo.ltv_cac_projected}</p>
-              </>
-            )}
-          </div>
-        )}
-
-        {bo.monthly_revenue_opportunity && (
-          <div style={{ background: 'rgba(232,51,10,0.06)', borderRadius: 8, padding: '14px 16px', border: `1px solid rgba(232,51,10,0.15)` }}>
-            <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.07em', color: Accent, margin: '0 0 8px' }}>Revenue Opportunity</p>
-            <p style={{ fontFamily: fontB, fontSize: 13, color: P, lineHeight: 1.55, margin: 0 }}>{convertMoneyText(bo.monthly_revenue_opportunity, currency) ?? bo.monthly_revenue_opportunity}</p>
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
-function WasteTicker({ diag, report, currency, score, scoreDelta, onTabChange }: {
-  diag: DiagnosisData; report: ReportRow; currency: string
-  score: number | null; scoreDelta: number | null; onTabChange: (tab: Tab) => void
-}) {
-  const waste      = parseWaste(diag.monthly_waste_estimate ?? diag.economics?.monthly_waste_estimate)
-  const perSecond  = waste.amount > 0 ? waste.amount / 30 / 86_400 : 0
-  const daysSince  = daysBetween(report.generated_at)
-  // startAmt = money lost from diagnosis date until now, in waste currency
-  const startAmt   = Math.round(perSecond * daysSince * 86_400)
-
-  // Persist counter across navigation using sessionStorage keyed by report ID
-  const storageKey = `waste_tick_${report.id}`
-  const getStored  = () => {
-    try {
-      const raw = sessionStorage.getItem(storageKey)
-      if (raw) {
-        const { value, ts } = JSON.parse(raw) as { value: number; ts: number }
-        // Add seconds elapsed since we last stored
-        return Math.round(value + perSecond * (Date.now() - ts) / 1000)
-      }
-    } catch { /* ignore */ }
-    return startAmt
-  }
-
-  const [displayed, setDisplayed] = useState(() => getStored())
-
-  // Tick every 500ms, persist to sessionStorage every 10s
-  useEffect(() => {
-    if (waste.amount === 0) return
-    const tickId = setInterval(() => setDisplayed(v => v + perSecond * 0.5), 500)
-    const saveId = setInterval(() => {
-      setDisplayed(v => {
-        try { sessionStorage.setItem(storageKey, JSON.stringify({ value: v, ts: Date.now() })) } catch { /* ignore */ }
-        return v
-      })
-    }, 10_000)
-    return () => { clearInterval(tickId); clearInterval(saveId) }
-  }, [perSecond, waste.amount, storageKey])
-
-  const displayVal = waste.amount > 0
-    ? convertAmount(Math.round(displayed), waste.fromCurrency, currency)
-    : null
-
-  // Top quick win for the right panel
-  const topWin = (diag.quick_wins ?? diag.economics?.quick_wins ?? [])[0]
-  const topFinding = (diag.critical_findings ?? diag.findings ?? [])[0]
-  const band = score !== null ? scoreBand(score) : null
-
-  return (
-    <>
-      <style>{`
-        .waste-ticker-grid { display: grid; grid-template-columns: 1fr 1fr; }
-        @media (max-width: 639px) {
-          .waste-ticker-grid { grid-template-columns: 1fr; }
-          .waste-ticker-grid > div:first-child { border-right: none !important; border-bottom: 1px solid rgba(255,255,255,0.07); }
-        }
-      `}</style>
-    <div className="waste-ticker-grid" style={{
-      background: 'linear-gradient(135deg,#0d0806 0%,#201515 100%)',
-      borderRadius: 14,
-      overflow: 'hidden',
-      boxShadow: '0 4px 24px rgba(201,192,177,0.18)',
-    }}>
-      {/* LEFT — the leak */}
-      <div style={{ padding: '28px 28px 24px', borderRight: '1px solid rgba(255,255,255,0.07)' }}>
-        <p style={{ fontFamily: fontB, fontSize: 9, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.13em', color: 'rgba(239,68,68,0.7)', margin: '0 0 10px' }}>
-          MONEY LOST SINCE DIAGNOSIS
-        </p>
-        <div style={{ fontFamily: font, fontSize: 'clamp(26px,3vw,40px)', fontWeight: 800, color: displayVal ? '#fff' : 'rgba(255,255,255,0.3)', lineHeight: 1, fontVariantNumeric: 'tabular-nums' as const, margin: '0 0 8px' }}>
-          {displayVal ?? '-'}
-        </div>
-        <p style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.45)', margin: '0 0 16px', lineHeight: 1.5 }}>
-          {waste.amount > 0
-            ? `~${convertAmount(Math.round(waste.amount / 30), waste.fromCurrency, currency)}/day leaking to wrong audiences`
-            : 'Run a diagnosis to calculate your waste estimate'}
-        </p>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#ef4444', display: 'inline-block', animation: 'pulse 2s infinite' }} />
-          <span style={{ fontFamily: fontB, fontSize: 10, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.05em' }}>
-            {daysSince === 0 ? 'Diagnosed today' : `${daysSince} day${daysSince !== 1 ? 's' : ''} since diagnosis`}
-          </span>
-        </div>
-      </div>
-
-      {/* RIGHT — the upside */}
-      <div style={{ padding: '28px 28px 24px', background: 'rgba(255,255,255,0.025)' }}>
-        <p style={{ fontFamily: fontB, fontSize: 9, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.13em', color: 'rgba(34,197,94,0.7)', margin: '0 0 10px' }}>
-          YOUR BIGGEST WIN RIGHT NOW
-        </p>
-
-        {topWin ? (
-          <>
-            <p style={{ fontFamily: fontB, fontSize: 13, color: '#fff', margin: '0 0 6px', lineHeight: 1.5, fontWeight: 600 }}>
-              {topWin.action}
-            </p>
-            {(topWin.expectedImpact || topWin.impact) && (
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(34,197,94,0.12)', borderRadius: 100, padding: '4px 10px', marginBottom: 14 }}>
-                <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#22c55e', flexShrink: 0 }} />
-                <span style={{ fontFamily: fontB, fontSize: 11, color: '#22c55e', fontWeight: 700 }}>
-                  {topWin.expectedImpact ?? topWin.impact}
-                </span>
-              </div>
-            )}
-            {topWin.platform && (
-              <p style={{ fontFamily: fontB, fontSize: 10, color: 'rgba(255,255,255,0.35)', margin: '0 0 14px' }}>
-                {topWin.platform}{topWin.where ? ` · ${topWin.where}` : ''}
-              </p>
-            )}
-          </>
-        ) : topFinding ? (
-          <>
-            <p style={{ fontFamily: fontB, fontSize: 13, color: '#fff', margin: '0 0 8px', lineHeight: 1.5, fontWeight: 600 }}>
-              {topFinding.title}
-            </p>
-            <p style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.45)', margin: '0 0 14px', lineHeight: 1.5 }}>
-              {topFinding.explanation?.slice(0, 90)}{(topFinding.explanation?.length ?? 0) > 90 ? '…' : ''}
-            </p>
-          </>
-        ) : (
-          <p style={{ fontFamily: fontB, fontSize: 13, color: 'rgba(255,255,255,0.4)', margin: '0 0 20px', lineHeight: 1.6 }}>
-            Complete your diagnosis to unlock personalised quick wins.
-          </p>
-        )}
-
-        {/* Score pill */}
-        {band && score !== null && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ background: band.color + '22', border: `1px solid ${band.color}44`, borderRadius: 100, padding: '3px 10px', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-              <span style={{ fontFamily: font, fontSize: 13, fontWeight: 800, color: band.color }}>{score}</span>
-              <span style={{ fontFamily: fontB, fontSize: 10, color: band.color, opacity: 0.8 }}>{band.label}</span>
-            </div>
-            {scoreDelta !== null && scoreDelta !== 0 && (
-              <span style={{ fontFamily: fontB, fontSize: 11, color: scoreDelta > 0 ? '#22c55e' : '#ef4444', fontWeight: 700 }}>
-                {scoreDelta > 0 ? `+${scoreDelta}` : scoreDelta} pts
-              </span>
-            )}
-          </div>
-        )}
-
-        <button onClick={() => onTabChange('audience')}
-          style={{ display: 'block', marginTop: 14, fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.5)', textDecoration: 'underline', cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>
-          See all findings & quick wins →
-        </button>
-      </div>
-    </div>
-    </>
-  )
-}
-
-function ICPScoreCard({ diag, reports }: { diag: DiagnosisData; reports: ReportRow[] }) {
-  const score     = getScore(diag)
-  const prevScore = reports.length >= 2 ? getScore(parseDiagnosis(reports[1].report_summary)) : null
-  const delta     = score !== null && prevScore !== null ? score - prevScore : null
-
-  if (score === null) return null
-
-  const nextThreshold = score < 41 ? 41 : score < 71 ? 71 : null
-  const nextLabel     = score < 41 ? 'At Risk' : score < 71 ? 'Healthy' : null
-  const zoneStart     = nextThreshold === 41 ? 0 : 41
-  const zoneSize      = nextThreshold === 41 ? 41 : 30
-  const progressToNext = nextThreshold ? Math.min(100, ((score - zoneStart) / zoneSize) * 100) : 100
-
-  return (
-    <Card style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, textAlign: 'center' }}>
-      <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: 0 }}>ICP Health Score</p>
-      <AnimatedGauge score={score} />
-      <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, background: scoreLabelBg(score), color: scoreColor(score), padding: '4px 14px', borderRadius: 100, textTransform: 'uppercase' as const, letterSpacing: '0.07em' }}>
-        {scoreLabel(score)}
-      </span>
-      {delta !== null && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          {delta > 0 ? <TrendingUp size={13} color="#22c55e" /> : delta < 0 ? <TrendingDown size={13} color="#ef4444" /> : null}
-          <span style={{ fontFamily: fontB, fontSize: 14, fontWeight: 700, color: delta > 0 ? '#22c55e' : delta < 0 ? '#ef4444' : Pmuted }}>
-            {delta > 0 ? `+${delta}` : delta === 0 ? 'No change' : String(delta)} since last month
-          </span>
-        </div>
-      )}
-      {nextThreshold && nextLabel && (
-        <div style={{ width: '100%' }}>
-          <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '0 0 6px' }}>
-            {nextThreshold - score} points to {nextLabel} ({nextThreshold})
-          </p>
-          <div style={{ height: 6, background: '#f3f4f6', borderRadius: 100, overflow: 'hidden' }}>
-            <div style={{ height: '100%', background: scoreColor(score), borderRadius: 100, width: `${progressToNext}%`, transition: 'width 1s ease' }} />
-          </div>
-        </div>
-      )}
-    </Card>
-  )
-}
 
 function FixStreakWidget({ streak }: { streak: number }) {
   return (
@@ -1580,273 +803,6 @@ function FixStreakWidget({ streak }: { streak: number }) {
   )
 }
 
-function ScoreJourneyWidget({ score, reports }: { score: number; reports: ReportRow[] }) {
-  const milestones = [
-    { zone: 'Critical', range: '0-40',   color: '#ef4444', bg: '#fee2e2', reached: score <= 40, text: 'Immediate action required. 40% of your budget is at risk.' },
-    { zone: 'At Risk',  range: '41-70',  color: '#f59e0b', bg: '#fef3c7', reached: score > 40,  text: 'Targeting improving. Funnel optimization phase.' },
-    { zone: 'Healthy',  range: '71-100', color: '#22c55e', bg: '#dcfce7', reached: score > 70,  text: 'ICP aligned. Scale with confidence.' },
-  ]
-  const prevScore = reports.length >= 2 ? getScore(parseDiagnosis(reports[1].report_summary)) : null
-
-  return (
-    <Card>
-      <p style={{ fontFamily: font, fontSize: 20, fontWeight: 700, color: P, margin: '0 0 20px', letterSpacing: '-0.02em' }}>Your journey to Healthy.</p>
-
-      {/* Track */}
-      <div style={{ position: 'relative', height: 32, borderRadius: 16, background: '#f3f4f6', overflow: 'hidden', marginBottom: 8 }}>
-        <div style={{ position: 'absolute', left: 0, width: '40%', height: '100%', background: 'rgba(239,68,68,0.15)' }} />
-        <div style={{ position: 'absolute', left: '40%', width: '30%', height: '100%', background: 'rgba(245,158,11,0.12)' }} />
-        <div style={{ position: 'absolute', left: '70%', right: 0, height: '100%', background: 'rgba(34,197,94,0.12)' }} />
-
-        {/* Previous score dot */}
-        {prevScore !== null && (
-          <div style={{ position: 'absolute', left: `${prevScore}%`, top: '50%', transform: 'translate(-50%,-50%)', width: 12, height: 12, borderRadius: '50%', background: scoreColor(prevScore), opacity: 0.45, border: '2px solid #fff' }} />
-        )}
-
-        {/* Current score dot */}
-        <div style={{ position: 'absolute', left: `${score}%`, top: '50%', transform: 'translate(-50%,-50%)', width: 28, height: 28, borderRadius: '50%', background: scoreColor(score), border: '3px solid #fff', boxShadow: '0 2px 8px rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}>
-          <span style={{ fontFamily: font, fontSize: 9, fontWeight: 800, color: '#fff' }}>{score}</span>
-        </div>
-      </div>
-
-      {/* Zone labels */}
-      <div style={{ display: 'flex', marginBottom: 24 }}>
-        <span style={{ flex: '0 0 40%', fontFamily: fontB, fontSize: 10, color: '#ef4444', fontWeight: 600 }}>Critical (0-40)</span>
-        <span style={{ flex: '0 0 30%', fontFamily: fontB, fontSize: 10, color: '#f59e0b', fontWeight: 600 }}>At Risk (41-70)</span>
-        <span style={{ flex: '0 0 30%', fontFamily: fontB, fontSize: 10, color: '#22c55e', fontWeight: 600, textAlign: 'right' as const }}>Healthy (71-100)</span>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {milestones.map(m => (
-          <div key={m.zone} style={{ background: m.reached ? m.bg : '#f9fafb', borderRadius: 14, padding: '16px 18px', border: `1px solid ${m.reached ? m.color + '40' : '#e5e7eb'}` }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-              <span style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: m.reached ? m.color : Pmuted }}>{m.zone}</span>
-              <span style={{ fontFamily: fontB, fontSize: 11, color: m.reached ? m.color : Pmuted }}>{m.range}</span>
-            </div>
-            <p style={{ fontFamily: fontB, fontSize: 12, color: m.reached ? P : Pmuted, margin: 0, lineHeight: 1.5 }}>{m.text}</p>
-            {m.reached && (
-              <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
-                <CheckCircle size={12} color={m.color} />
-                <span style={{ fontFamily: fontB, fontSize: 11, color: m.color }}>Reached</span>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-    </Card>
-  )
-}
-
-function EnhancedQuickWinsWidget({ diag, user, onStreakUpdate, maxWins = 3, reportId }: { diag: DiagnosisData; user: UserData; onStreakUpdate: (s: number) => void; maxWins?: number; reportId?: string }) {
-  const wins    = (diag.quick_wins ?? []).slice(0, maxWins)
-  const [checked,    setChecked]    = useState<boolean[]>(() => {
-    if (!reportId) return wins.map(() => false)
-    try {
-      const stored = localStorage.getItem(`qw_${reportId}`)
-      if (stored) {
-        const arr = JSON.parse(stored) as boolean[]
-        return wins.map((_, i) => arr[i] ?? false)
-      }
-    } catch { /* ignore */ }
-    return wins.map(() => false)
-  })
-  const [saving,     setSaving]     = useState<number | null>(null)
-  const [expanded,   setExpanded]   = useState<boolean[]>(() => wins.map(() => false))
-  const [badgeToast, setBadgeToast] = useState('')
-  const [winError,   setWinError]   = useState('')
-
-  function toggleExpanded(i: number) {
-    setExpanded(p => { const n = [...p]; n[i] = !n[i]; return n })
-  }
-
-  const impactLabel = (impact: string) =>
-    impact === 'High' ? 'Estimated impact: KES 8,000-15,000/month'
-    : impact === 'Medium' ? 'Estimated impact: KES 3,000-6,000/month'
-    : 'Estimated impact: KES 1,000-2,500/month'
-
-  async function completeWin(i: number) {
-    setSaving(i)
-    try {
-      const res = await fetch('/api/quick-wins/complete', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user.email, win_index: i, win_text: wins[i]?.action }),
-      })
-      if (res.ok) {
-        const d = await res.json() as { streak: number; badges_unlocked: { key: string; name: string }[] }
-        setChecked(p => {
-          const n = [...p]; n[i] = true
-          if (reportId) {
-            try { localStorage.setItem(`qw_${reportId}`, JSON.stringify(n)) } catch { /* ignore */ }
-          }
-          return n
-        })
-        onStreakUpdate(d.streak)
-        if (d.badges_unlocked?.length > 0) {
-          setBadgeToast(`Achievement unlocked: ${d.badges_unlocked[0].name}`)
-          setTimeout(() => setBadgeToast(''), 4000)
-        }
-        const mod = await import('canvas-confetti')
-        mod.default({ particleCount: 60, spread: 70, origin: { y: 0.6 }, colors: ['#201515', '#e8330a', '#22c55e'] })
-      }
-    } catch {
-      setWinError('Could not save. Please try again.')
-      setTimeout(() => setWinError(''), 4000)
-    }
-    finally { setSaving(null) }
-  }
-
-  const done = checked.filter(Boolean).length
-
-  return (
-    <Card>
-      {wins.map((w, i) => (
-        <div key={i} style={{ marginBottom: i < wins.length - 1 ? 8 : 0, background: BgAlt, borderRadius: 12, overflow: 'hidden' }}>
-          {/* ── Header row (always visible, clickable to expand) ── */}
-          <div
-            role="button"
-            onClick={() => toggleExpanded(i)}
-            style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', cursor: 'pointer', userSelect: 'none' as const }}
-          >
-            {/* Complete button — stops propagation so it doesn't toggle the dropdown */}
-            <button
-              onClick={e => { e.stopPropagation(); if (!checked[i] && saving === null) completeWin(i) }}
-              disabled={checked[i] || saving !== null}
-              style={{ width: 32, height: 32, minWidth: 32, minHeight: 32, padding: 0, flexShrink: 0, borderRadius: '50%', border: `2.5px solid ${checked[i] ? '#22c55e' : saving === i ? Pmuted : '#c5c0b1'}`, background: checked[i] ? '#22c55e' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: checked[i] || saving !== null ? 'default' : 'pointer', transition: 'all 0.2s', boxSizing: 'border-box' as const }}>
-              {checked[i] && <Check size={14} color="#fff" strokeWidth={3} />}
-              {saving === i && <div style={{ width: 10, height: 10, borderRadius: '50%', border: '2px solid #e8e0d5', borderTopColor: P, animation: 'spin 0.6s linear infinite' }} />}
-            </button>
-
-            {/* Impact badge */}
-            <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 800, textTransform: 'uppercase' as const, letterSpacing: '0.04em', background: impactBg(w.impact), color: impactColor(w.impact), padding: '2px 8px', borderRadius: 100, flexShrink: 0 }}>
-              {w.impact}
-            </span>
-
-            {/* Action title — truncated when collapsed */}
-            <p style={{ fontFamily: fontB, fontSize: 13, color: checked[i] ? Pmuted : P, margin: 0, lineHeight: 1.4, flex: 1, minWidth: 0, textDecoration: checked[i] ? 'line-through' : 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: expanded[i] ? 'normal' : 'nowrap' }}>
-              {w.action}
-            </p>
-
-            {/* Chevron */}
-            <span style={{ flexShrink: 0, color: Pmuted, fontSize: 14, transition: 'transform 0.2s', display: 'inline-block', transform: expanded[i] ? 'rotate(180deg)' : 'rotate(0deg)' }}>▾</span>
-          </div>
-
-          {/* ── Expanded body ── */}
-          {expanded[i] && (
-            <div style={{ padding: '0 14px 14px 48px', borderTop: `1px solid ${Pborder}` }}>
-              <div style={{ paddingTop: 10, display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 8 }}>
-                {w.platform && (
-                  <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 600, background: 'rgba(201,192,177,0.25)', color: Pmuted, padding: '2px 8px', borderRadius: 100 }}>
-                    {w.platform}
-                  </span>
-                )}
-                {w.effort && (
-                  <span style={{ fontFamily: fontB, fontSize: 10, color: Pmuted, background: 'rgba(201,192,177,0.15)', padding: '2px 8px', borderRadius: 100 }}>
-                    {w.effort}
-                  </span>
-                )}
-              </div>
-              {w.where && !checked[i] && (
-                <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '0 0 6px', lineHeight: 1.5 }}>
-                  <span style={{ opacity: 0.7 }}>Where:</span> {w.where}
-                </p>
-              )}
-              <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, color: '#c05a00', margin: 0, lineHeight: 1.5 }}>
-                {w.expectedImpact ?? impactLabel(w.impact)}
-              </p>
-            </div>
-          )}
-        </div>
-      ))}
-
-      {wins.length > 0 && (
-        <div style={{ marginTop: 20 }}>
-          <p style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, color: P, margin: '0 0 6px' }}>{done}/{wins.length} completed</p>
-          <div style={{ height: 7, background: Pborder, borderRadius: 100, overflow: 'hidden' }}>
-            <div style={{ height: '100%', background: '#e8330a', borderRadius: 100, width: `${(done / wins.length) * 100}%`, transition: 'width 0.4s ease' }} />
-          </div>
-        </div>
-      )}
-
-      {wins.length === 0 && <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: 0 }}>No quick wins in this report.</p>}
-
-      {badgeToast && (
-        <div style={{ position: 'fixed', bottom: 88, left: '50%', transform: 'translateX(-50%)', zIndex: 1200, background: P, color: '#fff', fontFamily: fontB, fontSize: 13, fontWeight: 600, padding: '12px 22px', borderRadius: 100, boxShadow: '0 8px 32px rgba(32,21,21,0.25)', maxWidth: 'calc(100vw - 48px)', textAlign: 'center', wordBreak: 'break-word', animation: 'slideUp 0.25s ease both' }}>
-          {badgeToast}
-        </div>
-      )}
-
-      {winError && (
-        <div style={{ position: 'fixed', bottom: 88, left: '50%', transform: 'translateX(-50%)', zIndex: 1200, background: '#ef4444', color: '#fff', fontFamily: fontB, fontSize: 13, fontWeight: 600, padding: '12px 22px', borderRadius: 100, boxShadow: '0 8px 32px rgba(239,68,68,0.3)', maxWidth: 'calc(100vw - 48px)', textAlign: 'center', wordBreak: 'break-word', animation: 'slideUp 0.25s ease both' }}>
-          {winError}
-        </div>
-      )}
-    </Card>
-  )
-}
-
-function EnhancedFindingsSection({ diag, report, maxFindings, onUpgrade }: { diag: DiagnosisData; report: ReportRow; maxFindings?: number; onUpgrade?: () => void }) {
-  const [expandedIdx, setExpandedIdx] = useState<number | null>(null)
-  const allFindings = getFindings(diag)
-  const findings    = maxFindings !== undefined ? allFindings.slice(0, maxFindings) : allFindings
-  const lockedCount = maxFindings !== undefined ? Math.max(0, allFindings.length - maxFindings) : 0
-  const days        = daysBetween(report.generated_at)
-  if (allFindings.length === 0) return null
-  return (
-    <div id="findings" style={{ animation: 'fadeUp 0.4s ease both', animationDelay: '350ms' }}>
-      <p style={{ fontFamily: font, fontSize: 20, fontWeight: 700, color: P, margin: '0 0 14px', letterSpacing: '-0.02em' }}>All Findings</p>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {findings.map((f, i) => (
-          <div key={i} style={{ background: '#fff', border: `1px solid ${Pborder}`, borderLeft: `4px solid ${sevColor(f.severity)}`, borderRadius: '0 14px 14px 0', padding: '18px 22px' }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-              <span style={{ fontFamily: font, fontSize: 26, fontWeight: 700, color: P, opacity: 0.1, lineHeight: 1, flexShrink: 0, minWidth: 34 }}>
-                {String(i + 1).padStart(2, '0')}
-              </span>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 5 }}>
-                  <h3 style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: 0 }}>{f.title}</h3>
-                  <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: sevColor(f.severity), background: sevBg(f.severity), padding: '2px 8px', borderRadius: 100, flexShrink: 0 }}>
-                    {f.severity}
-                  </span>
-                  {days > 0 && (
-                    <span style={{ fontFamily: fontB, fontSize: 11, background: sevBg(f.severity), color: sevColor(f.severity), padding: '2px 8px', borderRadius: 100, flexShrink: 0 }}>
-                      Unresolved {days} {days === 1 ? 'day' : 'days'}
-                    </span>
-                  )}
-                </div>
-                <p style={{ fontFamily: fontB, fontSize: 13, color: '#605d52', lineHeight: 1.65, margin: 0,
-                  ...(expandedIdx !== i ? { display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as React.CSSProperties : {}) }}>
-                  {f.explanation}
-                </p>
-                <button onClick={() => setExpandedIdx(expandedIdx === i ? null : i)}
-                  style={{ marginTop: 7, fontFamily: fontB, fontSize: 12, fontWeight: 600, color: P, background: 'none', border: 'none', cursor: 'pointer', padding: 0, opacity: 0.6, display: 'flex', alignItems: 'center', gap: 4 }}>
-                  {expandedIdx === i ? <>Show less <ChevronUp size={12} /></> : <>Read more <ChevronDown size={12} /></>}
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-      {lockedCount > 0 && (
-        <div style={{ marginTop: 10, background: BgAlt, border: `1.5px dashed ${Pborder}`, borderRadius: 14, padding: '18px 22px', display: 'flex', alignItems: 'center', gap: 14 }}>
-          <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <Lock size={16} color={P} />
-          </div>
-          <div style={{ flex: 1 }}>
-            <p style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: P, margin: '0 0 3px' }}>
-              {lockedCount} more {lockedCount === 1 ? 'finding' : 'findings'} locked
-            </p>
-            <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: 0 }}>
-              Upgrade to Starter to see every finding in your diagnostic.
-            </p>
-          </div>
-          <button onClick={onUpgrade} style={{ fontFamily: fontB, fontSize: 12, fontWeight: 600, background: P, color: '#fff', padding: '9px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' as const, flexShrink: 0 }}>
-            Upgrade →
-          </button>
-        </div>
-      )}
-    </div>
-  )
-}
 
 function UpgradeGate({ children, requiredTier, currentTier, feature, description, onUpgrade }: {
   children: React.ReactNode
@@ -1900,7 +856,7 @@ function MilestonesSection({ milestones, bonusDiagnoses, onTabSwitch }: { milest
   }
 
   return (
-    <div style={{ animation: 'fadeUp 0.4s ease both', animationDelay: '450ms' }}>
+    <div style={{ animationDelay: '450ms' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <p style={{ fontFamily: font, fontSize: 20, fontWeight: 700, color: P, margin: 0, letterSpacing: '-0.02em' }}>Your achievements.</p>
         <span style={{ fontFamily: fontB, fontSize: 13, color: Pmuted }}>{earnedCount}/{MILESTONE_DEFS.length} earned</span>
@@ -1950,7 +906,7 @@ function MilestonesSection({ milestones, bonusDiagnoses, onTabSwitch }: { milest
               {!earned && <div style={{ position: 'absolute', top: 8, right: 8 }}><Lock size={10} color="#9ca3af" /></div>}
               {earned && <div style={{ position: 'absolute', top: 8, right: 8 }}><CheckCircle size={10} color={def.color} /></div>}
               <p style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, color: earned ? P : Pmuted, margin: '0 0 4px' }}>{def.name}</p>
-              <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: 0, lineHeight: 1.4 }}>
+              <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: 0, lineHeight: 1.4 }}>
                 {earned ? (ms?.earned_at ? `Earned ${formatDate(ms.earned_at)}` : 'Earned') : def.unlock_hint}
               </p>
             </button>
@@ -1972,7 +928,7 @@ function MilestonesSection({ milestones, bonusDiagnoses, onTabSwitch }: { milest
               </p>
             </div>
             {selectedMs?.earned && selectedMs.earned_at && (
-              <span style={{ fontFamily: fontB, fontSize: 11, color: selectedDef.color, background: selectedDef.color + '15', padding: '4px 10px', borderRadius: 100, whiteSpace: 'nowrap', flexShrink: 0 }}>
+              <span style={{ fontFamily: fontB, fontSize: 12, color: selectedDef.color, background: selectedDef.color + '15', padding: '4px 10px', borderRadius: 100, whiteSpace: 'nowrap', flexShrink: 0 }}>
                 {formatDate(selectedMs.earned_at)}
               </span>
             )}
@@ -2058,7 +1014,7 @@ function CategoryTabHeader({ title, subtitle, score, icon }: {
       {score !== null && (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flexShrink: 0 }}>
           <MiniGauge score={score} />
-          <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, color: Pmuted, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Category Score</span>
+          <span style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, color: Pmuted, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Category Score</span>
         </div>
       )}
     </div>
@@ -2087,7 +1043,7 @@ function CategoryFindingsSection({ findings, emptyMessage }: { findings: Finding
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 5 }}>
                 <h3 style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: 0 }}>{f.title}</h3>
-                <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: sevColor(f.severity), background: sevBg(f.severity), padding: '2px 8px', borderRadius: 100 }}>
+                <span style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: sevColor(f.severity), background: sevBg(f.severity), padding: '2px 8px', borderRadius: 100 }}>
                   {f.severity}
                 </span>
               </div>
@@ -2125,7 +1081,7 @@ function CategoryWinsSection({ wins, emptyMessage }: { wins: QuickWin[]; emptyMe
             <span style={{ fontFamily: font, fontSize: 12, fontWeight: 700, color: impactColor(w.impact) }}>{i + 1}</span>
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', background: impactBg(w.impact), color: impactColor(w.impact), padding: '2px 8px', borderRadius: 100, display: 'inline-block', marginBottom: 6 }}>
+            <span style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', background: impactBg(w.impact), color: impactColor(w.impact), padding: '2px 8px', borderRadius: 100, display: 'inline-block', marginBottom: 6 }}>
               {w.impact} Impact
             </span>
             <p style={{ fontFamily: fontB, fontSize: 14, color: P, margin: '0 0 4px', lineHeight: 1.4 }}>{w.action}</p>
@@ -2200,18 +1156,18 @@ function TeaserTabOverlay({ tabName, category, diag, onUpgrade }: {
   const sevColor = SEVERITY_COLORS[topFinding?.severity ?? 'Info'] ?? SEVERITY_COLORS.Info
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 0, animation: 'fadeUp 0.4s ease both' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 0,  }}>
       {/* Live preview card */}
       {topFinding && (
         <div style={{ marginBottom: 0 }}>
-          <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 14px' }}>
+          <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 14px' }}>
             Top {tabName} Finding, from your diagnosis
           </p>
           <div style={{ background: '#fff', border: `1.5px solid ${Pborder}`, borderLeft: `4px solid ${sevColor.text}`, borderRadius: '0 12px 12px 0', padding: '16px 20px', marginBottom: 12 }}>
             <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
               <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                  <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.08em', color: sevColor.text, background: sevColor.bg, padding: '2px 7px', borderRadius: 5 }}>
+                  <span style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.08em', color: sevColor.text, background: sevColor.bg, padding: '2px 7px', borderRadius: 5 }}>
                     {topFinding.severity}
                   </span>
                 </div>
@@ -2284,7 +1240,7 @@ function AudienceTab({ diag, hasReports, score, onUpgrade }: {
   if (!hasReports) return <NoDiagnosisPlaceholder tabName="Audience" />
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, animation: 'fadeUp 0.4s ease both' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24,  }}>
       <CategoryTabHeader
         title="Audience"
         subtitle="ICP fit, targeting accuracy, firmographic gaps and Meta audience alignment"
@@ -2297,7 +1253,7 @@ function AudienceTab({ diag, hasReports, score, onUpgrade }: {
       )}
 
       <Card>
-        <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 20px' }}>Audience Performance</p>
+        <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 20px' }}>Audience Performance</p>
         <BreakdownBarsSection diag={diag} labels={['ICP Alignment', 'Targeting Accuracy']} />
       </Card>
 
@@ -2322,8 +1278,8 @@ function AudienceTab({ diag, hasReports, score, onUpgrade }: {
         </div>
       )}
 
-      <Card style={{ background: '#f8f4f0' }}>
-        <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 12px' }}>Meta Audience Setup Notes</p>
+      <Card>
+        <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 12px' }}>Meta Audience Setup Notes</p>
         {metaNotes ? (
           <p style={{ fontFamily: fontB, fontSize: 14, color: P, lineHeight: 1.65, margin: 0 }}>{metaNotes}</p>
         ) : (
@@ -2365,7 +1321,7 @@ function SearchTab({ diag, hasReports, score, onUpgrade }: {
   if (!hasReports) return <NoDiagnosisPlaceholder tabName="Search" />
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, animation: 'fadeUp 0.4s ease both' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24,  }}>
       <CategoryTabHeader
         title="Search"
         subtitle="Google keyword targeting, intent alignment, CPC benchmarks and ad creative performance"
@@ -2378,7 +1334,7 @@ function SearchTab({ diag, hasReports, score, onUpgrade }: {
       )}
 
       <Card>
-        <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 20px' }}>Search Performance</p>
+        <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 20px' }}>Search Performance</p>
         <BreakdownBarsSection diag={diag} labels={['Channel Efficiency', 'Message to Market Fit']} />
       </Card>
 
@@ -2401,31 +1357,12 @@ function SearchTab({ diag, hasReports, score, onUpgrade }: {
         />
       </div>
 
-      <Card style={{ background: '#f8f4f0' }}>
-        <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 14px' }}>Keyword and Channel Analysis</p>
+      {keywordAnalysis && <Card>
+        <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 14px' }}>Keyword and Channel Analysis</p>
         {keywordAnalysis ? (
           <p style={{ fontFamily: fontB, fontSize: 14, color: P, lineHeight: 1.65, margin: 0 }}>{keywordAnalysis}</p>
-        ) : (
-          <>
-            <p style={{ fontFamily: fontB, fontSize: 14, color: P, lineHeight: 1.65, margin: '0 0 16px' }}>
-              B2B SaaS average CPCs on Google Search range from $8 to $40 per click depending on keyword intent. Bottom-of-funnel terms (product comparisons, alternatives) typically convert 3 to 5x better than awareness-stage terms.
-            </p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10 }}>
-              {[
-                { label: 'Awareness CPC', value: '$3 - $8', sub: 'Low intent, high volume' },
-                { label: 'Consideration CPC', value: '$8 - $20', sub: 'Category terms' },
-                { label: 'Decision CPC', value: '$20 - $40+', sub: 'High intent, best ROI' },
-              ].map(({ label, value, sub }) => (
-                <div key={label} style={{ background: BgAlt, borderRadius: 8, padding: '12px 14px' }}>
-                  <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: Pmuted, margin: '0 0 6px' }}>{label}</p>
-                  <p style={{ fontFamily: font, fontSize: 17, fontWeight: 800, color: P, margin: '0 0 2px', lineHeight: 1 }}>{value}</p>
-                  <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: 0 }}>{sub}</p>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-      </Card>
+        ) : null}
+      </Card>}
     </div>
   )
 }
@@ -2446,7 +1383,7 @@ function FunnelTab({ diag, hasReports, score, isSubscribed, buyer, onUpgrade }: 
   if (!hasReports) return <NoDiagnosisPlaceholder tabName="Funnel" />
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, animation: 'fadeUp 0.4s ease both' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24,  }}>
       <CategoryTabHeader
         title="Funnel"
         subtitle="Landing page health, CTA clarity, form friction, mobile experience and conversion optimization"
@@ -2459,7 +1396,7 @@ function FunnelTab({ diag, hasReports, score, isSubscribed, buyer, onUpgrade }: 
       )}
 
       <Card>
-        <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 20px' }}>Funnel Performance</p>
+        <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 20px' }}>Funnel Performance</p>
         <BreakdownBarsSection diag={diag} labels={['Funnel Friction Index', 'Message to Market Fit']} />
       </Card>
 
@@ -2479,7 +1416,7 @@ function FunnelTab({ diag, hasReports, score, isSubscribed, buyer, onUpgrade }: 
       )}
 
       {isSubscribed ? (
-        <Card style={{ background: '#f8f4f0' }}>
+        <Card>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
             <BuyerAvatar buyer={buyer} size={44} />
             <div style={{ flex: 1 }}>
@@ -2497,7 +1434,7 @@ function FunnelTab({ diag, hasReports, score, isSubscribed, buyer, onUpgrade }: 
           </div>
         </Card>
       ) : (
-        <Card style={{ background: '#f8f4f0' }}>
+        <Card>
           <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: '0 0 12px' }}>Landing Page Review</p>
           <p style={{ fontFamily: fontB, fontSize: 14, color: '#605d52', lineHeight: 1.75, margin: '0 0 16px' }}>
             Pro includes a live audit of your actual landing page: offer clarity, CTA effectiveness, trust signals, and conversion fixes.
@@ -2527,22 +1464,6 @@ function FunnelTab({ diag, hasReports, score, isSubscribed, buyer, onUpgrade }: 
         />
       </div>
 
-      <Card style={{ background: '#f8f4f0' }}>
-        <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 14px' }}>Conversion Benchmarks</p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10 }}>
-          {[
-            { label: 'B2B Landing Page CVR', value: '2 - 5%', sub: 'Average for SaaS' },
-            { label: 'Form Completion', value: '10 - 25%', sub: '5 fields max performs best' },
-            { label: 'Mobile Traffic Share', value: '40 - 60%', sub: 'Optimize mobile-first' },
-          ].map(({ label, value, sub }) => (
-            <div key={label} style={{ background: BgAlt, borderRadius: 8, padding: '12px 14px' }}>
-              <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: Pmuted, margin: '0 0 6px' }}>{label}</p>
-              <p style={{ fontFamily: font, fontSize: 17, fontWeight: 800, color: P, margin: '0 0 2px', lineHeight: 1 }}>{value}</p>
-              <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: 0 }}>{sub}</p>
-            </div>
-          ))}
-        </div>
-      </Card>
     </div>
   )
 }
@@ -2562,12 +1483,12 @@ function EconomicsKpiTile({
       display: 'flex', flexDirection: 'column', gap: 4,
       boxShadow: '0 1px 8px rgba(201,192,177,0.15)',
     }}>
-      <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: 0 }}>{label}</p>
+      <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: 0 }}>{label}</p>
       {empty ? (
         <>
           <p style={{ fontFamily: font, fontSize: 22, fontWeight: 800, color: Pmuted, margin: 0, lineHeight: 1.1 }}>-</p>
           {emptyAction && (
-            <button onClick={emptyAction} style={{ fontFamily: fontB, fontSize: 11, color: P, background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' as const, marginTop: 2, opacity: 0.65 }}>
+            <button onClick={emptyAction} style={{ fontFamily: fontB, fontSize: 12, color: P, background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' as const, marginTop: 2, opacity: 0.65 }}>
               {emptyLabel ?? 'Upgrade for this metric'}
             </button>
           )}
@@ -2575,7 +1496,7 @@ function EconomicsKpiTile({
       ) : (
         <>
           <p style={{ fontFamily: font, fontSize: 22, fontWeight: 800, color: accent ?? P, margin: 0, lineHeight: 1.15 }}>{value}</p>
-          {sub && <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: 0, lineHeight: 1.4 }}>{sub}</p>}
+          {sub && <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: 0, lineHeight: 1.4 }}>{sub}</p>}
         </>
       )}
     </div>
@@ -2594,10 +1515,10 @@ function EconomicsBeforeAfterRow({
 
   return (
     <div>
-      <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.08em', color: Pmuted, margin: '0 0 10px' }}>{label}</p>
+      <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.08em', color: Pmuted, margin: '0 0 10px' }}>{label}</p>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 24px 1fr', gap: 10, alignItems: 'start' }}>
         <div style={{ background: '#fff8f8', borderRadius: 10, padding: '12px 14px' }}>
-          <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, color: currentColor ?? '#dc2626', margin: '0 0 4px', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>Now</p>
+          <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, color: currentColor ?? '#dc2626', margin: '0 0 4px', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>Now</p>
           <p style={{ fontFamily: fontB, fontSize: 13, color: P, margin: 0, lineHeight: 1.6 }}>
             {expanded ? current : currentShort}
           </p>
@@ -2606,7 +1527,7 @@ function EconomicsBeforeAfterRow({
           <ArrowRight size={14} color={Pmuted} />
         </div>
         <div style={{ background: '#f0fdf4', borderRadius: 10, padding: '12px 14px' }}>
-          <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, color: projectedColor ?? '#16a34a', margin: '0 0 4px', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>After fixing</p>
+          <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, color: projectedColor ?? '#16a34a', margin: '0 0 4px', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>After fixing</p>
           <p style={{ fontFamily: fontB, fontSize: 13, color: '#15803d', margin: 0, lineHeight: 1.6 }}>
             {expanded ? projected : projectedShort}
           </p>
@@ -2655,7 +1576,7 @@ function EconomicsTab({ diag, hasReports, score, currency, onUpgrade }: {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, animation: 'fadeUp 0.4s ease both' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24,  }}>
       <CategoryTabHeader
         title="Economics"
         subtitle="CAC, LTV:CAC ratio, monthly waste and budget reallocation opportunities"
@@ -2711,7 +1632,7 @@ function EconomicsTab({ diag, hasReports, score, currency, onUpgrade }: {
       {hasFinancialData && (
         <Card>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: showFinancialDetail ? 20 : 0 }}>
-            <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: 0 }}>What fixing your ICP is worth</p>
+            <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: 0 }}>What fixing your ICP is worth</p>
             <button
               onClick={() => setShowFinancialDetail(v => !v)}
               style={{ fontFamily: fontB, fontSize: 12, fontWeight: 600, color: Accent, background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px 0', flexShrink: 0 }}
@@ -2748,7 +1669,7 @@ function EconomicsTab({ diag, hasReports, score, currency, onUpgrade }: {
       {bo?.monthly_revenue_opportunity && (
         <div className="hidden sm:block">
           <Card style={{ background: 'rgba(232,51,10,0.05)', border: `1px solid rgba(232,51,10,0.18)` }}>
-            <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Accent, margin: '0 0 10px' }}>Revenue Opportunity</p>
+            <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Accent, margin: '0 0 10px' }}>Revenue Opportunity</p>
             <p style={{ fontFamily: fontB, fontSize: 14, color: P, lineHeight: 1.7, margin: 0 }}>{bo.monthly_revenue_opportunity}</p>
           </Card>
         </div>
@@ -2758,7 +1679,7 @@ function EconomicsTab({ diag, hasReports, score, currency, onUpgrade }: {
       {waste.raw && waste.raw !== '-' && waste.raw.length > 20 && (
         <div className="hidden sm:block">
           <Card>
-            <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 10px' }}>Waste Estimate Breakdown</p>
+            <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 10px' }}>Waste Estimate Breakdown</p>
             <p style={{ fontFamily: fontB, fontSize: 14, color: P, lineHeight: 1.7, margin: 0 }}>{waste.raw}</p>
           </Card>
         </div>
@@ -2766,7 +1687,7 @@ function EconomicsTab({ diag, hasReports, score, currency, onUpgrade }: {
 
       {/* ── Budget efficiency breakdown bars ─────────────────────────────────── */}
       <Card>
-        <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 20px' }}>Budget Efficiency</p>
+        <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 20px' }}>Budget Efficiency</p>
         <BreakdownBarsSection diag={diag} labels={['Budget Reallocation Opportunity', 'Channel Efficiency']} />
       </Card>
 
@@ -2792,97 +1713,12 @@ function EconomicsTab({ diag, hasReports, score, currency, onUpgrade }: {
       </div>
 
       {/* ── Benchmarks ───────────────────────────────────────────────────────── */}
-      <Card style={{ background: '#f8f4f0' }}>
-        <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 14px' }}>B2B Unit Economics Benchmarks</p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10 }}>
-          {[
-            { label: 'Healthy LTV:CAC', value: '3:1 or above', sub: 'World-class is 5:1' },
-            { label: 'CAC Payback', value: 'Under 18 months', sub: 'Best-in-class under 12' },
-            { label: 'Budget Waste (avg)', value: '30 to 60%', sub: 'B2B teams with ICP drift' },
-            { label: 'Close Rate (B2B)', value: '5 to 15%', sub: 'Varies by deal size' },
-          ].map(({ label, value, sub }) => (
-            <div key={label} style={{ background: BgAlt, borderRadius: 8, padding: '12px 14px' }}>
-              <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: Pmuted, margin: '0 0 5px' }}>{label}</p>
-              <p style={{ fontFamily: font, fontSize: 14, fontWeight: 800, color: P, margin: '0 0 2px', lineHeight: 1.2 }}>{value}</p>
-              <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: 0 }}>{sub}</p>
-            </div>
-          ))}
-        </div>
-      </Card>
     </div>
   )
 }
 
 // ─── Today's Priority Action card ────────────────────────────────────────────
 
-function TodaysPriorityCard({ diag, report, user, onComplete }: {
-  diag: DiagnosisData; report: ReportRow; user: UserData
-  onComplete: (streak: number) => void
-}) {
-  const findings   = getFindings(diag)
-  const topFinding = findings.find(f => f.severity === 'Critical') ?? findings[0]
-  const topWin     = (diag.quick_wins ?? [])[0]
-  const [done,   setDone]   = useState(false)
-  const [saving, setSaving] = useState(false)
-  const days = daysBetween(report.generated_at)
-
-  if (!topFinding) return null
-
-  const col = topFinding.severity === 'Critical' ? '#ef4444' : '#f59e0b'
-
-  async function markDone() {
-    if (done || saving) return
-    setSaving(true)
-    try {
-      const res = await fetch('/api/quick-wins/complete', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user.email, win_index: 0, win_text: topWin?.action ?? topFinding.title }),
-      })
-      if (res.ok) {
-        const d = await res.json() as { streak: number }
-        setDone(true)
-        onComplete(d.streak)
-        const mod = await import('canvas-confetti')
-        mod.default({ particleCount: 80, spread: 90, origin: { y: 0.5 }, colors: ['#201515', '#e8330a', '#22c55e', '#f59e0b'] })
-      }
-    } catch { /* noop */ }
-    finally { setSaving(false) }
-  }
-
-  return (
-    <div style={{ background: '#fff', borderRadius: 20, padding: '28px 32px 28px 36px', boxShadow: '0 4px 24px rgba(201,192,177,0.3)', border: `1px solid ${Pborder}`, position: 'relative', overflow: 'hidden', animation: 'fadeUp 0.4s ease both' }}>
-      <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 4, background: col, borderRadius: '20px 0 0 20px' }} />
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: col }}>FIX THIS TODAY</span>
-        <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, background: col + '18', color: col, padding: '2px 8px', borderRadius: 100 }}>{topFinding.severity ?? 'Critical'}</span>
-      </div>
-      <h3 style={{ fontFamily: font, fontSize: 24, fontWeight: 700, color: P, margin: '8px 0 6px', letterSpacing: '-0.02em', lineHeight: 1.25 }}>{topFinding.title}</h3>
-      {days > 0 && (
-        <span style={{ fontFamily: fontB, fontSize: 12, fontWeight: 600, background: days > 14 ? '#fee2e2' : '#fef3c7', color: days > 14 ? '#ef4444' : '#d97706', padding: '4px 12px', borderRadius: 100, display: 'inline-block', margin: '0 0 12px' }}>
-          Unresolved for {days} {days === 1 ? 'day' : 'days'}
-        </span>
-      )}
-      <p style={{ fontFamily: fontB, fontSize: 14, color: '#4a4640', lineHeight: 1.65, margin: '0 0 20px' }}>
-        {topFinding.explanation}
-      </p>
-      {topWin && (
-        <div style={{ background: '#fafafa', border: '1px solid rgba(201,192,177,0.4)', borderLeft: `3px solid ${col}`, borderRadius: 12, padding: '14px 18px', marginBottom: 18 }}>
-          <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 6px' }}>HOW TO FIX THIS</p>
-          <p style={{ fontFamily: fontB, fontSize: 14, color: P, margin: '0 0 8px', lineHeight: 1.6 }}>{topWin.action}</p>
-          <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 600, background: '#fef3c7', color: '#d97706', padding: '3px 10px', borderRadius: 100 }}>
-            {topWin.timeline ?? 'Estimated: 15 minutes'}
-          </span>
-        </div>
-      )}
-      <button
-        onClick={markDone}
-        disabled={done || saving}
-        style={{ display: 'flex', width: '100%', justifyContent: 'center', alignItems: 'center', gap: 8, background: done ? '#22c55e' : P, color: '#fff', border: 'none', borderRadius: 14, padding: '13px 22px', fontFamily: fontB, fontSize: 14, fontWeight: 600, cursor: done || saving ? 'default' : 'pointer', opacity: saving ? 0.75 : 1, transition: 'background 0.25s', marginTop: 4 }}>
-        {done ? <><Check size={15} /> Fixed</> : saving ? 'Saving…' : 'Mark as Fixed'}
-      </button>
-    </div>
-  )
-}
 
 // ─── Achievement Modal ────────────────────────────────────────────────────────
 
@@ -2929,63 +1765,6 @@ function AchievementModal({ achievement, onDismiss }: {
 
 // ─── Get It Done card ─────────────────────────────────────────────────────────
 
-function GetItDoneCard({ tier, onBook, onUpgrade }: { tier: string; onBook: () => void; onUpgrade?: () => void }) {
-  const isAgency = tier === 'agency'
-  const pills = [
-    { icon: <CheckCircle size={20} color="#fff" />, text: 'We review your diagnostic before the session, no briefing needed' },
-    { icon: <Target     size={20} color="#fff" />, text: 'We implement your top 3 fixes with you live on the call' },
-    { icon: <TrendingUp size={20} color="#fff" />, text: 'Follow-up report 30 days later to measure improvement' },
-  ]
-  return (
-    <div style={{
-      background: 'linear-gradient(135deg,#201515 0%,#2d1e0a 100%)',
-      borderRadius: 12, animation: 'fadeUp 0.4s ease both', animationDelay: '230ms',
-    }}
-      className="grid grid-cols-1 lg:grid-cols-2 gap-0"
-    >
-      {/* Left */}
-      <div style={{ padding: 'clamp(28px,4vw,36px) clamp(24px,5vw,40px)' }}>
-        <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', background: 'rgba(255,255,255,0.15)', color: '#fff', padding: '4px 12px', borderRadius: 100, display: 'inline-block', marginBottom: 14 }}>
-          Agency Feature
-        </span>
-        <h3 style={{ fontFamily: font, fontSize: 'clamp(18px,2.5vw,22px)', fontWeight: 700, color: '#fff', margin: '0 0 14px', lineHeight: 1.25, letterSpacing: '-0.01em' }}>
-          Don&apos;t have time to fix this yourself?
-        </h3>
-        <p style={{ fontFamily: fontB, fontSize: 15, color: 'rgba(255,255,255,0.78)', lineHeight: 1.7, margin: '0 0 24px' }}>
-          Hand your diagnostic over to one of our media buyers. We show up already knowing your ICP score, your biggest leak, and your waste estimate. You just show up and make decisions.
-        </p>
-        {isAgency ? (
-          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-            <button onClick={onBook} style={{ fontFamily: font, fontWeight: 600, fontSize: 14, background: '#fff', color: P, border: 'none', borderRadius: 12, padding: '14px 28px', cursor: 'pointer', letterSpacing: '-0.2px' }}>
-              Book a Strategy Session →
-            </button>
-            <a href="#get-it-done-features" style={{ fontFamily: font, fontWeight: 600, fontSize: 14, color: '#fff', background: 'transparent', border: '1.5px solid rgba(255,255,255,0.35)', borderRadius: 12, padding: '14px 28px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
-              See what&apos;s included
-            </a>
-          </div>
-        ) : (
-          <div>
-            <p style={{ fontFamily: fontB, fontSize: 14, color: 'rgba(255,255,255,0.55)', margin: '0 0 16px', lineHeight: 1.6 }}>
-              Upgrade to Agency to unlock strategy sessions with our media buyers.
-            </p>
-            <button onClick={onUpgrade} style={{ fontFamily: font, fontWeight: 600, fontSize: 14, background: '#fff', color: P, border: 'none', borderRadius: 12, padding: '14px 28px', cursor: 'pointer', display: 'inline-block' }}>
-              See Agency Plan →
-            </button>
-          </div>
-        )}
-      </div>
-      {/* Right */}
-      <div id="get-it-done-features" style={{ padding: 'clamp(28px,4vw,36px) clamp(24px,5vw,40px)', display: 'flex', flexDirection: 'column', gap: 12, justifyContent: 'center' }}>
-        {pills.map((pill, i) => (
-          <div key={i} style={{ background: 'rgba(255,255,255,0.1)', borderRadius: 12, padding: '16px 20px', display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-            <div style={{ flexShrink: 0, marginTop: 2 }}>{pill.icon}</div>
-            <p style={{ fontFamily: fontB, fontSize: 14, color: '#fff', margin: 0, lineHeight: 1.55 }}>{pill.text}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
 
 // ─── Booking modal ─────────────────────────────────────────────────────────────
 
@@ -3045,7 +1824,7 @@ function BookingModal({
 
         {step === 'success' ? (
           <div style={{ textAlign: 'center', padding: '20px 0' }}>
-            <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', animation: 'fadeUp 0.4s ease both' }}>
+            <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px',  }}>
               <Check size={28} color="#16a34a" strokeWidth={3} />
             </div>
             <h2 style={{ fontFamily: font, fontSize: 22, fontWeight: 700, color: P, margin: '0 0 12px', letterSpacing: '-0.02em' }}>Session request received.</h2>
@@ -3070,7 +1849,7 @@ function BookingModal({
 
             {/* Brief */}
             <div style={{ background: BgAlt, borderRadius: 12, padding: '18px 22px', marginBottom: 24 }}>
-              <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#605d52', margin: '0 0 14px' }}>Your Session Brief</p>
+              <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#605d52', margin: '0 0 14px' }}>Your Session Brief</p>
               {brief.map(b => (
                 <div key={b.label} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
                   <div style={{ width: 6, height: 6, borderRadius: '50%', background: P, flexShrink: 0 }} />
@@ -3125,43 +1904,6 @@ function BookingModal({
   )
 }
 
-function FindingsSection({ diag }: { diag: DiagnosisData }) {
-  const [expandedIdx, setExpandedIdx] = useState<number | null>(null)
-  const findings = getFindings(diag)
-  if (findings.length === 0) return null
-  return (
-    <div id="findings" style={{ animation: 'fadeUp 0.4s ease both', animationDelay: '350ms' }}>
-      <p style={{ fontFamily: font, fontSize: 20, fontWeight: 700, color: P, margin: '0 0 14px', letterSpacing: '-0.02em' }}>All Findings</p>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {findings.map((f, i) => (
-          <div key={i} style={{ background: '#fff', border: `1px solid ${Pborder}`, borderLeft: `4px solid ${sevColor(f.severity)}`, borderRadius: '0 14px 14px 0', padding: '18px 22px' }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-              <span style={{ fontFamily: font, fontSize: 26, fontWeight: 700, color: P, opacity: 0.1, lineHeight: 1, flexShrink: 0, minWidth: 34 }}>
-                {String(i + 1).padStart(2, '0')}
-              </span>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 5 }}>
-                  <h3 style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: 0 }}>{f.title}</h3>
-                  <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: sevColor(f.severity), background: sevBg(f.severity), padding: '2px 8px', borderRadius: 100, flexShrink: 0 }}>
-                    {f.severity}
-                  </span>
-                </div>
-                <p style={{ fontFamily: fontB, fontSize: 13, color: '#605d52', lineHeight: 1.65, margin: 0,
-                  ...(expandedIdx !== i ? { display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as React.CSSProperties : {}) }}>
-                  {f.explanation}
-                </p>
-                <button onClick={() => setExpandedIdx(expandedIdx === i ? null : i)}
-                  style={{ marginTop: 7, fontFamily: fontB, fontSize: 12, fontWeight: 600, color: P, background: 'none', border: 'none', cursor: 'pointer', padding: 0, opacity: 0.6, display: 'flex', alignItems: 'center', gap: 4 }}>
-                  {expandedIdx === i ? <>Show less <ChevronUp size={12} /></> : <>Read more <ChevronDown size={12} /></>}
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
 
 function FirstRunDashboard({ user, latestCsv }: { user: UserData; latestCsv?: CsvHistoryItem }) {
   const firstName  = user.full_name?.split(' ')[0] ?? null
@@ -3176,7 +1918,7 @@ function FirstRunDashboard({ user, latestCsv }: { user: UserData; latestCsv?: Cs
   ]
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, animation: 'fadeUp 0.4s ease both' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24,  }}>
 
       {/* CSV result card — shown when they uploaded a file but haven't done the questionnaire */}
       {hasCsv && latestCsv && (
@@ -3188,7 +1930,7 @@ function FirstRunDashboard({ user, latestCsv }: { user: UserData; latestCsv?: Cs
                 <FileText size={16} color={Accent} />
               </div>
               <div>
-                <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.45)', margin: '0 0 2px' }}>Campaign Analysis</p>
+                <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.45)', margin: '0 0 2px' }}>Campaign Analysis</p>
                 <p style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: '#fff', margin: 0 }}>{latestCsv.file}</p>
               </div>
             </div>
@@ -3204,13 +1946,13 @@ function FirstRunDashboard({ user, latestCsv }: { user: UserData; latestCsv?: Cs
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' as const }}>
               {latestCsv.budget_waste && (
                 <div style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 8, padding: '10px 14px', flex: 1, minWidth: 140 }}>
-                  <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.08em', color: '#b45309', margin: '0 0 3px' }}>Budget Waste</p>
+                  <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.08em', color: '#b45309', margin: '0 0 3px' }}>Budget Waste</p>
                   <p style={{ fontFamily: font, fontSize: 16, fontWeight: 800, color: '#92400e', margin: 0 }}>{latestCsv.budget_waste}</p>
                 </div>
               )}
               {latestCsv.recommendations_count > 0 && (
                 <div style={{ background: 'rgba(22,163,74,0.06)', border: '1px solid rgba(22,163,74,0.2)', borderRadius: 8, padding: '10px 14px', flex: 1, minWidth: 140 }}>
-                  <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.08em', color: '#166534', margin: '0 0 3px' }}>Recommendations</p>
+                  <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.08em', color: '#166534', margin: '0 0 3px' }}>Recommendations</p>
                   <p style={{ fontFamily: font, fontSize: 16, fontWeight: 800, color: '#14532d', margin: 0 }}>{latestCsv.recommendations_count} ranked actions</p>
                 </div>
               )}
@@ -3253,7 +1995,7 @@ function FirstRunDashboard({ user, latestCsv }: { user: UserData; latestCsv?: Cs
           borderRadius: 12, padding: 'clamp(28px,5vw,48px) clamp(24px,5vw,52px)',
         }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 28 }}>
-            <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.45)' }}>
+            <span style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.45)' }}>
               {isNewUser ? 'Welcome to ICP Brand' : 'Step 1 of 3'}
             </span>
             <h2 style={{ fontFamily: font, fontSize: 'clamp(22px,4vw,32px)', fontWeight: 700, color: '#fff', margin: 0, letterSpacing: '-0.02em', lineHeight: 1.2 }}>
@@ -3285,7 +2027,7 @@ function FirstRunDashboard({ user, latestCsv }: { user: UserData; latestCsv?: Cs
 
       {/* What your dashboard reveals after the diagnostic */}
       <div>
-        <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 14px' }}>
+        <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 14px' }}>
           Unlocks after your first diagnosis
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -3305,7 +2047,7 @@ function FirstRunDashboard({ user, latestCsv }: { user: UserData; latestCsv?: Cs
 
       {/* Progress rail */}
       <div style={{ background: '#f8f4f0', borderRadius: 12, padding: '20px 24px', border: `1.5px solid ${Pborder}` }}>
-        <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 16px' }}>Your journey</p>
+        <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 16px' }}>Your journey</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {[
             { step: 1, label: hasCsv ? 'Campaign CSV analysed' : 'Run your first ICP diagnostic', done: hasCsv, active: !hasCsv },
@@ -3314,7 +2056,7 @@ function FirstRunDashboard({ user, latestCsv }: { user: UserData; latestCsv?: Cs
           ].map(({ step, label, done, active }) => (
             <div key={step} style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
               <div style={{ width: 28, height: 28, borderRadius: '50%', background: done ? '#22c55e' : active ? P : Pborder, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                {done ? <Check size={13} color="#fff" /> : <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, color: active ? '#fff' : Pmuted }}>{step}</span>}
+                {done ? <Check size={13} color="#fff" /> : <span style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, color: active ? '#fff' : Pmuted }}>{step}</span>}
               </div>
               <p style={{ fontFamily: fontB, fontSize: 13, fontWeight: active ? 600 : 400, color: active ? P : done ? '#166534' : Pmuted, margin: 0 }}>{label}</p>
             </div>
@@ -3395,41 +2137,6 @@ function RenewalBanner({ user, onUpgrade }: { user: UserData; onUpgrade: () => v
   )
 }
 
-function WelcomeBanner({ user }: { user: UserData }) {
-  return (
-    <div style={{
-      background: 'linear-gradient(135deg,#201515 0%,#2d1e0a 100%)',
-      borderRadius: 12, padding: 'clamp(22px,4vw,36px) clamp(20px,5vw,48px)',
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      gap: 20, flexWrap: 'wrap',
-      animation: 'fadeUp 0.4s ease both',
-    }}>
-      <div>
-        <h2 style={{ fontFamily: font, fontSize: 'clamp(18px,3vw,24px)', fontWeight: 700, color: '#fff', margin: '0 0 4px' }}>
-          {greeting(user.full_name)}
-        </h2>
-        {user.company_name && (
-          <p style={{ fontFamily: fontB, fontSize: 14, color: 'rgba(255,255,255,0.6)', margin: '0 0 3px' }}>{user.company_name}</p>
-        )}
-        <p style={{ fontFamily: fontB, fontSize: 14, color: 'rgba(255,255,255,0.45)', margin: 0 }}>
-          Here is where your marketing stands today.
-        </p>
-        {user.scheduled_tier && user.scheduled_tier_date && (
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, marginTop: 8, background: 'rgba(255,255,255,0.12)', borderRadius: 100, padding: '4px 12px' }}>
-            <AlertTriangle size={11} color="#fbbf24" />
-            <span style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.75)' }}>
-              Downgrade to {TIER_LABEL[user.scheduled_tier] ?? user.scheduled_tier} on {formatDate(user.scheduled_tier_date)}
-            </span>
-          </div>
-        )}
-      </div>
-      <Link href="/questionnaire"
-        style={{ fontFamily: font, fontWeight: 600, fontSize: 13, background: '#fff', color: P, padding: '12px 22px', borderRadius: 12, textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0 }}>
-        + Run New Diagnosis
-      </Link>
-    </div>
-  )
-}
 
 // ─── Reports tab ──────────────────────────────────────────────────────────────
 
@@ -3470,7 +2177,7 @@ function ReportsTab({ reports, dataLoading }: { reports: ReportRow[]; dataLoadin
                     {s !== null ? (
                       <>
                         <span style={{ fontFamily: font, fontSize: 26, fontWeight: 800, color: scoreColor(s), lineHeight: 1 }}>{s}</span>
-                        <p style={{ fontFamily: fontB, fontSize: 9, fontWeight: 600, textTransform: 'uppercase', color: Pmuted, margin: '2px 0 0' }}>/100</p>
+                        <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 600, textTransform: 'uppercase', color: Pmuted, margin: '2px 0 0' }}>/100</p>
                       </>
                     ) : (
                       <span style={{ fontFamily: font, fontSize: 22, fontWeight: 700, color: Pmuted }}>-</span>
@@ -3480,10 +2187,10 @@ function ReportsTab({ reports, dataLoading }: { reports: ReportRow[]; dataLoadin
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3, flexWrap: 'wrap' }}>
                       <span style={{ fontFamily: font, fontSize: 14, fontWeight: 600, color: P }}>{formatDate(r.generated_at)}</span>
-                      {i === 0 && <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, background: 'rgba(232,51,10,0.1)', color: '#e8330a', padding: '2px 8px', borderRadius: 100 }}>Latest</span>}
+                      {i === 0 && <span style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, background: 'rgba(232,51,10,0.1)', color: '#e8330a', padding: '2px 8px', borderRadius: 100 }}>Latest</span>}
                     </div>
                     {fs[0] && (
-                      <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{fs[0].title}</p>
+                      <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{fs[0].title}</p>
                     )}
                   </div>
                   {diff !== null && (
@@ -3596,19 +2303,19 @@ function CancellationModal({ user, score, reportCount, onClose, onCancelled, onU
 
         {/* Stats reminder */}
         <div style={{ background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 14, padding: '16px 18px', marginBottom: 20 }}>
-          <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: Pmuted, margin: '0 0 10px' }}>Your account at a glance</p>
+          <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: Pmuted, margin: '0 0 10px' }}>Your account at a glance</p>
           <div style={{ display: 'flex', gap: 24 }}>
             <div>
               <p style={{ fontFamily: font, fontSize: 22, fontWeight: 700, color: P, margin: 0 }}>{score ?? '-'}</p>
-              <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '2px 0 0' }}>ICP Score</p>
+              <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '2px 0 0' }}>ICP Score</p>
             </div>
             <div>
               <p style={{ fontFamily: font, fontSize: 22, fontWeight: 700, color: P, margin: 0 }}>{reportCount}</p>
-              <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '2px 0 0' }}>Diagnostics</p>
+              <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '2px 0 0' }}>Diagnostics</p>
             </div>
             <div>
               <p style={{ fontFamily: font, fontSize: 22, fontWeight: 700, color: P, margin: 0 }}>{user.renewal_date ? formatDate(user.renewal_date) : '-'}</p>
-              <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '2px 0 0' }}>Access until</p>
+              <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '2px 0 0' }}>Access until</p>
             </div>
           </div>
         </div>
@@ -3673,57 +2380,6 @@ function CancellationModal({ user, score, reportCount, onClose, onCancelled, onU
   )
 }
 
-function PauseModal({ user, onClose, onPaused }: { user: UserData; onClose: () => void; onPaused: (resumeDate: string) => void }) {
-  const [loading, setLoading] = useState(false)
-  const [error,   setError]   = useState('')
-  const priceKES = TIER_PRICE_KES[user.subscription_tier] ?? 0
-
-  async function handlePause() {
-    setLoading(true); setError('')
-    try {
-      const res = await fetch('/api/subscription/pause', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userEmail: user.email }),
-      })
-      if (!res.ok) throw new Error('failed')
-      const { resumeDate } = await res.json()
-      onPaused(resumeDate)
-    } catch { setError('Something went wrong. Please try again.') }
-    finally { setLoading(false) }
-  }
-
-  return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(10,10,15,0.72)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }} onClick={onClose}>
-      <div style={{ background: '#fff', borderRadius: 12, padding: '32px 28px', maxWidth: 440, width: '100%' }} onClick={e => e.stopPropagation()}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18 }}>
-          <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: 0, letterSpacing: '-0.02em' }}>Pause for 1 month?</p>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: Pmuted, padding: 4 }}><X size={18} /></button>
-        </div>
-        <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 20px', lineHeight: 1.7 }}>
-          Your subscription will be paused for 30 days. You keep access to all your data and reports.
-          We will not charge you this month. Your subscription resumes automatically after 30 days.
-        </p>
-        {priceKES > 0 && (
-          <div style={{ background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 12, padding: '14px 18px', marginBottom: 20, textAlign: 'center' }}>
-            <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>You will save this month</p>
-            <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: 0 }}>KES {priceKES.toLocaleString()}</p>
-          </div>
-        )}
-        {error && <p style={{ fontFamily: fontB, fontSize: 12, color: '#ef4444', margin: '0 0 12px' }}>{error}</p>}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <button onClick={handlePause} disabled={loading}
-            style={{ background: P, border: 'none', borderRadius: 12, padding: '13px 0', fontSize: 14, fontFamily: font, fontWeight: 600, color: '#fff', cursor: loading ? 'default' : 'pointer', opacity: loading ? 0.7 : 1 }}>
-            {loading ? 'Pausing…' : 'Confirm Pause'}
-          </button>
-          <button onClick={onClose}
-            style={{ background: 'none', border: `1px solid ${Pborder}`, borderRadius: 12, padding: '12px 0', fontSize: 13, fontFamily: fontB, color: P, cursor: 'pointer' }}>
-            Never mind
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 function ChangePlanConfirmModal({ newTier, currentTier, renewalDate, onClose, onConfirmed }: {
   newTier: string; currentTier: string; renewalDate: string | null
@@ -3768,22 +2424,22 @@ function ChangePlanConfirmModal({ newTier, currentTier, renewalDate, onClose, on
           {isUpgrade ? (
             <>
               <div>
-                <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '0 0 2px', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>New monthly rate</p>
+                <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '0 0 2px', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>New monthly rate</p>
                 <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: 0 }}>KES {priceKES.toLocaleString()} / month</p>
               </div>
               {!renewalDate ? (
                 <div>
-                  <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '0 0 2px', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>Pay now via Paystack</p>
+                  <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '0 0 2px', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>Pay now via Paystack</p>
                   <p style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: 0 }}>KES {priceKES.toLocaleString()} today, then monthly</p>
                 </div>
               ) : (
                 <div>
-                  <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '0 0 2px', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>Prorated top-up due now</p>
+                  <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '0 0 2px', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>Prorated top-up due now</p>
                   <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: 0 }}>
                     {topUpKes > 0 ? `KES ${topUpKes.toLocaleString()}` : 'None'}
                   </p>
                   {topUpKes > 0 && (
-                    <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '3px 0 0', lineHeight: 1.4 }}>
+                    <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '3px 0 0', lineHeight: 1.4 }}>
                       Covers {days} remaining days. Full rate from {renewalLabel}. You will be taken to Paystack to pay.
                     </p>
                   )}
@@ -3793,15 +2449,15 @@ function ChangePlanConfirmModal({ newTier, currentTier, renewalDate, onClose, on
           ) : (
             <>
               <div>
-                <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '0 0 2px', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>Charge today</p>
+                <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '0 0 2px', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>Charge today</p>
                 <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: '#15803d', margin: 0 }}>None</p>
               </div>
               <div>
-                <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '0 0 2px', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>Current features stay active until</p>
+                <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '0 0 2px', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>Current features stay active until</p>
                 <p style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: 0 }}>{renewalLabel || '-'}</p>
               </div>
               <div>
-                <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '0 0 2px', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>{label} billing starts</p>
+                <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '0 0 2px', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>{label} billing starts</p>
                 <p style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: 0 }}>{renewalLabel || '-'}</p>
               </div>
             </>
@@ -3965,21 +2621,21 @@ function InDashboardUpgradeModal({ user, onClose, onUpgraded }: {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 2 }}>
                       <span style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: P }}>{TIER_LABEL[tier]}</span>
                       {popular && !isCurrent && (
-                        <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, color: '#e8330a', background: 'rgba(232,51,10,0.1)', padding: '2px 7px', borderRadius: 100 }}>Popular</span>
+                        <span style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, color: '#e8330a', background: 'rgba(232,51,10,0.1)', padding: '2px 7px', borderRadius: 100 }}>Popular</span>
                       )}
                       {isCurrent && (
-                        <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, color: P, background: P + '15', padding: '2px 7px', borderRadius: 100 }}>Current</span>
+                        <span style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, color: P, background: P + '15', padding: '2px 7px', borderRadius: 100 }}>Current</span>
                       )}
                     </div>
                     <p style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: '0 0 6px', letterSpacing: '-0.01em' }}>
-                      KES {price.toLocaleString()} <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 400, color: Pmuted }}>/ mo</span>
+                      KES {price.toLocaleString()} <span style={{ fontFamily: fontB, fontSize: 12, fontWeight: 400, color: Pmuted }}>/ mo</span>
                     </p>
-                    <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '0 0 6px', lineHeight: 1.5 }}>{TIER_DESC[tier]}</p>
+                    <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '0 0 6px', lineHeight: 1.5 }}>{TIER_DESC[tier]}</p>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                       {features.map(f => (
                         <div key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
                           <Check size={11} color="#22c55e" style={{ flexShrink: 0, marginTop: 2 }} />
-                          <span style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, lineHeight: 1.35 }}>{f}</span>
+                          <span style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, lineHeight: 1.35 }}>{f}</span>
                         </div>
                       ))}
                     </div>
@@ -4015,7 +2671,7 @@ function InDashboardUpgradeModal({ user, onClose, onUpgraded }: {
                 {!isCurrent && (
                   <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1px solid ${Pborder}` }}>
                     {isUpgrade ? (
-                      <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: 0, lineHeight: 1.5 }}>
+                      <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: 0, lineHeight: 1.5 }}>
                         {!user.renewal_date
                           ? `You will pay KES ${price.toLocaleString()} now via Paystack to activate ${TIER_LABEL[tier]}. Your billing period starts today.`
                           : topUp > 0
@@ -4023,7 +2679,7 @@ function InDashboardUpgradeModal({ user, onClose, onUpgraded }: {
                             : `Activates immediately. Next charge: KES ${price.toLocaleString()} on ${renewalLabel()}.`}
                       </p>
                     ) : isDowngrade ? (
-                      <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: 0, lineHeight: 1.5 }}>
+                      <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: 0, lineHeight: 1.5 }}>
                         {TIER_LABEL[user.subscription_tier]} features stay active until {renewalLabel() || 'your renewal date'}.{' '}
                         {TIER_LABEL[tier]} billing starts after that. No charge today.
                       </p>
@@ -4035,7 +2691,7 @@ function InDashboardUpgradeModal({ user, onClose, onUpgraded }: {
           })}
         </div>
 
-        <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, textAlign: 'center', margin: '0 24px 20px', lineHeight: 1.6 }}>
+        <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, textAlign: 'center', margin: '0 24px 20px', lineHeight: 1.6 }}>
           Manage or cancel anytime from the Account tab.
         </p>
       </div>
@@ -4050,7 +2706,6 @@ function AccountTab({ user, currency, score, reportCount, reports, onSignOut, on
   onUpgrade?: () => void; buyer?: MediaBuyer
 }) {
   const [showChangePlan,       setShowChangePlan]       = useState(false)
-  const [showPauseModal,       setShowPauseModal]       = useState(false)
   const [showCancelModal,      setShowCancelModal]      = useState(false)
   const [confirmPlan,          setConfirmPlan]          = useState<string | null>(null)
   const [billingHistory,       setBillingHistory]       = useState<BillingRow[]>([])
@@ -4229,9 +2884,9 @@ function AccountTab({ user, currency, score, reportCount, reports, onSignOut, on
         {/* Referral card */}
         <Card style={{ padding: '24px 28px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-            <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: Pmuted, margin: 0 }}>Refer a friend</p>
+            <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: Pmuted, margin: 0 }}>Refer a friend</p>
             {refBonus > 0 && (
-              <span style={{ background: 'rgba(232,51,10,0.08)', color: '#e8330a', fontFamily: fontB, fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 4 }}>
+              <span style={{ background: 'rgba(232,51,10,0.08)', color: '#e8330a', fontFamily: fontB, fontSize: 12, fontWeight: 700, padding: '3px 9px', borderRadius: 4 }}>
                 +{refBonus} bonus {refBonus === 1 ? 'diagnosis' : 'diagnoses'} earned
               </span>
             )}
@@ -4265,11 +2920,11 @@ function AccountTab({ user, currency, score, reportCount, reports, onSignOut, on
             <div style={{ display: 'flex', gap: 24, paddingTop: 14, borderTop: `1px solid ${Pborder}` }}>
               <div>
                 <p style={{ fontFamily: fontB, fontSize: 18, fontWeight: 700, color: P, margin: '0 0 2px' }}>{refCount}</p>
-                <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: 0 }}>{refCount === 1 ? 'friend' : 'friends'} referred</p>
+                <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: 0 }}>{refCount === 1 ? 'friend' : 'friends'} referred</p>
               </div>
               <div>
                 <p style={{ fontFamily: fontB, fontSize: 18, fontWeight: 700, color: '#e8330a', margin: '0 0 2px' }}>{refBonus}</p>
-                <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: 0 }}>bonus {refBonus === 1 ? 'diagnosis' : 'diagnoses'} earned</p>
+                <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: 0 }}>bonus {refBonus === 1 ? 'diagnosis' : 'diagnoses'} earned</p>
               </div>
             </div>
           )}
@@ -4283,7 +2938,7 @@ function AccountTab({ user, currency, score, reportCount, reports, onSignOut, on
         {/* Profile */}
         <Card style={{ padding: '24px 28px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
-            <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: Pmuted, margin: 0 }}>Profile</p>
+            <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: Pmuted, margin: 0 }}>Profile</p>
             {!editingProfile && (
               <button onClick={() => { setEditingProfile(true); setProfileName(user.full_name ?? ''); setProfileCompany(user.company_name ?? '') }}
                 style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', cursor: 'pointer', fontFamily: fontB, fontSize: 12, color: Pmuted, padding: 0 }}>
@@ -4310,7 +2965,7 @@ function AccountTab({ user, currency, score, reportCount, reports, onSignOut, on
             <div>
               <p style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, color: P, margin: '0 0 2px' }}>{user.full_name ?? user.email}</p>
               <button onClick={() => avatarInputRef.current?.click()} disabled={avatarUploading}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fontB, fontSize: 11, color: Pmuted, padding: 0, textDecoration: 'underline' }}>
+                style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fontB, fontSize: 12, color: Pmuted, padding: 0, textDecoration: 'underline' }}>
                 {avatarUploading ? 'Uploading…' : 'Change photo'}
               </button>
             </div>
@@ -4319,17 +2974,17 @@ function AccountTab({ user, currency, score, reportCount, reports, onSignOut, on
           {editingProfile ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div>
-                <label style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, display: 'block', marginBottom: 4 }}>Full name</label>
+                <label style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, display: 'block', marginBottom: 4 }}>Full name</label>
                 <input value={profileName} onChange={e => setProfileName(e.target.value)}
                   style={{ width: '100%', boxSizing: 'border-box', fontFamily: fontB, fontSize: 13, color: P, background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 8, padding: '9px 12px', outline: 'none' }} />
               </div>
               <div>
-                <label style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, display: 'block', marginBottom: 4 }}>Company</label>
+                <label style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, display: 'block', marginBottom: 4 }}>Company</label>
                 <input value={profileCompany} onChange={e => setProfileCompany(e.target.value)}
                   style={{ width: '100%', boxSizing: 'border-box', fontFamily: fontB, fontSize: 13, color: P, background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 8, padding: '9px 12px', outline: 'none' }} />
               </div>
               <div>
-                <label style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, display: 'block', marginBottom: 4 }}>Email</label>
+                <label style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, display: 'block', marginBottom: 4 }}>Email</label>
                 <input value={user.email} disabled
                   style={{ width: '100%', boxSizing: 'border-box', fontFamily: fontB, fontSize: 13, color: Pmuted, background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 8, padding: '9px 12px', outline: 'none' }} />
               </div>
@@ -4368,9 +3023,9 @@ function AccountTab({ user, currency, score, reportCount, reports, onSignOut, on
                 <BuyerAvatar buyer={buyer} size={40} />
                 <div style={{ flex: 1 }}>
                   <p style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: '#fff', margin: '0 0 1px' }}>{buyer.name}</p>
-                  <p style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.6)', margin: 0 }}>{buyer.title}</p>
+                  <p style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.6)', margin: 0 }}>{buyer.title}</p>
                 </div>
-                <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, background: 'rgba(255,255,255,0.15)', color: '#fff', padding: '2px 8px', borderRadius: 100, letterSpacing: '0.08em', textTransform: 'uppercase' as const, whiteSpace: 'nowrap' as const }}>
+                <span style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, background: 'rgba(255,255,255,0.15)', color: '#fff', padding: '2px 8px', borderRadius: 100, letterSpacing: '0.08em', textTransform: 'uppercase' as const, whiteSpace: 'nowrap' as const }}>
                   Your buyer
                 </span>
               </div>
@@ -4412,7 +3067,7 @@ function AccountTab({ user, currency, score, reportCount, reports, onSignOut, on
         <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           {/* Left */}
           <div style={{ flex: '1 1 180px' }}>
-            <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, background: isPaused ? '#0369a1' : P, color: '#fff', padding: '3px 12px', borderRadius: 100, display: 'inline-block', marginBottom: 12 }}>
+            <span style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, background: isPaused ? '#0369a1' : P, color: '#fff', padding: '3px 12px', borderRadius: 100, display: 'inline-block', marginBottom: 12 }}>
               {isPaused ? 'Paused' : tierLabel}
             </span>
             <p style={{ fontFamily: font, fontSize: 20, fontWeight: 700, color: P, margin: '0 0 6px', letterSpacing: '-0.02em' }}>{tierLabel} Plan</p>
@@ -4423,7 +3078,7 @@ function AccountTab({ user, currency, score, reportCount, reports, onSignOut, on
             <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 16px' }}>{renewalInfo()}</p>
             {PLAN_FEATURES[user.subscription_tier] && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.07em', color: Pmuted, margin: '0 0 6px' }}>What&apos;s included</p>
+                <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.07em', color: Pmuted, margin: '0 0 6px' }}>What&apos;s included</p>
                 {PLAN_FEATURES[user.subscription_tier].map(f => (
                   <div key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 7 }}>
                     <Check size={12} color="#22c55e" style={{ flexShrink: 0, marginTop: 2 }} />
@@ -4500,13 +3155,13 @@ function AccountTab({ user, currency, score, reportCount, reports, onSignOut, on
               return (
                 <div key={t} style={{ background: '#f8f4f0', border: isCurrent ? `2px solid ${P}` : '1px solid #c5c0b1', borderRadius: 10, padding: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
                   <div style={{ minHeight: 22 }}>
-                    {isCurrent && <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, background: P, color: '#fff', padding: '2px 10px', borderRadius: 100 }}>Current Plan</span>}
-                    {isPopular && <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, background: '#e8330a', color: '#fff', padding: '2px 10px', borderRadius: 100 }}>Most Popular</span>}
+                    {isCurrent && <span style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, background: P, color: '#fff', padding: '2px 10px', borderRadius: 100 }}>Current Plan</span>}
+                    {isPopular && <span style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, background: '#e8330a', color: '#fff', padding: '2px 10px', borderRadius: 100 }}>Most Popular</span>}
                   </div>
                   <div>
                     <p style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: P, margin: '0 0 4px' }}>{tLabel}</p>
                     <p style={{ fontFamily: fontB, fontSize: 14, fontWeight: 600, color: P, margin: '0 0 6px' }}>KES {tPrice.toLocaleString()}/mo</p>
-                    <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: 0, lineHeight: 1.5 }}>{TIER_DESC[t]}</p>
+                    <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: 0, lineHeight: 1.5 }}>{TIER_DESC[t]}</p>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
                     {tFeatures.map(f => (
@@ -4544,7 +3199,7 @@ function AccountTab({ user, currency, score, reportCount, reports, onSignOut, on
                 <thead>
                   <tr style={{ borderBottom: `1px solid ${Pborder}` }}>
                     {['Date', 'Plan', 'Amount', 'Status', 'Invoice'].map(h => (
-                      <th key={h} style={{ fontWeight: 700, color: Pmuted, textAlign: 'left', padding: '8px 12px', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{h}</th>
+                      <th key={h} style={{ fontWeight: 700, color: Pmuted, textAlign: 'left', padding: '8px 12px', fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -4553,11 +3208,11 @@ function AccountTab({ user, currency, score, reportCount, reports, onSignOut, on
                     <tr key={row.id ?? i} style={{ borderBottom: i < billingHistory.length - 1 ? `1px solid ${Pborder}` : 'none' }}>
                       <td style={{ padding: '12px 12px', color: P }}>{formatDate(row.date)}</td>
                       <td style={{ padding: '12px 12px' }}>
-                        <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, background: P, color: '#fff', padding: '2px 10px', borderRadius: 100 }}>{TIER_LABEL[row.plan] ?? row.plan}</span>
+                        <span style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, background: P, color: '#fff', padding: '2px 10px', borderRadius: 100 }}>{TIER_LABEL[row.plan] ?? row.plan}</span>
                       </td>
                       <td style={{ padding: '12px 12px', color: P, fontWeight: 600 }}>KES {row.amount_kes.toLocaleString()}</td>
                       <td style={{ padding: '12px 12px' }}>
-                        <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, background: row.status === 'paid' ? '#dcfce7' : row.status === 'failed' ? '#fee2e2' : '#fef3c7', color: row.status === 'paid' ? '#16a34a' : row.status === 'failed' ? '#ef4444' : '#d97706', padding: '2px 10px', borderRadius: 100 }}>
+                        <span style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, background: row.status === 'paid' ? '#dcfce7' : row.status === 'failed' ? '#fee2e2' : '#fef3c7', color: row.status === 'paid' ? '#16a34a' : row.status === 'failed' ? '#ef4444' : '#d97706', padding: '2px 10px', borderRadius: 100 }}>
                           {row.status.charAt(0).toUpperCase() + row.status.slice(1)}
                         </span>
                       </td>
@@ -4616,7 +3271,7 @@ function AccountTab({ user, currency, score, reportCount, reports, onSignOut, on
 
         {/* Security */}
         <Card style={{ padding: '24px 28px' }}>
-          <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: Pmuted, margin: '0 0 4px' }}>Security</p>
+          <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: Pmuted, margin: '0 0 4px' }}>Security</p>
           <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 16px' }}>How you sign in to your account.</p>
 
           {/* Sign-in method */}
@@ -4645,7 +3300,7 @@ function AccountTab({ user, currency, score, reportCount, reports, onSignOut, on
 
         {/* Data management */}
         <Card style={{ padding: '24px 28px' }}>
-          <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: Pmuted, margin: '0 0 4px' }}>Data Management</p>
+          <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: Pmuted, margin: '0 0 4px' }}>Data Management</p>
           <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 16px' }}>Download or permanently delete your account data.</p>
 
           {/* Export, JSON */}
@@ -4779,15 +3434,6 @@ function AccountTab({ user, currency, score, reportCount, reports, onSignOut, on
       </div>
 
       {/* Modals (outside columns so they overlay everything) */}
-      {showPauseModal && (
-        <PauseModal user={user} onClose={() => setShowPauseModal(false)}
-          onPaused={resumeDate => {
-            setShowPauseModal(false)
-            onUserUpdate({ billing_status: 'paused', paused_until: resumeDate })
-            showToast('Subscription paused. It will resume automatically in 30 days.')
-          }}
-        />
-      )}
       {showCancelModal && (
         <CancellationModal user={user} score={score} reportCount={reportCount}
           onClose={() => setShowCancelModal(false)}
@@ -4873,8 +3519,8 @@ function BenchmarkTrack({ name, userValue, industryAvg, top10, unit, higherIsBet
         {DOTS.map(d => (
           <div key={d.name} style={{ position: 'absolute', left: `${d.p}%`, top: '50%', transform: 'translate(-50%,-50%)' }}>
             <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: 4, whiteSpace: 'nowrap', textAlign: 'center' }}>
-              <div style={{ fontFamily: "'PolySans Neutral', system-ui, sans-serif", fontSize: 11, fontWeight: 700, color: d.color }}>{d.label}</div>
-              <div style={{ fontFamily: "'PolySans Neutral', system-ui, sans-serif", fontSize: 10, color: '#939084' }}>{d.name}</div>
+              <div style={{ fontFamily: "'PolySans Neutral', system-ui, sans-serif", fontSize: 12, fontWeight: 700, color: d.color }}>{d.label}</div>
+              <div style={{ fontFamily: "'PolySans Neutral', system-ui, sans-serif", fontSize: 12, color: '#939084' }}>{d.name}</div>
             </div>
             <div style={{ width: d.size, height: d.size, borderRadius: '50%', background: d.color, border: '2px solid #fff', boxShadow: '0 1px 4px rgba(0,0,0,0.15)', position: 'relative', zIndex: 1 }} />
           </div>
@@ -4905,14 +3551,14 @@ function InsightCard({ insight }: { insight: MarketInsight }) {
             <p style={{ fontFamily: "'PolySans Median', system-ui", fontSize: 14, fontWeight: 700, color: '#201515', margin: 0, lineHeight: 1.35, flex: '1 1 180px' }}>{insight.title}</p>
             <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
               {insight.source && (
-                <span style={{ fontFamily: "'PolySans Neutral', system-ui", fontSize: 10, fontWeight: 700, background: '#fffefb', color: '#605d52', padding: '2px 8px', borderRadius: 100, maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
+                <span style={{ fontFamily: "'PolySans Neutral', system-ui", fontSize: 12, fontWeight: 700, background: '#fffefb', color: '#605d52', padding: '2px 8px', borderRadius: 100, maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
                   {insight.sourceUrl
                     ? <a href={insight.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#605d52', textDecoration: 'underline', cursor: 'pointer' }}>{insight.source}</a>
                     : insight.source
                   }
                 </span>
               )}
-              <span style={{ fontFamily: "'PolySans Neutral', system-ui", fontSize: 10, color: '#939084', whiteSpace: 'nowrap' }}>{insight.timeLabel}</span>
+              <span style={{ fontFamily: "'PolySans Neutral', system-ui", fontSize: 12, color: '#939084', whiteSpace: 'nowrap' }}>{insight.timeLabel}</span>
             </div>
           </div>
           <p style={{ fontFamily: "'PolySans Neutral', system-ui", fontSize: 13, color: '#605d52', margin: 0, lineHeight: 1.6, wordBreak: 'break-word' as const }}>{insight.body}</p>
@@ -5165,7 +3811,7 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 14 }}>
         {SUGGESTED.map(q => (
           <button key={q} onClick={() => handleQuestion(q)}
-            style={{ fontFamily: fontB, fontSize: 11, color: P, background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 100, padding: '5px 12px', cursor: 'pointer' }}>
+            style={{ fontFamily: fontB, fontSize: 12, color: P, background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 100, padding: '5px 12px', cursor: 'pointer' }}>
             {q}
           </button>
         ))}
@@ -5193,7 +3839,7 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
         <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
           {answers.map((a, i) => (
             <div key={i} style={{ background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 12, padding: '16px 18px' }}>
-              <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, color: Pmuted, margin: '0 0 6px', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Your question</p>
+              <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, color: Pmuted, margin: '0 0 6px', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Your question</p>
               <p style={{ fontFamily: font, fontSize: 13, fontWeight: 600, color: P, margin: '0 0 10px' }}>{a.q}</p>
               <p style={{ fontFamily: fontB, fontSize: 13, color: P, margin: 0, lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{a.a}</p>
               {a.sources && a.sources.length > 0 && (
@@ -5202,10 +3848,10 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
                     const url = a.sourceUrls?.[si]
                     const isUrl = url && url.startsWith('http')
                     return isUrl
-                      ? <a key={s} href={url} target="_blank" rel="noopener noreferrer" style={{ fontFamily: fontB, fontSize: 10, background: 'rgba(201,192,177,0.3)', color: Pmuted, padding: '2px 8px', borderRadius: 100, textDecoration: 'underline', cursor: 'pointer' }}>{s}</a>
+                      ? <a key={s} href={url} target="_blank" rel="noopener noreferrer" style={{ fontFamily: fontB, fontSize: 12, background: 'rgba(201,192,177,0.3)', color: Pmuted, padding: '2px 8px', borderRadius: 100, textDecoration: 'underline', cursor: 'pointer' }}>{s}</a>
                       : s.startsWith('http')
-                        ? <a key={s} href={s} target="_blank" rel="noopener noreferrer" style={{ fontFamily: fontB, fontSize: 10, background: 'rgba(201,192,177,0.3)', color: Pmuted, padding: '2px 8px', borderRadius: 100, textDecoration: 'underline', cursor: 'pointer' }}>{s}</a>
-                        : <span key={s} style={{ fontFamily: fontB, fontSize: 10, background: 'rgba(201,192,177,0.3)', color: Pmuted, padding: '2px 8px', borderRadius: 100 }}>{s}</span>
+                        ? <a key={s} href={s} target="_blank" rel="noopener noreferrer" style={{ fontFamily: fontB, fontSize: 12, background: 'rgba(201,192,177,0.3)', color: Pmuted, padding: '2px 8px', borderRadius: 100, textDecoration: 'underline', cursor: 'pointer' }}>{s}</a>
+                        : <span key={s} style={{ fontFamily: fontB, fontSize: 12, background: 'rgba(201,192,177,0.3)', color: Pmuted, padding: '2px 8px', borderRadius: 100 }}>{s}</span>
                   })}
                 </div>
               )}
@@ -5279,7 +3925,7 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
         <div style={{ background: 'linear-gradient(135deg,#201515 0%,#2d1e0a 100%)', borderRadius: 12, padding: 'clamp(24px,4vw,36px) clamp(20px,5vw,40px)' }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20, justifyContent: 'space-between', alignItems: 'center', marginBottom: tier !== 'free' ? 0 : 0 }}>
             <div>
-              <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, background: 'rgba(255,255,255,0.2)', color: '#fff', padding: '3px 12px', borderRadius: 100, letterSpacing: '0.1em', textTransform: 'uppercase', display: 'inline-block', marginBottom: 12 }}>
+              <span style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, background: 'rgba(255,255,255,0.2)', color: '#fff', padding: '3px 12px', borderRadius: 100, letterSpacing: '0.1em', textTransform: 'uppercase', display: 'inline-block', marginBottom: 12 }}>
                 Weekly Intelligence Briefing
               </span>
               <h2 style={{ fontFamily: font, fontSize: 'clamp(20px,3vw,26px)', fontWeight: 700, color: '#fff', margin: '0 0 6px', letterSpacing: '-0.02em' }}>Your market this week.</h2>
@@ -5325,7 +3971,7 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
               <div>
                 {canRefresh ? (
                   <>
-                    <p style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.45)', margin: '0 0 3px', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Refresh status</p>
+                    <p style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.45)', margin: '0 0 3px', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Refresh status</p>
                     <p style={{ fontFamily: font, fontSize: 20, fontWeight: 700, color: '#22c55e', margin: 0, letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: 7 }}>
                       <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', display: 'inline-block', flexShrink: 0 }} />
                       Ready to refresh
@@ -5333,7 +3979,7 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
                   </>
                 ) : (
                   <>
-                    <p style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.45)', margin: '0 0 3px', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Next refresh in</p>
+                    <p style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.45)', margin: '0 0 3px', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Next refresh in</p>
                     <p style={{ fontFamily: font, fontSize: 28, fontWeight: 700, color: '#fff', margin: 0, letterSpacing: '-0.03em', fontVariantNumeric: 'tabular-nums' }}>
                       {countdownStr}
                     </p>
@@ -5344,20 +3990,20 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
               {/* Tier badge + remaining count */}
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5 }}>
                 {tierBadge && (
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontFamily: fontB, fontSize: 11, fontWeight: 600, color: tierBadge.color, background: 'rgba(255,255,255,0.1)', border: `1px solid rgba(255,255,255,0.15)`, borderRadius: 100, padding: '3px 10px' }}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontFamily: fontB, fontSize: 12, fontWeight: 600, color: tierBadge.color, background: 'rgba(255,255,255,0.1)', border: `1px solid rgba(255,255,255,0.15)`, borderRadius: 100, padding: '3px 10px' }}>
                     {tierBadge.icon}
                     {tierBadge.label}
                   </span>
                 )}
                 {refreshesLabel && (
-                  <span style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>
+                  <span style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>
                     {refreshesLabel}
                   </span>
                 )}
                 {tier !== 'agency' && (
-                  <p style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.35)', margin: 0, textAlign: 'right' }}>
+                  <p style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.35)', margin: 0, textAlign: 'right' }}>
                     Agency gets 3 refreshes/day.{' '}
-                    <button onClick={onUpgrade} style={{ color: '#e8330a', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: fontB, fontSize: 11 }}>Upgrade</button>
+                    <button onClick={onUpgrade} style={{ color: '#e8330a', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: fontB, fontSize: 12 }}>Upgrade</button>
                   </p>
                 )}
               </div>
@@ -5371,16 +4017,16 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
               <button
                 onClick={() => setShowResearchSources(v => !v)}
                 style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.45)', textDecoration: 'underline' }}>
+                <span style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.45)', textDecoration: 'underline' }}>
                   {showResearchSources ? 'Hide research sources' : 'View research sources'}
                 </span>
-                <span style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>{showResearchSources ? '▲' : '▼'}</span>
+                <span style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>{showResearchSources ? '▲' : '▼'}</span>
               </button>
               {showResearchSources && (
                 <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 5 }}>
                   {briefing.researchSources.slice(0, 4).map((src, i) => (
                     <a key={i} href={src.url} target="_blank" rel="noopener noreferrer"
-                      style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.6)', textDecoration: 'underline', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.6)', textDecoration: 'underline', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {src.title || src.url}
                     </a>
                   ))}
@@ -5392,7 +4038,7 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
           {/* Send to inbox — only when there's a briefing and user is on paid tier */}
           {briefing && tier !== 'free' && (
             <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
-              <p style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.35)', margin: 0 }}>
+              <p style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.35)', margin: 0 }}>
                 Send this briefing to {user.email}
               </p>
               <button
@@ -5406,7 +4052,7 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
                   : <><Send size={12} /> Send to inbox</>
                 }
               </button>
-              {emailError && <p style={{ fontFamily: fontB, fontSize: 11, color: '#f87171', margin: 0, width: '100%' }}>{emailError}</p>}
+              {emailError && <p style={{ fontFamily: fontB, fontSize: 12, color: '#f87171', margin: 0, width: '100%' }}>{emailError}</p>}
             </div>
           )}
         </div>
@@ -5744,7 +4390,7 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
               return (
                 <div key={msg.id} style={{ display: 'flex', flexDirection: 'column', alignItems: isUser ? 'flex-end' : 'flex-start', gap: 4 }}>
                   {isMediaBuyer && (
-                    <span style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, paddingLeft: 4 }}>Eugene · Media Buyer</span>
+                    <span style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, paddingLeft: 4 }}>Eugene · Media Buyer</span>
                   )}
 
                   <div style={{
@@ -5773,7 +4419,7 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
                   </div>
 
                   {!isTyping && (
-                    <span style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, paddingLeft: isUser ? 0 : 4, paddingRight: isUser ? 4 : 0 }}>
+                    <span style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, paddingLeft: isUser ? 0 : 4, paddingRight: isUser ? 4 : 0 }}>
                       {formatTime(msg.timestamp)}
                     </span>
                   )}
@@ -5896,9 +4542,9 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
                 <BrainCircuit size={13} color="#fff" />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, color: Pmuted, margin: '0 0 3px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>ICP Media Buyer</p>
+                <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, color: Pmuted, margin: '0 0 3px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>ICP Media Buyer</p>
                 <p style={{ fontFamily: fontB, fontSize: 13, color: P, margin: 0, lineHeight: 1.5 }}>{proactiveMsg}</p>
-                <p style={{ fontFamily: fontB, fontSize: 11, color: '#e8330a', margin: '6px 0 0', fontWeight: 600 }}>Tap to chat →</p>
+                <p style={{ fontFamily: fontB, fontSize: 12, color: '#e8330a', margin: '6px 0 0', fontWeight: 600 }}>Tap to chat →</p>
               </div>
               <button onClick={e => { e.stopPropagation(); setProactiveMsg(null) }}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', color: Pmuted, padding: '0 0 0 4px', display: 'flex', flexShrink: 0, lineHeight: 1 }}>
@@ -6349,24 +4995,26 @@ export default function DashboardPage() {
 
   const TAB_ICONS: Record<Tab, React.ReactNode> = {
     overview:     <LayoutDashboard size={20} />,
-    audience:     <Users size={20} />,
+    audience:     <FileSearch size={20} />,
     search:       <Search size={20} />,
     funnel:       <Filter size={20} />,
     economics:    <DollarSign size={20} />,
     intelligence: <Brain size={20} />,
-    reports:      <FileText size={20} />,
+    reports:      <TrendingUp size={20} />,
     account:      <User size={20} />,
   }
 
   const TAB_LABELS: Record<Tab, string> = {
-    overview: 'Overview', audience: 'Audience', search: 'Search',
-    funnel: 'Funnel', economics: 'Economics',
-    intelligence: 'Intelligence', reports: 'Reports', account: 'Account',
+    overview: 'Overview', audience: 'Diagnosis', search: 'Diagnosis',
+    funnel: 'Diagnosis', economics: 'Diagnosis',
+    intelligence: 'Market', reports: 'Progress', account: 'Account',
   }
+  const navActive = (tab: Tab) => tab === 'audience' ? DIAGNOSIS_TABS.includes(activeTab) : activeTab === tab
   const userInitials = (user?.full_name ?? user?.email ?? '?').split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase()
 
   return (
-    <div style={{ minHeight: '100vh', background: BgAlt, fontFamily: fontB }}>
+    <div style={{ minHeight: '100vh', background: DT.bg, fontFamily: fontB }}>
+      <DashStyles />
       <style>{`
         @keyframes spin        { to { transform: rotate(360deg) } }
         @keyframes fadeUp      { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:translateY(0) } }
@@ -6408,116 +5056,33 @@ export default function DashboardPage() {
                 {user?.full_name ?? user?.email}
               </p>
               {user?.company_name && (
-                <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '1px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.company_name}</p>
+                <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '1px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.company_name}</p>
               )}
               {tierLabel && (
-                <span style={{ display: 'inline-block', marginTop: 4, fontFamily: fontB, fontSize: 10, fontWeight: 700, background: P, color: '#fff', padding: '2px 10px', borderRadius: 100 }}>{tierLabel}</span>
+                <span style={{ display: 'inline-block', marginTop: 4, fontFamily: fontB, fontSize: 12, fontWeight: 700, background: P, color: '#fff', padding: '2px 10px', borderRadius: 100 }}>{tierLabel}</span>
               )}
             </div>
           </div>
-          {/* Milestone badge row */}
-          <button onClick={() => setActiveTab('account')} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left', width: '100%' }}>
-            <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: Pmuted, margin: '0 0 6px' }}>Achievements</p>
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-              {MILESTONE_DEFS.map(def => {
-                const earned = milestones.find(m => m.key === def.key)?.earned ?? false
-                return (
-                  <div key={def.key} title={earned ? def.name : def.unlock_hint}
-                    style={{ width: 28, height: 28, borderRadius: '50%', background: earned ? def.color + '20' : '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: earned ? 1 : 0.4, transition: 'opacity 0.2s', flexShrink: 0 }}>
-                    <def.Icon size={14} color={earned ? def.color : '#9ca3af'} />
-                  </div>
-                )
-              })}
-            </div>
-          </button>
         </div>
 
         {/* Nav items */}
         <nav style={{ flex: 1, padding: '12px 12px', overflowY: 'auto' }}>
-          {/* Diagnostic sections */}
-          <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: Pmuted, margin: '4px 0 6px', padding: '0 12px' }}>Diagnostic</p>
-          {(['overview', 'audience', 'search', 'funnel', 'economics'] as Tab[]).map(tab => {
-            const isActive = activeTab === tab
+          {NAV_TABS.map(tab => {
+            const isActive = navActive(tab)
             return (
-              <button key={tab} onClick={() => setActiveTab(tab)} className="sidebar-nav-item"
-                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', marginBottom: 1, textAlign: 'left', background: isActive ? 'rgba(232,51,10,0.08)' : 'transparent', color: isActive ? '#e8330a' : '#605d52', fontFamily: fontB, fontSize: 13, fontWeight: isActive ? 600 : 500, transition: 'background 0.12s' }}>
-                <span style={{ flexShrink: 0, display: 'flex' }}>{TAB_ICONS[tab]}</span>
-                <span style={{ flex: 1 }}>{TAB_LABELS[tab]}</span>
-                {tab === 'overview' && score !== null && (
-                  <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, background: scoreLabelBg(score), color: scoreColor(score), padding: '2px 7px', borderRadius: 100, flexShrink: 0 }}>{score}</span>
-                )}
-              </button>
-            )
-          })}
-
-          <div style={{ margin: '10px 0', borderTop: `1px solid ${Pborder}` }} />
-
-          {/* Intelligence */}
-          {(['intelligence'] as Tab[]).map(tab => {
-            const isActive = activeTab === tab
-            return (
-              <button key={tab} onClick={() => setActiveTab(tab)} className="sidebar-nav-item"
-                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', marginBottom: 1, textAlign: 'left', background: isActive ? 'rgba(232,51,10,0.08)' : 'transparent', color: isActive ? '#e8330a' : '#605d52', fontFamily: fontB, fontSize: 13, fontWeight: isActive ? 600 : 500, transition: 'background 0.12s' }}>
+              <button key={tab} onClick={() => setActiveTab(tab)} className="sidebar-nav-item" aria-current={isActive ? 'page' : undefined}
+                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '11px 12px', borderRadius: 12, border: 'none', cursor: 'pointer', marginBottom: 2, textAlign: 'left', background: isActive ? 'rgba(232,51,10,0.08)' : 'transparent', color: isActive ? Accent : P, fontFamily: fontB, fontSize: 15, fontWeight: isActive ? 600 : 400 }}>
                 <span style={{ position: 'relative', flexShrink: 0, display: 'flex' }}>
                   {TAB_ICONS[tab]}
-                  {hasNewIntelligence && (
-                    <span style={{ position: 'absolute', top: -2, right: -2, width: 7, height: 7, borderRadius: '50%', background: '#ef4444', border: '1.5px solid #fff' }} />
+                  {tab === 'intelligence' && hasNewIntelligence && (
+                    <span style={{ position: 'absolute', top: -2, right: -2, width: 8, height: 8, borderRadius: '50%', background: Accent, border: '1.5px solid #fff' }} />
                   )}
                 </span>
                 <span style={{ flex: 1 }}>{TAB_LABELS[tab]}</span>
-                {hasNewIntelligence && (
-                  <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, background: '#fee2e2', color: '#ef4444', padding: '2px 7px', borderRadius: 100, flexShrink: 0 }}>New</span>
-                )}
               </button>
             )
           })}
-
-          <div style={{ margin: '10px 0', borderTop: `1px solid ${Pborder}` }} />
-
-          {/* Utility */}
-          {(['reports', 'account'] as Tab[]).map(tab => {
-            const isActive = activeTab === tab
-            return (
-              <button key={tab} onClick={() => setActiveTab(tab)} className="sidebar-nav-item"
-                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', marginBottom: 1, textAlign: 'left', background: isActive ? 'rgba(232,51,10,0.08)' : 'transparent', color: isActive ? '#e8330a' : '#605d52', fontFamily: fontB, fontSize: 13, fontWeight: isActive ? 600 : 500, transition: 'background 0.12s' }}>
-                <span style={{ flexShrink: 0, display: 'flex' }}>{TAB_ICONS[tab]}</span>
-                <span style={{ flex: 1 }}>{TAB_LABELS[tab]}</span>
-                {tab === 'reports' && reports.length > 0 && (
-                  <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, background: Pborder, color: Pmuted, padding: '2px 7px', borderRadius: 100, flexShrink: 0 }}>{reports.length}</span>
-                )}
-                {tab === 'account' && user?.renewal_date && (() => {
-                  const days = Math.ceil((new Date(user.renewal_date).getTime() - Date.now()) / 86_400_000)
-                  return days > 0 && days <= 7 ? (
-                    <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, background: '#fef3c7', color: '#d97706', padding: '2px 7px', borderRadius: 100, flexShrink: 0 }}>{days}d</span>
-                  ) : null
-                })()}
-              </button>
-            )
-          })}
-
-          {reports.length > 0 && (
-            <>
-              <div style={{ margin: '12px 0', borderTop: `1px solid ${Pborder}` }} />
-              <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: Pmuted, margin: '0 0 6px', padding: '0 12px' }}>Recent Reports</p>
-              {reports.slice(0, 3).map((r, i) => {
-                const d = parseDiagnosis(r.report_summary)
-                const s = getScore(d)
-                return (
-                  <button key={r.id} onClick={() => setActiveTab('reports')} className="sidebar-nav-item"
-                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '7px 12px', borderRadius: 8, border: 'none', cursor: 'pointer', textAlign: 'left', background: 'transparent' }}>
-                    {s !== null && (
-                      <span style={{ fontFamily: font, fontSize: 12, fontWeight: 700, color: scoreColor(s), flexShrink: 0, width: 24 }}>{s}</span>
-                    )}
-                    <span style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{formatDate(r.generated_at)}</span>
-                    {i === 0 && <span style={{ fontFamily: fontB, fontSize: 9, fontWeight: 700, background: 'rgba(232,51,10,0.1)', color: '#e8330a', padding: '1px 6px', borderRadius: 100, flexShrink: 0 }}>Latest</span>}
-                  </button>
-                )
-              })}
-            </>
-          )}
-
           <div style={{ margin: '12px 0', borderTop: `1px solid ${Pborder}` }} />
-
           <button onClick={() => setShowHelp(true)} className="sidebar-nav-item"
             style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', textAlign: 'left', background: 'transparent', color: '#605d52', fontFamily: fontB, fontSize: 13, fontWeight: 500 }}>
             <HelpCircle size={18} />
@@ -6532,13 +5097,13 @@ export default function DashboardPage() {
 
         {/* Currency selector at bottom */}
         <div style={{ padding: '16px 20px', borderTop: `1px solid ${Pborder}` }}>
-          <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: Pmuted, margin: '0 0 8px' }}>Currency</p>
+          <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: Pmuted, margin: '0 0 8px' }}>Currency</p>
           <div style={{ position: 'relative' }}>
             <select value={currency} onChange={e => handleCurrencyChange(e.target.value)}
               style={{ width: '100%', appearance: 'none', WebkitAppearance: 'none', fontFamily: fontB, fontSize: 13, fontWeight: 600, color: P, background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 8, padding: '8px 32px 8px 12px', cursor: 'pointer', outline: 'none' }}>
               {CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
-            <span style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', fontSize: 10, color: P }}>▾</span>
+            <span style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', fontSize: 12, color: P }}>▾</span>
           </div>
         </div>
       </aside>
@@ -6553,7 +5118,7 @@ export default function DashboardPage() {
           <span style={{ fontFamily: font, fontWeight: 600, fontSize: 13, color: P, flex: 1, textAlign: 'center' }}>{TAB_LABELS[activeTab]}</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             {tierLabel && (
-              <span style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, background: P, color: '#fff', padding: '3px 8px', borderRadius: 100 }}>{tierLabel}</span>
+              <span style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, background: P, color: '#fff', padding: '3px 8px', borderRadius: 100 }}>{tierLabel}</span>
             )}
             <button
               onClick={() => { setShowNotifications(v => { if (!v) markAllRead(); return !v }); }}
@@ -6573,7 +5138,9 @@ export default function DashboardPage() {
       <div className="lg:ml-[240px]">
         {/* Desktop page header */}
         <div className="hidden lg:flex" style={{ alignItems: 'center', justifyContent: 'space-between', padding: '28px 40px 0', gap: 16 }}>
-          <h1 style={{ fontFamily: font, fontSize: 22, fontWeight: 700, color: P, margin: 0, letterSpacing: '-0.02em' }}>{TAB_LABELS[activeTab]}</h1>
+          {activeTab === 'overview'
+            ? <span />
+            : <h1 style={{ fontFamily: font, fontSize: 28, fontWeight: 700, color: P, margin: 0, letterSpacing: '-0.025em' }}>{TAB_LABELS[activeTab]}</h1>}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <Link href="/questionnaire" style={{ display: 'flex', alignItems: 'center', gap: 7, background: P, color: '#fff', border: 'none', borderRadius: 10, padding: '9px 18px', fontFamily: fontB, fontSize: 13, fontWeight: 600, cursor: 'pointer', textDecoration: 'none' }}>
               <Zap size={14} /> Run New Diagnosis
@@ -6600,13 +5167,13 @@ export default function DashboardPage() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: Pmuted, margin: 0 }}>Notifications</p>
                         {unreadCount > 0 && (
-                          <span style={{ fontFamily: fontB, fontSize: 11, background: '#ef4444', color: '#fff', borderRadius: 100, padding: '2px 7px' }}>
+                          <span style={{ fontFamily: fontB, fontSize: 12, background: '#ef4444', color: '#fff', borderRadius: 100, padding: '2px 7px' }}>
                             {unreadCount} unread
                           </span>
                         )}
                       </div>
                       {unreadCount > 0 && (
-                        <button onClick={markAllRead} style={{ fontFamily: fontB, fontSize: 11, color: P, background: 'transparent', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>
+                        <button onClick={markAllRead} style={{ fontFamily: fontB, fontSize: 12, color: P, background: 'transparent', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>
                           Mark all read
                         </button>
                       )}
@@ -6617,7 +5184,7 @@ export default function DashboardPage() {
                       <div style={{ padding: '32px 20px', textAlign: 'center' }}>
                         <Bell size={20} color={Pmuted} style={{ marginBottom: 10, opacity: 0.4 }} />
                         <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: 0 }}>You&apos;re all caught up</p>
-                        <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '4px 0 0', opacity: 0.7 }}>New alerts will appear here</p>
+                        <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '4px 0 0', opacity: 0.7 }}>New alerts will appear here</p>
                       </div>
                     ) : (
                       <div style={{ maxHeight: 420, overflowY: 'auto' as const, padding: '6px 0' }}>
@@ -6638,10 +5205,10 @@ export default function DashboardPage() {
                                   <p style={{ fontFamily: fontB, fontSize: 13, fontWeight: isUnread ? 700 : 500, color: P, margin: 0, lineHeight: 1.3 }}>{n.title}</p>
                                   {isUnread && <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#ef4444', flexShrink: 0 }} />}
                                 </div>
-                                <p style={{ fontFamily: fontB, fontSize: 11, color: Pmuted, margin: '0 0 6px', lineHeight: 1.5 }}>{n.body}</p>
+                                <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '0 0 6px', lineHeight: 1.5 }}>{n.body}</p>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                                  <span style={{ fontFamily: fontB, fontSize: 10, color: Pmuted, opacity: 0.7 }}>{n.ts}</span>
-                                  {n.actionLabel && <span style={{ fontFamily: fontB, fontSize: 11, color: n.color, fontWeight: 600 }}>{n.actionLabel}</span>}
+                                  <span style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, opacity: 0.7 }}>{n.ts}</span>
+                                  {n.actionLabel && <span style={{ fontFamily: fontB, fontSize: 12, color: n.color, fontWeight: 600 }}>{n.actionLabel}</span>}
                                 </div>
                               </div>
                             </button>
@@ -6658,39 +5225,7 @@ export default function DashboardPage() {
 
         <div style={{ padding: 'clamp(20px,4vw,32px) clamp(14px,4vw,40px) 100px' }}>
 
-        {user && <RenewalBanner user={user} onUpgrade={() => setShowUpgradeModal(true)} />}
-
-        {/* Paid, but the latest report was made on the free plan (10 quick
-            questions, no landing page check). Ask for the full diagnosis. */}
-        {isSubscribed && hasReports && diag && diag.is_deep_research !== true && (
-          <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderLeft: `4px solid ${Accent}`, borderRadius: 12, padding: '16px 20px', marginBottom: 20, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 14 }}>
-            <div style={{ flex: '1 1 260px', minWidth: 0 }}>
-              <p style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: P, margin: '0 0 3px' }}>Finish your full diagnosis</p>
-              <p style={{ fontFamily: fontB, fontSize: 13, color: '#605d52', margin: 0, lineHeight: 1.5 }}>
-                This report came from the free check, so your Search, Funnel and Economics tabs are thin. Answer about 12 more questions (your earlier answers are filled in) and we will check your real landing page too.
-              </p>
-            </div>
-            <a href="/questionnaire?full=1" style={{ background: P, color: '#fff', borderRadius: 10, padding: '10px 18px', fontFamily: fontB, fontSize: 14, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>
-              Complete it now
-            </a>
-          </div>
-        )}
-
-        {/* Monthly Check-in + Daily Brief, overview tab only */}
-        {activeTab === 'overview' && !dataLoading && hasReports && user && (
-          <div style={{ marginBottom: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <MonthlyCheckinCard user={user} buyer={assignedBuyer} />
-            <DailyBriefCard
-              diag={diag}
-              reports={reports}
-              score={score}
-              hasIntelligence={hasNewIntelligence}
-              onTabChange={setActiveTab}
-              user={user}
-              buyer={assignedBuyer}
-            />
-          </div>
-        )}
+        {user && <div className="ov-wrap"><RenewalBanner user={user} onUpgrade={() => setShowUpgradeModal(true)} /></div>}
 
         {/* OVERVIEW */}
         {activeTab === 'overview' && (
@@ -6722,197 +5257,67 @@ export default function DashboardPage() {
             {!dataLoading && !reportsError && !hasReports && user && <FirstRunDashboard user={user} latestCsv={csvHistory[0]} />}
 
             {!dataLoading && !reportsError && hasReports && user && (() => {
-              const t         = user.subscription_tier
-              const tierOrder = ['free', 'starter', 'pro', 'agency']
-              const tierIdx   = tierOrder.indexOf(t)
-              const isStarter = tierIdx >= 1
-              const isPro     = tierIdx >= 2
-              const daysSinceDiag = latestReport ? daysBetween(latestReport.generated_at) : 999
-              const reDiagThreshold = t === 'agency' ? 7 : t === 'pro' ? 14 : 30
+              const t        = user.subscription_tier
+              const waste    = parseWaste(diag.monthly_waste_estimate ?? diag.economics?.monthly_waste_estimate)
+              const all      = getFindings(diag)
+              const daysOld  = latestReport ? daysBetween(latestReport.generated_at) : 0
+              const reDiagAt = t === 'agency' ? 14 : 30
+              const endMs    = user.renewal_date ? new Date(user.renewal_date).getTime() : NaN
+              const daysLeft = Math.ceil((endMs - Date.now()) / 86_400_000)
+              const renewalShowing = !isNaN(endMs) && ((t !== 'free' && daysLeft <= 7) || (t === 'free' && daysLeft < 0 && daysLeft > -60))
+              const suspectData = [diag.landing_page_assessment, diag.funnel?.landing_page_assessment, diag.executive_summary]
+                .some(x => typeof x === 'string' && /test or placeholder|implausible/i.test(x))
 
-              const dataQualityFlag = (
-                (typeof diag.landing_page_assessment === 'string' && diag.landing_page_assessment.toLowerCase().includes('test or placeholder')) ||
-                (typeof diag.funnel?.landing_page_assessment === 'string' && diag.funnel.landing_page_assessment.toLowerCase().includes('test or placeholder')) ||
-                (typeof diag.executive_summary === 'string' && (
-                  diag.executive_summary.toLowerCase().includes('implausible') ||
-                  diag.executive_summary.toLowerCase().includes('anomaly') ||
-                  diag.executive_summary.toLowerCase().includes('test or placeholder')
-                ))
-              )
+              // One notice at most, so the page never opens with a stack of banners.
+              const notice = renewalShowing ? null
+                : isSubscribed && diag.is_deep_research !== true
+                  ? <Notice title="Finish your full diagnosis" body="This report came from the free check. Answer about 12 more questions and we will check your real landing page too. Your earlier answers are filled in." action={<Link className="ov-btn ov-btn-quiet" href="/questionnaire?full=1">Complete it</Link>} />
+                : suspectData
+                  ? <Notice title="Some answers looked like test data" body="This report may not reflect your real business. Run it again with your real numbers and landing page." action={t === 'free' ? <button className="ov-btn ov-btn-quiet" onClick={() => setShowUpgradeModal(true)}>See plans</button> : <Link className="ov-btn ov-btn-quiet" href="/questionnaire">Run it again</Link>} />
+                : daysOld > reDiagAt && t !== 'free'
+                  ? <Notice title={`Your last diagnosis was ${daysOld} days ago`} body="Run a new one to see what your fixes changed." action={<Link className="ov-btn ov-btn-quiet" href="/questionnaire">New diagnosis</Link>} />
+                : null
 
               return (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-
-                {/* Data quality warning: AI detected fake/suspicious input */}
-                {dataQualityFlag && (
-                  <div style={{ background: '#fffbeb', border: '1px solid rgba(217,119,6,0.35)', borderLeft: '4px solid #d97706', borderRadius: '0 12px 12px 0', padding: 'clamp(12px, 4vw, 16px) clamp(12px, 4vw, 20px)', display: 'flex', gap: 12, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'space-between' }}>
-                    <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', flex: 1 }}>
-                      <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(217,119,6,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
-                        <AlertCircle size={15} color="#d97706" />
-                      </div>
-                      <div>
-                        <p style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: '#92400e', margin: '0 0 3px' }}>
-                          Data quality issue detected
-                        </p>
-                        <p style={{ fontFamily: fontB, fontSize: 12, color: '#b45309', margin: 0, lineHeight: 1.5 }}>
-                          Your last report contains a test or placeholder URL, or implausible values. Results may not reflect your real business. Re-run with accurate data for a reliable diagnosis.
-                        </p>
-                      </div>
-                    </div>
-                    {t === 'free'
-                      ? <button onClick={() => setShowUpgradeModal(true)} style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, background: '#d97706', color: '#fff', padding: '9px 18px', borderRadius: 9, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' as const, flexShrink: 0, alignSelf: 'center' }}>Upgrade to Re-run →</button>
-                      : <Link href="/questionnaire" style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, background: '#d97706', color: '#fff', padding: '9px 18px', borderRadius: 9, textDecoration: 'none', whiteSpace: 'nowrap' as const, flexShrink: 0, alignSelf: 'center' }}>Re-run Diagnosis →</Link>
-                    }
-                  </div>
-                )}
-
-                {/* Re-diagnosis nudge: score may have drifted */}
-                {daysSinceDiag > reDiagThreshold && (
-                  <div style={{ background: 'linear-gradient(135deg,#201515 0%,#2d1e0a 100%)', borderRadius: 16, padding: 'clamp(14px, 4vw, 18px) clamp(14px, 4vw, 24px)', display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between' }}>
-                    <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                      <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <RefreshCw size={16} color="#fff" />
-                      </div>
-                      <div>
-                        <p style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: '#fff', margin: '0 0 2px' }}>
-                          {t === 'free'
-                            ? `Your baseline was set ${daysSinceDiag} days ago. Have you improved?`
-                            : t === 'agency' ? 'Your competitive window is closing.'
-                            : t === 'pro' ? 'Your ICP may have drifted.'
-                            : `Your last diagnosis was ${daysSinceDiag} days ago.`}
-                        </p>
-                        <p style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.55)', margin: 0 }}>
-                          {t === 'free'
-                            ? 'Re-run your diagnosis on Starter to see if your quick wins moved the needle.'
-                            : t === 'agency' ? `${daysSinceDiag} days since last diagnosis. Agency tier gives you fresh intelligence weekly.`
-                            : t === 'pro' ? `${daysSinceDiag} days without a new diagnostic. Markets shift fast.`
-                            : 'Markets shift. A fresh diagnostic will show whether your ICP score has drifted.'}
-                        </p>
-                      </div>
-                    </div>
-                    {t === 'free'
-                      ? <button onClick={() => setShowUpgradeModal(true)} style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, background: '#fff', color: P, padding: '10px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' as const, flexShrink: 0 }}>Upgrade to Re-run →</button>
-                      : <Link href="/questionnaire" style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, background: '#fff', color: P, padding: '10px 20px', borderRadius: 10, textDecoration: 'none', whiteSpace: 'nowrap' as const, flexShrink: 0 }}>Run New Diagnosis →</Link>
-                    }
-                  </div>
-                )}
-
-                {/* Free-tier score improvement nudge */}
-                {t === 'free' && daysSinceDiag > 30 && score !== null && score < 50 && (
-                  <div style={{ background: '#f8f4f0', border: '1px solid rgba(239,68,68,0.2)', borderLeft: '4px solid #ef4444', borderRadius: '0 16px 16px 0', padding: 'clamp(14px, 4vw, 18px) clamp(14px, 4vw, 24px)', display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between' }}>
-                    <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                      <AlertTriangle size={20} color="#ef4444" style={{ flexShrink: 0 }} />
-                      <div>
-                        <p style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: P, margin: '0 0 2px' }}>
-                          Your score has been critical for {daysSinceDiag} days.
-                        </p>
-                        <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: 0 }}>
-                          Starter subscribers get weekly intelligence briefings and priority re-diagnosis to start recovering.
-                        </p>
-                      </div>
-                    </div>
-                    <button onClick={() => setShowUpgradeModal(true)} style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, background: '#ef4444', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 20px', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                      See Upgrade Options
-                    </button>
-                  </div>
-                )}
-
-
-                {/* Real-time waste ticker */}
-                <WasteTicker diag={diag} report={latestReport} currency={currency} score={score} scoreDelta={scoreDeltaMain} onTabChange={setActiveTab} />
-
-                {/* Priority action + Quick Wins — shown immediately after the waste hook */}
-                <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4 lg:gap-6">
-                  <div style={{ minWidth: 0 }}>
-                    <TodaysPriorityCard diag={diag} report={latestReport} user={user} onComplete={setStreak} />
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 14, minWidth: 0 }}>
-                    <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: Pmuted, margin: '0 0 -4px' }}>THIS WEEK</p>
-                    <EnhancedQuickWinsWidget diag={diag} user={user} onStreakUpdate={setStreak} maxWins={3} reportId={latestReport?.id} />
-                    {score !== null && diag.score_predictions && diag.score_predictions.length > 0 && (
-                      <ScorePredictionWidget diag={diag} score={score} delay={300} />
-                    )}
-                  </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                  {notice && <div className="ov-wrap" style={{ width: '100%' }}>{notice}</div>}
+                  <Overview
+                    firstName={(user.full_name ?? '').trim().split(' ')[0] || 'there'}
+                    email={user.email}
+                    tier={t}
+                    score={score}
+                    scoreDelta={scoreDeltaMain}
+                    prevDate={reports[1] ? formatDate(reports[1].generated_at) : null}
+                    reportDate={formatDate(latestReport.generated_at)}
+                    reportId={latestReport.id}
+                    wasteLabel={waste.amount > 0 ? convertAmount(waste.amount, waste.fromCurrency, currency) : null}
+                    findings={t === 'free' ? all.slice(0, 2) : all}
+                    totalFindings={all.length}
+                    wins={(diag.quick_wins ?? []).slice(0, 3)}
+                    buyer={assignedBuyer}
+                    onOpenDiagnosis={() => setActiveTab('audience')}
+                    onUpgrade={() => setShowUpgradeModal(true)}
+                    onRequestCall={() => setShowModal(true)}
+                    onFixDone={setStreak}
+                  />
                 </div>
-
-                {/* Score + Streak */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                  <ICPScoreCard diag={diag} reports={reports} />
-                  <UpgradeGate requiredTier="starter" currentTier={t} feature="Fix Streak" description="Track your weekly implementation streak. Available on Starter and above." onUpgrade={() => setShowUpgradeModal(true)}>
-                    <FixStreakWidget streak={streak} />
-                  </UpgradeGate>
-                </div>
-
-                {/* Business Outcomes, shown when data exists */}
-                <BusinessOutcomesWidget diag={diag} currency={currency} />
-
-                {/* Score Journey — hidden on mobile by default, visible on md+ */}
-                {score !== null && <div className="hidden md:block"><ScoreJourneyWidget score={score} reports={reports} /></div>}
-
-                {/* Performance Breakdown, Pro+ */}
-                {isPro && score !== null && (
-                  <PerformanceBreakdownWidget diag={diag} score={score} delay={200} />
-                )}
-                {!isPro && score !== null && (
-                  <UpgradeGate requiredTier="pro" currentTier={t} feature="Performance Breakdown" description="Six scores from your diagnosis: ICP alignment, targeting, channel efficiency, funnel friction, messaging and budget." onUpgrade={() => setShowUpgradeModal(true)}>
-                    <PerformanceBreakdownWidget diag={diag} score={score} delay={0} />
-                  </UpgradeGate>
-                )}
-
-                {/* Escalation nudge: critical findings + no quick wins completed */}
-                {(() => {
-                  const criticalCount = getFindings(diag).filter(f => f.severity === 'Critical').length
-                  const hasNoWins = (diag.quick_wins ?? []).length === 0
-                  if (criticalCount >= 2 && hasNoWins) {
-                    return (
-                      <div style={{ background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 16, padding: 'clamp(14px, 4vw, 18px) clamp(14px, 4vw, 24px)', display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between' }}>
-                        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                          <div style={{ width: 36, height: 36, borderRadius: 10, background: '#fed7aa', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                            <AlertTriangle size={18} color="#c2410c" />
-                          </div>
-                          <div>
-                            <p style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: '#7c2d12', margin: '0 0 2px' }}>
-                              {criticalCount} critical findings, no quick wins yet.
-                            </p>
-                            <p style={{ fontFamily: fontB, fontSize: 12, color: '#9a3412', margin: 0 }}>
-                              A strategy session with your media buyer can unblock your highest-leverage fix in 30 minutes.
-                            </p>
-                          </div>
-                        </div>
-                        <button onClick={() => setShowModal(true)} style={{ fontFamily: fontB, fontSize: 13, fontWeight: 600, background: '#ea580c', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 20px', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                          Book Strategy Session
-                        </button>
-                      </div>
-                    )
-                  }
-                  return null
-                })()}
-
-                {/* Findings, Free sees max 2 */}
-                <EnhancedFindingsSection diag={diag} report={latestReport} maxFindings={isStarter ? undefined : 2} onUpgrade={() => setShowUpgradeModal(true)} />
-
-                {/* Milestones, Starter+ */}
-                <UpgradeGate requiredTier="starter" currentTier={t} feature="Achievements" description="Unlock badges as you implement fixes, improve your score, and use the platform consistently." onUpgrade={() => setShowUpgradeModal(true)}>
-                  <MilestonesSection milestones={milestones} bonusDiagnoses={bonusDiagnoses} onTabSwitch={tab => setActiveTab(tab as Tab)} />
-                </UpgradeGate>
-
-                {/* Score History — visible to all tiers */}
-                <ScoreHistoryWidget reports={reports} latestReport={latestReport} renewalDate={user.renewal_date ?? null} delay={0} tier={t} onUpgrade={() => setShowUpgradeModal(true)} />
-
-                {/* Campaign CSV, Pro+ */}
-                <UpgradeGate requiredTier="pro" currentTier={t} feature="Campaign Data Analysis" description="Upload your Google Ads or Meta export for a media buyer breakdown of your actual spend." onUpgrade={() => setShowUpgradeModal(true)}>
-                  <CampaignInsightsWidget delay={0} history={csvHistory} />
-                </UpgradeGate>
-
-                {/* Your Media Buyer */}
-                <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4 lg:gap-6">
-                  <GetItDoneCard tier={t} onBook={() => setShowModal(true)} onUpgrade={() => setShowUpgradeModal(true)} />
-                  <BuyerProfileCard buyer={assignedBuyer} tier={t} region={userRegion || undefined} industry={userIndustry || undefined} />
-                </div>
-              </div>
               )
             })()}
           </>
+        )}
+
+        {/* DIAGNOSIS: four sections behind one nav item */}
+        {DIAGNOSIS_TABS.includes(activeTab) && (
+          <div style={{ marginBottom: 24 }}>
+            <Segmented
+              label="Diagnosis sections" value={activeTab}
+              onChange={v => setActiveTab(v)}
+              options={[
+                { value: 'audience' as Tab, label: 'Audience' }, { value: 'search' as Tab, label: 'Channels' },
+                { value: 'funnel' as Tab, label: 'Funnel' },     { value: 'economics' as Tab, label: 'Money' },
+              ]}
+            />
+          </div>
         )}
 
         {activeTab === 'audience' && (isSubscribed
@@ -6928,7 +5333,12 @@ export default function DashboardPage() {
           : <TeaserTabOverlay tabName="Funnel & Landing Page" category="funnel" diag={diag} onUpgrade={() => setShowUpgradeModal(true)} />
         )}
         {activeTab === 'economics' && (isSubscribed
-          ? <EconomicsTab diag={diag} hasReports={hasReports} score={score} currency={currency} onUpgrade={() => setShowUpgradeModal(true)} />
+          ? <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              <EconomicsTab diag={diag} hasReports={hasReports} score={score} currency={currency} onUpgrade={() => setShowUpgradeModal(true)} />
+              <UpgradeGate requiredTier="pro" currentTier={user?.subscription_tier ?? 'free'} feature="Campaign data analysis" description="Upload your Google Ads or Meta export to check these numbers against your real spend." onUpgrade={() => setShowUpgradeModal(true)}>
+                <CampaignInsightsWidget delay={0} history={csvHistory} />
+              </UpgradeGate>
+            </div>
           : <TeaserTabOverlay tabName="Economics & Unit Costs" category="economics" diag={diag} onUpgrade={() => setShowUpgradeModal(true)} />
         )}
         {intelligenceMounted && user && (
@@ -6936,7 +5346,27 @@ export default function DashboardPage() {
             <IntelligenceTab user={user} score={score} hasNewIntelligence={hasNewIntelligence} onUpgrade={() => setShowUpgradeModal(true)} />
           </div>
         )}
-        {activeTab === 'reports' && <ReportsTab reports={reports} dataLoading={dataLoading} />}
+        {activeTab === 'reports' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            {hasReports && user && (
+              <>
+                <ScoreHistoryWidget reports={reports} latestReport={latestReport} renewalDate={user.renewal_date ?? null} delay={0} tier={user.subscription_tier} onUpgrade={() => setShowUpgradeModal(true)} />
+                {score !== null && (
+                  <UpgradeGate requiredTier="pro" currentTier={user.subscription_tier} feature="Score breakdown" description="Six scores from your diagnosis: ICP alignment, targeting, channel efficiency, funnel friction, messaging and budget." onUpgrade={() => setShowUpgradeModal(true)}>
+                    <PerformanceBreakdownWidget diag={diag} score={score} delay={0} />
+                  </UpgradeGate>
+                )}
+                <UpgradeGate requiredTier="starter" currentTier={user.subscription_tier} feature="Achievements" description="Badges for the fixes you complete and the points you gain." onUpgrade={() => setShowUpgradeModal(true)}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                    <FixStreakWidget streak={streak} />
+                    <MilestonesSection milestones={milestones} bonusDiagnoses={bonusDiagnoses} onTabSwitch={tab => setActiveTab(tab as Tab)} />
+                  </div>
+                </UpgradeGate>
+              </>
+            )}
+            <ReportsTab reports={reports} dataLoading={dataLoading} />
+          </div>
+        )}
         {activeTab === 'account' && user && (
           <AccountTab
             user={user}
@@ -6989,7 +5419,7 @@ export default function DashboardPage() {
             <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'linear-gradient(135deg, #f59e0b, #f97316)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', boxShadow: '0 8px 24px #f59e0b40' }}>
               <Star size={32} color="#fff" />
             </div>
-            <p style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#f59e0b', margin: '0 0 8px' }}>Master Status Unlocked</p>
+            <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#f59e0b', margin: '0 0 8px' }}>Master Status Unlocked</p>
             <h2 style={{ fontFamily: font, fontSize: 24, fontWeight: 700, color: P, margin: '0 0 12px', letterSpacing: '-0.02em' }}>You earned every badge.</h2>
             <p style={{ fontFamily: fontB, fontSize: 14, color: Pmuted, margin: '0 0 24px', lineHeight: 1.7 }}>
               That&apos;s real commitment to your ICP. As a thank-you, we&apos;ve added <strong>+{bonusDiagnoses} bonus diagnoses</strong> to your monthly allowance, permanently on your account.
@@ -7072,7 +5502,7 @@ export default function DashboardPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: Pmuted, margin: 0 }}>Notifications</p>
                 {unreadCount > 0 && (
-                  <span style={{ fontFamily: fontB, fontSize: 11, background: '#ef4444', color: '#fff', borderRadius: 100, padding: '2px 7px' }}>{unreadCount} unread</span>
+                  <span style={{ fontFamily: fontB, fontSize: 12, background: '#ef4444', color: '#fff', borderRadius: 100, padding: '2px 7px' }}>{unreadCount} unread</span>
                 )}
               </div>
               <button onClick={() => setShowNotifications(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: Pmuted, display: 'flex', padding: 4 }}>
@@ -7116,26 +5546,28 @@ export default function DashboardPage() {
       {user && isSubscribed && <ChatWidget user={user} score={score} diag={diag} activeTab={activeTab} />}
 
       {/* ── Mobile bottom tab bar (lg:hidden) ─────────────────────────────── */}
-      <div className="lg:hidden" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'rgba(255,255,255,0.96)', backdropFilter: 'blur(20px)', borderTop: `1px solid ${Pborder}`, zIndex: 50, overflowX: 'auto' }}>
-        <style>{`.mob-tab-bar::-webkit-scrollbar{display:none}`}</style>
-        <div className="mob-tab-bar" style={{ display: 'flex', minWidth: 'max-content', padding: '0 4px' }}>
-          {(['overview', 'audience', 'search', 'funnel', 'economics', 'intelligence', 'reports', 'account'] as Tab[]).map(tab => (
-            <button key={tab} onClick={() => setActiveTab(tab)} style={{
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-              gap: 3, padding: '10px 14px', border: 'none', background: 'transparent', cursor: 'pointer',
-              color: activeTab === tab ? P : Pmuted, transition: 'color 0.15s', flexShrink: 0, position: 'relative',
+      <nav className="lg:hidden" aria-label="Sections" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderTop: `1px solid ${Pborder}`, zIndex: 50, padding: '4px 4px calc(4px + env(safe-area-inset-bottom))' }}>
+        <div style={{ display: 'flex' }}>
+        {NAV_TABS.map(tab => {
+          const isActive = navActive(tab)
+          return (
+            <button key={tab} onClick={() => setActiveTab(tab)} aria-current={isActive ? 'page' : undefined} style={{
+              flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              gap: 4, padding: '8px 2px', minHeight: 52, border: 'none', background: 'transparent', cursor: 'pointer',
+              color: isActive ? Accent : Pmuted, position: 'relative',
             }}>
-              {tab === 'intelligence' && hasNewIntelligence && (
-                <span style={{ position: 'absolute', top: 8, right: 10, width: 6, height: 6, borderRadius: '50%', background: '#ef4444', border: '1px solid #fff' }} />
-              )}
-              {TAB_ICONS[tab]}
-              <span style={{ fontFamily: fontB, fontSize: 9, fontWeight: activeTab === tab ? 700 : 500, whiteSpace: 'nowrap' }}>
-                {TAB_LABELS[tab]}
+              <span style={{ position: 'relative', display: 'flex' }}>
+                {TAB_ICONS[tab]}
+                {tab === 'intelligence' && hasNewIntelligence && (
+                  <span style={{ position: 'absolute', top: -2, right: -3, width: 7, height: 7, borderRadius: '50%', background: Accent, border: '1px solid #fff' }} />
+                )}
               </span>
+              <span style={{ fontFamily: fontB, fontSize: 12, fontWeight: isActive ? 700 : 500, whiteSpace: 'nowrap' }}>{TAB_LABELS[tab]}</span>
             </button>
-          ))}
+          )
+        })}
         </div>
-      </div>
+      </nav>
     </div>
   )
 }

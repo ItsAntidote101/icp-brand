@@ -1,3 +1,4 @@
+import { readStoredReport } from '@/lib/repair-json'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { getSession } from '@/lib/session'
@@ -46,7 +47,7 @@ export async function GET(
       } else if (reportRow.report_summary) {
         // No diagnostic row but report_summary exists — synthesise a minimal diagnostic object
         const summaryObj = typeof reportRow.report_summary === 'string'
-          ? (() => { try { return JSON.parse(reportRow.report_summary) } catch { return {} } })()
+          ? readStoredReport<Record<string, unknown>>(reportRow.report_summary)
           : reportRow.report_summary
         diagnostic = { id: params.id, diagnosis: summaryObj, questionnaire_id: reportRow.questionnaire_id, user_id: reportRow.user_id, questionnaires: null }
       }
