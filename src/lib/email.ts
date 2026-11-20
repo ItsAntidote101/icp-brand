@@ -13,8 +13,25 @@ function escapeHtml(s: string): string {
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;')
 }
 
+// Admin logins share the users table with clients, but they are not clients:
+// an email addressed to a single admin address is a client or prospect email
+// (welcome, nudges, reminders) and is not sent. Founder notifications go to
+// FOUNDER_INBOX, which is a list, and login codes come from Supabase Auth, so
+// neither is affected.
+const adminAddresses = () => (process.env.ADMIN_EMAILS ?? 'kwata@idealicp.com')
+  .split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
+
 function getResend() {
-  return new Resend(process.env.RESEND_API_KEY ?? '')
+  const client = new Resend(process.env.RESEND_API_KEY ?? '')
+  type Send = typeof client.emails.send
+  const send = (async (payload: Parameters<Send>[0], options?: Parameters<Send>[1]) => {
+    if (typeof payload.to === 'string' && adminAddresses().includes(payload.to.trim().toLowerCase())) {
+      console.log('[email] skipped client email to an admin address:', payload.subject)
+      return { data: null, error: null }
+    }
+    return client.emails.send(payload, options)
+  }) as Send
+  return { emails: { send } }
 }
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
