@@ -9,6 +9,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { Check, ChevronRight, Lock } from 'lucide-react'
+import ReadyToUpload from './ready'
 import { leadCostChange } from '@/lib/progress'
 
 // ─── Design tokens (shared with page.tsx by value) ───────────────────────────
@@ -935,6 +936,8 @@ export default function Overview(p: OverviewProps) {
         <FindingList p={p} />
       </div>
 
+      <ReadyToUpload tier={p.tier} reportId={p.reportId} buyerName={p.buyer.firstName} onUpgrade={p.onUpgrade} onMessage={p.onRequestCall} />
+
       {p.tier === 'free' && (
         <section className="ov-card" aria-labelledby="ov-plan" style={{ padding: '24px 22px' }}>
           <h2 id="ov-plan" className="ov-h2" style={{ margin: '0 0 8px' }}>What Starter adds</h2>
@@ -946,6 +949,7 @@ export default function Overview(p: OverviewProps) {
           <ul style={{ listStyle: 'none', margin: '0 0 18px', padding: 0, display: 'grid', gap: 8, font: `400 15px/1.45 ${T.font}`, color: T.ink2 }}>
             <li>{p.totalFindings > p.findings.length ? `All ${p.totalFindings} findings, each with its fix` : 'Every finding, each with its fix'}</li>
             <li>Your numbers checked every week, so you see what the fixes changed</li>
+            <li>Keywords and upload files built for your business</li>
             <li>A monthly note from {p.buyer.firstName} on what to do next</li>
           </ul>
           <button className="ov-btn ov-btn-primary" onClick={p.onUpgrade}>See plans</button>
