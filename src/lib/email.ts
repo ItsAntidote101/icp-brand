@@ -365,8 +365,8 @@ ${cta('Run New Diagnosis', url)}`
 const PLAN_PRICE_KES: Record<string, number> = { starter: 6500, pro: 13000, agency: 26000 }
 
 export async function sendRenewalReminderEmail({
-  to, name, tier, renewalDate, daysLeft, baseUrl,
-}: { to: string; name?: string; tier: string; renewalDate: string; daysLeft: number; baseUrl?: string }) {
+  to, name, tier, renewalDate, daysLeft, baseUrl, progress,
+}: { to: string; name?: string; tier: string; renewalDate: string; daysLeft: number; baseUrl?: string; progress?: string }) {
   const url = `${baseUrl ?? 'https://www.idealicp.com'}/dashboard?renew=1`
   const first = escapeHtml(name?.split(' ')[0] ?? 'there')
   const t = tier.toLowerCase()
@@ -379,6 +379,7 @@ export async function sendRenewalReminderEmail({
 ${ICON.calendar}
 ${heading(`Your ${label} plan ends ${when}`, 38)}
 ${sub(`Hi ${first}, your ${label} plan is paid until <strong style="color:${Dark};">${end}</strong>. Plans do not renew automatically, so renew before then to keep your paid features.`)}
+${progress ? `<p style="margin:0 0 20px;color:${Dark};font-size:16px;line-height:1.6;font-family:${font};">${escapeHtml(progress)}</p>` : ''}
 ${securityBox(`<p style="margin:0 0 8px;color:${Dark};font-size:14px;font-weight:600;font-family:${font};">${price ? `KES ${price.toLocaleString()} for the next 30 days` : 'Renew for the next 30 days'}</p>
 <p style="margin:0;color:${Muted};font-size:14px;line-height:1.6;font-family:${font};">Pay with M-Pesa or card through Paystack. Renewing early adds 30 days to your current end date, so you lose nothing. If you do not renew, your account moves to the free plan and your reports stay saved.</p>`)}
 ${cta(`Renew ${label}`, url)}`

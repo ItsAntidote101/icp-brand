@@ -70,8 +70,44 @@ function repairTruncated(t: string): unknown {
   try { return JSON.parse(out) } catch { return null }
 }
 
+// Older reports were written in an alarmed, Title Case style with figures packed
+// into the heading ("Unit Economics are Catastrophically Inverted: CAC (KES 7.5M)
+// Exceeds LTV by 150:1"). Headings are shown calmly: no alarm adverbs, nothing
+// after a colon, sentence case. The explanation under each heading is untouched.
+const ALARM = /\b(catastrophically|completely|entirely|fundamentally|critically|severely|massively|totally|utterly|dangerously)\s+/gi
+const KEEP_CAPS = new Set(['Kenya', 'Kenyan', 'Nairobi', 'Mombasa', 'Kisumu', 'Africa', 'African', 'Google', 'Meta', 'Facebook', 'Instagram', 'WhatsApp', 'TikTok', 'LinkedIn', 'YouTube', 'M-Pesa', 'Ads'])
+
+export function calmTitle(title: string): string {
+  let t = title.replace(ALARM, '').trim()
+  const colon = t.indexOf(': ')
+  if (colon > 12) t = t.slice(0, colon)
+  const words   = t.split(/\s+/)
+  const titled  = (w: string) => /^[A-Z][a-z]*(-[A-Z][a-z]+)*[,.']?s?$/.test(w)           // "Landing", "Non-Functional", "A"
+  const plain   = words.filter(w => /^[A-Za-z][a-z]*(-[A-Za-z][a-z]+)*[,.']?s?$/.test(w))   // ignores ICP, LTV:CAC, 0.28:1
+  if (words.length >= 3 && plain.length > 0 && plain.filter(titled).length / plain.length >= 0.5) {
+    t = words.map((w, i) => i === 0 || !titled(w) || KEEP_CAPS.has(w.replace(/[^A-Za-z-]/g, '').replace(/s$/, '')) || KEEP_CAPS.has(w.replace(/[^A-Za-z-]/g, '')) ? w : w.toLowerCase()).join(' ')
+  }
+  return t.replace(/[.:;,]+$/, '')
+}
+
+function calmHeadings(value: unknown, depth = 0): void {
+  if (!value || typeof value !== 'object' || depth > 6) return
+  if (Array.isArray(value)) { value.forEach(v => calmHeadings(v, depth + 1)); return }
+  const o = value as Record<string, unknown>
+  for (const k of Object.keys(o)) {
+    if (k === 'title' && typeof o[k] === 'string') o[k] = calmTitle(o[k] as string)
+    else calmHeadings(o[k], depth + 1)
+  }
+}
+
 /** Dashboard side: a stored report, including older ones saved as { raw }. */
 export function readStoredReport<T extends object>(stored: string | object | null | undefined): T {
+  const report = readRaw<T>(stored)
+  calmHeadings(report)
+  return report
+}
+
+function readRaw<T extends object>(stored: string | object | null | undefined): T {
   if (!stored) return {} as T
   let value: unknown = stored
   if (typeof stored === 'string') {

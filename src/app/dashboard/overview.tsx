@@ -9,6 +9,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { Check, ChevronRight, Lock } from 'lucide-react'
+import { leadCostChange } from '@/lib/progress'
 
 // ─── Design tokens (shared with page.tsx by value) ───────────────────────────
 // Brand fonts and colours are unchanged. The calmer feel comes from structure:
@@ -63,6 +64,8 @@ export type OverviewProps = {
   onRequestCall: () => void
   onFixDone:    (streak: number) => void
   currency:     string
+  fixesTotal:   number                 // every fix ever marked done, not only this report
+  firstScore:   number | null          // score of their very first diagnosis
 }
 
 // ─── Shared styles ───────────────────────────────────────────────────────────
@@ -397,7 +400,7 @@ type Week = { week_start: string; spend: number; currency: string; leads: number
 const money = (n: number, cur: string) => `${cur} ${Math.round(n).toLocaleString()}`
 const cplOf = (w?: Week) => w && w.leads > 0 ? w.spend / w.leads : null
 
-function NumbersCard({ currency }: { currency: string }) {
+function NumbersCard({ currency, onWeeks }: { currency: string; onWeeks: (w: Week[]) => void }) {
   const [weeks, setWeeks]   = useState<Week[] | null>(null)
   const [due, setDue]       = useState<{ week: string; label: string } | null>(null)
   const [editing, setEdit]  = useState(false)
@@ -411,8 +414,8 @@ function NumbersCard({ currency }: { currency: string }) {
       const res = await fetch('/api/weekly-checkin')
       if (!res.ok) throw new Error()
       const j = await res.json() as { weeks: Week[]; dueWeek: string; dueLabel: string }
-      setWeeks(j.weeks ?? []); setDue({ week: j.dueWeek, label: j.dueLabel })
-    } catch { setWeeks([]) }
+      setWeeks(j.weeks ?? []); setDue({ week: j.dueWeek, label: j.dueLabel }); onWeeks(j.weeks ?? [])
+    } catch { setWeeks([]); onWeeks([]) }
   }
   useEffect(() => { load() }, [])
 
@@ -584,11 +587,100 @@ function HelpCard({ p }: { p: OverviewProps }) {
   )
 }
 
+// ─── Since you started: the reason to stay ───────────────────────────────────
+// Only real movement is shown. With fewer than two usable weeks there is
+// nothing honest to say yet, so the card stays hidden.
+function ProofCard({ p, weeks, doneNow }: { p: OverviewProps; weeks: Week[]; doneNow: number }) {
+  const c = leadCostChange(weeks)
+  if (!c) return null
+  const fixes  = Math.max(p.fixesTotal, doneNow)
+  const points = p.score !== null && p.firstScore !== null ? p.score - p.firstScore : 0
+  const better = c.pct <= -3, worse = c.pct >= 3
+  return (
+    <section aria-labelledby="ov-proof">
+      <div style={{ margin: '0 4px 12px' }}><h2 id="ov-proof" className="ov-h2">Since you started tracking</h2></div>
+      <div className="ov-card" style={{ padding: '24px 28px' }}>
+        <p style={{ font: `400 15px/1.2 ${T.font}`, color: T.muted, margin: '0 0 8px' }}>{c.averaged ? 'Cost per lead, first two weeks against the last two' : 'Cost per lead, first week against the latest'}</p>
+        <p style={{ font: `700 clamp(24px,3.6vw,32px)/1.15 ${T.head}`, letterSpacing: '-0.02em', color: T.ink, margin: '0 0 8px', fontVariantNumeric: 'tabular-nums' }}>
+          <span style={{ color: T.faint, fontWeight: 500 }}>{money(c.from, c.currency)}</span>
+          <span aria-hidden style={{ color: T.faint, fontWeight: 400 }}> to </span>
+          <span className="sr-only">now </span>{money(c.to, c.currency)}
+        </p>
+        <p style={{ font: `400 15px/1.5 ${T.font}`, color: T.ink2, margin: 0, maxWidth: '62ch' }}>
+          {better ? <><span style={{ color: T.good, fontWeight: 600 }}>{Math.abs(c.pct)}% cheaper</span> per lead</> : worse ? <><span style={{ color: T.warn, fontWeight: 600 }}>{c.pct}% higher</span> per lead</> : <>Holding steady</>}
+          {' '}over {c.weeks} weeks, with {c.leads.toLocaleString()} leads logged
+          {fixes > 0 && <> and {fixes} {fixes === 1 ? 'fix' : 'fixes'} done</>}
+          {points > 0 && <>. Your ICP score is up {points} {points === 1 ? 'point' : 'points'}</>}.
+          {worse && <> The fixes below are aimed at bringing this back down.</>}
+        </p>
+      </div>
+    </section>
+  )
+}
+
+// ─── Your first week ─────────────────────────────────────────────────────────
+// A short guided start for a new paying client. Each step ticks itself off
+// from real activity where it can, and the list goes away once all are done.
+function FirstWeek({ p, hasNumbers, hasFix }: { p: OverviewProps; hasNumbers: boolean; hasFix: boolean }) {
+  const key = `first_week_${p.email}`
+  const [local, setLocal] = useState<{ hello?: boolean; call?: boolean; hidden?: boolean } | null>(null)
+  useEffect(() => { try { setLocal(JSON.parse(localStorage.getItem(key) ?? '{}')) } catch { setLocal({}) } }, [key])
+  if (!local || local.hidden) return null
+  const mark = (patch: Partial<NonNullable<typeof local>>) => {
+    const next = { ...local, ...patch }
+    setLocal(next)
+    try { localStorage.setItem(key, JSON.stringify(next)) } catch { /* ignore */ }
+  }
+  const b = p.buyer.firstName
+  const hasCall = p.tier === 'pro' || p.tier === 'agency'
+  const steps: { done: boolean; label: string; hint: string; act: React.ReactNode }[] = [
+    { done: !!local.hello, label: `Tell ${b} your main goal`, hint: 'One line is enough. It shapes the advice you get.',
+      act: <button className="ov-link" onClick={() => { window.dispatchEvent(new Event('icp-chat-eugene')); mark({ hello: true }) }}>Write</button> },
+    { done: hasNumbers, label: 'Log last week\u2019s numbers', hint: 'Ad spend and leads. This is how your progress is measured.',
+      act: <button className="ov-link" onClick={() => document.getElementById('ov-numbers')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}>Add</button> },
+    { done: hasFix, label: 'Do your first fix', hint: 'Start with the top one under This week.',
+      act: <button className="ov-link" onClick={() => document.getElementById('ov-week')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>Show me</button> },
+    ...(hasCall ? [{ done: !!local.call, label: `Book your call with ${b}`, hint: p.tier === 'pro' ? 'Your onboarding call is included in Pro.' : 'Your monthly call is included in Agency.',
+      act: <a className="ov-link" href={p.buyer.calLink} target="_blank" rel="noopener noreferrer" onClick={() => mark({ call: true })}>Book</a> }] : []),
+  ]
+  const left = steps.filter(s => !s.done).length
+  if (left === 0) return null
+  return (
+    <section aria-labelledby="ov-first">
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, margin: '0 4px 12px' }}>
+        <h2 id="ov-first" className="ov-h2">Your first week</h2>
+        <span style={{ font: `400 15px/1 ${T.font}`, color: T.muted, whiteSpace: 'nowrap' }}>{steps.length - left} of {steps.length} done</span>
+      </div>
+      <div className="ov-card" style={{ overflow: 'hidden' }}>
+        {steps.map((s, i) => (
+          <div key={s.label}>
+            {i > 0 && <div className="ov-sep" style={{ marginLeft: 62 }} />}
+            <div style={{ display: 'flex', alignItems: 'center', minHeight: 60, paddingRight: 20 }}>
+              <span aria-hidden style={{ width: 62, flexShrink: 0, display: 'flex', justifyContent: 'center' }}>
+                <span style={{ width: 26, height: 26, borderRadius: '50%', border: s.done ? 'none' : '2px solid rgba(147,144,132,0.6)', background: s.done ? '#22c55e' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {s.done && <Check size={15} color="#fff" strokeWidth={3} />}
+                </span>
+              </span>
+              <span style={{ flex: 1, minWidth: 0, padding: '12px 0' }}>
+                <span style={{ display: 'block', font: `400 16px/1.35 ${T.font}`, color: s.done ? T.faint : T.ink, textDecoration: s.done ? 'line-through' : 'none' }}>{s.label}<span className="sr-only">{s.done ? ', done' : ''}</span></span>
+                {!s.done && <span style={{ display: 'block', font: `400 13px/1.4 ${T.font}`, color: T.faint, marginTop: 2 }}>{s.hint}</span>}
+              </span>
+              {!s.done && s.act}
+            </div>
+          </div>
+        ))}
+      </div>
+      <button className="ov-link" style={{ margin: '10px 4px 0', fontSize: 13, color: T.faint }} onClick={() => mark({ hidden: true })}>Hide this list</button>
+    </section>
+  )
+}
+
 // ─── Overview ────────────────────────────────────────────────────────────────
 export default function Overview(p: OverviewProps) {
   const fx   = useFixes(p)
   const done = fx.checked.filter(Boolean).length
   const st   = p.score !== null ? statusOf(p.score) : null
+  const [weeks, setWeeks] = useState<Week[] | null>(null)
 
   return (
     <div className="ov-wrap" style={{ display: 'flex', flexDirection: 'column', gap: 32, fontFamily: T.font }}>
@@ -603,6 +695,8 @@ export default function Overview(p: OverviewProps) {
       </header>
 
       {p.tier !== 'free' && <NoteCard buyer={p.buyer} />}
+
+      {p.tier !== 'free' && weeks && <FirstWeek p={p} hasNumbers={weeks.length > 0} hasFix={p.fixesTotal + done > 0} />}
 
       {/* Where you stand */}
       <section className="ov-card ov-hero" aria-label="Where you stand">
@@ -635,7 +729,9 @@ export default function Overview(p: OverviewProps) {
         </div>
       </section>
 
-      <NumbersCard currency={p.currency} />
+      <NumbersCard currency={p.currency} onWeeks={setWeeks} />
+
+      {weeks && <ProofCard p={p} weeks={weeks} doneNow={done} />}
 
       <div className="ov-two">
         <FixList p={p} fx={fx} />

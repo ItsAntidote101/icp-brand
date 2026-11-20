@@ -4292,6 +4292,13 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
+  // Other parts of the dashboard can open the chat straight on Eugene
+  useEffect(() => {
+    const open = () => { setIsOpen(true); setSendTo('eugene'); setLastSuggestions([]) }
+    window.addEventListener('icp-chat-eugene', open)
+    return () => window.removeEventListener('icp-chat-eugene', open)
+  }, [])
+
   const autoResize = () => {
     const ta = textareaRef.current
     if (!ta) return
@@ -4420,11 +4427,8 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
               <BrainCircuit size={18} color={P} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ fontFamily: font, fontSize: 15, fontWeight: 600, color: '#fff', margin: 0 }}>ICP Media Buyer</p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#22c55e' }} />
-                <span style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>Online</span>
-              </div>
+              <p style={{ fontFamily: font, fontSize: 15, fontWeight: 600, color: '#fff', margin: 0 }}>{sendTo === 'eugene' ? 'Eugene, your media buyer' : 'ICP assistant'}</p>
+              <span style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>{sendTo === 'eugene' ? 'A real person. Replies within a working day.' : 'AI. Answers instantly from your diagnosis.'}</span>
             </div>
             <button onClick={() => setIsOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 4 }}>
               <X size={20} />
@@ -4442,7 +4446,7 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
               return (
                 <div key={msg.id} style={{ display: 'flex', flexDirection: 'column', alignItems: isUser ? 'flex-end' : 'flex-start', gap: 4 }}>
                   {isMediaBuyer && (
-                    <span style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, paddingLeft: 4 }}>Eugene · Media Buyer</span>
+                    <span style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, paddingLeft: 4 }}>Eugene, your media buyer</span>
                   )}
 
                   <div style={{
@@ -4603,7 +4607,7 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
                 <BrainCircuit size={13} color="#fff" />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, color: Pmuted, margin: '0 0 3px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>ICP Media Buyer</p>
+                <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, color: Pmuted, margin: '0 0 3px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>ICP assistant</p>
                 <p style={{ fontFamily: fontB, fontSize: 13, color: P, margin: 0, lineHeight: 1.5 }}>{proactiveMsg}</p>
                 <p style={{ fontFamily: fontB, fontSize: 12, color: '#e8330a', margin: '6px 0 0', fontWeight: 600 }}>Tap to chat →</p>
               </div>
@@ -5362,6 +5366,8 @@ export default function DashboardPage() {
                     onRequestCall={() => setShowModal(true)}
                     onFixDone={setStreak}
                     currency={currency}
+                    fixesTotal={user.total_fixes_completed ?? 0}
+                    firstScore={reports.length > 1 ? (parseDiagnosis(reports[reports.length - 1].report_summary).overall_score ?? null) : null}
                   />
                 </div>
               )
