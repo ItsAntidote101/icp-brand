@@ -59,6 +59,8 @@ export type OverviewProps = {
   preLaunch?:   boolean                // not advertising yet: the score means readiness to start
   findings:     Finding[]
   totalFindings: number                // before any plan limit
+  lockedFindings?: { title: string; severity: string }[]  // free plan: found but not opened up
+  planPitch?:   { price: string; worth: string | null } | null  // free plan: the price next to their own number
   wins:         QuickWin[]
   buyer:        { firstName: string; initials: string; calLink: string }
   onOpenDiagnosis: () => void
@@ -319,11 +321,26 @@ function FindingList({ p }: { p: OverviewProps }) {
         {locked > 0 && (
           <>
             <div className="ov-sep" style={{ marginLeft: 44 }} />
-            <button className="ov-row ov-item" onClick={p.onUpgrade}>
-              <Lock size={16} color={T.muted} style={{ flexShrink: 0, marginLeft: -3 }} />
-              <span style={{ flex: 1, color: T.ink2 }}>{locked} more {locked === 1 ? 'finding' : 'findings'} on Starter</span>
-              <ChevronRight size={18} color={T.muted} />
-            </button>
+            <p style={{ font: `400 13px/1.4 ${T.font}`, color: T.faint, margin: 0, padding: '14px 20px 4px' }}>
+              We also found {locked} more. Starter opens {locked === 1 ? 'it' : 'each one'} up with the fix.
+            </p>
+            {(p.lockedFindings ?? []).slice(0, 4).map((f, i) => (
+              <button key={i} className="ov-row ov-item" onClick={p.onUpgrade} style={{ alignItems: 'flex-start' }} aria-label={`${f.title}. Open with Starter`}>
+                <Lock size={15} color={T.faint} style={{ flexShrink: 0, marginTop: 3, marginLeft: -3 }} />
+                <span style={{ flex: 1, minWidth: 0 }}>
+                  <span className="ov-clamp" style={{ color: T.ink2 }}>{f.title}</span>
+                  <span style={{ display: 'block', font: `400 13px/1.3 ${T.font}`, color: T.faint, marginTop: 3 }}>{f.severity}</span>
+                </span>
+                <ChevronRight size={18} color={T.faint} />
+              </button>
+            ))}
+            {(p.lockedFindings ?? []).length === 0 && (
+              <button className="ov-row ov-item" onClick={p.onUpgrade}>
+                <Lock size={16} color={T.muted} style={{ flexShrink: 0, marginLeft: -3 }} />
+                <span style={{ flex: 1, color: T.ink2 }}>See {locked === 1 ? 'it' : 'them'} on Starter</span>
+                <ChevronRight size={18} color={T.muted} />
+              </button>
+            )}
           </>
         )}
       </div>
@@ -565,9 +582,9 @@ function HelpCard({ p }: { p: OverviewProps }) {
   const b = p.buyer
   const byTier: Record<string, { title: string; body: string; cta: React.ReactNode }> = {
     free: {
-      title: `Talk it through with ${b.firstName}`,
-      body:  'A free 20-minute call to go over these results and what to fix first.',
-      cta:   <a className="ov-btn ov-btn-primary" href={`/report/${p.reportId}#book-call`}>Request your free call</a>,
+      title: 'Prefer to talk first?',
+      body:  `One free 20-minute call with ${b.firstName} to go over these results.`,
+      cta:   <a className="ov-btn ov-btn-quiet" href={`/report/${p.reportId}#book-call`}>Request a call</a>,
     },
     starter: {
       title: `Want ${b.firstName} to run this with you?`,
@@ -826,11 +843,20 @@ export default function Overview(p: OverviewProps) {
       </div>
 
       {p.tier === 'free' && (
-        <button className="ov-card ov-row ov-item" onClick={p.onUpgrade} style={{ borderRadius: T.radius }}>
-          <Lock size={16} color={T.faint} style={{ flexShrink: 0 }} />
-          <span style={{ flex: 1, color: T.ink2 }}>Paid plans include {p.buyer.firstName}&apos;s monthly note on your numbers</span>
-          <ChevronRight size={18} color={T.faint} />
-        </button>
+        <section className="ov-card" aria-labelledby="ov-plan" style={{ padding: '24px 22px' }}>
+          <h2 id="ov-plan" className="ov-h2" style={{ margin: '0 0 8px' }}>What Starter adds</h2>
+          <p style={{ font: `400 15px/1.5 ${T.font}`, color: T.ink2, margin: '0 0 16px', maxWidth: '60ch' }}>
+            {p.planPitch?.worth
+              ? <>{p.planPitch.worth} Starter is {p.planPitch.price} a month.</>
+              : <>Starter is {p.planPitch?.price ?? 'KES 6,500'} a month. You pay month by month and nothing renews on its own.</>}
+          </p>
+          <ul style={{ listStyle: 'none', margin: '0 0 18px', padding: 0, display: 'grid', gap: 8, font: `400 15px/1.45 ${T.font}`, color: T.ink2 }}>
+            <li>{p.totalFindings > p.findings.length ? `All ${p.totalFindings} findings, each with its fix` : 'Every finding, each with its fix'}</li>
+            <li>Your numbers checked every week, so you see what the fixes changed</li>
+            <li>A monthly note from {p.buyer.firstName} on what to do next</li>
+          </ul>
+          <button className="ov-btn ov-btn-primary" onClick={p.onUpgrade}>See plans</button>
+        </section>
       )}
 
       <HelpCard p={p} />

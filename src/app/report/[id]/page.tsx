@@ -587,74 +587,6 @@ export default function ReportPage({ params }: { params: { id: string } }) {
           </section>
         )}
 
-        {/* ── SECTION 6 · Free call with Eugene (main next step) ─────────── */}
-        <section id="book-call" className="fade-up no-print" style={{ animationDelay: '0.22s' }}>
-          <div className="bg-[#201515] rounded-2xl p-6 sm:p-8">
-            <div className="flex items-start gap-4 mb-5">
-              <BuyerAvatar initials="EK" color="#e8330a" />
-              <div>
-                <p className="text-[11px] font-bold uppercase tracking-widest text-[#e8330a] mb-1">Your next step, free</p>
-                <h2 className="text-white font-extrabold text-xl sm:text-2xl leading-tight mb-1">Talk your report through with Eugene</h2>
-                <p className="text-[rgba(255,255,255,0.6)] text-sm leading-relaxed max-w-xl">
-                  A free 20-minute call with a Nairobi media buyer who runs Google and Meta campaigns for lead-generating businesses. We go through your findings and agree what to fix first. No obligation.
-                </p>
-                {buyerIntro && (
-                  <p className="text-[rgba(255,255,255,0.45)] text-xs leading-relaxed mt-3 line-clamp-2 italic">
-                    &ldquo;{buyerIntro.message.slice(0, 160)}{buyerIntro.message.length > 160 ? '…' : ''}&rdquo;
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {callStatus === 'sent' ? (
-              <div className="rounded-xl border border-[rgba(34,197,94,0.3)] bg-[rgba(34,197,94,0.08)] p-5">
-                <p className="text-white font-semibold text-sm mb-1">Request sent.</p>
-                <p className="text-[rgba(255,255,255,0.65)] text-sm">Eugene will message you on WhatsApp to agree a time. A confirmation is on its way to your inbox.</p>
-              </div>
-            ) : (
-              <form
-                onSubmit={e => { e.preventDefault(); if (callStatus !== 'sending') requestCall() }}
-                className="grid sm:grid-cols-[1fr_1fr_auto] gap-3 items-end"
-              >
-                <label className="block">
-                  <span className="block text-[11px] font-semibold uppercase tracking-widest text-[rgba(255,255,255,0.45)] mb-1.5">WhatsApp number</span>
-                  <input
-                    type="tel" inputMode="tel" required autoComplete="tel"
-                    value={callPhone} onChange={e => setCallPhone(e.target.value)}
-                    placeholder="0712 345 678"
-                    className="w-full rounded-xl bg-white text-[#201515] text-sm px-4 py-3 outline-none focus:ring-2 focus:ring-[#e8330a]"
-                  />
-                </label>
-                <label className="block">
-                  <span className="block text-[11px] font-semibold uppercase tracking-widest text-[rgba(255,255,255,0.45)] mb-1.5">Best time</span>
-                  <select
-                    value={callTime} onChange={e => setCallTime(e.target.value)}
-                    className="w-full rounded-xl bg-white text-[#201515] text-sm px-4 py-3 outline-none focus:ring-2 focus:ring-[#e8330a]"
-                  >
-                    {['Weekday morning', 'Weekday afternoon', 'Weekday evening', 'Saturday'].map(t => <option key={t}>{t}</option>)}
-                  </select>
-                </label>
-                <button
-                  type="submit" disabled={callStatus === 'sending' || callPhone.trim().length < 9}
-                  className="rounded-xl bg-[#e8330a] text-white font-semibold text-sm px-6 py-3 hover:opacity-90 transition-opacity disabled:opacity-50 whitespace-nowrap"
-                >
-                  {callStatus === 'sending' ? 'Sending…' : 'Request my free call'}
-                </button>
-                <label className="block sm:col-span-3">
-                  <span className="block text-[11px] font-semibold uppercase tracking-widest text-[rgba(255,255,255,0.45)] mb-1.5">Anything Eugene should know? (optional)</span>
-                  <input
-                    type="text" maxLength={500}
-                    value={callNote} onChange={e => setCallNote(e.target.value)}
-                    placeholder="e.g. Our Meta leads stopped picking up calls last month"
-                    className="w-full rounded-xl bg-[rgba(255,255,255,0.08)] border border-[rgba(255,255,255,0.12)] text-white placeholder:text-[rgba(255,255,255,0.35)] text-sm px-4 py-3 outline-none focus:ring-2 focus:ring-[#e8330a]"
-                  />
-                </label>
-                {callStatus === 'error' && <p className="sm:col-span-3 text-sm text-[#fca5a5]">{callError}</p>}
-              </form>
-            )}
-          </div>
-        </section>
-
         {/* ── SECTION 7 · Paywall or Dashboard CTA ──────────────────────── */}
         <section className="relative no-print fade-up" style={{ animationDelay: '0.25s' }}>
 
@@ -708,7 +640,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
               <div className="relative -mt-10 z-10">
                 <div className="bg-[#201515] border border-[rgba(232,51,10,0.2)] rounded-2xl p-7 sm:p-10 text-center shadow-2xl">
                   <span className="inline-block text-[11px] font-semibold uppercase tracking-widest text-[#e8330a] bg-[rgba(232,51,10,0.1)] border border-[rgba(232,51,10,0.25)] px-3 py-1 rounded-full mb-5">
-                    Prefer to fix it yourself? Unlock the full plan
+                    Your next step
                   </span>
                   <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-3 leading-tight">
                     {weakDimensions.length > 0
@@ -783,6 +715,73 @@ export default function ReportPage({ params }: { params: { id: string } }) {
               </div>
             </>
           )}
+        </section>
+
+        {/* ── Free call with Eugene: the quiet option, below the plan ─────────── */}
+        <section id="book-call" className="fade-up no-print" style={{ animationDelay: '0.22s' }}>
+          <div className="bg-white border border-[#c5c0b1] rounded-2xl p-6 sm:p-8">
+            <div className="flex items-start gap-4 mb-5">
+              <BuyerAvatar initials="EK" color="#e8330a" />
+              <div>
+                                <h2 className="text-[#201515] font-bold text-lg sm:text-xl leading-tight mb-1">Prefer to talk first?</h2>
+                <p className="text-[#605d52] text-sm leading-relaxed max-w-xl">
+                  One free 20-minute call with Eugene, the media buyer behind this report. You go through the findings together and agree what to fix first.
+                </p>
+                {buyerIntro && (
+                  <p className="text-[#939084] text-xs leading-relaxed mt-3 line-clamp-2 italic">
+                    &ldquo;{buyerIntro.message.slice(0, 160)}{buyerIntro.message.length > 160 ? '…' : ''}&rdquo;
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {callStatus === 'sent' ? (
+              <div className="rounded-xl border border-[rgba(34,197,94,0.3)] bg-[rgba(34,197,94,0.08)] p-5">
+                <p className="text-[#201515] font-semibold text-sm mb-1">Request sent.</p>
+                <p className="text-[#605d52] text-sm">Eugene will message you on WhatsApp to agree a time. A confirmation is on its way to your inbox.</p>
+              </div>
+            ) : (
+              <form
+                onSubmit={e => { e.preventDefault(); if (callStatus !== 'sending') requestCall() }}
+                className="grid sm:grid-cols-[1fr_1fr_auto] gap-3 items-end"
+              >
+                <label className="block">
+                  <span className="block text-[11px] font-semibold uppercase tracking-widest text-[#939084] mb-1.5">WhatsApp number</span>
+                  <input
+                    type="tel" inputMode="tel" required autoComplete="tel"
+                    value={callPhone} onChange={e => setCallPhone(e.target.value)}
+                    placeholder="0712 345 678"
+                    className="w-full rounded-xl bg-white border border-[#c5c0b1] text-[#201515] text-sm px-4 py-3 outline-none focus:ring-2 focus:ring-[#e8330a]"
+                  />
+                </label>
+                <label className="block">
+                  <span className="block text-[11px] font-semibold uppercase tracking-widest text-[#939084] mb-1.5">Best time</span>
+                  <select
+                    value={callTime} onChange={e => setCallTime(e.target.value)}
+                    className="w-full rounded-xl bg-white border border-[#c5c0b1] text-[#201515] text-sm px-4 py-3 outline-none focus:ring-2 focus:ring-[#e8330a]"
+                  >
+                    {['Weekday morning', 'Weekday afternoon', 'Weekday evening', 'Saturday'].map(t => <option key={t}>{t}</option>)}
+                  </select>
+                </label>
+                <button
+                  type="submit" disabled={callStatus === 'sending' || callPhone.trim().length < 9}
+                  className="rounded-xl border border-[#201515] text-[#201515] font-semibold text-sm px-6 py-3 hover:bg-[#201515] hover:text-white transition-colors disabled:opacity-50 whitespace-nowrap"
+                >
+                  {callStatus === 'sending' ? 'Sending…' : 'Request a call'}
+                </button>
+                <label className="block sm:col-span-3">
+                  <span className="block text-[11px] font-semibold uppercase tracking-widest text-[#939084] mb-1.5">Anything Eugene should know? (optional)</span>
+                  <input
+                    type="text" maxLength={500}
+                    value={callNote} onChange={e => setCallNote(e.target.value)}
+                    placeholder="e.g. Our Meta leads stopped picking up calls last month"
+                    className="w-full rounded-xl bg-white border border-[#c5c0b1] text-[#201515] placeholder:text-[#939084] text-sm px-4 py-3 outline-none focus:ring-2 focus:ring-[#e8330a]"
+                  />
+                </label>
+                {callStatus === 'error' && <p className="sm:col-span-3 text-sm text-[#b91c1c]">{callError}</p>}
+              </form>
+            )}
+          </div>
         </section>
 
         {/* ── Email / Subscribe Modal ────────────────────────────────────── */}
