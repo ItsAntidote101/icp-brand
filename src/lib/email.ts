@@ -4,6 +4,10 @@ const FROM = 'Ideal ICP <noreply@idealicp.com>'
 
 // Where call requests, signups, upgrades and escalations are sent
 const FOUNDER_EMAIL = 'kwata@idealicp.com'
+// Where notifications to the founder are delivered. Set FOUNDER_NOTIFY_EMAILS
+// (comma separated) in Vercel to send them somewhere else, for example while the
+// domain mailbox is not set up. Clients never see these addresses.
+const FOUNDER_INBOX = (process.env.FOUNDER_NOTIFY_EMAILS ?? FOUNDER_EMAIL).split(',').map(e => e.trim()).filter(Boolean)
 
 function escapeHtml(s: string): string {
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;')
@@ -466,7 +470,7 @@ ${securityBox(`<p style="margin:0;color:${Dark};font-size:16px;line-height:1.65;
 <p style="margin:0;color:${Muted};font-size:14px;line-height:1.6;font-family:${font};">${noteHtml(noteBody)}</p>`
 
   const { data, error } = await getResend().emails.send({
-    from: FROM, to: FOUNDER_EMAIL, replyTo: userEmail,
+    from: FROM, to: FOUNDER_INBOX, replyTo: userEmail,
     subject: `Reply to your note: ${companyName || userName || userEmail}`,
     html: base(content + controlRoomLink, { loginBtn: false }),
   })
@@ -511,7 +515,7 @@ ${notes ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="
 
   const { data, error } = await getResend().emails.send({
     from: FROM,
-    to: FOUNDER_EMAIL,
+    to: FOUNDER_INBOX,
     replyTo: userEmail,
     subject: `New Strategy Session Request from ${companyName || userName}`,
     html: base(content + controlRoomLink, { loginBtn: false }),
@@ -596,7 +600,7 @@ ${notes ? infoCard(`<p style="margin:0 0 8px;color:${Orange};font-size:11px;font
 
   const { data, error } = await getResend().emails.send({
     from: FROM,
-    to: FOUNDER_EMAIL,
+    to: FOUNDER_INBOX,
     replyTo: userEmail,
     subject: `Call request: ${companyName || userName || userEmail}${score !== null ? ` (score ${score})` : ''}`,
     html: base(content + controlRoomLink, { loginBtn: false }),
@@ -699,7 +703,7 @@ ${heading('Cancellation alert', 28)}
 <p style="margin:0;color:${Muted};font-size:13px;font-family:${font};">Reply to this email to reach the subscriber directly.</p>`
 
   const { data, error } = await getResend().emails.send({
-    from: FROM, to: FOUNDER_EMAIL, replyTo: userEmail,
+    from: FROM, to: FOUNDER_INBOX, replyTo: userEmail,
     subject: `Cancellation: ${companyName || userName}`,
     html: base(content + controlRoomLink, { loginBtn: false }),
   })
@@ -774,7 +778,7 @@ ${topUpKes > 0 ? `<p style="margin:0 0 16px;color:#d97706;font-size:14px;font-we
 ${infoCard(rows.map(([l, v], i) => row(l, v, i === rows.length - 1)).join(''))}`
 
   const { data, error } = await getResend().emails.send({
-    from: FROM, to: FOUNDER_EMAIL, replyTo: userEmail,
+    from: FROM, to: FOUNDER_INBOX, replyTo: userEmail,
     subject: `Upgrade: ${tierNames[oldTier] ?? oldTier} to ${tierNames[newTier] ?? newTier}${topUpKes > 0 ? `, KES ${topUpKes.toLocaleString()} to collect` : ''}, ${companyName || userName}`,
     html: base(content + controlRoomLink, { loginBtn: false }),
   })
@@ -842,7 +846,7 @@ ${heading(`Downgrade scheduled: ${tierNames[currentTier] ?? currentTier} to ${ti
 ${infoCard(rows.map(([l, v], i) => row(l, v, i === rows.length - 1)).join(''))}`
 
   const { data, error } = await getResend().emails.send({
-    from: FROM, to: FOUNDER_EMAIL, replyTo: userEmail,
+    from: FROM, to: FOUNDER_INBOX, replyTo: userEmail,
     subject: `Downgrade scheduled: ${tierNames[currentTier] ?? currentTier} to ${tierNames[newTier] ?? newTier} on ${switchDate}, ${companyName || userName}`,
     html: base(content + controlRoomLink, { loginBtn: false }),
   })
@@ -908,7 +912,7 @@ ${heading('Subscription paused', 28)}
 ${infoCard(rows.map(([l, v], i) => row(l, v, i === rows.length - 1)).join(''))}`
 
   const { data, error } = await getResend().emails.send({
-    from: FROM, to: FOUNDER_EMAIL, replyTo: userEmail,
+    from: FROM, to: FOUNDER_INBOX, replyTo: userEmail,
     subject: `Subscription paused: ${companyName || userName}`,
     html: base(content + controlRoomLink, { loginBtn: false }),
   })
@@ -1056,7 +1060,7 @@ ${note ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0
 <p style="margin:0;color:${Muted};font-size:13px;font-family:${font};">Reply via email to respond directly.</p>`
 
   const { data, error } = await getResend().emails.send({
-    from: FROM, to: FOUNDER_EMAIL, replyTo: userEmail,
+    from: FROM, to: FOUNDER_INBOX, replyTo: userEmail,
     subject: `Escalation: ${companyName || userName}, ${urgency}`,
     html: base(content + controlRoomLink, { loginBtn: false }),
   })
@@ -1194,7 +1198,7 @@ ${heading('New signup', 28)}
 ${infoCard(rows.map(([l, v], i) => row(l, v, i === rows.length - 1)).join(''))}`
 
   const { data, error } = await getResend().emails.send({
-    from: FROM, to: FOUNDER_EMAIL, replyTo: userEmail,
+    from: FROM, to: FOUNDER_INBOX, replyTo: userEmail,
     subject: `New signup: ${userName || userEmail}${source === 'google' ? ' (Google)' : ''}`,
     html: base(content + controlRoomLink, { loginBtn: false }),
   })

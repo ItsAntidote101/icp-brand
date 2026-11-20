@@ -63,7 +63,7 @@ export default function ControlRoom() {
     <main style={shell}><DashStyles />
       <div className="ov-card" style={{ maxWidth: 460, margin: '12vh auto', padding: 28 }}>
         <h1 style={{ font: `700 24px/1.2 ${T.head}`, margin: '0 0 8px' }}>Admin only</h1>
-        <p style={{ font: `400 15px/1.5 ${T.font}`, color: T.muted, margin: '0 0 20px' }}>Log in with the admin email (kwata@idealicp.com) using a login code, then come back to this page.</p>
+        <p style={{ font: `400 15px/1.5 ${T.font}`, color: T.muted, margin: '0 0 20px' }}>Log in with your admin email using a login code, then come back to this page.</p>
         <Link className="ov-btn ov-btn-primary" href="/auth?tab=login&next=/admin">Log in</Link>
       </div>
     </main>
