@@ -4162,6 +4162,7 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
   const [proactiveMsg,    setProactiveMsg]    = useState<string | null>(null)
   const [sendTo,          setSendTo]          = useState<'ai' | 'eugene'>('ai')
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const seenThreadIds  = useRef<Set<string>>(new Set())
   const textareaRef    = useRef<HTMLTextAreaElement>(null)
   const idleTimerRef   = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -4250,8 +4251,9 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
       // Bring in the conversation with Eugene, so his messages are actually here
       fetch('/api/chat/thread').then(r => r.json()).then((d: { messages?: { id: string; from: 'buyer' | 'client'; body: string; at: string }[] }) => {
         const thread: ChatMsg[] = (d.messages ?? []).map(m => ({ id: `t-${m.id}`, role: m.from === 'buyer' ? 'media_buyer' : 'user', content: m.body, timestamp: new Date(m.at), thread: true }))
+        thread.forEach(m => seenThreadIds.current.add(m.id))
         if (thread.length === 0) return
-        setMessages(prev => [...prev.filter(m => !m.thread), ...thread])
+        setMessages(prev => [...prev.filter(m => !m.thread || !m.id.startsWith('t-')), ...thread])
         // If Eugene spoke last, the next thing they type is most likely for him
         if (thread[thread.length - 1].role === 'media_buyer') { setSendTo('eugene'); setLastSuggestions([]) }
       }).catch(() => {})
@@ -4262,6 +4264,29 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
       void fetch('/api/chat/mark-read', { method: 'POST' })
     }
   }, [isOpen, initialized, firstName, score, waste, topFinding, welcomeSuggestions])
+
+  // Keep checking for new messages from Eugene, so his reply shows up without
+  // a page reload: every 8 seconds while the chat is open, every 30 when closed.
+  useEffect(() => {
+    if (!initialized) return
+    let live = true
+    const pull = async () => {
+      if (document.hidden) return
+      try {
+        const d = await (await fetch('/api/chat/thread')).json() as { messages?: { id: string; from: 'buyer' | 'client'; body: string; at: string }[] }
+        if (!live) return
+        const fromEugene: ChatMsg[] = (d.messages ?? []).filter(m => m.from === 'buyer').map(m => ({ id: `t-${m.id}`, role: 'media_buyer', content: m.body, timestamp: new Date(m.at), thread: true }))
+        const fresh = fromEugene.filter(m => !seenThreadIds.current.has(m.id))
+        if (fresh.length === 0) return
+        fresh.forEach(m => seenThreadIds.current.add(m.id))
+        setMessages(prev => { const have = new Set(prev.map(m => m.id)); return [...prev, ...fresh.filter(m => !have.has(m.id))] })
+        setSendTo('eugene'); setLastSuggestions([])
+        if (!isOpen) setHasUnread(true)
+      } catch { /* try again on the next tick */ }
+    }
+    const timer = setInterval(pull, isOpen ? 8_000 : 30_000)
+    return () => { live = false; clearInterval(timer) }
+  }, [initialized, isOpen])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })

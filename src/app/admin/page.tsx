@@ -56,6 +56,11 @@ export default function ControlRoom() {
     if (res.ok) setData(await res.json())
   }, [])
   useEffect(() => { load() }, [load])
+  // New messages and requests appear on their own, without a refresh
+  useEffect(() => {
+    const timer = setInterval(() => { if (!document.hidden) load() }, 30_000)
+    return () => clearInterval(timer)
+  }, [load])
 
   const shell: React.CSSProperties = { minHeight: '100vh', background: T.bg, fontFamily: T.font, color: T.ink, padding: 'clamp(20px,4vw,40px) clamp(14px,4vw,40px) 80px' }
 
@@ -217,6 +222,11 @@ function ClientPage({ id, onBack, onChanged }: { id: string; onBack: () => void;
     if (first) { setNote(j.draft?.body ?? ''); setMedia(j.draft?.media_url ?? ''); setPriv(j.privateNote) }
   }, [id])
   useEffect(() => { load(true) }, [load])
+  // Pick up the client's replies while this page is open; what is being typed is left alone
+  useEffect(() => {
+    const timer = setInterval(() => { if (!document.hidden) load() }, 12_000)
+    return () => clearInterval(timer)
+  }, [load])
 
   if (!d) return <p style={{ font: `400 16px/1.5 ${T.font}`, color: T.muted }}>Loading client.</p>
   const c = d.client, s = d.snapshot
