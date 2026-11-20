@@ -582,9 +582,9 @@ function HelpCard({ p }: { p: OverviewProps }) {
   const b = p.buyer
   const byTier: Record<string, { title: string; body: string; cta: React.ReactNode }> = {
     free: {
-      title: `Talk it through with ${b.firstName}`,
-      body:  'A free 20-minute call to go over these results and what to fix first.',
-      cta:   <a className="ov-btn ov-btn-primary" href={`/report/${p.reportId}#book-call`}>Request your free call</a>,
+      title: 'Prefer to talk first?',
+      body:  `One free 20-minute call with ${b.firstName} to go over these results.`,
+      cta:   <a className="ov-btn ov-btn-quiet" href={`/report/${p.reportId}#book-call`}>Request a call</a>,
     },
     starter: {
       title: `Want ${b.firstName} to run this with you?`,

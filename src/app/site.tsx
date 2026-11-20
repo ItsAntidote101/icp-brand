@@ -204,7 +204,7 @@ export function SiteFooter({ title, lead }: { title: string; lead?: string }) {
       <section className="hp-end">
         <div className="hp-wrap">
           <h2>{title}</h2>
-          <p className="hp-lead">{lead ?? '10 questions, about 3 minutes, and a free call with me to go through the answer.'}</p>
+          <p className="hp-lead">{lead ?? '10 questions, about 3 minutes. Your score and your first fixes, free.'}</p>
           <Link href="/questionnaire" className="hp-btn hp-btn-light">{CTA} <ArrowRight size={18} aria-hidden="true" /></Link>
         </div>
       </section>

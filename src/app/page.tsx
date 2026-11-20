@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { ArrowRight, Calculator, ChevronRight, ClipboardList, Clock, Gauge, PhoneCall, Shuffle, Users, Wrench } from 'lucide-react'
+import { ArrowRight, Calculator, ChevronRight, ClipboardList, Clock, Gauge, LineChart, Shuffle, Users, Wrench } from 'lucide-react'
 import SocialProofToast from '@/components/SocialProofToast'
 import { HomeNav, LandingTracker } from './home-client'
 import { FAQS } from './home-faqs'
@@ -27,7 +27,7 @@ const STEPS = [
   { icon: ClipboardList, label: 'Answer 10 questions' },
   { icon: Gauge,         label: 'Get your score' },
   { icon: Wrench,        label: 'See what to fix first' },
-  { icon: PhoneCall,     label: 'Talk it through, free' },
+  { icon: LineChart,     label: 'Track it every week' },
 ]
 
 const CAUSES = [
@@ -197,7 +197,7 @@ export default function Page() {
         </section>
       </main>
 
-      <SiteFooter title="Find out why your leads are not buying." lead="3 minutes. Free. Then a call with me." />
+      <SiteFooter title="Find out why your leads are not buying." lead="3 minutes. Free. No card." />
       <SocialProofToast />
     </div>
   )
