@@ -21,13 +21,15 @@ export async function GET() {
   const now = Date.now()
   const since = (days: number) => new Date(now - days * DAY_MS).toISOString()
 
-  const [usersQ, callsQ, escQ, msgQ, notesQ, weeksQ] = await Promise.all([
+  const [usersQ, callsQ, escQ, msgQ, notesQ, weeksQ, adsQ] = await Promise.all([
     supabase.from('users').select('id, email, full_name, company_name, subscription_tier, billing_status, renewal_date, cancelled_at, created_at, last_active_at').order('created_at', { ascending: false }).limit(1000),
     supabase.from('session_requests').select('id, user_email, user_name, company_name, session_format, preferred_time, additional_notes, status, created_at').gte('created_at', since(120)).order('created_at', { ascending: false }).limit(300),
     supabase.from('escalations').select('id, user_id, urgency, user_note, status, admin_reply, replied_at, created_at').gte('created_at', since(120)).order('created_at', { ascending: false }).limit(300),
     supabase.from('client_messages').select('id, user_id, direction, kind, body, created_at, handled_at').gte('created_at', since(120)).order('created_at', { ascending: false }).limit(500),
     supabase.from('buyer_notes').select('user_id, sent_at').eq('status', 'sent').gte('sent_at', since(60)),
     supabase.from('weekly_checkins').select('user_id, week_start').gte('week_start', since(90).slice(0, 10)),
+    // Latest answer to "Are you running paid ads right now?" per person
+    supabase.from('questionnaires').select('user_id, created_at, ads:responses->>27').not('user_id', 'is', null).order('created_at', { ascending: false }).limit(1000),
   ])
   if (usersQ.error) return NextResponse.json({ error: usersQ.error.message }, { status: 500 })
 
@@ -71,6 +73,11 @@ export async function GET() {
   }
 
   // ── Clients, and the quieter reminders ──────────────────────────────────
+  const notYet = new Map<string, boolean>()
+  for (const q of (adsQ.data ?? []) as Array<{ user_id: string; ads: string | null }>) {
+    if (!notYet.has(q.user_id)) notYet.set(q.user_id, String(q.ads ?? '').startsWith('Not yet'))
+  }
+
   const clients = users.map(u => {
     const paid     = u.subscription_tier !== 'free' && u.billing_status === 'active'
     const renewsIn = u.renewal_date ? Math.ceil((new Date(u.renewal_date).getTime() - now) / DAY_MS) : null
@@ -93,6 +100,7 @@ export async function GET() {
     return {
       id: u.id, name: u.full_name, email: u.email, company: u.company_name,
       tier: u.subscription_tier, status: u.billing_status, renewsIn, cancelled: !!u.cancelled_at,
+      notAdvertisingYet: notYet.get(u.id) === true,
       lastSeen: new Date(seen).toISOString(), weeksLogged: wk?.count ?? 0, open,
       lastMessage: thread.length ? thread.reduce((a, b) => (a.at > b.at ? a : b)) : null,
     }

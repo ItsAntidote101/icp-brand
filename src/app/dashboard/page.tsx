@@ -171,6 +171,8 @@ type DiagnosisData = {
   landing_page_assessment?: string
   monthly_waste_estimate?: string
   is_deep_research?: boolean
+  pre_launch?: boolean
+  numbers?: { pre_launch?: boolean; cost_per_inquiry?: number | null; cost_per_sale?: number | null; sale_value?: number | null; one_more_in_ten?: number | null; sales_to_cover_budget?: number | null }
   breakdown?: BreakdownItem[]
   business_outcomes?: BusinessOutcomes
   audience?: CategoryData
@@ -5192,7 +5194,7 @@ export default function DashboardPage() {
               // One notice at most, so the page never opens with a stack of banners.
               const notice = renewalShowing ? null
                 : isSubscribed && diag.is_deep_research !== true
-                  ? <Notice title="Finish your full diagnosis" body="This report came from the free check. Answer about 12 more questions and we will check your real landing page too. Your earlier answers are filled in." action={<Link className="ov-btn ov-btn-quiet" href="/questionnaire?full=1">Complete it</Link>} />
+                  ? <Notice title="Finish your full diagnosis" body="This report came from the free check. Answer about 10 more questions on your best customer and your follow up, and your report gets more specific. Your earlier answers are saved." action={<Link className="ov-btn ov-btn-quiet" href="/questionnaire?full=1">Complete it</Link>} />
                 : suspectData
                   ? <Notice title="Some answers looked like test data" body="This report may not reflect your real business. Run it again with your real numbers and landing page." action={t === 'free' ? <button className="ov-btn ov-btn-quiet" onClick={() => setShowUpgradeModal(true)}>See plans</button> : <Link className="ov-btn ov-btn-quiet" href="/questionnaire">Run it again</Link>} />
                 : daysOld > reDiagAt && t !== 'free'
@@ -5212,6 +5214,24 @@ export default function DashboardPage() {
                     reportDate={formatDate(latestReport.generated_at)}
                     reportId={latestReport.id}
                     wasteLabel={waste.amount > 0 ? convertAmount(waste.amount, waste.fromCurrency, currency) : null}
+                    preLaunch={!!diag.pre_launch}
+                    headline={(() => {
+                      const n = diag.numbers
+                      if (!n) return null
+                      const money = (v: number) => convertAmount(v, 'KES', currency)
+                      if (n.pre_launch) {
+                        return n.sales_to_cover_budget
+                          ? { label: 'Sales to cover your ad budget', value: `${n.sales_to_cover_budget} a month`, note: 'From the budget and sale value you gave us. Your plan below is built around reaching this.' }
+                          : { label: 'Your launch plan', value: 'Ready below', note: 'Tell us your budget and what a sale is worth in a new diagnosis to see the sales you need.' }
+                      }
+                      if (n.one_more_in_ten) {
+                        return { label: 'One more buyer in every ten inquiries', value: `${money(n.one_more_in_ten)} a month`, note: n.cost_per_sale ? `In extra sales, from your own numbers. Each sale costs you about ${money(n.cost_per_sale)} in ads today.` : 'In extra sales, worked out from your own numbers.' }
+                      }
+                      if (n.cost_per_inquiry) {
+                        return { label: 'Cost per inquiry', value: money(n.cost_per_inquiry), note: 'Your monthly ad spend divided by the inquiries it brought.' }
+                      }
+                      return null
+                    })()}
                     findings={t === 'free' ? all.slice(0, 2) : all}
                     totalFindings={all.length}
                     wins={(diag.quick_wins ?? []).slice(0, 3)}

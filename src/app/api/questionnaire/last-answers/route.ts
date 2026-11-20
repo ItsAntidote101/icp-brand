@@ -9,7 +9,10 @@ const supabase = supabaseAdmin()
 // Questions whose answers are stable enough to pre-fill on re-diagnosis.
 // Dynamic questions (9, 12, 13, 14, 15, 18, 20, 21) are intentionally excluded
 // so the user always re-enters current spend, leads, and performance metrics.
-const STABLE_IDS = new Set([1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 16, 17, 19, 22, 23, 24, 25, 26])
+const STABLE_IDS = new Set([1, 2, 27, 4, 5, 6, 10, 11, 17, 19, 23, 24, 26, 30, 31])
+// Answers younger than this come back in full, so someone who upgrades right
+// after the free questions carries straight on instead of repeating them.
+const RECENT_MS = 14 * 24 * 60 * 60 * 1000
 
 export async function GET() {
   const session = await getSession()
@@ -31,7 +34,7 @@ export async function GET() {
 
   const { data: lastQ } = await supabase
     .from('questionnaires')
-    .select('responses')
+    .select('responses, created_at')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
     .limit(1)
@@ -43,6 +46,8 @@ export async function GET() {
 
   const raw = lastQ.responses as Record<string, unknown>
   const stableAnswers: Record<string, unknown> = {}
+  const age = Date.now() - new Date((lastQ as { created_at?: string }).created_at ?? 0).getTime()
+  const recent = age >= 0 && age < RECENT_MS
 
   // Valid Q11 region options after the EA split (old combined value no longer valid)
   const VALID_REGIONS = new Set([
@@ -54,7 +59,7 @@ export async function GET() {
   ])
 
   for (const [key, val] of Object.entries(raw)) {
-    if (!STABLE_IDS.has(Number(key))) continue
+    if (!recent && !STABLE_IDS.has(Number(key))) continue
     // Drop legacy region value so user picks a specific country on re-diagnosis
     if (Number(key) === 11 && typeof val === 'string' && !VALID_REGIONS.has(val)) continue
     stableAnswers[key] = val

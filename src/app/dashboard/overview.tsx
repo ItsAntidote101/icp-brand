@@ -55,6 +55,8 @@ export type OverviewProps = {
   reportDate:   string                 // formatted date of the latest report
   reportId:     string
   wasteLabel:   string | null          // already converted, e.g. "KES 36,000"
+  headline?:    { label: string; value: string; note: string } | null  // worked out from their own answers; replaces the waste figure on newer reports
+  preLaunch?:   boolean                // not advertising yet: the score means readiness to start
   findings:     Finding[]
   totalFindings: number                // before any plan limit
   wins:         QuickWin[]
@@ -782,9 +784,9 @@ export default function Overview(p: OverviewProps) {
         <div style={{ padding: '28px', display: 'flex', alignItems: 'center', gap: 24 }}>
           {p.score !== null ? <ScoreRing score={p.score} /> : null}
           <div style={{ minWidth: 0 }}>
-            <p style={{ font: `400 15px/1.2 ${T.font}`, color: T.muted, margin: '0 0 6px' }}>ICP score</p>
+            <p style={{ font: `400 15px/1.2 ${T.font}`, color: T.muted, margin: '0 0 6px' }}>{p.preLaunch ? 'Ready to advertise' : 'ICP score'}</p>
             {st
-              ? <p style={{ font: `700 24px/1.15 ${T.head}`, letterSpacing: '-0.02em', color: st.color, margin: '0 0 8px' }}>{st.label}</p>
+              ? <p style={{ font: `700 24px/1.15 ${T.head}`, letterSpacing: '-0.02em', color: st.color, margin: '0 0 8px' }}>{p.preLaunch ? (st.label === 'Healthy' ? 'Ready' : st.label === 'At risk' ? 'Nearly ready' : 'Not ready yet') : st.label}</p>
               : <p style={{ font: `700 20px/1.2 ${T.head}`, color: T.ink, margin: '0 0 8px' }}>No score in this report</p>}
             <p style={{ font: `400 14px/1.45 ${T.font}`, color: T.muted, margin: 0 }}>
               {p.scoreDelta !== null && p.scoreDelta !== 0 && p.prevDate
@@ -796,14 +798,16 @@ export default function Overview(p: OverviewProps) {
           </div>
         </div>
         <div style={{ padding: '28px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <p style={{ font: `400 15px/1.2 ${T.font}`, color: T.muted, margin: '0 0 6px' }}>Estimated monthly waste</p>
+          <p style={{ font: `400 15px/1.2 ${T.font}`, color: T.muted, margin: '0 0 6px' }}>{p.headline ? p.headline.label : 'Estimated monthly waste'}</p>
           <p style={{ font: `700 clamp(28px,4vw,36px)/1.1 ${T.head}`, letterSpacing: '-0.025em', color: T.ink, margin: '0 0 8px', fontVariantNumeric: 'tabular-nums' }}>
-            {p.wasteLabel ?? 'Not estimated'}
+            {p.headline ? p.headline.value : (p.wasteLabel ?? 'Not worked out yet')}
           </p>
           <p style={{ font: `400 14px/1.45 ${T.font}`, color: T.muted, margin: 0, maxWidth: '40ch' }}>
-            {p.wasteLabel
-              ? 'An estimate from your answers, not a measured figure.'
-              : 'Add your monthly ad spend in a new diagnosis to get an estimate.'}
+            {p.headline
+              ? p.headline.note
+              : p.wasteLabel
+                ? 'An estimate from your answers, not a measured figure.'
+                : 'Run a new diagnosis with your spend, inquiries and sale value to see your numbers here.'}
           </p>
         </div>
       </section>

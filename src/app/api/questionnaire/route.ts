@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { withCompat } from '@/lib/answers'
 import { createSessionToken, sessionCookieOptions, getSession, UNVERIFIED_SESSION_MS } from '@/lib/session'
 
 export async function POST(req: NextRequest) {
@@ -13,10 +14,12 @@ export async function POST(req: NextRequest) {
     )
 
     const body = await req.json()
-    const { answers, profile } = body as {
+    const { answers: rawAnswers, profile } = body as {
       answers: Record<string, unknown>
       profile?: { name?: string; email?: string; company?: string }
     }
+    // Fill in the ids older parts of the app still read (region, close rate as a percent)
+    const answers = rawAnswers && typeof rawAnswers === 'object' ? withCompat(rawAnswers) : rawAnswers
 
     let userId: string | null = null
     // Only a brand-new account created right here gets a (short, unverified) session.
@@ -119,8 +122,8 @@ export async function POST(req: NextRequest) {
         region:           answers[11] ?? null,
         country:          answers[11] ?? null,
         ad_channels:      Array.isArray(answers[9]) ? (answers[9] as string[]).join(', ') : (answers[9] ?? null),
-        monthly_budget:   answers[13] ?? null,
-        budget:           answers[13] ?? null,
+        monthly_budget:   answers[13] ?? answers[33] ?? null,
+        budget:           answers[13] ?? answers[33] ?? null,
         target_audience:  answers[8] ?? null,
         icp_description:  answers[8] ?? null,
         product_service:  answers[1] ?? null,
