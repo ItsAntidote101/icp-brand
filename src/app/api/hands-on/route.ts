@@ -23,7 +23,7 @@ async function load(userId: string) {
   return { supabase, user, rows, limit }
 }
 
-const view = (rows: Row[], limit: number | null) => ({
+const view = (rows: Row[], limit: number) => ({
   limit, used: rows.length,
   requests: rows.map(r => ({ id: r.id, job: r.session_format.slice(FORMAT_PREFIX.length), open: r.status === 'pending', at: r.created_at })),
 })
@@ -58,13 +58,10 @@ export async function POST(req: NextRequest) {
   if (!s) return NextResponse.json({ error: 'Account not found.' }, { status: 404 })
   const { supabase, user, rows, limit } = s
   if (limit === 0) return NextResponse.json({ error: 'Hands-on sessions with Eugene are included from the Pro plan.', upgrade: true }, { status: 403 })
-  if (limit !== null && rows.length >= limit)
-    return NextResponse.json({ error: `Your plan includes ${limit} hands-on session a month, and this month's is already booked. You can still message Eugene any time.` }, { status: 429 })
+  if (rows.length >= limit)
+    return NextResponse.json({ error: `Your plan includes ${limit} hands-on ${limit === 1 ? 'session' : 'sessions'} a month, and you have used ${limit === 1 ? 'it' : 'them'}. You can still message Eugene any time.` }, { status: 429 })
   if (rows.some(r => r.status === 'pending' && r.session_format === formatFor(job)))
     return NextResponse.json({ error: 'You have already asked for this one. Eugene will be in touch.' }, { status: 409 })
-  // Agency has no monthly cap, but a runaway form should not flood the queue
-  if (rows.filter(r => Date.now() - new Date(r.created_at).getTime() < 24 * 3600 * 1000).length >= 3)
-    return NextResponse.json({ error: 'That is a few requests for one day. Eugene has them and will be in touch.' }, { status: 429 })
 
   const detail = [`WhatsApp: ${whatsapp}`, tools ? `Uses today: ${tools}` : '', notes].filter(Boolean).join('\n\n')
   const { error } = await supabase.from('session_requests').insert({

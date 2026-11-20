@@ -13,7 +13,7 @@ export const dynamic = 'force-static'
 
 export const metadata: Metadata = {
   title: 'Pricing | Ideal ICP',
-  description: 'Start with a free diagnosis and a free call. Paid plans from KES 6,500 a month track your cost per lead every week, with a media buyer in Nairobi watching your numbers. Pay by M-Pesa or card, month by month.',
+  description: 'Start with a free diagnosis. Paid plans from KES 6,500 a month give you keywords and files ready to upload, your cost per lead tracked every week, and a media buyer in Nairobi watching your numbers. Pay by M-Pesa or card, month by month.',
   alternates: { canonical: '/pricing' },
 }
 
@@ -22,25 +22,25 @@ const PLANS = [
     name: 'Free', price: 'KES 0', per: '',
     forWho: 'See what is wrong before you spend anything.',
     cta: 'Get my free diagnosis', pick: false,
-    items: ['One diagnosis: 10 questions, about 3 minutes', 'Your score out of 100', 'Your top 3 problems', '3 fixes to start this week', 'A free 20 minute call with Eugene'],
+    items: ['One diagnosis: 10 questions, about 3 minutes', 'Your score out of 100, or a launch plan if you have not started ads', 'Your top problems', '3 fixes to start this week, with the words to use for the first', 'One free 20 minute call with Eugene'],
   },
   {
     name: 'Starter', price: 'KES 6,500', per: 'a month',
     forWho: 'For a business running its own ads that wants them watched.',
     cta: 'Start free', pick: true,
-    items: ['The full report: every problem and the whole fix plan', 'Your cost per lead tracked every week', 'A written note from Eugene every month', 'A weekly briefing on your market, with sources', 'Message Eugene from your dashboard', 'Up to 3 diagnoses a month'],
+    items: ['The full report: every problem and the whole fix plan', 'The words to paste for every fix: replies, ad text, form questions', 'Ready to upload: Google keywords and words to block', 'Your customer and sales spreadsheets turned into Meta files', 'Your cost per lead tracked every week', 'A written note from Eugene every month', 'A weekly briefing on your market, with sources', 'Message Eugene from your dashboard'],
   },
   {
     name: 'Pro', price: 'KES 13,000', per: 'a month',
     forWho: 'For a business spending more, that wants Eugene closer.',
     cta: 'Start free', pick: false,
-    items: ['Everything in Starter', 'An onboarding call with Eugene to set priorities', 'Monthly notes can include a voice or video walk-through', 'Re-run your market research once a day', 'Up to 20 diagnoses a month'],
+    items: ['Everything in Starter', 'A campaign setup plan for your stage, reviewed by Eugene', 'One hands-on session a month: CRM connection, tracking or campaign setup', 'An onboarding call with Eugene to set priorities', 'Monthly notes can include a voice or video walk-through', 'Up to 20 diagnoses a month'],
   },
   {
     name: 'Agency', price: 'KES 26,000', per: 'a month',
     forWho: 'For agencies and consultants running ads for several clients.',
     cta: 'Start free', pick: false,
-    items: ['Everything in Pro', 'Unlimited diagnoses, one for each client', 'A strategy call with Eugene every month', 'Re-run market research up to 3 times a day'],
+    items: ['Everything in Pro', 'Unlimited diagnoses, one for each client', 'Up to 4 hands-on sessions a month', 'A strategy call with Eugene every month', 'Re-run market research up to 3 times a day'],
   },
 ]
 
@@ -53,9 +53,9 @@ const PAYING = [
 
 const QUESTIONS = [
   { q: 'Why do I start with the free diagnosis?', a: 'Because the paid plans build on it. The diagnosis creates your account and your first report. From your dashboard you can then choose a plan, or stay free.' },
-  { q: 'What is the difference between the free report and the full one?', a: 'The free report asks 10 questions and shows your top 3 problems. The full report asks 22, opens your landing page to check it, and gives you every problem with the complete fix plan.' },
+  { q: 'What is the difference between the free report and the full one?', a: 'The free report asks 10 questions and shows your top problems. The full report asks about 10 more on your best customer and your follow up, checks your landing page if your ads use one, and gives you every problem with the complete fix plan.' },
   { q: 'Can I change plans?', a: 'Yes, from your dashboard. If you move up partway through a month you only pay the difference for the days left.' },
-  { q: 'Do you run my ads for me?', a: 'No. Ideal ICP shows you what to fix and tracks whether it is working, and you or your agency make the changes. If you want Eugene to manage your campaigns, ask him on your call.' },
+  { q: 'Do you run my ads for me?', a: 'No. Ideal ICP shows you what to fix, hands you the files and wording to do it, and tracks whether it is working. On Pro, Eugene also sets things up with you in a hands-on session each month. If you want him to manage your campaigns fully, message him from your dashboard.' },
   { q: 'Is there a contract?', a: 'No. You pay for a month and decide each month whether to continue.' },
 ]
 
