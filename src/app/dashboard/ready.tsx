@@ -6,7 +6,7 @@
 import { useEffect, useState } from 'react'
 import { ChevronRight, Download, Lock } from 'lucide-react'
 import { T } from './overview'
-import { buildMetaList, columnNames, guessMapping, parseCsv, type Cell, type Field, type Mapping } from '@/lib/customer-list'
+import { buildMetaList, buildMetaSales, columnNames, guessMapping, parseCsv, type Cell, type Field, type Mapping } from '@/lib/customer-list'
 import { keywordsCsv, keywordsText, META_CUSTOMER_LIST_CSV, META_OFFLINE_EVENTS_CSV, type KeywordSet } from '@/lib/ready-files'
 
 function save(name: string, text: string) {
@@ -30,12 +30,17 @@ function CopyLink({ text, label = 'Copy' }: { text: string; label?: string }) {
 // Reads the client's own spreadsheet in the browser and hands back the file
 // Meta accepts. Nothing from the spreadsheet is sent to our server.
 const MAX_BYTES = 10 * 1024 * 1024
-const PICKS: { field: Field; label: string }[] = [
+const PEOPLE: { field: Field; label: string }[] = [
   { field: 'phone', label: 'Phone' }, { field: 'email', label: 'Email' }, { field: 'name', label: 'Full name' },
   { field: 'fn', label: 'First name' }, { field: 'ln', label: 'Last name' }, { field: 'ct', label: 'Town' },
 ]
+const SALE: { field: Field; label: string }[] = [{ field: 'date', label: 'Sale date' }, { field: 'amount', label: 'Amount' }]
+const num = (n: number) => n.toLocaleString('en-US')
+const nice = (day: string) => new Date(`${day}T00:00:00`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
 
-function CustomerListConverter({ ask }: { ask: React.ReactNode }) {
+function CustomerListConverter({ ask, kind }: { ask: React.ReactNode; kind: 'customers' | 'sales' }) {
+  const sales = kind === 'sales'
+  const PICKS = sales ? [...SALE, ...PEOPLE] : PEOPLE
   const [rows, setRows] = useState<Cell[][] | null>(null)
   const [map, setMap]   = useState<Mapping>({})
   const [file, setFile] = useState('')
@@ -60,18 +65,27 @@ function CustomerListConverter({ ask }: { ask: React.ReactNode }) {
       }
       data = data.filter(r => Array.isArray(r) && r.some(c => c !== null && c !== undefined && String(c).trim() !== ''))
       if (data.length === 0) throw new Error('That file looks empty.')
-      setRows(data); setMap(guessMapping(data)); setFile(f.name)
+      setRows(data); setMap(guessMapping(data, sales)); setFile(f.name)
     } catch (e) {
       setError(e instanceof Error && e.message ? e.message : 'Could not read that file. Save it again as .xlsx or CSV and try once more.')
     } finally { setBusy(false) }
   }
 
-  const result = rows ? buildMetaList(rows, map) : null
+  const list   = rows && !sales ? buildMetaList(rows, map) : null
+  const sold   = rows && sales ? buildMetaSales(rows, map) : null
+  const result = list ?? sold
+  const left   = sold
+    ? [sold.noContact > 0 ? `${num(sold.noContact)} with no usable phone or email` : '', sold.noDate > 0 ? `${num(sold.noDate)} with no date we could read, or a date still to come` : '', sold.noAmount > 0 ? `${num(sold.noAmount)} with no amount` : '', sold.duplicates > 0 ? `${num(sold.duplicates)} listed twice` : '']
+    : list
+      ? [list.noContact > 0 ? `${num(list.noContact)} with no usable phone or email` : '', list.duplicates > 0 ? `${num(list.duplicates)} repeated` : '']
+      : []
   const names  = rows ? columnNames(rows) : []
 
   return (
     <>
-      <p style={small}>Choose the spreadsheet you already keep your customers in. We turn it into the file Meta accepts, with phone numbers and columns fixed for you.</p>
+      <p style={small}>{sales
+        ? 'Choose the spreadsheet where you record your sales. We turn it into the file Meta accepts, so Meta learns which inquiries became paying customers.'
+        : 'Choose the spreadsheet you already keep your customers in. We turn it into the file Meta accepts, with phone numbers and columns fixed for you.'}</p>
       <p style={{ ...small, marginTop: 8, color: T.ink2 }}>Your file is read here on your own device. It is not sent to us or stored anywhere.</p>
 
       <label className="ov-btn ov-btn-quiet" style={{ marginTop: 12, cursor: 'pointer' }}>
@@ -84,13 +98,12 @@ function CustomerListConverter({ ask }: { ask: React.ReactNode }) {
         <div style={{ background: T.fill, borderRadius: 14, padding: '14px 16px', marginTop: 14 }}>
           <p style={{ font: `600 14px/1.4 ${T.font}`, color: T.ink, margin: '0 0 2px', overflowWrap: 'anywhere' }}>{file}</p>
           <p style={{ ...small, color: T.ink2 }}>
-            {result.kept.toLocaleString('en-US')} of {result.total.toLocaleString('en-US')} customers ready: {result.withPhone.toLocaleString('en-US')} with a phone number, {result.withEmail.toLocaleString('en-US')} with an email.
+            {sold
+              ? <>{num(sold.kept)} of {num(sold.total)} sales ready, worth KES {num(Math.round(sold.value))}{sold.first && sold.last ? (sold.first === sold.last ? `, on ${nice(sold.first)}` : `, from ${nice(sold.first)} to ${nice(sold.last)}`) : ''}.</>
+              : list ? <>{num(list.kept)} of {num(list.total)} customers ready: {num(list.withPhone)} with a phone number, {num(list.withEmail)} with an email.</> : null}
           </p>
-          {(result.noContact > 0 || result.duplicates > 0) && (
-            <p style={{ ...small, marginTop: 4 }}>
-              Left out: {[result.noContact > 0 ? `${result.noContact.toLocaleString('en-US')} with no usable phone or email` : '', result.duplicates > 0 ? `${result.duplicates.toLocaleString('en-US')} repeated` : ''].filter(Boolean).join(', ')}.
-            </p>
-          )}
+          {left.some(Boolean) && <p style={{ ...small, marginTop: 4 }}>Left out: {left.filter(Boolean).join(', ')}.</p>}
+          {sold && <p style={{ ...small, marginTop: 4 }}>Dates are read day first, as in 18/11/2026. A sale with no time is set to midday.</p>}
 
           <p style={{ ...small, margin: '12px 0 6px' }}>We matched your columns like this. Change any that are wrong.</p>
           <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '6px 12px', alignItems: 'center' }}>
@@ -110,18 +123,20 @@ function CustomerListConverter({ ask }: { ask: React.ReactNode }) {
           </div>
 
           {result.kept === 0
-            ? <p role="alert" style={{ ...small, color: T.bad, marginTop: 12 }}>We could not find a phone number or email column. Pick the right columns above.</p>
+            ? <p role="alert" style={{ ...small, color: T.bad, marginTop: 12 }}>{sales ? 'Nothing is ready yet. Each sale needs a date, an amount and a phone number or email. Pick the right columns above.' : 'We could not find a phone number or email column. Pick the right columns above.'}</p>
             : (
-              <button className="ov-btn ov-btn-primary" style={{ marginTop: 14 }} onClick={() => save('meta-customer-list.csv', result.csv)}>
+              <button className="ov-btn ov-btn-primary" style={{ marginTop: 14 }} onClick={() => save(sales ? 'meta-offline-sales.csv' : 'meta-customer-list.csv', result.csv)}>
                 <Download size={15} /> Download for Meta
               </button>
             )}
         </div>
       )}
 
-      <p style={{ ...small, marginTop: 14 }}>Then upload it in Meta Ads Manager under Audiences, Custom audience, Customer list. Only upload customers who gave you their details themselves.</p>
+      <p style={{ ...small, marginTop: 14 }}>{sales
+        ? 'Then upload it in Meta Events Manager under your dataset. Meta asks you to confirm each column. Upload every week or two, because Meta only uses recent sales.'
+        : 'Then upload it in Meta Ads Manager under Audiences, Custom audience, Customer list. Only upload customers who gave you their details themselves.'}</p>
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '10px 18px', marginTop: 10 }}>
-        <button className="ov-link" style={{ fontSize: 14 }} onClick={() => save('meta-customer-list-template.csv', META_CUSTOMER_LIST_CSV)}>Or start from an empty template</button>
+        <button className="ov-link" style={{ fontSize: 14 }} onClick={() => (sales ? save('meta-offline-sales-template.csv', META_OFFLINE_EVENTS_CSV) : save('meta-customer-list-template.csv', META_CUSTOMER_LIST_CSV))}>Or start from an empty template</button>
         {ask}
       </div>
     </>
@@ -210,25 +225,12 @@ export default function ReadyToUpload({ tier, reportId, buyerName, onUpgrade, on
     {
       title: 'Meta customer list from your spreadsheet',
       sub: 'Reach your past customers and people like them',
-      body: <CustomerListConverter ask={ask} />,
+      body: <CustomerListConverter ask={ask} kind="customers" />,
     },
     {
-      title: 'Meta offline sales template',
+      title: 'Meta sales file from your spreadsheet',
       sub: 'Tell Meta which inquiries became sales',
-      body: (
-        <>
-          <p style={small}>For sales that closed by phone, on WhatsApp or in person. Upload it in Meta Events Manager under your dataset. Meta asks you to match each column when you upload.</p>
-          <ul style={rules}>
-            <li>Use Purchase for a sale and Lead for a serious inquiry.</li>
-            <li>Give the date and time the sale happened, in the format shown.</li>
-            <li>A Purchase row needs the amount and KES. Delete the two example rows first.</li>
-          </ul>
-          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '10px 18px', marginTop: 14 }}>
-            <button className="ov-btn ov-btn-quiet" onClick={() => save('meta-offline-sales-template.csv', META_OFFLINE_EVENTS_CSV)}><Download size={15} /> Download the template</button>
-            {ask}
-          </div>
-        </>
-      ),
+      body: <CustomerListConverter ask={ask} kind="sales" />,
     },
   ]
 
