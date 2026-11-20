@@ -4142,6 +4142,7 @@ type ChatMsg = {
   role: 'user' | 'assistant' | 'media_buyer'
   content: string
   timestamp: Date
+  thread?: boolean   // part of the conversation with Eugene, never sent to the AI
 }
 
 function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: number | null; diag: DiagnosisData; activeTab: Tab }) {
@@ -4159,6 +4160,7 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
   const [escalating,      setEscalating]      = useState(false)
   const [escalated,       setEscalated]       = useState(false)
   const [proactiveMsg,    setProactiveMsg]    = useState<string | null>(null)
+  const [sendTo,          setSendTo]          = useState<'ai' | 'eugene'>('ai')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef    = useRef<HTMLTextAreaElement>(null)
   const idleTimerRef   = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -4245,6 +4247,14 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
       setLastSuggestions(welcomeSuggestions)
       setInitialized(true)
       setHasUnread(false)
+      // Bring in the conversation with Eugene, so his messages are actually here
+      fetch('/api/chat/thread').then(r => r.json()).then((d: { messages?: { id: string; from: 'buyer' | 'client'; body: string; at: string }[] }) => {
+        const thread: ChatMsg[] = (d.messages ?? []).map(m => ({ id: `t-${m.id}`, role: m.from === 'buyer' ? 'media_buyer' : 'user', content: m.body, timestamp: new Date(m.at), thread: true }))
+        if (thread.length === 0) return
+        setMessages(prev => [...prev.filter(m => !m.thread), ...thread])
+        // If Eugene spoke last, the next thing they type is most likely for him
+        if (thread[thread.length - 1].role === 'media_buyer') { setSendTo('eugene'); setLastSuggestions([]) }
+      }).catch(() => {})
     }
     if (isOpen) {
       setHasUnread(false)
@@ -4264,8 +4274,25 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
     ta.style.height = Math.min(ta.scrollHeight, 96) + 'px'
   }
 
+  async function sendToEugene(text: string) {
+    if (!text.trim() || loading) return
+    const mine: ChatMsg = { id: Date.now() + 'u', role: 'user', content: text.trim(), timestamp: new Date(), thread: true }
+    setMessages(prev => [...prev, mine])
+    setInput('')
+    if (textareaRef.current) textareaRef.current.style.height = 'auto'
+    setLoading(true)
+    let note = 'Sent to Eugene. He will reply here and by email, usually within a working day.'
+    try {
+      const res = await fetch('/api/chat/thread', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: text.trim() }) })
+      if (!res.ok) note = ((await res.json()) as { error?: string }).error ?? 'That did not send. Please try again.'
+    } catch { note = 'Connection error. That did not send, please try again.' }
+    setMessages(prev => [...prev, { id: Date.now() + 's', role: 'assistant', content: note, timestamp: new Date(), thread: true }])
+    setLoading(false)
+  }
+
   async function sendMessage(text: string) {
     if (!text.trim() || loading) return
+    if (sendTo === 'eugene') return sendToEugene(text)
     const userMsg: ChatMsg = { id: Date.now() + 'u', role: 'user', content: text.trim(), timestamp: new Date() }
     const typingMsg: ChatMsg = { id: 'typing', role: 'assistant', content: '', timestamp: new Date() }
     setMessages(prev => [...prev, userMsg, typingMsg])
@@ -4274,7 +4301,7 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
     setLoading(true)
 
     const history = messages
-      .filter(m => m.role !== 'media_buyer' && m.id !== 'typing')
+      .filter(m => m.role !== 'media_buyer' && m.id !== 'typing' && !m.thread)
       .map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.content })) as { role: 'user' | 'assistant'; content: string }[]
 
     try {
@@ -4428,7 +4455,7 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
             })}
 
             {/* Suggested pills, shown after the last AI message, hidden while loading */}
-            {!loading && lastSuggestions.length > 0 && (
+            {!loading && sendTo === 'ai' && lastSuggestions.length > 0 && (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 4 }}>
                 {lastSuggestions.map(q => (
                   <button key={q} onClick={() => { setLastSuggestions([]); sendMessage(q) }}
@@ -4487,6 +4514,14 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
 
           {/* Input area */}
           <div style={{ background: '#fff', borderTop: `1px solid ${Pborder}`, padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 8, flexShrink: 0 }}>
+            <div role="tablist" aria-label="Who this message goes to" style={{ display: 'flex', background: 'rgba(201,192,177,0.3)', borderRadius: 10, padding: 2 }}>
+              {([['ai', 'AI assistant'], ['eugene', 'Eugene']] as const).map(([value, label]) => (
+                <button key={value} role="tab" aria-selected={sendTo === value} onClick={() => setSendTo(value)}
+                  style={{ flex: 1, minHeight: 34, border: 'none', borderRadius: 8, cursor: 'pointer', fontFamily: fontB, fontSize: 13, color: P, fontWeight: sendTo === value ? 600 : 500, background: sendTo === value ? '#fff' : 'none', boxShadow: sendTo === value ? '0 1px 3px rgba(32,21,21,0.12)' : 'none' }}>
+                  {label}
+                </button>
+              ))}
+            </div>
             <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
               <textarea
                 ref={textareaRef}
@@ -4495,7 +4530,7 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
                 onKeyDown={e => {
                   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input) }
                 }}
-                placeholder="Ask anything about your marketing..."
+                placeholder={sendTo === 'eugene' ? 'Write to Eugene, your media buyer' : 'Ask anything about your marketing...'}
                 rows={1}
                 style={{ flex: 1, fontFamily: fontB, fontSize: 14, color: P, background: BgAlt, border: `1px solid rgba(201,192,177,0.5)`, borderRadius: 12, padding: '10px 14px', outline: 'none', resize: 'none', lineHeight: 1.5 }}
               />
@@ -4506,10 +4541,9 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
                 <ArrowUp size={18} color="#fff" />
               </button>
             </div>
-            <button onClick={() => { setNeedsEscalation(true); setShowEscalation(true) }}
-              style={{ background: 'none', border: 'none', fontFamily: fontB, fontSize: 12, color: '#939084', cursor: 'pointer', textAlign: 'left', padding: 0 }}>
-              Escalate to media buyer
-            </button>
+            <p style={{ fontFamily: fontB, fontSize: 12, color: '#939084', margin: 0 }}>
+              {sendTo === 'eugene' ? 'Goes to Eugene. He replies here and by email.' : 'Instant answers from the AI, based on your diagnosis.'}
+            </p>
           </div>
         </div>
       )}
@@ -4522,6 +4556,8 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
         }
         @media (max-width: 1023px) {
           .chat-fab { bottom: 80px !important; }
+          /* The open panel has its own close button; the round button sat on top of Send */
+          .chat-fab[data-open="true"] { display: none !important; }
           .chat-proactive { bottom: 148px !important; }
         }
       `}</style>
@@ -4558,6 +4594,7 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
       {/* ── Floating button ─────────────────────────────────────────────── */}
       <button
         className="chat-fab"
+        data-open={isOpen}
         onClick={() => { setIsOpen(v => !v); setProactiveMsg(null) }}
         style={{
           position: 'fixed', bottom: 32, right: 32, zIndex: 1001,
