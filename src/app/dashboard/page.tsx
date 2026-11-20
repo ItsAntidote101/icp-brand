@@ -5234,6 +5234,20 @@ export default function DashboardPage() {
                     })()}
                     findings={t === 'free' ? all.slice(0, 2) : all}
                     totalFindings={all.length}
+                    lockedFindings={t === 'free' ? all.slice(2).map(f => ({ title: f.title, severity: f.severity })) : []}
+                    planPitch={t === 'free' ? (() => {
+                      const price = convertAmount(TIER_PRICE_KES.starter, 'KES', currency)
+                      const n = diag.numbers
+                      const money = (v: number) => convertAmount(v, 'KES', currency)
+                      // Only set the price beside their own number when that number is clearly bigger
+                      if (n?.one_more_in_ten && n.one_more_in_ten > TIER_PRICE_KES.starter * 2) {
+                        return { price, worth: `One more buyer in every ten inquiries is worth ${n.at_least ? 'at least' : 'about'} ${money(n.one_more_in_ten)} a month to you.` }
+                      }
+                      if (n?.sale_value && n.sale_value > TIER_PRICE_KES.starter * 2) {
+                        return { price, worth: `One sale is worth ${n.at_least ? 'at least' : 'about'} ${money(n.sale_value)} to you.` }
+                      }
+                      return { price, worth: null }
+                    })() : null}
                     wins={(diag.quick_wins ?? []).slice(0, 3)}
                     buyer={assignedBuyer}
                     onOpenDiagnosis={() => setActiveTab('audience')}
