@@ -2,6 +2,7 @@ import { getVerifiedSession } from '@/lib/session'
 
 // Who may use the admin screens. Set ADMIN_EMAILS (comma separated) in Vercel
 // to change it; by default it is the founder inbox.
+// Vercel only applies a changed value to deployments built after the change.
 const DEFAULT_ADMIN = 'kwata@idealicp.com'
 
 export async function getAdmin(): Promise<{ email: string; userId: string } | null> {
