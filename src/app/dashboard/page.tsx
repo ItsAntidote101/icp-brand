@@ -15,6 +15,7 @@ import {
 import { pushWithUserData } from '@/lib/track'
 import { readStoredReport } from '@/lib/repair-json'
 import Overview, { DashStyles, Segmented, Notice, T as DT } from './overview'
+import { MarketBrief } from './market'
 import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis, YAxis, ReferenceLine, CartesianGrid, LabelList } from 'recharts'
 
 // ─── Tokens ───────────────────────────────────────────────────────────────────
@@ -3921,141 +3922,32 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
       {/* ── LEFT COLUMN: briefing header + benchmarks + feed ─────────────── */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
-        {/* Weekly Briefing header card */}
-        <div style={{ background: 'linear-gradient(135deg,#201515 0%,#2d1e0a 100%)', borderRadius: 12, padding: 'clamp(24px,4vw,36px) clamp(20px,5vw,40px)' }}>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20, justifyContent: 'space-between', alignItems: 'center', marginBottom: tier !== 'free' ? 0 : 0 }}>
-            <div>
-              <span style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, background: 'rgba(255,255,255,0.2)', color: '#fff', padding: '3px 12px', borderRadius: 100, letterSpacing: '0.1em', textTransform: 'uppercase', display: 'inline-block', marginBottom: 12 }}>
-                Weekly Intelligence Briefing
-              </span>
-              <h2 style={{ fontFamily: font, fontSize: 'clamp(20px,3vw,26px)', fontWeight: 700, color: '#fff', margin: '0 0 6px', letterSpacing: '-0.02em' }}>Your market this week.</h2>
-              <p style={{ fontFamily: fontB, fontSize: 13, color: 'rgba(255,255,255,0.5)', margin: 0 }}>
-                {briefing?.updatedAt
-                  ? `Updated ${relativeTime(briefing.updatedAt)}`
-                  : 'No briefing yet'}
-              </p>
-            </div>
-
-            {/* Refresh button, 4 states */}
-            {tier === 'free' ? (
-              <button onClick={handleRefresh}
-                style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(248,247,255,0.12)', color: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 12, padding: '11px 22px', fontFamily: fontB, fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                <Lock size={14} />
-                Upgrade for on-demand refresh
-              </button>
-            ) : refreshing ? (
-              <button disabled
-                style={{ display: 'flex', alignItems: 'center', gap: 8, background: P, color: '#fff', border: 'none', borderRadius: 12, padding: '11px 22px', fontFamily: fontB, fontSize: 13, fontWeight: 600, cursor: 'default', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                <RefreshCw size={15} style={{ animation: 'spin 1s linear infinite' }} />
-                Researching your market...
-              </button>
-            ) : canRefresh ? (
-              <button onClick={handleRefresh}
-                style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#fff', color: P, border: 'none', borderRadius: 12, padding: '11px 22px', fontFamily: fontB, fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                <RefreshCw size={15} />
-                Refresh Intelligence
-              </button>
-            ) : (
-              <button disabled
-                style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.45)', border: 'none', borderRadius: 12, padding: '11px 22px', fontFamily: fontB, fontSize: 13, fontWeight: 600, cursor: 'default', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                <Clock size={14} />
-                Not yet available
-              </button>
-            )}
+        {/* Briefing header: title, when it was researched, and the two things you can do */}
+        <header className="ov-wrap" style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+          <div style={{ minWidth: 0 }}>
+            <h1 style={{ font: `700 clamp(28px,4.5vw,34px)/1.1 ${DT.head}`, letterSpacing: '-0.025em', color: DT.ink, margin: '0 0 8px' }}>Your market this week</h1>
+            <p style={{ font: `400 17px/1.4 ${DT.font}`, color: DT.muted, margin: 0 }}>
+              {briefing?.updatedAt ? `Researched ${relativeTime(briefing.updatedAt)}. A new one arrives every Thursday.` : 'Three things a week that affect your business, each with its source.'}
+            </p>
           </div>
-
-          {/* Always-visible refresh status block for paid tiers */}
           {tier !== 'free' && (
-            <div style={{ marginTop: 16, display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'flex-start', justifyContent: 'space-between' }}>
-              {/* Countdown or ready indicator */}
-              <div>
-                {canRefresh ? (
-                  <>
-                    <p style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.45)', margin: '0 0 3px', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Refresh status</p>
-                    <p style={{ fontFamily: font, fontSize: 20, fontWeight: 700, color: '#22c55e', margin: 0, letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: 7 }}>
-                      <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', display: 'inline-block', flexShrink: 0 }} />
-                      Ready to refresh
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <p style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.45)', margin: '0 0 3px', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Next refresh in</p>
-                    <p style={{ fontFamily: font, fontSize: 28, fontWeight: 700, color: '#fff', margin: 0, letterSpacing: '-0.03em', fontVariantNumeric: 'tabular-nums' }}>
-                      {countdownStr}
-                    </p>
-                  </>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6 }}>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <button className="ov-btn ov-btn-quiet" onClick={handleRefresh} disabled={refreshing || !canRefresh} style={{ opacity: refreshing || !canRefresh ? 0.55 : 1 }}>
+                  {refreshing ? 'Researching, about a minute' : 'Research again'}
+                </button>
+                {briefing && (
+                  <button className="ov-btn ov-btn-quiet" onClick={handleSendEmail} disabled={sendingEmail || emailSent}>
+                    {sendingEmail ? 'Sending' : emailSent ? 'Sent to your inbox' : 'Email it to me'}
+                  </button>
                 )}
               </div>
-
-              {/* Tier badge + remaining count */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5 }}>
-                {tierBadge && (
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontFamily: fontB, fontSize: 12, fontWeight: 600, color: tierBadge.color, background: 'rgba(255,255,255,0.1)', border: `1px solid rgba(255,255,255,0.15)`, borderRadius: 100, padding: '3px 10px' }}>
-                    {tierBadge.icon}
-                    {tierBadge.label}
-                  </span>
-                )}
-                {refreshesLabel && (
-                  <span style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>
-                    {refreshesLabel}
-                  </span>
-                )}
-                {tier !== 'agency' && (
-                  <p style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.35)', margin: 0, textAlign: 'right' }}>
-                    Agency gets 3 refreshes/day.{' '}
-                    <button onClick={onUpgrade} style={{ color: '#e8330a', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: fontB, fontSize: 12 }}>Upgrade</button>
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
-          {refreshError && (
-            <p style={{ fontFamily: fontB, fontSize: 12, color: '#ef4444', margin: '8px 0 0' }}>{refreshError}</p>
-          )}
-          {briefing?.researchSources && briefing.researchSources.length > 0 && (
-            <div style={{ marginTop: 14 }}>
-              <button
-                onClick={() => setShowResearchSources(v => !v)}
-                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.45)', textDecoration: 'underline' }}>
-                  {showResearchSources ? 'Hide research sources' : 'View research sources'}
-                </span>
-                <span style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>{showResearchSources ? '▲' : '▼'}</span>
-              </button>
-              {showResearchSources && (
-                <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 5 }}>
-                  {briefing.researchSources.slice(0, 4).map((src, i) => (
-                    <a key={i} href={src.url} target="_blank" rel="noopener noreferrer"
-                      style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.6)', textDecoration: 'underline', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {src.title || src.url}
-                    </a>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Send to inbox — only when there's a briefing and user is on paid tier */}
-          {briefing && tier !== 'free' && (
-            <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
-              <p style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.35)', margin: 0 }}>
-                Send this briefing to {user.email}
+              <p role="status" style={{ font: `400 13px/1.4 ${DT.font}`, color: refreshError || emailError ? DT.bad : DT.faint, margin: 0 }}>
+                {refreshError || emailError || (canRefresh ? refreshesLabel : `You can research again in ${countdownStr}.`)}
               </p>
-              <button
-                onClick={handleSendEmail}
-                disabled={sendingEmail || emailSent}
-                style={{ display: 'flex', alignItems: 'center', gap: 7, background: emailSent ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.08)', color: emailSent ? '#4ade80' : 'rgba(255,255,255,0.7)', border: `1px solid ${emailSent ? 'rgba(34,197,94,0.3)' : 'rgba(255,255,255,0.12)'}`, borderRadius: 8, padding: '7px 14px', fontFamily: fontB, fontSize: 12, fontWeight: 600, cursor: sendingEmail || emailSent ? 'default' : 'pointer', transition: 'all 0.2s', whiteSpace: 'nowrap' as const }}>
-                {sendingEmail
-                  ? <><RefreshCw size={12} style={{ animation: 'spin 1s linear infinite' }} /> Sending…</>
-                  : emailSent
-                  ? <><Check size={12} /> Sent to your inbox</>
-                  : <><Send size={12} /> Send to inbox</>
-                }
-              </button>
-              {emailError && <p style={{ fontFamily: fontB, fontSize: 12, color: '#f87171', margin: 0, width: '100%' }}>{emailError}</p>}
             </div>
           )}
-        </div>
+        </header>
 
         {loading ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -4075,37 +3967,7 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
             </button>
           </div>
         ) : (
-          <>
-            {/* Benchmark Comparison */}
-            <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 16, padding: '24px 28px', boxShadow: '0 1px 8px rgba(201,192,177,0.18)' }}>
-              <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: '0 0 4px', letterSpacing: '-0.02em' }}>How you compare.</p>
-              <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 24px' }}>Your metrics vs industry average vs top 10% performers.</p>
-              <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', marginBottom: 16 }}>
-                {[
-                  { color: '#201515', label: 'You' },
-                  { color: '#e8330a', label: 'Industry Avg' },
-                  { color: '#22c55e', label: 'Top 10%' },
-                ].map(l => (
-                  <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <div style={{ width: 10, height: 10, borderRadius: '50%', background: l.color }} />
-                    <span style={{ fontFamily: fontB, fontSize: 12, color: Pmuted }}>{l.label}</span>
-                  </div>
-                ))}
-              </div>
-              {(briefing.benchmarks ?? []).map(b => <BenchmarkTrack key={b.name} {...b} />)}
-            </div>
-
-            {/* Competitor Activity Feed */}
-            <div>
-              <p style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: P, margin: '0 0 4px', letterSpacing: '-0.02em' }}>{"What's moving in your market."}</p>
-              <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: '0 0 16px' }}>Intelligence gathered for your industry and region this week.</p>
-              {(briefing.insights ?? []).length === 0 ? (
-                <div style={{ background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 12, padding: '24px 20px', textAlign: 'center' }}>
-                  <p style={{ fontFamily: fontB, fontSize: 13, color: Pmuted, margin: 0 }}>No insights found. Try refreshing your intelligence.</p>
-                </div>
-              ) : (briefing.insights ?? []).map(ins => <InsightCard key={ins.id} insight={ins} />)}
-            </div>
-          </>
+          <MarketBrief briefing={briefing} onRefresh={handleRefresh} refreshing={refreshing} canRefresh={tier !== 'free' && canRefresh} />
         )}
 
         {/* Q&A on mobile (hidden on lg) */}
@@ -4119,13 +3981,6 @@ function IntelligenceTab({ user, score, hasNewIntelligence, onUpgrade }: { user:
         <div style={{ position: 'sticky', top: 32, display: 'flex', flexDirection: 'column', gap: 24 }}>
           {QACard}
 
-          {briefing && briefing.userPosition && (briefing.competitorPositions ?? []).length > 0 && (
-            <div style={{ background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 16, padding: '24px 28px', boxShadow: '0 1px 8px rgba(201,192,177,0.18)' }}>
-              <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: P, margin: '0 0 4px', letterSpacing: '-0.02em' }}>Your competitive position.</p>
-              <p style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, margin: '0 0 20px' }}>Approximate positioning based on ICP alignment and ad spend efficiency.</p>
-              <CompetitiveRadar userPos={briefing.userPosition} competitors={briefing.competitorPositions ?? []} />
-            </div>
-          )}
         </div>
       </div>
     </div>
@@ -5362,6 +5217,7 @@ export default function DashboardPage() {
                     wins={(diag.quick_wins ?? []).slice(0, 3)}
                     buyer={assignedBuyer}
                     onOpenDiagnosis={() => setActiveTab('audience')}
+                    onOpenMarket={() => setActiveTab('intelligence')}
                     onUpgrade={() => setShowUpgradeModal(true)}
                     onRequestCall={() => setShowModal(true)}
                     onFixDone={setStreak}

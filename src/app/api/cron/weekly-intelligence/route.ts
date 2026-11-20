@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { stripDashes } from '@/lib/strip-dashes'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import Anthropic from '@anthropic-ai/sdk'
 import { sendPersonalisedWeeklyIntelligenceEmail } from '@/lib/email'
+import { generateMarketBriefing, loadOwnNumbers } from '@/lib/market-briefing'
 
 export const dynamic     = 'force-dynamic'
 export const maxDuration = 120
@@ -15,93 +15,6 @@ function weekStart(): string {
   d.setUTCHours(0, 0, 0, 0)
   d.setUTCDate(d.getUTCDate() - d.getUTCDay() + 1)
   return d.toISOString().split('T')[0]
-}
-
-async function generateBriefingForUser(profile: {
-  industry:      string
-  region:        string
-  channels:      string[]
-  budget:        string
-  icpScore:      number | null
-  product:       string
-  businessModel: string
-  targetAudience: string
-  estimatedCpa:  string
-  ltvCacRatio:   string
-  companyName:   string
-}) {
-  const now       = new Date()
-  const monthYear = now.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
-  const dateStr   = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
-  const primaryChannel = profile.channels[0] ?? 'Meta'
-
-  const systemPrompt = `You are a senior competitive intelligence analyst for digital advertising.
-
-You MUST perform the following web searches before writing any output:
-1. Search "${profile.industry} advertising benchmarks CPC CPA ${profile.region} ${monthYear}"
-2. Search "${profile.industry} competitors ${profile.region} digital marketing ${new Date().getFullYear()}"
-3. Search "${primaryChannel} algorithm update ${monthYear}"
-4. Search "${profile.region} digital advertising market trends ${monthYear}"
-
-Use real search results. Cite actual source names. No generic "Competitor A/B/C/D" labels. No em dashes or en dashes.`
-
-  const userPrompt = `Generate a weekly market intelligence briefing as of ${dateStr} for this marketer.
-
-MARKETER PROFILE:
-- Company: ${profile.companyName || 'Not provided'}
-- Product/Service: ${profile.product || profile.industry}
-- Industry: ${profile.industry}
-- Business model: ${profile.businessModel || 'Not specified'}
-- Region: ${profile.region}
-- Target audience: ${profile.targetAudience || 'Not specified'}
-- Ad channels: ${profile.channels.join(', ')}
-- Monthly budget: ${profile.budget || 'Not specified'}
-- Estimated CPA: ${profile.estimatedCpa || 'Not computed'}
-- LTV:CAC ratio: ${profile.ltvCacRatio || 'Not computed'}
-- ICP Health Score: ${profile.icpScore ?? 'Not scored'}/100
-
-Use web search results for all benchmarks and competitor names. Vary timeLabel across insights using realistic relative timestamps ("3 days ago", "Earlier this week", "Yesterday", "Last week"). Never use "Now" or "This week" for every item.
-
-Return ONLY valid JSON, no markdown:
-{
-  "insights": [
-    {"id":"i1","type":"market_movement","title":"<specific title with numbers from search>","body":"<2-3 sentences with real data>","source":"<actual source name>","timeLabel":"<realistic relative timestamp>","implication":null,"recommendation":null},
-    {"id":"i2","type":"competitor_strategy","title":"<named real competitor in ${profile.region}>","body":"<specific finding from web research>","source":"<actual source>","timeLabel":"<realistic relative timestamp>","implication":"<implication for this marketer>","recommendation":null},
-    {"id":"i3","type":"opportunity","title":"<specific opportunity in ${profile.industry} in ${profile.region}>","body":"<actionable with platform and audience specifics>","source":null,"timeLabel":"<realistic relative timestamp>","implication":null,"recommendation":"<specific action>"},
-    {"id":"i4","type":"platform_update","title":"<actual ${primaryChannel} or Google update>","body":"<what changed and how it affects ${profile.industry} campaigns>","source":"<platform blog or trade publication>","timeLabel":"<realistic relative timestamp>","implication":null,"recommendation":"<campaign adjustment>"},
-    {"id":"i5","type":"market_movement","title":"<second market movement for ${profile.industry} in ${profile.region}>","body":"<specific data point from search>","source":"<actual source>","timeLabel":"<realistic relative timestamp>","implication":"<campaign implication>","recommendation":null}
-  ],
-  "benchmarks": [
-    {"name":"Click-Through Rate (CTR)","userValue":null,"industryAvg":<from search for ${profile.industry} ${profile.region}>,"top10":<from search>,"unit":"%","higherIsBetter":true},
-    {"name":"Cost Per Acquisition (CPA)","userValue":${profile.estimatedCpa ? `<numeric value of ${profile.estimatedCpa}>` : 'null'},"industryAvg":<from search>,"top10":<from search>,"unit":"<local currency>","higherIsBetter":false},
-    {"name":"Landing Page Conversion Rate","userValue":null,"industryAvg":<from search>,"top10":<from search>,"unit":"%","higherIsBetter":true},
-    {"name":"Lead Quality Score","userValue":${profile.icpScore ?? 'null'},"industryAvg":52,"top10":78,"unit":"","higherIsBetter":true},
-    {"name":"LTV:CAC Ratio","userValue":${profile.ltvCacRatio ? `"${profile.ltvCacRatio}"` : 'null'},"industryAvg":<typical for ${profile.industry}>,"top10":<top performers>,"unit":":1","higherIsBetter":true},
-    {"name":"ICP Health Score","userValue":${profile.icpScore ?? 'null'},"industryAvg":55,"top10":82,"unit":"","higherIsBetter":true}
-  ],
-  "competitorPositions":[
-    {"label":"<real competitor name from search>","x":<market presence 0-100>,"y":<ICP quality 0-100>},
-    {"label":"<real competitor name>","x":<integer>,"y":<integer>},
-    {"label":"<real competitor name>","x":<integer>,"y":<integer>},
-    {"label":"<real competitor name>","x":<integer>,"y":<integer>}
-  ],
-  "userPosition":{"x":${Math.min(95, Math.max(10, (profile.icpScore ?? 50) * 0.85))},"y":${Math.min(95, Math.max(10, profile.icpScore ?? 50))}},
-  "topOpportunity": "<one specific opportunity sentence referencing ${profile.region} and ${profile.industry}>",
-  "topRecommendation": "<one specific action sentence>"
-}`
-
-  const res = await anthropic.messages.create({
-    model:      'claude-sonnet-4-6',
-    max_tokens: 3000,
-    system:     systemPrompt,
-    tools:      [{ type: 'web_search_20250305' as const, name: 'web_search' }],
-    messages:   [{ role: 'user', content: userPrompt }],
-  })
-
-  const raw   = res.content.filter(b => b.type === 'text').map(b => (b as { type: 'text'; text: string }).text).join('')
-  const clean = raw.replace(/^```json\s*/m, '').replace(/^```\s*/m, '').replace(/```\s*$/m, '').trim()
-  const parsed = JSON.parse(clean)
-  return stripDashes(parsed) as Record<string, unknown>
 }
 
 export async function GET(req: NextRequest) {
@@ -219,11 +132,10 @@ export async function GET(req: NextRequest) {
         prevScore = getScore(prevReport.report_summary as string)
       }
 
-      const data = await generateBriefingForUser({
-        industry, region, channels, budget, icpScore,
-        product, businessModel, targetAudience, estimatedCpa, ltvCacRatio,
-        companyName: user.company_name ?? '',
-      })
+      const own  = await loadOwnNumbers(supabase, user.id)
+      const data = await generateMarketBriefing(anthropic, {
+        companyName: user.company_name ?? '', product, industry, businessModel, region, targetAudience, channels, budget,
+      }, own)
       const now = new Date().toISOString()
 
       await supabase.from('intelligence_briefings').insert({
@@ -234,12 +146,15 @@ export async function GET(req: NextRequest) {
         briefing_type: 'scheduled',
       })
 
+      // A quiet week is saved, so the dashboard can say so, but it is not worth an email
+      if (data.quiet) { processed++; continue }
+
       type BriefingInsight   = { title: string; body: string }
       type BriefingBenchmark = { name: string; userValue: number | null; industryAvg: number; unit: string }
-      const insights       = (data.insights as BriefingInsight[] | undefined) ?? []
-      const benchmarks     = (data.benchmarks as BriefingBenchmark[] | undefined) ?? []
-      const opportunity    = (data.topOpportunity as string | undefined) ?? ''
-      const recommendation = (data.topRecommendation as string | undefined) ?? ''
+      const insights: BriefingInsight[] = data.insights
+      const benchmarks: BriefingBenchmark[] = []
+      const opportunity    = data.topOpportunity
+      const recommendation = data.topRecommendation
 
       await sendPersonalisedWeeklyIntelligenceEmail({
         to: user.email,

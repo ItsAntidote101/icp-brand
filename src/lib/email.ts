@@ -417,9 +417,10 @@ ${cta('Renew my plan', url)}`
 // ─── Monday numbers: the weekly prompt to log last week's results ───────────
 
 export async function sendWeeklyNumbersEmail({
-  to, name, week, lastCpl, change, topFix, baseUrl, unsubscribeUrl,
+  to, name, week, lastCpl, change, topFix, market, baseUrl, unsubscribeUrl,
 }: {
   to: string; name?: string
+  market?: string                    // top item from this week's market briefing
   week: string                       // "10 to 16 Nov"
   lastCpl?: string                   // "KES 850", from the most recent week logged
   change?: string                    // "down 12% on the week before"
@@ -438,6 +439,7 @@ ${lastCpl ? securityBox(`<p style="margin:0 0 4px;color:${Muted};font-size:13px;
 ${change ? `<p style="margin:4px 0 0;color:${Muted};font-size:14px;font-family:${font};">${escapeHtml(change)}</p>` : ''}`) : ''}
 ${cta('Add last week\'s numbers', url)}
 ${topFix ? `<p style="margin:28px 0 0;color:${Muted};font-size:14px;line-height:1.6;font-family:${font};">Still open this week: <span style="color:${Dark};">${escapeHtml(topFix)}</span></p>` : ''}
+${market ? `<p style="margin:14px 0 0;color:${Muted};font-size:14px;line-height:1.6;font-family:${font};">In your market: <span style="color:${Dark};">${escapeHtml(market)}</span> The detail and source are in the Market tab.</p>` : ''}
 <p style="margin:28px 0 0;color:${Muted};font-size:12px;line-height:1.6;font-family:${font};">You get this once a week, on Mondays. <a href="${unsubscribeUrl}" style="color:${Muted};">Stop these emails</a>.</p>`
 
   const { data, error } = await getResend().emails.send({
@@ -1020,7 +1022,7 @@ ${sub(`Hi ${first}, here is what moved in your market this week, ${weekLabel}.`)
 <p style="margin:0 0 10px;color:${Dark};font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;font-family:${font};">3 things to know this week</p>
 ${infoCard(`<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${insightRows}</table>`)}
 
-<p style="margin:0 0 10px;color:${Dark};font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;font-family:${font};">Your benchmark position</p>
+${benchmarks.length ? `<p style="margin:0 0 10px;color:${Dark};font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;font-family:${font};">Your benchmark position</p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:${CardBg};border:1.5px solid ${Border};margin-bottom:16px;">
   <tr><td style="padding:0;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
@@ -1032,7 +1034,7 @@ ${infoCard(`<table role="presentation" width="100%" cellpadding="0" cellspacing=
       ${benchmarkRows}
     </table>
   </td></tr>
-</table>
+</table>` : ''}
 
 <p style="margin:0 0 10px;color:${Dark};font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;font-family:${font};">This week's opportunity</p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(245,158,11,0.07);border:1.5px solid rgba(245,158,11,0.25);margin-bottom:16px;">
@@ -1647,7 +1649,7 @@ ${topAction}
 <p style="margin:0 0 12px;color:#18110a;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;font-family:${font};">MARKET INTELLIGENCE &mdash; ${shortDate.toUpperCase()}</p>
 ${insightCards}
 
-<p style="margin:28px 0 12px;color:#18110a;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;font-family:${font};">BENCHMARK POSITION</p>
+${benchmarks.length ? `<p style="margin:28px 0 12px;color:#18110a;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;font-family:${font};">BENCHMARK POSITION</p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid rgba(24,17,10,0.1);margin-bottom:28px;">
   <tr style="background:rgba(24,17,10,0.03);">
     <th style="padding:9px 14px;color:rgba(24,17,10,0.45);font-size:10px;font-weight:700;text-align:left;text-transform:uppercase;letter-spacing:0.09em;font-family:${font};border-bottom:1px solid rgba(24,17,10,0.1);">Metric</th>
@@ -1656,7 +1658,7 @@ ${insightCards}
     <th style="padding:9px 14px;color:rgba(24,17,10,0.35);font-size:10px;font-weight:700;text-align:left;text-transform:uppercase;letter-spacing:0.09em;font-family:${font};border-bottom:1px solid rgba(24,17,10,0.1);">Top 10%</th>
   </tr>
   ${benchmarkRows}
-</table>
+</table>` : ''}
 
 ${opportunity?.trim() ? `<p style="margin:0 0 12px;color:#18110a;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;font-family:${font};">TOP OPPORTUNITY</p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-left:4px solid #d97706;background:rgba(245,158,11,0.06);margin-bottom:16px;">
