@@ -6,6 +6,7 @@
 import { useEffect, useState } from 'react'
 import { ChevronRight, Download, Lock } from 'lucide-react'
 import { T } from './overview'
+import { buildMetaList, columnNames, guessMapping, parseCsv, type Cell, type Field, type Mapping } from '@/lib/customer-list'
 import { keywordsCsv, keywordsText, META_CUSTOMER_LIST_CSV, META_OFFLINE_EVENTS_CSV, type KeywordSet } from '@/lib/ready-files'
 
 function save(name: string, text: string) {
@@ -23,6 +24,107 @@ function CopyLink({ text, label = 'Copy' }: { text: string; label?: string }) {
       onClick={() => { navigator.clipboard?.writeText(text).then(() => { setDone(true); setTimeout(() => setDone(false), 1800) }).catch(() => {}) }}>
       {done ? 'Copied' : label}
     </button>
+  )
+}
+
+// Reads the client's own spreadsheet in the browser and hands back the file
+// Meta accepts. Nothing from the spreadsheet is sent to our server.
+const MAX_BYTES = 10 * 1024 * 1024
+const PICKS: { field: Field; label: string }[] = [
+  { field: 'phone', label: 'Phone' }, { field: 'email', label: 'Email' }, { field: 'name', label: 'Full name' },
+  { field: 'fn', label: 'First name' }, { field: 'ln', label: 'Last name' }, { field: 'ct', label: 'Town' },
+]
+
+function CustomerListConverter({ ask }: { ask: React.ReactNode }) {
+  const [rows, setRows] = useState<Cell[][] | null>(null)
+  const [map, setMap]   = useState<Mapping>({})
+  const [file, setFile] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const small = { font: `400 14px/1.5 ${T.font}`, color: T.muted, margin: 0 } as const
+
+  async function read(f: File | undefined) {
+    if (!f) return
+    setError(''); setRows(null); setBusy(true)
+    try {
+      if (f.size > MAX_BYTES) throw new Error('That file is over 10 MB. Split it into smaller files and try again.')
+      const name = f.name.toLowerCase()
+      let data: Cell[][]
+      if (name.endsWith('.xlsx')) {
+        const { readSheet } = await import('read-excel-file/universal')
+        data = (await readSheet(f)) as Cell[][]
+      } else if (name.endsWith('.csv') || name.endsWith('.txt')) {
+        data = parseCsv(await f.text())
+      } else {
+        throw new Error('Use an Excel file (.xlsx) or a CSV file. If yours is an older .xls, open it and save it as .xlsx first.')
+      }
+      data = data.filter(r => Array.isArray(r) && r.some(c => c !== null && c !== undefined && String(c).trim() !== ''))
+      if (data.length === 0) throw new Error('That file looks empty.')
+      setRows(data); setMap(guessMapping(data)); setFile(f.name)
+    } catch (e) {
+      setError(e instanceof Error && e.message ? e.message : 'Could not read that file. Save it again as .xlsx or CSV and try once more.')
+    } finally { setBusy(false) }
+  }
+
+  const result = rows ? buildMetaList(rows, map) : null
+  const names  = rows ? columnNames(rows) : []
+
+  return (
+    <>
+      <p style={small}>Choose the spreadsheet you already keep your customers in. We turn it into the file Meta accepts, with phone numbers and columns fixed for you.</p>
+      <p style={{ ...small, marginTop: 8, color: T.ink2 }}>Your file is read here on your own device. It is not sent to us or stored anywhere.</p>
+
+      <label className="ov-btn ov-btn-quiet" style={{ marginTop: 12, cursor: 'pointer' }}>
+        {busy ? 'Reading…' : rows ? 'Choose a different file' : 'Choose your file'}
+        <input type="file" accept=".xlsx,.csv,.txt" onChange={e => { read(e.target.files?.[0]); e.target.value = '' }} style={{ position: 'absolute', width: 1, height: 1, opacity: 0, pointerEvents: 'none' }} />
+      </label>
+      {error && <p role="alert" style={{ ...small, color: T.bad, marginTop: 8 }}>{error}</p>}
+
+      {rows && result && (
+        <div style={{ background: T.fill, borderRadius: 14, padding: '14px 16px', marginTop: 14 }}>
+          <p style={{ font: `600 14px/1.4 ${T.font}`, color: T.ink, margin: '0 0 2px', overflowWrap: 'anywhere' }}>{file}</p>
+          <p style={{ ...small, color: T.ink2 }}>
+            {result.kept.toLocaleString('en-US')} of {result.total.toLocaleString('en-US')} customers ready: {result.withPhone.toLocaleString('en-US')} with a phone number, {result.withEmail.toLocaleString('en-US')} with an email.
+          </p>
+          {(result.noContact > 0 || result.duplicates > 0) && (
+            <p style={{ ...small, marginTop: 4 }}>
+              Left out: {[result.noContact > 0 ? `${result.noContact.toLocaleString('en-US')} with no usable phone or email` : '', result.duplicates > 0 ? `${result.duplicates.toLocaleString('en-US')} repeated` : ''].filter(Boolean).join(', ')}.
+            </p>
+          )}
+
+          <p style={{ ...small, margin: '12px 0 6px' }}>We matched your columns like this. Change any that are wrong.</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '6px 12px', alignItems: 'center' }}>
+            {PICKS.map(({ field, label }) => (
+              <label key={field} style={{ display: 'contents' }}>
+                <span style={{ font: `400 14px/1.3 ${T.font}`, color: T.ink2 }}>{label}</span>
+                <select
+                  value={map[field] ?? -1}
+                  onChange={e => { const v = Number(e.target.value); setMap(m => { const n = { ...m }; if (v < 0) delete n[field]; else n[field] = v; return n }) }}
+                  style={{ font: `400 14px/1.3 ${T.font}`, color: T.ink, background: '#fff', border: `1px solid ${T.hairline}`, borderRadius: 10, padding: '8px 10px', minWidth: 0, width: '100%' }}
+                >
+                  <option value={-1}>Not in my file</option>
+                  {names.map((n, i) => <option key={i} value={i}>{n}</option>)}
+                </select>
+              </label>
+            ))}
+          </div>
+
+          {result.kept === 0
+            ? <p role="alert" style={{ ...small, color: T.bad, marginTop: 12 }}>We could not find a phone number or email column. Pick the right columns above.</p>
+            : (
+              <button className="ov-btn ov-btn-primary" style={{ marginTop: 14 }} onClick={() => save('meta-customer-list.csv', result.csv)}>
+                <Download size={15} /> Download for Meta
+              </button>
+            )}
+        </div>
+      )}
+
+      <p style={{ ...small, marginTop: 14 }}>Then upload it in Meta Ads Manager under Audiences, Custom audience, Customer list. Only upload customers who gave you their details themselves.</p>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '10px 18px', marginTop: 10 }}>
+        <button className="ov-link" style={{ fontSize: 14 }} onClick={() => save('meta-customer-list-template.csv', META_CUSTOMER_LIST_CSV)}>Or start from an empty template</button>
+        {ask}
+      </div>
+    </>
   )
 }
 
@@ -106,22 +208,9 @@ export default function ReadyToUpload({ tier, reportId, buyerName, onUpgrade, on
       ),
     },
     {
-      title: 'Meta customer list template',
+      title: 'Meta customer list from your spreadsheet',
       sub: 'Reach your past customers and people like them',
-      body: (
-        <>
-          <p style={small}>Fill it with your own customers, then upload it in Meta Ads Manager under Audiences, Custom audience, Customer list. Your list goes straight from you to Meta. We never see it.</p>
-          <ul style={rules}>
-            <li>One customer per row. Delete the two example rows first.</li>
-            <li>Phone numbers start with the country code and have no plus or leading zero: 254712345678.</li>
-            <li>Put KE in the country column on every row. Leave a cell empty if you do not have that detail.</li>
-          </ul>
-          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '10px 18px', marginTop: 14 }}>
-            <button className="ov-btn ov-btn-quiet" onClick={() => save('meta-customer-list-template.csv', META_CUSTOMER_LIST_CSV)}><Download size={15} /> Download the template</button>
-            {ask}
-          </div>
-        </>
-      ),
+      body: <CustomerListConverter ask={ask} />,
     },
     {
       title: 'Meta offline sales template',
