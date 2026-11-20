@@ -195,6 +195,9 @@ function cta(label: string, href: string): string {
   </tr></table>`
 }
 
+// Added to every email that goes to the founder
+const controlRoomLink = `<p style="margin:20px 0 0;font-size:14px;font-family:${font};"><a href="https://idealicp.com/admin" style="color:${Orange};text-decoration:none;font-weight:600;">Open the control room</a></p>`
+
 function heading(text: string, size = 42): string {
   return `<h1 style="margin:0 0 16px;color:${Dark};font-size:${size}px;font-weight:800;line-height:1.1;letter-spacing:-0.8px;font-family:${font};">${text}</h1>`
 }
@@ -465,7 +468,7 @@ ${securityBox(`<p style="margin:0;color:${Dark};font-size:16px;line-height:1.65;
   const { data, error } = await getResend().emails.send({
     from: FROM, to: FOUNDER_EMAIL, replyTo: userEmail,
     subject: `Reply to your note: ${companyName || userName || userEmail}`,
-    html: base(content, { loginBtn: false }),
+    html: base(content + controlRoomLink, { loginBtn: false }),
   })
   if (error) console.error('[email] note reply error:', JSON.stringify(error))
   return { data, error }
@@ -511,7 +514,7 @@ ${notes ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="
     to: FOUNDER_EMAIL,
     replyTo: userEmail,
     subject: `New Strategy Session Request from ${companyName || userName}`,
-    html: base(content, { loginBtn: false }),
+    html: base(content + controlRoomLink, { loginBtn: false }),
   })
   if (error) console.error('[email] session founder error:', JSON.stringify(error))
   else console.log('[email] session founder sent id:', data?.id)
@@ -596,7 +599,7 @@ ${notes ? infoCard(`<p style="margin:0 0 8px;color:${Orange};font-size:11px;font
     to: FOUNDER_EMAIL,
     replyTo: userEmail,
     subject: `Call request: ${companyName || userName || userEmail}${score !== null ? ` (score ${score})` : ''}`,
-    html: base(content, { loginBtn: false }),
+    html: base(content + controlRoomLink, { loginBtn: false }),
   })
   if (error) console.error('[email] call request founder error:', JSON.stringify(error))
   return { data, error }
@@ -698,7 +701,7 @@ ${heading('Cancellation alert', 28)}
   const { data, error } = await getResend().emails.send({
     from: FROM, to: FOUNDER_EMAIL, replyTo: userEmail,
     subject: `Cancellation: ${companyName || userName}`,
-    html: base(content, { loginBtn: false }),
+    html: base(content + controlRoomLink, { loginBtn: false }),
   })
   if (error) console.error('[email] cancel founder error:', JSON.stringify(error))
   else console.log('[email] cancel founder sent id:', data?.id)
@@ -773,7 +776,7 @@ ${infoCard(rows.map(([l, v], i) => row(l, v, i === rows.length - 1)).join(''))}`
   const { data, error } = await getResend().emails.send({
     from: FROM, to: FOUNDER_EMAIL, replyTo: userEmail,
     subject: `Upgrade: ${tierNames[oldTier] ?? oldTier} to ${tierNames[newTier] ?? newTier}${topUpKes > 0 ? `, KES ${topUpKes.toLocaleString()} to collect` : ''}, ${companyName || userName}`,
-    html: base(content, { loginBtn: false }),
+    html: base(content + controlRoomLink, { loginBtn: false }),
   })
   if (error) console.error('[email] upgrade founder error:', JSON.stringify(error))
   else console.log('[email] upgrade founder sent id:', data?.id)
@@ -841,7 +844,7 @@ ${infoCard(rows.map(([l, v], i) => row(l, v, i === rows.length - 1)).join(''))}`
   const { data, error } = await getResend().emails.send({
     from: FROM, to: FOUNDER_EMAIL, replyTo: userEmail,
     subject: `Downgrade scheduled: ${tierNames[currentTier] ?? currentTier} to ${tierNames[newTier] ?? newTier} on ${switchDate}, ${companyName || userName}`,
-    html: base(content, { loginBtn: false }),
+    html: base(content + controlRoomLink, { loginBtn: false }),
   })
   if (error) console.error('[email] downgrade founder error:', JSON.stringify(error))
   else console.log('[email] downgrade founder sent id:', data?.id)
@@ -907,7 +910,7 @@ ${infoCard(rows.map(([l, v], i) => row(l, v, i === rows.length - 1)).join(''))}`
   const { data, error } = await getResend().emails.send({
     from: FROM, to: FOUNDER_EMAIL, replyTo: userEmail,
     subject: `Subscription paused: ${companyName || userName}`,
-    html: base(content, { loginBtn: false }),
+    html: base(content + controlRoomLink, { loginBtn: false }),
   })
   if (error) console.error('[email] paused founder error:', JSON.stringify(error))
   else console.log('[email] paused founder sent id:', data?.id)
@@ -1055,7 +1058,7 @@ ${note ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0
   const { data, error } = await getResend().emails.send({
     from: FROM, to: FOUNDER_EMAIL, replyTo: userEmail,
     subject: `Escalation: ${companyName || userName}, ${urgency}`,
-    html: base(content, { loginBtn: false }),
+    html: base(content + controlRoomLink, { loginBtn: false }),
   })
   if (error) console.error('[email] escalation founder error:', JSON.stringify(error))
   else console.log('[email] escalation founder sent id:', data?.id)
@@ -1193,7 +1196,7 @@ ${infoCard(rows.map(([l, v], i) => row(l, v, i === rows.length - 1)).join(''))}`
   const { data, error } = await getResend().emails.send({
     from: FROM, to: FOUNDER_EMAIL, replyTo: userEmail,
     subject: `New signup: ${userName || userEmail}${source === 'google' ? ' (Google)' : ''}`,
-    html: base(content, { loginBtn: false }),
+    html: base(content + controlRoomLink, { loginBtn: false }),
   })
   if (error) console.error('[email] new-signup founder error:', JSON.stringify(error))
   else console.log('[email] new-signup founder sent id:', data?.id)
