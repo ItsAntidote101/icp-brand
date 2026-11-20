@@ -25,6 +25,10 @@ export async function POST(req: NextRequest) {
   const { data: user } = await supabase.from('users').select('email, full_name, company_name, subscription_tier').eq('id', session.userId).maybeSingle()
   if (!user) return NextResponse.json({ error: 'Account not found' }, { status: 404 })
 
+  // Keep it in the client's thread, so it shows in the admin control room
+  const { error: saveErr } = await supabase.from('client_messages').insert({ user_id: session.userId, direction: 'in', kind: 'note_reply', body: message, ref_id: note.id })
+  if (saveErr) console.error('[buyer-note/reply] save error:', saveErr.message)
+
   const r = await sendNoteReplyToFounder({
     userName: user.full_name ?? '', userEmail: user.email, companyName: user.company_name ?? '',
     tier: user.subscription_tier, message, noteBody: note.body,
