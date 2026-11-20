@@ -42,11 +42,12 @@ export default function SocialProofToast() {
       try {
         const res = await fetch('/api/social-proof')
         if (!res.ok) return
-        const data = await res.json() as { events: SocialProofEvent[] }
+        const data = await res.json() as { events?: SocialProofEvent[] }
+        const incoming = Array.isArray(data.events) ? data.events : []
         setEvents(prev => {
           // Merge without duplication
           const ids = new Set(prev.map(e => e.id))
-          const fresh = data.events.filter(e => !ids.has(e.id))
+          const fresh = incoming.filter(e => !ids.has(e.id))
           return [...prev, ...fresh]
         })
       } catch {

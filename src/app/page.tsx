@@ -1,1603 +1,353 @@
-'use client'
-import { useState, useEffect, useRef, useCallback } from 'react'
+import type { Metadata } from 'next'
 import Link from 'next/link'
-import {
-  ArrowRight, Check, Menu, X, ChevronDown, ChevronUp,
-  Shield, Globe, Users, Lock, Zap, BarChart2, Target, FileText,
-  Crosshair, Layout, TrendingDown, Eye, Plus,
-} from 'lucide-react'
+import { ArrowRight, Check } from 'lucide-react'
 import SocialProofToast from '@/components/SocialProofToast'
-import { useSession } from '@/hooks/useSession'
-import { track } from '@/lib/track'
+import { HomeNav, LandingTracker } from './home-client'
+import { FAQS } from './home-faqs'
+
+// The home page. Written for one reader: a Kenyan business owner who runs ads,
+// gets inquiries and sees few sales. It follows one line of thought:
+//   pain      the inquiry that goes quiet
+//   cause     the four things that usually cause it
+//   solution  the diagnosis, shown with an example report
+//   offer     free, plus a call with Eugene; then what staying looks like
+//   trigger   when it is worth doing
+// Rendered on the server so search engines and slow phones get the words at once.
+// Nothing here is a statistic about past clients. The chat and the report are
+// labelled examples.
+
 export const dynamic = 'force-static'
+// Each page names its own address; a site-wide one made every page claim to be the home page
+export const metadata: Metadata = { alternates: { canonical: '/' } }
 
-// ── Zapier-style palette ──────────────────────────────────────────────────────
-const Warm       = '#fffefb'
-const Dark       = '#201515'
-const Orange     = '#e8330a'
-const Text       = '#201515'
-const Muted      = '#605d52'
-const Border     = '#c5c0b1'
-const DarkMuted  = 'rgba(255,255,255,0.5)'
-const DarkBorder = 'rgba(255,255,255,0.12)'
+const CTA = 'Get my free diagnosis'
 
-const font  = "'PolySans Median', -apple-system, system-ui, sans-serif"
-const fontB = "'PolySans Neutral', -apple-system, system-ui, sans-serif"
-const fontSerif = font
-
-// ── Data ─────────────────────────────────────────────────────────────────────
-const TIERS = [
-  {
-    name: 'Free',
-    monthly: 'Free',
-    annual: 'Free',
-    annualMonthly: 'Free',
-    desc: 'One lifetime diagnosis. See exactly where your targeting leaks money.',
-    bullets: ['ICP health score (0-100)', 'Top 3 findings with severity', '3 quick wins action plan', 'Free 20-minute call with a media buyer'],
-    cta: 'Get Free Diagnosis',
-    href: '/questionnaire',
-    highlight: false,
-  },
-  {
-    name: 'Starter',
-    monthly: 'KES 6,500',
-    annual: 'KES 65,000',
-    annualMonthly: 'KES 5,400',
-    desc: 'For businesses running their own ads that want the full fix plan and a monthly check-up.',
-    bullets: ['Monthly ICP health monitoring', 'Critical findings with fixes', 'Quick wins action plan'],
-    cta: 'Start Free Diagnosis',
-    href: '/questionnaire',
-    highlight: false,
-  },
-  {
-    name: 'Pro',
-    monthly: 'KES 13,000',
-    annual: 'KES 130,000',
-    annualMonthly: 'KES 10,800',
-    desc: 'For growing teams that need speed, depth, and campaign-level analysis.',
-    bullets: ['Everything in Starter', 'Deep research with live web analysis', 'Weekly competitive intelligence briefing'],
-    cta: 'Get Started with Pro',
-    href: '/questionnaire',
-    highlight: true,
-  },
-  {
-    name: 'Agency',
-    monthly: 'KES 26,000',
-    annual: 'KES 260,000',
-    annualMonthly: 'KES 21,600',
-    desc: 'For agencies and consultants running ads for several clients. Unlimited diagnoses, a monthly call with Eugene and founder-led support.',
-    bullets: ['Everything in Pro', 'Unlimited diagnoses, one per client', 'A monthly strategy call with Eugene'],
-    cta: 'Talk to Eugene',
-    href: '/questionnaire',
-    highlight: false,
-  },
+const FAMILIAR = [
+  'People ask "how much?" and go quiet the moment you answer.',
+  'Your agency sends a report full of clicks and reach. Your phone stays quiet.',
+  'You boosted a post, got plenty of likes and not one sale.',
+  'Leads say "let me get back to you" and never do.',
+  'You got a few customers, but you cannot tell which ad brought them.',
 ]
 
-const FAQS = [
-  {
-    q: 'What is the difference between free and paid?',
-    a: 'The free report diagnoses your ICP based on your questionnaire answers and gives you your health score, top 3 findings, and quick wins. The paid report goes further: our system visits your actual landing page, researches your competitors, and benchmarks your metrics with live regional data.',
-  },
-  {
-    q: 'Do you need my ad account access?',
-    a: 'No. Never. You answer questions and optionally upload a CSV export of your campaign data. That is it. No Google OAuth. No Meta permissions. No compliance headaches.',
-  },
-  {
-    q: 'How is this different from a marketing consultant?',
-    a: 'A consultant charges KES 50,000 or more for a strategy session. We give you a living diagnostic that updates every month and tells you what to fix next, automatically.',
-  },
-  {
-    q: 'What markets do you cover?',
-    a: 'Kenya is our primary market, with Tanzania, Uganda, Nigeria, South Africa, UK, and US coming soon. Your recommendations always reflect local ad costs and regional audience behaviour.',
-  },
-  {
-    q: 'How accurate is the waste estimate?',
-    a: 'It is derived from your ICP score, budget size, industry benchmarks, and the specific misalignments found in your diagnostic. It represents the estimated portion of your monthly ad spend reaching audiences with a low probability of converting.',
-  },
-  {
-    q: 'Is there really a free diagnosis?',
-    a: 'Yes. You get one lifetime diagnosis at no cost, with no credit card required. You will receive your ICP health score, top 3 findings, a quick wins plan, and a personal review from a B2B media buyer. Upgrade to Starter when you are ready to run monthly re-diagnoses and track your improvement over time.',
-  },
-  {
-    q: 'Does a real person review my report?',
-    a: 'Yes. Eugene is a practising media buyer in Nairobi. After your free report you can book a free 20-minute call with him to go through your findings and decide what to fix first. No upgrade needed.',
-  },
+const CAUSES = [
+  { title: 'The wrong people see your ad', body: 'The ad reaches people who are curious, not people who are ready and able to buy. They inquire, then vanish.' },
+  { title: 'Your ad and your page say different things', body: 'The ad promises one thing. The page or the first WhatsApp reply talks about another. The buyer loses trust and leaves.' },
+  { title: 'Serious buyers get lost among the rest', body: 'Every inquiry gets the same slow reply, so the few people who were ready to pay cool off before anyone calls them.' },
+  { title: 'Nobody knows what a customer really costs', body: 'Without that number you cannot tell a good month from a bad one, or whether more budget would help or hurt.' },
 ]
 
-const USE_CASES = [
-  'Stop paying for junk leads', "Find out why leads don't buy", 'Stop wasted ad budget',
-  'Fix your Meta targeting', 'Fix your Google keywords', 'Qualify better leads',
-  'Know your real cost per customer', 'Fix landing page friction', 'Diagnose in 3 minutes',
-  'Benchmarked for Kenya', 'Lower your CAC', 'Improve LTV:CAC ratio',
+const STEPS = [
+  { title: 'Answer 10 questions', body: 'What you sell, what you spend on ads and what comes back. About 3 minutes. No access to your ad accounts.' },
+  { title: 'Get your report', body: 'A score out of 100, an estimate of what is leaking in shillings each month, and your fixes in order.' },
+  { title: 'Go through it with me', body: 'Book a free 20 minute call. We decide together what to fix first.' },
 ]
 
-// ── Button helpers ────────────────────────────────────────────────────────────
-const btnPrimary: React.CSSProperties = {
-  display: 'inline-flex', alignItems: 'center', gap: 8,
-  background: Orange, color: '#fff', border: 'none',
-  borderRadius: 6, padding: '13px 22px',
-  fontFamily: font, fontSize: 15, fontWeight: 700,
-  cursor: 'pointer', textDecoration: 'none', whiteSpace: 'nowrap',
-}
-const btnGhost: React.CSSProperties = {
-  display: 'inline-flex', alignItems: 'center', gap: 8,
-  background: 'transparent', color: Text,
-  border: `1.5px solid ${Border}`,
-  borderRadius: 6, padding: '12px 22px',
-  fontFamily: font, fontSize: 15, fontWeight: 600,
-  cursor: 'pointer', textDecoration: 'none', whiteSpace: 'nowrap',
-}
-const btnGhostDark: React.CSSProperties = {
-  display: 'inline-flex', alignItems: 'center', gap: 8,
-  background: 'transparent', color: '#fff',
-  border: '1.5px solid rgba(255,255,255,0.25)',
-  borderRadius: 6, padding: '12px 22px',
-  fontFamily: font, fontSize: 15, fontWeight: 600,
-  cursor: 'pointer', textDecoration: 'none', whiteSpace: 'nowrap',
-}
+const STAYING = [
+  { title: 'Your cost per lead, every week', body: 'You log spend and leads in 30 seconds on Monday. The dashboard shows whether each lead is getting cheaper.' },
+  { title: 'A note from me every month', body: 'I read your numbers and write to you about what I would change next. You can reply in the dashboard.' },
+  { title: 'Three things from your market', body: 'Each week: what changed, what a competitor did and what to do about it, each with its source.' },
+]
 
+const WHEN = [
+  'You are about to raise your ad budget.',
+  'Your agency contract is up for renewal.',
+  'A new intake, launch or season is coming.',
+  'You have had a month of inquiries and almost no sales.',
+]
 
-// ── Animated "How it works" components ───────────────────────────────────────
+const css = `
+.hp{--ink:#201515;--ink2:#36342e;--muted:#605d52;--faint:#8a877b;--bg:#f8f4f0;--card:#fff;--line:rgba(201,192,177,.55);--fill:rgba(32,21,21,.05);--accent:#e8330a;--good:#15803d;
+  --head:'PolySans Median',-apple-system,system-ui,sans-serif;--body:'PolySans Neutral',-apple-system,system-ui,sans-serif;
+  background:var(--bg);color:var(--ink);font-family:var(--body);-webkit-font-smoothing:antialiased;overflow-x:clip}
+.hp *{box-sizing:border-box}
+.hp a{color:inherit}
+.hp :focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:8px}
+.hp-wrap{max-width:1080px;margin:0 auto;padding:0 clamp(20px,5vw,40px)}
+.hp section{padding:clamp(56px,9vw,104px) 0}
+.hp h1,.hp h2,.hp h3{font-family:var(--head);font-weight:700;letter-spacing:-.025em;margin:0;text-wrap:balance}
+.hp h1{font-size:clamp(40px,7.2vw,76px);line-height:1.02}
+.hp h2{font-size:clamp(28px,4.4vw,44px);line-height:1.1}
+.hp h3{font-size:19px;line-height:1.3;letter-spacing:-.01em}
+.hp p{margin:0;text-wrap:pretty}
+.hp-lead{font-size:clamp(17px,2vw,20px);line-height:1.55;color:var(--ink2);max-width:58ch}
+.hp-sub{font-size:17px;line-height:1.6;color:var(--muted);max-width:62ch;margin-top:14px!important}
+.hp-kicker{font-size:15px;color:var(--muted);margin-bottom:18px!important}
+.hp-btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:54px;padding:0 28px;border-radius:980px;background:var(--ink);color:#fff!important;font:600 17px/1 var(--body);text-decoration:none;border:0;cursor:pointer;transition:transform .15s ease,background .15s ease}
+.hp-btn:hover{background:#000}.hp-btn:active{transform:scale(.98)}
+.hp-btn-sm{min-height:42px;padding:0 18px;font-size:15px}
+.hp-btn-light{background:#fff;color:var(--ink)!important}.hp-btn-light:hover{background:#f1ece6}
+.hp-fine{font-size:14px;color:var(--faint);margin-top:14px!important}
+.hp-card{background:var(--card);border-radius:22px;box-shadow:0 1px 2px rgba(32,21,21,.05),0 10px 30px -14px rgba(32,21,21,.16)}
+.hp-sep{height:1px;background:var(--line)}
 
-const ANIM_DURATION = 5000 // ms per stage
+.hp-nav{position:sticky;top:0;z-index:50;background:rgba(248,244,240,.86);backdrop-filter:saturate(1.4) blur(14px);-webkit-backdrop-filter:saturate(1.4) blur(14px);border-bottom:1px solid var(--line)}
+.hp-nav-in{max-width:1080px;margin:0 auto;padding:0 clamp(20px,5vw,40px);height:62px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.hp-brand{display:flex;align-items:center;gap:9px;font:700 16px/1 var(--head);text-decoration:none}
+.hp-mark{width:24px;height:24px;border-radius:7px;background:var(--accent)}
+.hp-links{display:none;gap:28px}.hp-links a,.hp-login{font-size:15px;color:var(--muted);text-decoration:none}.hp-links a:hover,.hp-login:hover{color:var(--ink)}
+.hp-nav-cta{display:flex;align-items:center;gap:14px}.hp-login{display:none}
+.hp-burger{display:flex;background:none;border:0;padding:8px;margin-right:-8px;color:var(--ink);cursor:pointer}
+.hp-menu{position:fixed;inset:62px 0 0;background:var(--bg);padding:12px clamp(20px,5vw,40px) 40px;display:flex;flex-direction:column;overflow:auto}
+.hp-menu a:not(.hp-btn){font:700 24px/1 var(--head);padding:20px 0;border-bottom:1px solid var(--line);text-decoration:none}
+@media (max-width:420px){.hp-nav-cta .hp-btn-sm{display:none}}
+@media (min-width:900px){.hp-links{display:flex}.hp-login{display:inline}.hp-burger{display:none}}
 
-function DiagStage1({ animKey }: { animKey: number }) {
-  const rows = [
-    { q: 'What industry are you in?',     a: 'B2B SaaS / Tech',                delay: 0.15 },
-    { q: 'Monthly ad spend?',             a: 'KES 180,000 / month',             delay: 0.65 },
-    { q: 'Primary target audience?',      a: 'Kenya · SMEs · 50-200 employees', delay: 1.15 },
-    { q: 'Biggest targeting challenge?',  a: 'Reaching decision-makers only',   delay: 1.65 },
-  ]
+.hp-hero{padding-top:clamp(40px,7vw,88px)!important}
+.hp-hero-grid{display:grid;gap:clamp(36px,6vw,64px);align-items:center}
+@media (min-width:900px){.hp-hero-grid{grid-template-columns:1.15fr .85fr}}
+.hp-hero .hp-lead{margin:22px 0 30px}
+
+.hp-chat{padding:20px 18px 18px;max-width:400px;width:100%;justify-self:center}
+.hp-chat-top{display:flex;align-items:center;gap:10px;padding:0 4px 14px;border-bottom:1px solid var(--line);margin-bottom:16px}
+.hp-ava{width:36px;height:36px;border-radius:50%;background:var(--fill);display:flex;align-items:center;justify-content:center;font:600 14px/1 var(--body);color:var(--muted)}
+.hp .hp-bub{width:fit-content;max-width:84%;padding:11px 14px;border-radius:18px;font-size:15px;line-height:1.45;margin-bottom:8px}
+.hp-in{background:var(--fill);border-bottom-left-radius:6px}
+.hp .hp-out{background:var(--ink);color:#fff;margin-left:auto;border-bottom-right-radius:6px}
+.hp-seen{text-align:center;font-size:13px;color:var(--faint);padding:14px 0 4px}
+.hp-seen strong{display:block;font:600 15px/1.4 var(--body);color:var(--accent)}
+
+.hp-list{list-style:none;margin:32px 0 0;padding:0}
+.hp-list li{display:flex;gap:14px;align-items:flex-start;padding:18px 0;border-top:1px solid var(--line);font-size:clamp(17px,2.1vw,21px);line-height:1.4}
+.hp-list li:last-child{border-bottom:1px solid var(--line)}
+.hp-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);margin-top:.55em;flex-shrink:0}
+
+.hp-grid2{display:grid;gap:16px;margin-top:36px}
+@media (min-width:760px){.hp-grid2{grid-template-columns:1fr 1fr}}
+.hp-cause{padding:26px 26px 28px}
+.hp-cause p{font-size:16px;line-height:1.6;color:var(--muted);margin-top:8px}
+
+.hp-how{display:grid;gap:clamp(32px,6vw,64px);align-items:start;margin-top:40px}
+@media (min-width:900px){.hp-how{grid-template-columns:.9fr 1.1fr}}
+.hp-steps{list-style:none;margin:0;padding:0;counter-reset:s}
+.hp-steps li{counter-increment:s;position:relative;padding:0 0 28px 56px}
+.hp-steps li::before{content:counter(s);position:absolute;left:0;top:-2px;width:38px;height:38px;border-radius:50%;background:var(--card);box-shadow:0 1px 2px rgba(32,21,21,.08),0 4px 12px -6px rgba(32,21,21,.2);display:flex;align-items:center;justify-content:center;font:700 16px/1 var(--head)}
+.hp-steps li:not(:last-child)::after{content:'';position:absolute;left:18.5px;top:42px;bottom:6px;width:1px;background:var(--line)}
+.hp-steps p{font-size:16px;line-height:1.6;color:var(--muted);margin-top:6px}
+
+.hp-report{padding:clamp(22px,3vw,30px)}
+.hp-tag{display:inline-block;font-size:13px;color:var(--muted);background:var(--fill);border-radius:980px;padding:6px 12px;margin-bottom:20px}
+.hp-score{display:flex;align-items:center;gap:20px;padding-bottom:22px}
+.hp-ring{position:relative;width:96px;height:96px;flex-shrink:0}
+.hp-ring b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 32px/1 var(--head);letter-spacing:-.03em}
+.hp-waste{font:700 clamp(22px,3vw,28px)/1.15 var(--head);letter-spacing:-.02em}
+.hp-small{font-size:14px;line-height:1.5;color:var(--muted)}
+.hp-find{display:flex;gap:12px;align-items:flex-start;padding:14px 0;font-size:16px;line-height:1.45}
+.hp-sev{width:9px;height:9px;border-radius:50%;margin-top:.5em;flex-shrink:0}
+.hp .hp-fix{margin-top:8px;padding:16px 18px;background:var(--fill);border-radius:14px;font-size:15px;line-height:1.55}
+.hp-fix strong{font-weight:600}
+
+.hp-me{display:grid;gap:clamp(28px,5vw,56px);align-items:center}
+@media (min-width:820px){.hp-me{grid-template-columns:300px 1fr}}
+.hp-photo{aspect-ratio:4/5;width:100%;max-width:300px;border-radius:22px;background:linear-gradient(160deg,#eadfd3,#d8c9b8);display:flex;align-items:flex-end;padding:18px;font:700 64px/1 var(--head);color:rgba(32,21,21,.28);letter-spacing:-.04em}
+.hp-me p{font-size:clamp(17px,2vw,19px);line-height:1.65;color:var(--ink2);max-width:60ch;margin-top:16px}
+
+.hp-dark{background:var(--ink);color:#fff}
+.hp-dark h2,.hp-dark h3,.hp-dark .hp-price p{color:#fff}
+.hp-dark .hp-sub,.hp-dark .hp-stay p{color:rgba(255,255,255,.66)}
+.hp-stay-grid{display:grid;gap:0;margin-top:40px;border-top:1px solid rgba(255,255,255,.14)}
+@media (min-width:820px){.hp-stay-grid{grid-template-columns:repeat(3,1fr);border-top:0;gap:clamp(24px,4vw,48px)}}
+.hp-stay{padding:24px 0;border-bottom:1px solid rgba(255,255,255,.14)}
+@media (min-width:820px){.hp-stay{border-bottom:0;border-top:1px solid rgba(255,255,255,.14)}}
+.hp-stay p{font-size:16px;line-height:1.6;margin-top:8px}
+.hp-price{display:flex;flex-wrap:wrap;gap:16px 28px;align-items:center;justify-content:space-between;margin-top:36px}
+.hp-price p{font-size:17px;line-height:1.55;max-width:52ch}.hp-price strong{font-weight:600}
+.hp-textlink{font:600 16px/1 var(--body);text-decoration:underline;text-underline-offset:4px}
+
+.hp-when{display:grid;gap:clamp(28px,5vw,56px);align-items:start}
+@media (min-width:900px){.hp-when{grid-template-columns:1fr 1fr}}
+.hp-check{list-style:none;margin:0;padding:8px 26px}
+.hp-check li{display:flex;gap:14px;align-items:flex-start;padding:17px 0;font-size:17px;line-height:1.45}
+.hp-check li+li{border-top:1px solid var(--line)}
+.hp-tick{width:24px;height:24px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+
+.hp-faq{margin-top:32px;overflow:hidden}
+.hp-faq details+details{border-top:1px solid var(--line)}
+.hp-faq summary{list-style:none;cursor:pointer;padding:22px 26px;font:600 18px/1.35 var(--body);display:flex;justify-content:space-between;gap:16px;align-items:center}
+.hp-faq summary::-webkit-details-marker{display:none}
+.hp-faq summary::after{content:'+';font:400 26px/1 var(--body);color:var(--faint);flex-shrink:0;transition:transform .2s ease}
+.hp-faq details[open] summary::after{transform:rotate(45deg)}
+.hp-faq details p{padding:0 26px 24px;font-size:16px;line-height:1.65;color:var(--muted);max-width:70ch}
+
+.hp-end{text-align:left}
+.hp-end .hp-lead{color:rgba(255,255,255,.72);margin:18px 0 30px}
+.hp-foot{padding:32px 0 48px;display:flex;flex-wrap:wrap;gap:16px 28px;align-items:center;justify-content:space-between;font-size:14px;color:rgba(255,255,255,.55);border-top:1px solid rgba(255,255,255,.14)}
+.hp-foot nav{display:flex;flex-wrap:wrap;gap:8px 22px}.hp-foot a{text-decoration:none}.hp-foot a:hover{color:#fff}
+@media (prefers-reduced-motion:reduce){.hp *{transition:none!important}}
+`
+
+function ScoreRing({ score }: { score: number }) {
+  const r = 42, c = 2 * Math.PI * r
   return (
-    <div key={animKey} style={{ border: '1.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)', borderRadius: 4, overflow: 'hidden' }}>
-      {/* Window chrome */}
-      <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', gap: 12, background: 'rgba(0,0,0,0.2)' }}>
-        <div style={{ display: 'flex', gap: 6 }}>
-          {['#e8330a','#f59e0b','#22c55e'].map((c,i) => <div key={i} style={{ width: 9, height: 9, borderRadius: '50%', background: c, opacity: 0.8 }} />)}
-        </div>
-        <span style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.3)', flex: 1, textAlign: 'center' }}>ICP Questionnaire: Step 2 of 4</span>
-        <div style={{ display: 'flex', gap: 4 }}>
-          {[50,35,50].map((w,i) => <div key={i} style={{ width: w, height: 3, background: i === 1 ? '#e8330a' : 'rgba(255,255,255,0.12)', borderRadius: 2 }} />)}
-        </div>
-      </div>
-      {/* Progress */}
-      <div style={{ padding: '10px 20px 0', display: 'flex', alignItems: 'center', gap: 10 }}>
-        <div style={{ flex: 1, height: 3, background: 'rgba(255,255,255,0.08)', borderRadius: 2, overflow: 'hidden' }}>
-          <div style={{ width: '50%', height: '100%', background: '#e8330a', borderRadius: 2 }} />
-        </div>
-        <span style={{ fontFamily: fontB, fontSize: 10, color: 'rgba(255,255,255,0.35)' }}>5 / 10 answered</span>
-      </div>
-      {/* Q&A rows */}
-      <div style={{ padding: '4px 0 8px' }}>
-        {rows.map(({ q, a, delay }, i) => (
-          <div key={i} style={{ padding: '10px 20px', borderBottom: i < 3 ? '1px solid rgba(255,255,255,0.04)' : 'none', opacity: 0, animation: `diagFadeUp 0.4s ease ${delay}s forwards` }}>
-            <p style={{ fontFamily: fontB, fontSize: 10, color: 'rgba(255,255,255,0.38)', margin: '0 0 3px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{q}</p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontFamily: font, fontSize: 13, fontWeight: 600, color: '#fff' }}>{a}</span>
-              <div style={{ width: 16, height: 16, borderRadius: '50%', background: '#22c55e', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, opacity: 0, animation: `diagCheckPop 0.3s cubic-bezier(0.34,1.56,0.64,1) ${delay + 0.28}s forwards` }}>
-                <svg width="8" height="7" viewBox="0 0 8 7" fill="none"><path d="M1 3.5l2 2 4-4" stroke="#fff" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-      {/* Footer */}
-      <div style={{ padding: '10px 20px 14px', borderTop: '1px solid rgba(255,255,255,0.07)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: 0, animation: 'diagFadeUp 0.4s ease 2.1s forwards' }}>
-        <span style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>No ad account access needed</span>
-        <div style={{ background: '#e8330a', color: '#fff', fontFamily: fontB, fontSize: 12, fontWeight: 700, padding: '7px 16px', borderRadius: 4, cursor: 'default' }}>Continue →</div>
-      </div>
+    <div className="hp-ring" role="img" aria-label={`Score ${score} out of 100`}>
+      <svg width="96" height="96" viewBox="0 0 96 96" aria-hidden="true">
+        <circle cx="48" cy="48" r={r} fill="none" stroke="rgba(32,21,21,.08)" strokeWidth="8" />
+        <circle cx="48" cy="48" r={r} fill="none" stroke="#d97706" strokeWidth="8" strokeLinecap="round" strokeDasharray={`${(score / 100) * c} ${c}`} transform="rotate(-90 48 48)" />
+      </svg>
+      <b>{score}</b>
     </div>
-  )
-}
-
-function DiagStage2({ animKey }: { animKey: number }) {
-  const r = 46, circ = 2 * Math.PI * r
-  const score = 74
-  const filled = circ * (score / 100)
-  const offset = circ - filled
-  const bars = [
-    { label: 'Audience alignment',   pct: 38, color: '#e8330a', delay: 0.5  },
-    { label: 'Landing page fit',     pct: 61, color: '#f59e0b', delay: 0.85 },
-    { label: 'Budget efficiency',    pct: 44, color: '#e8330a', delay: 1.2  },
-    { label: 'Competitive position', pct: 29, color: '#f87171', delay: 1.55 },
-  ]
-  return (
-    <div key={animKey} style={{ border: '1.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)', borderRadius: 4, overflow: 'hidden' }}>
-      <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.07)', background: 'rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', gap: 8 }}>
-        <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#e8330a', animation: 'diagPulse 1s ease infinite' }} />
-        <span style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>Scoring and benchmarking your ICP</span>
-      </div>
-      <div style={{ padding: '20px 24px', display: 'flex', gap: 24, alignItems: 'center' }}>
-        {/* Score circle */}
-        <div style={{ flexShrink: 0, position: 'relative', width: 108, height: 108, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0, animation: 'diagFadeUp 0.5s ease 0.15s forwards' }}>
-          <svg width="108" height="108" viewBox="0 0 108 108" style={{ position: 'absolute', transform: 'rotate(-90deg)' }}>
-            <circle cx="54" cy="54" r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="7" />
-            <circle cx="54" cy="54" r={r} fill="none" stroke="#e8330a" strokeWidth="7"
-              strokeDasharray={circ} strokeDashoffset={circ}
-              strokeLinecap="round"
-              style={{ animation: `diagCircleFill 1.8s cubic-bezier(0.4,0,0.2,1) 0.3s forwards`, ['--offset' as string]: offset }} />
-          </svg>
-          <div style={{ textAlign: 'center', position: 'relative' }}>
-            <p style={{ fontFamily: fontSerif, fontSize: 26, fontWeight: 700, color: '#fff', margin: 0, lineHeight: 1 }}>{score}</p>
-            <p style={{ fontFamily: fontB, fontSize: 9, color: 'rgba(255,255,255,0.4)', margin: '2px 0 0', textTransform: 'uppercase', letterSpacing: '0.06em' }}>/ 100</p>
-          </div>
-        </div>
-        {/* Analysis bars */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {bars.map(({ label, pct, color, delay }, i) => (
-            <div key={i} style={{ opacity: 0, animation: `diagFadeUp 0.35s ease ${delay}s forwards` }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                <span style={{ fontFamily: fontB, fontSize: 10, color: 'rgba(255,255,255,0.55)' }}>{label}</span>
-                <span style={{ fontFamily: fontB, fontSize: 10, color, fontWeight: 700 }}>{pct}%</span>
-              </div>
-              <div style={{ height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 2, overflow: 'hidden' }}>
-                <div style={{ height: '100%', background: color, borderRadius: 2, width: 0, ['--w' as string]: `${pct}%`, animation: `diagBarFill 0.9s cubic-bezier(0.4,0,0.2,1) ${delay + 0.1}s forwards` }} />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-      {/* Live intelligence feed */}
-      <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', padding: '10px 24px 14px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-        {[
-          { text: 'Benchmarking against 400+ Kenya B2B accounts', delay: 1.9 },
-          { text: 'Scanning competitor landing pages live', delay: 2.3 },
-          { text: 'Matching regional CPL benchmarks (Q1 2026)', delay: 2.7 },
-        ].map(({ text, delay }, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, opacity: 0, animation: `diagFadeUp 0.35s ease ${delay}s forwards` }}>
-            <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#22c55e', flexShrink: 0, animation: 'diagPulse 1.2s ease infinite' }} />
-            <span style={{ fontFamily: fontB, fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>{text}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function DiagStage3({ animKey }: { animKey: number }) {
-  const findings = [
-    { sev: 'Critical', color: '#f87171', bg: 'rgba(248,113,113,0.08)', border: 'rgba(248,113,113,0.2)', title: 'Audience too broad for B2B intent', impact: 'Costing est. KES 41,000 / mo', delay: 0.2 },
-    { sev: 'Warning',  color: '#f59e0b', bg: 'rgba(245,158,11,0.07)',  border: 'rgba(245,158,11,0.2)',  title: 'Landing page CTA misaligned with ICP', impact: 'Reducing conversion rate ~23%', delay: 0.55 },
-    { sev: 'Warning',  color: '#f59e0b', bg: 'rgba(245,158,11,0.07)',  border: 'rgba(245,158,11,0.2)',  title: 'No SME-specific messaging detected', impact: 'Losing mid-market segment', delay: 0.9 },
-  ]
-  const wins = [
-    { text: 'Narrow audience to 25-44 decision-makers in SMEs', delay: 1.4 },
-    { text: 'Rewrite CTA to "Book a 20-min demo" and test against current', delay: 1.8 },
-    { text: 'Add pain-point headline above fold targeting ops leads', delay: 2.2 },
-  ]
-  return (
-    <div key={animKey} style={{ border: '1.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)', borderRadius: 4, overflow: 'hidden' }}>
-      {/* Score header */}
-      <div style={{ padding: '14px 20px', borderBottom: '1px solid rgba(255,255,255,0.07)', background: 'rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', gap: 14, opacity: 0, animation: 'diagFadeUp 0.4s ease 0.05s forwards' }}>
-        <div style={{ width: 44, height: 44, borderRadius: '50%', border: '2px solid #e8330a', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: 'rgba(232,51,10,0.1)' }}>
-          <span style={{ fontFamily: fontSerif, fontSize: 17, fontWeight: 700, color: '#e8330a' }}>74</span>
-        </div>
-        <div>
-          <p style={{ fontFamily: font, fontSize: 13, fontWeight: 700, color: '#fff', margin: '0 0 2px' }}>ICP Health Score</p>
-          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-            <span style={{ fontFamily: fontB, fontSize: 10, color: '#f87171', fontWeight: 700 }}>● 1 Critical</span>
-            <span style={{ fontFamily: fontB, fontSize: 10, color: '#f59e0b', fontWeight: 700 }}>● 2 Warnings</span>
-          </div>
-        </div>
-        <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
-          <p style={{ fontFamily: fontB, fontSize: 10, color: 'rgba(255,255,255,0.35)', margin: '0 0 2px' }}>Monthly waste estimate</p>
-          <p style={{ fontFamily: fontSerif, fontSize: 16, fontWeight: 700, color: '#f87171', margin: 0 }}>KES 41,000</p>
-        </div>
-      </div>
-      {/* Findings */}
-      <div style={{ padding: '8px 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-        {findings.map(({ sev, color, bg, border, title, impact, delay }, i) => (
-          <div key={i} style={{ background: bg, border: `1px solid ${border}`, borderRadius: 4, padding: '9px 12px', opacity: 0, animation: `diagSlideIn 0.4s ease ${delay}s forwards` }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
-              <span style={{ fontFamily: fontB, fontSize: 9, fontWeight: 700, color, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{sev}</span>
-            </div>
-            <p style={{ fontFamily: font, fontSize: 12, fontWeight: 600, color: '#fff', margin: '0 0 2px' }}>{title}</p>
-            <p style={{ fontFamily: fontB, fontSize: 10, color: 'rgba(255,255,255,0.45)', margin: 0 }}>{impact}</p>
-          </div>
-        ))}
-      </div>
-      {/* Quick wins */}
-      <div style={{ padding: '8px 16px 0', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-        <p style={{ fontFamily: fontB, fontSize: 9, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '6px 0 6px' }}>Quick wins this week</p>
-        {wins.map(({ text, delay }, i) => (
-          <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 6, opacity: 0, animation: `diagFadeUp 0.35s ease ${delay}s forwards` }}>
-            <div style={{ width: 14, height: 14, borderRadius: '50%', border: '1.5px solid #22c55e', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1, background: 'rgba(34,197,94,0.15)' }}>
-              <svg width="7" height="6" viewBox="0 0 7 6" fill="none"><path d="M1 3l2 2 3-4" stroke="#22c55e" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
-            </div>
-            <span style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.7)', lineHeight: 1.4 }}>{text}</span>
-          </div>
-        ))}
-      </div>
-      {/* Media buyer */}
-      <div style={{ margin: '10px 16px 14px', background: 'rgba(232,51,10,0.07)', border: '1px solid rgba(232,51,10,0.18)', borderRadius: 4, padding: '9px 12px', display: 'flex', gap: 10, alignItems: 'center', opacity: 0, animation: 'diagFadeUp 0.4s ease 2.7s forwards' }}>
-        <div style={{ width: 30, height: 30, borderRadius: '50%', background: '#e8330a', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, color: '#fff' }}>EK</span>
-        </div>
-        <div>
-          <p style={{ fontFamily: font, fontSize: 11, fontWeight: 700, color: '#fff', margin: '0 0 1px' }}>Eugene K. assigned to your report</p>
-          <p style={{ fontFamily: fontB, fontSize: 10, color: 'rgba(255,255,255,0.4)', margin: 0 }}>Senior B2B Media Buyer · Reviewing within 24h</p>
-        </div>
-        <div style={{ marginLeft: 'auto', width: 8, height: 8, borderRadius: '50%', background: '#22c55e', flexShrink: 0, animation: 'diagPulse 1.5s ease infinite' }} />
-      </div>
-    </div>
-  )
-}
-
-function DiagnosticAnimation() {
-  const [stage,    setStage]    = useState(0)
-  const [animKey,  setAnimKey]  = useState(0)
-
-  useEffect(() => {
-    const t = setTimeout(() => {
-      setStage(s => (s + 1) % 3)
-      setAnimKey(k => k + 1)
-    }, ANIM_DURATION)
-    return () => clearTimeout(t)
-  }, [stage])
-
-  const steps = [
-    { num: '01', label: 'Answer 10 questions',  sub: 'About 3 minutes · no ad account access' },
-    { num: '02', label: 'Your ICP gets scored and benchmarked', sub: 'Expert scoring · benchmarked against your market' },
-    { num: '03', label: 'Get your report',       sub: 'Instant · reviewed by a media buyer' },
-  ]
-
-  return (
-    <section id="how-it-works" style={{ background: Dark, borderBottom: `1.5px solid ${DarkBorder}`, overflow: 'hidden' }}>
-      <style>{`
-        @keyframes diagFadeUp    { from { opacity:0; transform:translateY(10px) } to { opacity:1; transform:translateY(0) } }
-        @keyframes diagSlideIn   { from { opacity:0; transform:translateX(-8px) } to { opacity:1; transform:translateX(0) } }
-        @keyframes diagCheckPop  { 0%{opacity:0;transform:scale(0) rotate(-30deg)} 60%{transform:scale(1.2)} 100%{opacity:1;transform:scale(1) rotate(0)} }
-        @keyframes diagBarFill   { from { width:0 } to { width:var(--w) } }
-        @keyframes diagCircleFill{ from { stroke-dashoffset:290 } to { stroke-dashoffset:var(--offset) } }
-        @keyframes diagPulse     { 0%,100%{opacity:1} 50%{opacity:0.3} }
-        @keyframes diagProgress  { from{width:0%} to{width:100%} }
-        @keyframes diagStageFade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-      `}</style>
-      <div className="container" style={{ paddingTop: 'clamp(56px,8vw,96px)', paddingBottom: 'clamp(56px,8vw,96px)' }}>
-        {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: 52 }}>
-          <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, color: Orange, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 14px' }}>See it in action</p>
-          <h2 style={{ fontFamily: fontSerif, fontSize: 'clamp(28px,4.5vw,52px)', fontWeight: 700, color: '#fff', margin: 0, lineHeight: 1.08, letterSpacing: '-0.03em' }}>
-            From first question to{' '}<span style={{ color: Orange }}>bankable insight</span><br className="hidden md:block" /> in under 5 minutes
-          </h2>
-        </div>
-
-        {/* Body: nav + animation */}
-        <div style={{ gridTemplateColumns: '260px 1fr', gap: 32, maxWidth: 900, margin: '0 auto', alignItems: 'start' }} className="diag-body block md:grid">
-
-          {/* Step nav */}
-          <div className="diag-step-nav" style={{ border: `1.5px solid ${DarkBorder}` }}>
-            {steps.map(({ num, label, sub }, i) => (
-              <button key={i} onClick={() => { setStage(i); setAnimKey(k => k + 1) }}
-                style={{ display: 'block', width: '100%', textAlign: 'left', cursor: 'pointer', padding: '18px 20px', outline: 'none', borderTop: 'none', borderRight: 'none', borderBottom: i < 2 ? `1px solid ${DarkBorder}` : 'none', borderLeft: stage === i ? `3px solid ${Orange}` : '3px solid transparent', background: stage === i ? 'rgba(232,51,10,0.06)' : 'transparent', transition: 'background 0.25s, border-left-color 0.25s' } as React.CSSProperties}>
-                <p style={{ fontFamily: fontB, fontSize: 10, fontWeight: 700, color: stage === i ? Orange : 'rgba(255,255,255,0.28)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 3px' }}>Step {num}</p>
-                <p style={{ fontFamily: font, fontSize: 13, fontWeight: 700, color: stage === i ? '#fff' : 'rgba(255,255,255,0.4)', margin: '0 0 3px', lineHeight: 1.3 }}>{label}</p>
-                <p className="diag-step-sub" style={{ fontFamily: fontB, fontSize: 10, color: stage === i ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.18)', margin: 0 }}>{sub}</p>
-                {stage === i && (
-                  <div style={{ marginTop: 10, height: 2, background: 'rgba(255,255,255,0.08)', borderRadius: 1, overflow: 'hidden' }}>
-                    <div key={animKey} style={{ height: '100%', background: Orange, borderRadius: 1, animation: `diagProgress ${ANIM_DURATION}ms linear forwards` }} />
-                  </div>
-                )}
-              </button>
-            ))}
-          </div>
-
-          {/* Animated stage */}
-          <div key={animKey} style={{ animation: 'diagStageFade 0.35s ease forwards' }}>
-            {stage === 0 && <DiagStage1 animKey={animKey} />}
-            {stage === 1 && <DiagStage2 animKey={animKey} />}
-            {stage === 2 && <DiagStage3 animKey={animKey} />}
-          </div>
-        </div>
-      </div>
-    </section>
   )
 }
 
 export default function Page() {
-  const session = useSession()
-  const isLoggedIn = session.status === 'authenticated'
-  const [mobileOpen,      setMobileOpen]      = useState(false)
-  const [billingAnnual,   setBillingAnnual]   = useState(false)
-  const [openFaq,         setOpenFaq]         = useState<number | null>(null)
-  const [calcBudget,      setCalcBudget]      = useState('')
-  const [calcLeads,       setCalcLeads]       = useState('')
-  const [calcCloseRate,   setCalcCloseRate]   = useState('')
-  const [calcLTV,         setCalcLTV]         = useState('')
-  const [calcChurn,       setCalcChurn]       = useState('')
-  const [calcMetrics,     setCalcMetrics]     = useState<{
-    cacCurrent: number; cacProjected: number
-    ltvCacCurrent: number; ltvCacProjected: number
-    monthlyCustomers: number; monthlyCustomersProjected: number
-    monthlyRevenueOpportunity: number; paybackMonths: number
-  } | null>(null)
-  const [calcPhase,       setCalcPhase]       = useState<'idle' | 'running' | 'done'>('idle')
-  const [calcStep,        setCalcStep]        = useState(0)
-  const pendingMetrics = useRef<typeof calcMetrics>(null)
-  const [showStickyBar,   setShowStickyBar]   = useState(false)
-  const [stickyDismissed, setStickyDismissed] = useState(false)
-
-  const [csvDragOver,   setCsvDragOver]   = useState(false)
-  const [csvFileName,   setCsvFileName]   = useState('')
-  const csvFileRef      = useRef<HTMLInputElement>(null)
-
-  const handleCsvFile = useCallback((file: File) => {
-    if (!file.name.toLowerCase().endsWith('.csv')) return
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      const text = e.target?.result as string
-      if (!text) return
-      try {
-        sessionStorage.setItem('pending_csv_text', text)
-        sessionStorage.setItem('pending_csv_name', file.name)
-      } catch { /* sessionStorage unavailable */ }
-      setCsvFileName(file.name)
-      window.location.href = '/auth?next=/dashboard/csv'
-    }
-    reader.readAsText(file)
-  }, [])
-
-  const [diagnosisCount,  setDiagnosisCount]  = useState(0)
-  const [wasteKes,        setWasteKes]        = useState(0)
-  // Public counters only appear once there is real volume behind them.
-  // Below this we just don't show a number rather than inflate it.
-  const showLiveStats   = diagnosisCount >= 50
-
-  useEffect(() => { track('landing_view') }, [])
-  const diagCountRef    = useRef<HTMLSpanElement>(null)
-  const prevWaste       = useRef(0)
-  const outputCanvasRef = useRef<HTMLCanvasElement>(null)
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const pct = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)
-      setShowStickyBar(pct > 0.6)
-    }
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
-
-  useEffect(() => {
-    if (sessionStorage.getItem('sticky_dismissed')) setStickyDismissed(true)
-  }, [])
-
-
-  const animateWaste = (from: number, to: number, duration = 1800) => {
-    const el = diagCountRef.current
-    if (!el) return
-    const start = performance.now()
-    const tick = (now: number) => {
-      const t = Math.min((now - start) / duration, 1)
-      const ease = 1 - Math.pow(1 - t, 3)
-      el.textContent = 'KES ' + Math.floor(from + (to - from) * ease).toLocaleString()
-      if (t < 1) requestAnimationFrame(tick)
-      else el.textContent = 'KES ' + to.toLocaleString()
-    }
-    requestAnimationFrame(tick)
-  }
-
-  useEffect(() => {
-    // Animate the real waste total whenever it changes
-    const prev = prevWaste.current
-    if (prev !== wasteKes) {
-      animateWaste(prev, wasteKes, prev === 0 ? 2800 : 900)
-      prevWaste.current = wasteKes
-    }
-  }, [wasteKes]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    const fetchCount = async () => {
-      try {
-        const res = await fetch('/api/stats')
-        if (!res.ok) return
-        const { count, wasteKes: waste } = await res.json()
-        if (typeof count === 'number') setDiagnosisCount(count)
-        if (typeof waste === 'number') setWasteKes(waste)
-      } catch { /* keep current value */ }
-    }
-    fetchCount()
-    const interval = setInterval(fetchCount, 30000)
-    return () => clearInterval(interval)
-  }, [])
-
-  useEffect(() => {
-    const canvas = outputCanvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-
-    let raf: number
-    const DOT_COUNT = 60
-    const MAX_SPEED = 0.5
-    const REPEL_PAD = 10   // extra clearance around each pill rect
-    const REPEL_FORCE = 0.18
-
-    type Dot = { x: number; y: number; vx: number; vy: number; r: number }
-    const dots: Dot[] = Array.from({ length: DOT_COUNT }, () => ({
-      x: Math.random() * canvas.offsetWidth,
-      y: Math.random() * canvas.offsetHeight,
-      vx: (Math.random() - 0.5) * 0.3,
-      vy: (Math.random() - 0.5) * 0.3,
-      r: Math.random() * 1.4 + 0.7,
-    }))
-
-    const resize = () => {
-      canvas.width  = canvas.offsetWidth
-      canvas.height = canvas.offsetHeight
-    }
-    resize()
-    const ro = new ResizeObserver(resize)
-    ro.observe(canvas)
-
-    const draw = () => {
-      const W = canvas.width
-      const H = canvas.height
-      ctx.clearRect(0, 0, W, H)
-
-      // Collect pill rects relative to canvas each frame
-      const canvasRect = canvas.getBoundingClientRect()
-      const pills = canvas.parentElement?.querySelectorAll('.pill-item') ?? []
-      const rects = Array.from(pills).map(el => {
-        const r = el.getBoundingClientRect()
-        return { l: r.left - canvasRect.left - REPEL_PAD, t: r.top - canvasRect.top - REPEL_PAD, r: r.right - canvasRect.left + REPEL_PAD, b: r.bottom - canvasRect.top + REPEL_PAD }
-      })
-
-      for (const d of dots) {
-        // Repel from pill rects
-        for (const rect of rects) {
-          // Find closest point on rect to dot
-          const cx = Math.max(rect.l, Math.min(d.x, rect.r))
-          const cy = Math.max(rect.t, Math.min(d.y, rect.b))
-          const dx = d.x - cx
-          const dy = d.y - cy
-          const dist = Math.sqrt(dx * dx + dy * dy)
-          if (dist < 18) {
-            const push = dist === 0 ? 1 : dist
-            d.vx += (dx / push) * REPEL_FORCE
-            d.vy += (dy / push) * REPEL_FORCE
-          }
-        }
-
-        // Clamp speed
-        const speed = Math.sqrt(d.vx * d.vx + d.vy * d.vy)
-        if (speed > MAX_SPEED) { d.vx = d.vx / speed * MAX_SPEED; d.vy = d.vy / speed * MAX_SPEED }
-
-        d.x += d.vx; d.y += d.vy
-
-        // Bounce off walls
-        if (d.x < 0)  { d.x = 0;  d.vx =  Math.abs(d.vx) }
-        if (d.x > W)  { d.x = W;  d.vx = -Math.abs(d.vx) }
-        if (d.y < 0)  { d.y = 0;  d.vy =  Math.abs(d.vy) }
-        if (d.y > H)  { d.y = H;  d.vy = -Math.abs(d.vy) }
-
-        ctx.beginPath()
-        ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2)
-        ctx.fillStyle = 'rgba(201,192,177,0.45)'
-        ctx.fill()
-      }
-
-      raf = requestAnimationFrame(draw)
-    }
-    draw()
-    return () => { cancelAnimationFrame(raf); ro.disconnect() }
-  }, [])
-
-  const CALC_STEP_DELAYS = [550, 650, 750, 650, 600, 500]
-
-  useEffect(() => {
-    if (calcPhase !== 'running') return
-    if (calcStep < CALC_STEP_DELAYS.length) {
-      const t = setTimeout(() => setCalcStep(s => s + 1), CALC_STEP_DELAYS[calcStep])
-      return () => clearTimeout(t)
-    } else {
-      setCalcMetrics(pendingMetrics.current)
-      setCalcPhase('done')
-    }
-  }, [calcPhase, calcStep])
-
-  const handleCalc = () => {
-    const budget    = parseFloat(calcBudget.replace(/,/g, ''))
-    const leads     = parseFloat(calcLeads.replace(/,/g, ''))
-    const closeRate = parseFloat(calcCloseRate) / 100
-    const ltv       = parseFloat(calcLTV.replace(/,/g, ''))
-    const churn     = calcChurn ? parseFloat(calcChurn) / 100 : null
-    if ([budget, leads, closeRate, ltv].some(v => isNaN(v) || v <= 0)) return
-
-    const monthlyCustomers           = leads * closeRate
-    const cacCurrent                 = budget / monthlyCustomers
-    const improvementFactor          = 1.35 * 1.30
-    const monthlyCustomersProjected  = monthlyCustomers * improvementFactor
-    const cacProjected               = budget / monthlyCustomersProjected
-    const ltvCacCurrent              = ltv / cacCurrent
-    const ltvCacProjected            = ltv / cacProjected
-    const additionalCustomers        = monthlyCustomersProjected - monthlyCustomers
-    const monthlyRevenueOpportunity  = additionalCustomers * ltv
-    const mrr                        = churn && churn > 0 ? ltv * churn : ltv / 24
-    const paybackMonths              = cacProjected / mrr
-
-    pendingMetrics.current = {
-      cacCurrent:                 Math.round(cacCurrent),
-      cacProjected:               Math.round(cacProjected),
-      ltvCacCurrent:              Math.round(ltvCacCurrent * 10) / 10,
-      ltvCacProjected:            Math.round(ltvCacProjected * 10) / 10,
-      monthlyCustomers:           Math.round(monthlyCustomers * 10) / 10,
-      monthlyCustomersProjected:  Math.round(monthlyCustomersProjected * 10) / 10,
-      monthlyRevenueOpportunity:  Math.round(monthlyRevenueOpportunity),
-      paybackMonths:              Math.round(paybackMonths * 10) / 10,
-    }
-    setCalcMetrics(null)
-    setCalcStep(0)
-    setCalcPhase('running')
-  }
-
-  const inputStyle: React.CSSProperties = {
-    width: '100%', padding: '13px 14px',
-    borderRadius: 6, border: `1.5px solid ${DarkBorder}`,
-    fontFamily: fontB, fontSize: 14, color: '#fff', outline: 'none',
-    background: 'rgba(255,255,255,0.07)',
-  }
-
   return (
-    <>
-      <style>{`
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 clamp(20px,5vw,56px); }
-        * { box-sizing: border-box; }
-        @media (prefers-reduced-motion: reduce) {
-          *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-        }
-        .ticker-track { display: flex; gap: 12px; animation: ticker 30s linear infinite; }
-        @keyframes ticker { 0% { transform: translateX(0) } 100% { transform: translateX(-50%) } }
-        .nav-link:hover { color: ${Text} !important; }
-        .btn-primary:hover { background: #c82c08 !important; }
-        .btn-dark:hover { background: #2c1e0f !important; }
-        .btn-ghost:hover { background: rgba(201,192,177,0.18) !important; }
-        .btn-ghost-dark:hover { background: rgba(255,255,255,0.08) !important; }
-        /* Mobile responsive fixes */
-        @media (max-width: 767px) {
-          .testimonial-left { border-right: none !important; }
-          .proof-chart-col { border-right: none !important; border-bottom: 1.5px solid rgba(255,255,255,0.12); }
-        }
-        @media (max-width: 639px) {
-          /* Testimonial: 4-col aggregate stats → 2-col */
-          .testimonial-stats { grid-template-columns: 1fr 1fr !important; }
-          .testimonial-stats > div:nth-child(even) { border-right: none !important; }
+    <div className="hp">
+      <style dangerouslySetInnerHTML={{ __html: css }} />
+      <LandingTracker />
+      <HomeNav />
 
-          /* DiagnosticAnimation: compact the step nav */
-          .diag-step-nav > button { padding: 12px 14px !important; }
-          .diag-step-sub { display: none !important; }
-
-          /* Sticky bar: wrap text above button row */
-          .sticky-bar { flex-wrap: wrap !important; gap: 8px !important; padding: 10px 16px 10px !important; }
-          .sticky-bar > p { width: 100% !important; flex: none !important; font-size: 12px !important; margin-bottom: 0 !important; }
-
-          /* Proof tiles: 2-col grid on mobile */
-          .proof-tiles { display: grid !important; grid-template-columns: 1fr 1fr !important; }
-
-          /* Media buyer section: stack columns on mobile */
-          .buyer-section-grid { border: 1.5px solid rgba(255,255,255,0.1); }
-          .buyer-roster { border-right: none !important; border-bottom: 1.5px solid rgba(255,255,255,0.12) !important; }
-
-          /* DiagnosticAnimation: stack nav above stage on mobile */
-          .diag-body { margin-bottom: 0; }
-          .diag-step-nav { margin-bottom: 16px; }
-        }
-      `}</style>
-
-      {/* ── NAV ─────────────────────────────────────────────────────────── */}
-      <nav style={{ position: 'sticky', top: 0, zIndex: 50, background: Warm, borderBottom: `1.5px solid ${Border}`, padding: '0 clamp(20px,5vw,56px)' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 60 }}>
-          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 9, textDecoration: 'none' }}>
-            <div style={{ width: 26, height: 26, borderRadius: 6, background: Orange, flexShrink: 0 }} />
-            <span style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: Text }}>Ideal ICP</span>
-          </Link>
-          <div className="hidden md:flex" style={{ gap: 28 }}>
-            {[['How It Works', '#how-it-works'], ['Results', '#results'], ['Pricing', '/pricing'], ['FAQ', '#faq']].map(([label, href]) => (
-              href.startsWith('/') ? (
-                <Link key={href} href={href} className="nav-link" style={{ fontFamily: fontB, fontSize: 14, color: Muted, textDecoration: 'none', fontWeight: 500, transition: 'color 0.15s' }}>{label}</Link>
-              ) : (
-                <a key={href} href={href} className="nav-link" style={{ fontFamily: fontB, fontSize: 14, color: Muted, textDecoration: 'none', fontWeight: 500, transition: 'color 0.15s' }}>{label}</a>
-              )
-            ))}
-          </div>
-          <div className="hidden md:flex" style={{ gap: 10, alignItems: 'center' }}>
-            {isLoggedIn ? (
-              <Link href="/dashboard" className="btn-primary" style={{ ...btnPrimary, fontSize: 14, padding: '9px 18px' }}>Dashboard</Link>
-            ) : (
-              <>
-                <Link href="/auth?tab=login" style={{ fontFamily: fontB, fontSize: 14, color: Muted, textDecoration: 'none', fontWeight: 500, padding: '8px 14px' }}>Log in</Link>
-                <Link href="/questionnaire" className="btn-primary" style={{ ...btnPrimary, fontSize: 14, padding: '9px 18px' }}>Get free diagnosis</Link>
-              </>
-            )}
-          </div>
-          <button className="md:hidden" onClick={() => setMobileOpen(o => !o)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
-            {mobileOpen ? <X size={22} color={Text} /> : <Menu size={22} color={Text} />}
-          </button>
-        </div>
-      </nav>
-
-      {mobileOpen && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 49, background: Warm, display: 'flex', flexDirection: 'column', padding: 'clamp(64px,12vh,80px) clamp(20px,5vw,32px) 40px' }}>
-          {[['How It Works', '#how-it-works'], ['Results', '#results'], ['Pricing', '/pricing'], ['FAQ', '#faq']].map(([label, href]) => (
-            href.startsWith('/') ? (
-              <Link key={href} href={href} onClick={() => setMobileOpen(false)}
-                style={{ fontFamily: font, fontSize: 22, color: Text, textDecoration: 'none', fontWeight: 700, padding: '18px 0', borderBottom: `1.5px solid ${Border}` }}>{label}</Link>
-            ) : (
-              <a key={href} href={href} onClick={() => setMobileOpen(false)}
-                style={{ fontFamily: font, fontSize: 22, color: Text, textDecoration: 'none', fontWeight: 700, padding: '18px 0', borderBottom: `1.5px solid ${Border}` }}>{label}</a>
-            )
-          ))}
-          <div style={{ marginTop: 32, display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {isLoggedIn ? (
-              <Link href="/dashboard" onClick={() => setMobileOpen(false)} style={{ ...btnPrimary, justifyContent: 'center', fontSize: 17 }}>Go to Dashboard</Link>
-            ) : (
-              <>
-                <Link href="/questionnaire" onClick={() => setMobileOpen(false)} style={{ ...btnPrimary, justifyContent: 'center', fontSize: 17 }}>Get free diagnosis</Link>
-                <Link href="/auth?tab=login" onClick={() => setMobileOpen(false)} style={{ fontFamily: fontB, fontSize: 15, fontWeight: 500, color: Muted, textDecoration: 'none', textAlign: 'center', padding: '12px 0' }}>Log in</Link>
-              </>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* ── HERO ────────────────────────────────────────────────────────── */}
-      <section style={{ background: Warm, borderBottom: `1.5px solid ${Border}` }}>
-        {/* Headline + CTA — centred */}
-        <div style={{ maxWidth: 760, margin: '0 auto', padding: 'clamp(56px,9vw,112px) clamp(20px,5vw,40px) clamp(40px,6vw,72px)', textAlign: 'center' }}>
-          <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 20px' }}>For Kenyan businesses running ads to get leads</p>
-          <h1 style={{ fontFamily: fontSerif, fontSize: 'clamp(36px,5.5vw,68px)', fontWeight: 700, color: Text, lineHeight: 1.06, margin: '0 0 24px', letterSpacing: '-0.03em' }}>
-            Getting leads that{' '}
-            <span style={{ color: Orange }}>never buy?</span>
-            {' '}Find out where your ad budget is leaking.
-          </h1>
-          <p style={{ fontFamily: fontB, fontSize: 'clamp(15px,1.8vw,18px)', color: Muted, lineHeight: 1.7, margin: '0 auto 36px', maxWidth: 560 }}>
-            Answer 10 questions about your ads and sales. In about 3 minutes you get a scored report on why your leads aren&apos;t turning into customers, what it&apos;s costing you in KES, and the first fixes to make. Reviewed by a Nairobi media buyer. Free, and no ad account access needed.
-          </p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center', marginBottom: 20 }}>
-            <Link href="/questionnaire" className="btn-primary" style={btnPrimary}>
-              Get my free diagnosis <ArrowRight size={16} />
-            </Link>
-            <a href="#how-it-works" className="btn-ghost" style={btnGhost}>See how it works</a>
-          </div>
-          <p style={{ fontFamily: fontB, fontSize: 13, color: Muted, margin: 0 }}>
-            {showLiveStats ? `${diagnosisCount.toLocaleString()} diagnoses run so far. ` : ''}Built for real estate, financial services, education and professional services. No card needed.
-          </p>
-
-          {/* ── CSV Hook ── */}
-          <div style={{ marginTop: 36 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
-              <div style={{ flex: 1, height: 1, background: Border }} />
-              <span style={{ fontFamily: fontB, fontSize: 12, color: Muted, whiteSpace: 'nowrap' }}>or skip the questionnaire</span>
-              <div style={{ flex: 1, height: 1, background: Border }} />
-            </div>
-            <input
-              ref={csvFileRef}
-              type="file"
-              accept=".csv"
-              style={{ display: 'none' }}
-              onChange={e => { const f = e.target.files?.[0]; if (f) handleCsvFile(f) }}
-            />
-            <div
-              onDragOver={e => { e.preventDefault(); setCsvDragOver(true) }}
-              onDragLeave={() => setCsvDragOver(false)}
-              onDrop={e => { e.preventDefault(); setCsvDragOver(false); const f = e.dataTransfer.files?.[0]; if (f) handleCsvFile(f) }}
-              onClick={() => csvFileRef.current?.click()}
-              style={{
-                border: `2px dashed ${csvDragOver ? Orange : Border}`,
-                borderRadius: 8,
-                padding: 'clamp(20px,3vw,28px) clamp(16px,4vw,32px)',
-                cursor: 'pointer',
-                background: csvDragOver ? 'rgba(232,51,10,0.04)' : 'transparent',
-                transition: 'border-color 0.15s, background 0.15s',
-                display: 'flex',
-                flexDirection: 'column' as const,
-                alignItems: 'center',
-                gap: 10,
-              }}
-            >
-              <div style={{ width: 44, height: 44, borderRadius: 10, border: `1.5px solid ${Border}`, background: 'rgba(201,192,177,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <FileText size={20} color={Muted} strokeWidth={1.5} />
-              </div>
-              {csvFileName ? (
-                <p style={{ fontFamily: fontB, fontSize: 14, color: Orange, fontWeight: 700, margin: 0 }}>
-                  Redirecting you to sign in…
-                </p>
-              ) : (
-                <>
-                  <p style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: Text, margin: 0 }}>
-                    Drop your Google Ads or Meta CSV here
-                  </p>
-                  <p style={{ fontFamily: fontB, fontSize: 13, color: Muted, margin: 0 }}>
-                    or click to browse · we&apos;ll score your campaigns after you sign in
-                  </p>
-                </>
-              )}
-            </div>
-            <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, marginTop: 10, textAlign: 'center' }}>
-              No questionnaire needed · works with any ad platform export
-            </p>
-          </div>
-
-        </div>
-        {/* Stats bar — full width, single instance */}
-        <div style={{ borderTop: `1.5px solid ${Border}`, display: 'flex' }}>
-          {[
-            { stat: '5 min',    label: 'To complete' },
-            { stat: 'Instant',  label: 'Results' },
-            { stat: '0',        label: 'Ad access needed' },
-          ].map(({ stat, label }, i) => (
-            <div key={label} style={{ flex: 1, padding: 'clamp(16px,3vw,28px) clamp(12px,3vw,24px)', borderRight: i < 2 ? `1.5px solid ${Border}` : 'none', textAlign: 'center' }}>
-              <p style={{ fontFamily: fontSerif, fontSize: 'clamp(20px,2.5vw,28px)', fontWeight: 700, color: Text, margin: '0 0 4px' }}>{stat}</p>
-              <p style={{ fontFamily: fontB, fontSize: 'clamp(11px,1.2vw,13px)', color: Muted, margin: 0 }}>{label}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <DiagnosticAnimation />
-
-      {/* ── PLATFORM DIAGRAM ───────────────────────────────────────────── */}
-      <section style={{ background: Warm, borderBottom: `1.5px solid ${Border}` }}>
-        <style>{`
-          @keyframes spin { to { transform: rotate(360deg); } }
-          @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-          @keyframes stepIn { from { opacity: 0; transform: translateX(-6px); } to { opacity: 1; transform: translateX(0); } }
-          @media (prefers-reduced-motion: reduce) { .calc-spinner { animation: none !important; } .calc-results { animation: none !important; } .calc-step { animation: none !important; } }
-          @keyframes scanDot {
-            0%   { top: 0%;   opacity: 0; }
-            8%   { opacity: 1; }
-            92%  { opacity: 1; }
-            100% { top: 100%; opacity: 0; }
-          }
-          @keyframes pulseRing {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(232,51,10,0.35); }
-            50%       { box-shadow: 0 0 0 9px rgba(232,51,10,0); }
-          }
-          @keyframes marqueeLeft  { from { transform: translateX(0); }    to { transform: translateX(-50%); } }
-          @keyframes marqueeRight { from { transform: translateX(-50%); } to { transform: translateX(0); } }
-          @media (prefers-reduced-motion: reduce) {
-            .plat-scan-dot  { animation: none !important; }
-            .plat-pulse     { animation: none !important; }
-            .pill-row-track { animation: none !important; }
-          }
-        `}</style>
-        <div className="container" style={{ paddingTop: 'clamp(56px,8vw,96px)', paddingBottom: 'clamp(56px,8vw,96px)' }}>
-          <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 16px', textAlign: 'center' }}>How the platform works</p>
-          <h2 style={{ fontFamily: fontSerif, fontSize: 'clamp(28px,4vw,52px)', fontWeight: 700, color: Dark, textAlign: 'center', margin: '0 0 56px', lineHeight: 1.1, maxWidth: 640, marginLeft: 'auto', marginRight: 'auto' }}>
-            10 questions. A clear answer on <span style={{ color: Orange }}>why your leads don&apos;t buy.</span>
-          </h2>
-
-          {/* 6-column analysis grid */}
-          <div style={{ border: `1.5px solid ${Border}`, borderRadius: 0, gridTemplateColumns: 'repeat(6, 1fr)', maxWidth: 1100, margin: '0 auto', overflow: 'hidden' }}
-               className="hidden md:grid">
-            {[
-              { Icon: Target,       title: 'ICP Foundation',          sub: 'Who you are targeting and whether it is right' },
-              { Icon: Crosshair,    title: 'Ad Targeting',            sub: 'Channel and audience alignment signals' },
-              { Icon: Layout,       title: 'Landing Page',            sub: 'Copy, CTA, and conversion clarity' },
-              { Icon: BarChart2,    title: 'Regional Benchmarks',     sub: 'How your metrics compare locally' },
-              { Icon: TrendingDown, title: 'CAC Analysis',            sub: 'Cost per customer relative to LTV' },
-              { Icon: Eye,          title: 'Competitive Intel',       sub: 'Market positioning and gap identification' },
-            ].map(({ Icon, title, sub }, i) => (
-              <div key={title} style={{ padding: '28px 18px 28px', borderLeft: i > 0 ? `1.5px solid ${Border}` : 'none', display: 'flex', flexDirection: 'column', gap: 14 }}>
-                <div style={{ width: 36, height: 36, border: `1.5px solid ${Border}`, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Icon size={17} color={Dark} strokeWidth={1.5} />
-                </div>
-                <div>
-                  <p style={{ fontFamily: font, fontSize: 13, fontWeight: 700, color: Dark, margin: '0 0 5px', lineHeight: 1.3 }}>{title}</p>
-                  <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, margin: 0, lineHeight: 1.55 }}>{sub}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Mobile: 2-col grid */}
-          <div className="grid md:hidden" style={{ border: `1.5px solid ${Border}`, borderRadius: 0, gridTemplateColumns: '1fr 1fr', overflow: 'hidden' }}>
-            {[
-              { Icon: Target,       title: 'ICP Foundation' },
-              { Icon: Crosshair,    title: 'Ad Targeting' },
-              { Icon: Layout,       title: 'Landing Page' },
-              { Icon: BarChart2,    title: 'Benchmarks' },
-              { Icon: TrendingDown, title: 'CAC Analysis' },
-              { Icon: Eye,          title: 'Competitive Intel' },
-            ].map(({ Icon, title }, i) => (
-              <div key={title} style={{ padding: '20px 16px', borderLeft: i % 2 === 1 ? `1.5px solid ${Border}` : 'none', borderTop: i >= 2 ? `1.5px solid ${Border}` : 'none', display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ width: 32, height: 32, border: `1.5px solid ${Border}`, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Icon size={15} color={Dark} strokeWidth={1.5} />
-                </div>
-                <p style={{ fontFamily: font, fontSize: 12, fontWeight: 700, color: Dark, margin: 0 }}>{title}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Animated connector */}
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 72, position: 'relative', maxWidth: 1100, margin: '0 auto' }}>
-            <div style={{ position: 'absolute', top: 0, bottom: 0, left: '50%', width: 1, background: Border, transform: 'translateX(-50%)' }}>
-              <div className="plat-scan-dot" style={{ position: 'absolute', left: -3, width: 7, height: 7, borderRadius: '50%', background: Orange, animation: 'scanDot 1.8s ease-in-out infinite' }} />
-            </div>
-            <div className="plat-pulse" style={{ position: 'relative', zIndex: 2, width: 34, height: 34, borderRadius: '50%', background: Dark, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'pulseRing 1.8s ease-in-out infinite' }}>
-              <Plus size={14} color="#fff" strokeWidth={2.5} />
-            </div>
-          </div>
-
-          {/* Output pills panel, particle canvas + three ticker rows */}
-          {(() => {
-            const pillStyle = (bg = 'rgba(255,255,255,0.9)'): React.CSSProperties => ({
-              fontFamily: fontB, fontSize: 13, color: Dark, fontWeight: 600,
-              border: `1.5px solid ${Border}`, borderRadius: 6, padding: '9px 16px',
-              background: bg, backdropFilter: 'blur(4px)',
-              display: 'inline-flex', alignItems: 'center', gap: 8, flexShrink: 0,
-              boxShadow: '0 2px 6px rgba(201,192,177,0.25)',
-            })
-            const rows: string[][] = [
-              ['ICP Health Score', 'Critical Findings', 'CAC Before / After', 'LTV:CAC Ratio', 'Quick Wins', 'Weekly Intelligence', 'Executive Summary', 'Improvement Roadmap', 'Budget Efficiency', 'Close Rate Uplift'],
-              ['Audience Gaps', 'Landing Page Score', 'Funnel Leak Analysis', 'Benchmark Comparison', 'Lead Quality Score', 'Competitor Positioning', 'Ad Copy Audit', 'CTA Effectiveness', 'Targeting Fit Score', 'Regional Insights'],
-              ['Monthly Waste Estimate', 'Revenue Opportunity', 'ICP Segment Map', 'Growth Action Plan', 'Conversion Diagnosis', 'Spend Efficiency', 'Market Positioning', 'Buyer Persona Gaps', 'Sales Alignment Score', 'Channel Breakdown'],
-            ]
-            const speeds = ['75s', '90s', '65s']
-            const dirs   = ['marqueeLeft', 'marqueeRight', 'marqueeLeft']
-            return (
-              <div style={{ border: `1.5px solid ${Border}`, borderRadius: 0, maxWidth: 1100, margin: '0 auto', position: 'relative', overflow: 'hidden' }}>
-                <canvas ref={outputCanvasRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} />
-                <div style={{ position: 'relative', zIndex: 1, padding: '28px 0 32px' }}>
-                  <p style={{ fontFamily: fontB, fontSize: 11, color: Orange, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 24px', paddingLeft: 28 }}>Your outputs</p>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    {rows.map((row, ri) => (
-                      <div key={ri} style={{ overflow: 'hidden', width: '100%' }}>
-                        <div className="pill-row-track" style={{ display: 'flex', gap: 10, width: 'max-content', animation: `${dirs[ri]} ${speeds[ri]} linear infinite` }}>
-                          {[...row, ...row].map((pill, i) => (
-                            <span key={`${pill}-${i}`} className="pill-item" style={pillStyle()}>
-                              <Check size={12} color={Orange} strokeWidth={2.5} />
-                              {pill}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )
-          })()}
-        </div>
-      </section>
-
-      {/* ── 4-COLUMN TRUST GRID ────────────────────────────────────────── */}
-      <section style={{ background: Warm, borderBottom: `1.5px solid ${Border}` }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', borderLeft: `1.5px solid ${Border}` }}>
-          {[
-            { Icon: Shield, title: 'No ad account access', body: 'No Google OAuth. No Meta permissions. Zero.' },
-            { Icon: Globe,  title: 'Kenya-first, expanding',  body: 'Built for Kenya. Tanzania, Uganda, Nigeria, South Africa and more coming soon.' },
-            { Icon: Users,  title: 'A real media buyer, on call', body: 'Book a free 20-minute call with Eugene to go through your report and pick your first fixes.' },
-            { Icon: Lock,   title: 'Your data is private',  body: 'Stored securely. Never shared. Never sold.' },
-          ].map(({ Icon, title, body }) => (
-            <div key={title} style={{ padding: 'clamp(24px,3vw,36px)', borderRight: `1.5px solid ${Border}`, borderBottom: `1.5px solid ${Border}` }}>
-              <Icon size={20} color={Orange} style={{ marginBottom: 14 }} />
-              <h3 style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: Text, margin: '0 0 8px' }}>{title}</h3>
-              <p style={{ fontFamily: fontB, fontSize: 14, color: Muted, lineHeight: 1.6, margin: 0 }}>{body}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── PROOF OF CONCEPT ─────────────────────────────────────────────── */}
-      <section style={{ background: Dark, borderBottom: `1.5px solid ${DarkBorder}` }}>
-        <style>{`
-          @keyframes livePulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50%       { opacity: 0.4; transform: scale(0.85); }
-          }
-          @keyframes liveRing {
-            0%   { transform: scale(1);   opacity: 0.6; }
-            100% { transform: scale(2.2); opacity: 0; }
-          }
-          @media (prefers-reduced-motion: reduce) {
-            .live-dot, .live-ring { animation: none !important; }
-          }
-        `}</style>
-        <div className="container" style={{ paddingTop: 'clamp(56px,8vw,96px)', paddingBottom: 0 }}>
-
-          {/* Header row */}
-          <div style={{ borderBottom: `1.5px solid ${DarkBorder}`, paddingBottom: 'clamp(40px,6vw,64px)' }}>
-            <p style={{ fontFamily: fontB, fontSize: 13, color: DarkMuted, fontWeight: 400, margin: '0 0 28px' }}>
-              No guesswork here. <span style={{ color: Orange }}>Just real data.</span>
-            </p>
-
-            {showLiveStats && wasteKes > 0 && (
-              <>
-            {/* Giant counter */}
-            <span ref={diagCountRef} style={{ fontFamily: fontSerif, fontSize: 'clamp(48px,10vw,112px)', fontWeight: 700, color: '#fff', lineHeight: 1, display: 'block', marginBottom: 12, letterSpacing: '-0.02em' }}>{'KES ' + wasteKes.toLocaleString()}</span>
-            <p style={{ fontFamily: fontB, fontSize: 15, color: Orange, fontWeight: 500, margin: '0 0 8px' }}>
-              in estimated monthly ad spend waste identified so far
-            </p>
-            <p style={{ fontFamily: fontB, fontSize: 13, color: DarkMuted, margin: 0 }}>
-              Across {diagnosisCount.toLocaleString()} B2B diagnoses completed on the platform
-            </p>
-              </>
-            )}
-          </div>
-
-          {/* Chart + description row */}
-          <div style={{ borderBottom: `1.5px solid ${DarkBorder}` }}>
-
-            {/* Description */}
-            <div style={{ padding: 'clamp(28px,4vw,56px)', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 24 }}>
-              <p style={{ fontFamily: fontSerif, fontSize: 'clamp(18px,2.5vw,26px)', color: '#fff', lineHeight: 1.45, margin: 0, fontWeight: 600 }}>
-                Ideal ICP is where B2B marketers stop guessing and start knowing. Real answers from your numbers, benchmarked against your market.
-              </p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'clamp(16px,3vw,32px)' }}>
-                {[['3 layers', 'ICP fit, pipeline and sales conversion'], ['5 min', 'to a complete ICP health score']].map(([val, label]) => (
-                  <div key={val}>
-                    <p style={{ fontFamily: fontSerif, fontSize: 28, fontWeight: 700, color: Orange, margin: '0 0 4px' }}>{val}</p>
-                    <p style={{ fontFamily: fontB, fontSize: 12, color: DarkMuted, margin: 0, lineHeight: 1.5 }}>{label}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* 4 tiles */}
-          <div style={{ gridTemplateColumns: 'repeat(2, 1fr)', borderLeft: `1.5px solid ${DarkBorder}` }} className="proof-tiles block md:grid">
-            {[
-              { Icon: Zap,       title: '10 questions, about 3 minutes', body: 'No ad account access and no agency. Just what you sell, what you spend and what comes back.' },
-              { Icon: BarChart2, title: 'A ranked fix list, not a 40-page report', body: 'Every finding names the platform, exactly where to change it, the expected impact and the effort, so you know what to do first.' },
-              { Icon: Target,    title: 'Benchmarked against your market', body: 'Cost and budget benchmarks calibrated to your region, from Nairobi and Lagos to London and New York.' },
-              { Icon: TrendingDown, title: 'Your real CAC and LTV:CAC, worked out', body: 'Calculated from your budget, lead volume, close rate and deal size, and checked against the 3:1 B2B benchmark.' },
-            ].map(({ Icon, title, body }, i) => (
-              <div key={i} style={{ padding: 'clamp(24px,3vw,36px)', borderRight: `1.5px solid ${DarkBorder}`, borderTop: `1.5px solid ${DarkBorder}`, borderBottom: `1.5px solid ${DarkBorder}` }}>
-                <div style={{ width: 32, height: 32, borderRadius: 6, border: `1.5px solid ${DarkBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
-                  <Icon size={16} color={Orange} strokeWidth={1.5} />
-                </div>
-                <h3 style={{ fontFamily: font, fontSize: 'clamp(14px,1.5vw,16px)', fontWeight: 700, color: '#fff', margin: '0 0 10px', lineHeight: 1.3 }}>{title}</h3>
-                <p style={{ fontFamily: fontB, fontSize: 13, color: DarkMuted, lineHeight: 1.65, margin: 0 }}>{body}</p>
-              </div>
-            ))}
-          </div>
-
-        </div>
-      </section>
-
-      {/* ── USE CASE TICKER ─────────────────────────────────────────────── */}
-      <div style={{ background: Warm, borderBottom: `1.5px solid ${Border}`, overflow: 'hidden', padding: '14px 0' }}>
-        <div className="ticker-track">
-          {[...USE_CASES, ...USE_CASES].map((item, i) => (
-            <span key={i} style={{ fontFamily: fontB, fontSize: 13, color: Muted, whiteSpace: 'nowrap', padding: '4px 16px', border: `1.5px solid ${Border}`, borderRadius: 4 }}>
-              {item}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* ── HOW IT WORKS ────────────────────────────────────────────────── */}
-      <section style={{ background: Warm, borderBottom: `1.5px solid ${Border}` }}>
-        <div className="container" style={{ paddingTop: 'clamp(56px,8vw,96px)', paddingBottom: 'clamp(56px,8vw,96px)' }}>
-          <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 14px' }}>How It Works</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, marginBottom: 48 }}>
-            <h2 style={{ fontFamily: fontSerif, fontSize: 'clamp(28px,4.5vw,52px)', color: Text, fontWeight: 700, margin: 0, lineHeight: 1.08 }}>
-              Three steps to clarity.
-            </h2>
-            <p style={{ fontFamily: fontB, fontSize: 14, color: Muted, margin: 0, maxWidth: 360, lineHeight: 1.65 }}>
-              No ad account access. No agency required. Just answers, then a ranked action plan.
-            </p>
-          </div>
-
-          {/* 3-card grid */}
-          <div style={{ border: `1.5px solid ${Border}`, borderRadius: 0, gridTemplateColumns: 'repeat(3, 1fr)', overflow: 'hidden', marginBottom: 0 }}
-               className="hidden md:grid">
-            {[
-              { num: '01', Icon: FileText, title: 'Answer 10 questions', body: 'Tell us what you sell, what you spend on ads and what comes back. No ad account access needed.', chip: '3 minutes', chipBg: 'rgba(232,51,10,0.1)' },
-              { num: '02', Icon: Zap,      title: 'Get your report',      body: 'Your ICP health score, monthly waste estimate, CAC analysis, and top findings ranked by revenue impact.', chip: 'Instant',   chipBg: 'rgba(232,51,10,0.1)' },
-              { num: '03', Icon: ArrowRight, title: 'Talk it through', body: 'Book a free 20-minute call with Eugene to go through your report and decide what to fix first.', chip: 'Free call', chipBg: 'rgba(232,51,10,0.1)' },
-            ].map(({ num, Icon, title, body, chip, chipBg }, i) => (
-              <div key={i} style={{ borderLeft: i > 0 ? `1.5px solid ${Border}` : 'none', padding: '36px 28px 36px', display: 'flex', flexDirection: 'column', gap: 0, position: 'relative', overflow: 'hidden' }}>
-                {/* Ghost number watermark */}
-                <span style={{ position: 'absolute', top: 12, right: 20, fontFamily: fontSerif, fontSize: 72, fontWeight: 700, color: Orange, opacity: 0.07, lineHeight: 1, userSelect: 'none', pointerEvents: 'none' }}>{num}</span>
-                {/* Icon */}
-                <div style={{ width: 40, height: 40, borderRadius: 0, border: `1.5px solid ${Border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24, flexShrink: 0 }}>
-                  <Icon size={18} color={Dark} strokeWidth={1.5} />
-                </div>
-                {/* Step number label */}
-                <p style={{ fontFamily: fontB, fontSize: 11, color: Orange, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 8px' }}>Step {num}</p>
-                <h3 style={{ fontFamily: font, fontSize: 'clamp(16px,2vw,20px)', fontWeight: 700, color: Text, margin: '0 0 12px', lineHeight: 1.25 }}>{title}</h3>
-                <p style={{ fontFamily: fontB, fontSize: 14, color: Muted, lineHeight: 1.65, margin: '0 0 20px', flex: 1 }}>{body}</p>
-                <span style={{ alignSelf: 'flex-start', background: chipBg, color: Orange, fontFamily: fontB, fontSize: 12, fontWeight: 700, padding: '4px 11px', borderRadius: 4 }}>{chip}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Mobile: stacked with border separator */}
-          <div className="md:hidden" style={{ border: `1.5px solid ${Border}`, borderRadius: 0, overflow: 'hidden' }}>
-            {[
-              { num: '01', Icon: FileText,  title: 'Answer 10 questions', body: 'No ad account needed. About 3 minutes.', chip: '3 minutes' },
-              { num: '02', Icon: Zap,       title: 'Get your report',      body: 'Health score, CAC analysis, and ranked findings instantly.', chip: 'Instant' },
-              { num: '03', Icon: ArrowRight, title: 'Talk it through',  body: 'Free 20-minute call with Eugene to plan your fixes.', chip: 'Free call' },
-            ].map(({ num, Icon, title, body, chip }, i) => (
-              <div key={i} style={{ borderTop: i > 0 ? `1.5px solid ${Border}` : 'none', padding: '24px 20px', display: 'flex', gap: 16, alignItems: 'flex-start' }}>
-                <div style={{ width: 36, height: 36, borderRadius: 7, border: `1.5px solid ${Border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Icon size={16} color={Dark} strokeWidth={1.5} />
-                </div>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-                    <span style={{ fontFamily: fontB, fontSize: 10, color: Orange, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Step {num}</span>
-                    <span style={{ background: 'rgba(232,51,10,0.1)', color: Orange, fontFamily: fontB, fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 4 }}>{chip}</span>
-                  </div>
-                  <h3 style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: Text, margin: '0 0 6px' }}>{title}</h3>
-                  <p style={{ fontFamily: fontB, fontSize: 13, color: Muted, lineHeight: 1.6, margin: 0 }}>{body}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Free report includes bar */}
-          <div style={{ borderTop: `1.5px solid ${Border}`, marginTop: 48, paddingTop: 40, display: 'flex', flexWrap: 'wrap', gap: 28, alignItems: 'center', justifyContent: 'space-between' }}>
+      <main>
+        {/* Pain */}
+        <section className="hp-hero">
+          <div className="hp-wrap hp-hero-grid">
             <div>
-              <p style={{ fontFamily: fontB, fontSize: 11, color: Muted, fontWeight: 700, margin: '0 0 14px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Your free report includes</p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 24px' }}>
-                {['ICP health score (0-100)', 'Monthly waste estimate', 'Top 3 findings with fixes', 'Quick wins for this week', 'CAC and LTV:CAC projection', 'Free 20-minute call with a media buyer'].map((item, idx) => (
-                  <div key={idx} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                    <Check size={13} color={Orange} />
-                    <span style={{ fontFamily: fontB, fontSize: 14, color: Text }}>{item}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <Link href="/questionnaire" className="btn-primary" style={btnPrimary}>
-              Get My Free ICP Report <ArrowRight size={16} />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ── MEDIA BUYER REVIEW ─────────────────────────────────────────── */}
-      <section style={{ background: Dark, borderBottom: `1.5px solid ${DarkBorder}` }}>
-        <div className="container" style={{ paddingTop: 'clamp(56px,8vw,96px)', paddingBottom: 'clamp(56px,8vw,96px)' }}>
-
-          {/* Header */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, marginBottom: 48 }}>
-            <div>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 16, background: 'rgba(34,197,94,0.09)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 100, padding: '5px 14px 5px 10px' }}>
-                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', flexShrink: 0, display: 'inline-block' }} />
-                <span style={{ fontFamily: fontB, fontSize: 12, color: '#22c55e', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.09em' }}>A real buyer. A real review.</span>
-              </div>
-              <h2 style={{ fontFamily: fontSerif, fontSize: 'clamp(28px,4.5vw,52px)', color: '#fff', fontWeight: 700, margin: 0, lineHeight: 1.08 }}>
-                Your score doesn&apos;t sit in a database.<br />
-                <span style={{ color: Orange }}>A buyer reads it.</span>
-              </h2>
-            </div>
-            <p style={{ fontFamily: fontB, fontSize: 14, color: DarkMuted, margin: 0, maxWidth: 340, lineHeight: 1.7 }}>
-              After your report, book a free 20-minute call with Eugene, a practising media buyer in Nairobi, to go through it and decide what to fix first. Free on every plan.
-            </p>
-          </div>
-
-          {/* 2-col: buyers left, message preview right */}
-          <div style={{ gridTemplateColumns: '1fr 1fr', gap: 0, border: `1.5px solid ${DarkBorder}`, overflow: 'hidden' }} className="buyer-section-grid block md:grid">
-
-            {/* Left: buyer roster */}
-            <div className="buyer-roster" style={{ borderRight: `1.5px solid ${DarkBorder}`, display: 'flex', flexDirection: 'column' }}>
-              {[
-                { initials: 'EK', name: 'Eugene K.', role: 'Founder and B2B Media Buyer', note: 'Runs Google Ads and Meta campaigns for B2B companies, with a background in conversion creative.' },
-              ].map(({ initials, name, role, note }, i) => (
-                <div key={i} style={{ padding: 'clamp(20px,3vw,28px)', borderTop: i > 0 ? `1.5px solid ${DarkBorder}` : 'none', display: 'flex', gap: 16, alignItems: 'flex-start' }}>
-                  <div style={{ width: 44, height: 44, borderRadius: '50%', background: Orange, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <span style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: '#fff' }}>{initials}</span>
-                  </div>
-                  <div>
-                    <p style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: '#fff', margin: '0 0 2px' }}>{name}</p>
-                    <p style={{ fontFamily: fontB, fontSize: 12, color: Orange, margin: '0 0 7px', fontWeight: 600 }}>{role}</p>
-                    <p style={{ fontFamily: fontB, fontSize: 12, color: DarkMuted, margin: 0, lineHeight: 1.55 }}>{note}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Right: message preview */}
-            <div style={{ padding: 'clamp(24px,4vw,40px)', display: 'flex', flexDirection: 'column', gap: 20 }}>
-              {/* Sender row */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ width: 40, height: 40, borderRadius: '50%', background: Orange, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <span style={{ fontFamily: font, fontSize: 13, fontWeight: 700, color: '#fff' }}>EK</span>
-                </div>
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontFamily: font, fontSize: 13, fontWeight: 700, color: '#fff', margin: 0 }}>Eugene K.</p>
-                  <p style={{ fontFamily: fontB, fontSize: 11, color: DarkMuted, margin: 0 }}>Founder and B2B Media Buyer · example follow-up</p>
-                </div>
-                <div style={{ background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: 100, padding: '3px 10px', flexShrink: 0 }}>
-                  <span style={{ fontFamily: fontB, fontSize: 11, color: '#22c55e', fontWeight: 600 }}>NEW</span>
-                </div>
-              </div>
-
-              {/* Visible message */}
-              <div style={{ background: 'rgba(255,255,255,0.05)', border: `1.5px solid ${DarkBorder}`, borderRadius: 8, padding: '20px 22px' }}>
-                <p style={{ fontFamily: fontB, fontSize: 14, color: 'rgba(255,255,255,0.85)', lineHeight: 1.75, margin: 0 }}>
-                  &ldquo;I reviewed your targeting score. Your search intent mapping has a gap that is likely costing 30-40% of your monthly ad budget. I have flagged two specific channels where your ICP match drops below 40%.
-                </p>
-              </div>
-
-              {/* Blurred continuation with CTA overlay */}
-              <div style={{ position: 'relative', borderRadius: 8, overflow: 'hidden' }}>
-                <div style={{ background: 'rgba(255,255,255,0.04)', border: `1.5px solid ${DarkBorder}`, borderRadius: 8, padding: '16px 22px', filter: 'blur(5px)', userSelect: 'none', pointerEvents: 'none', marginBottom: 0 }}>
-                  <p style={{ fontFamily: fontB, fontSize: 14, color: 'rgba(255,255,255,0.6)', lineHeight: 1.75, margin: 0 }}>
-                    The fix is straightforward but needs to happen before your next campaign. I want to show you the benchmark data for your vertical and the two audience segments you are currently missing entirely...
-                  </p>
-                </div>
-                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(to bottom, transparent 0%, rgba(32,21,21,0.96) 60%)' }}>
-                  <Link href="/questionnaire" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: Orange, color: '#fff', borderRadius: 6, padding: '11px 22px', fontFamily: font, fontSize: 13, fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap' }}>
-                    Get your free score <ArrowRight size={14} />
-                  </Link>
-                </div>
-              </div>
-
-              <p style={{ fontFamily: fontB, fontSize: 12, color: DarkMuted, margin: 0, lineHeight: 1.6 }}>
-                This is what every free diagnosis gets: a real practitioner looking at your numbers, not a template.
+              <p className="hp-kicker">For Kenyan businesses that run ads to get leads</p>
+              <h1>Getting leads that never buy?</h1>
+              <p className="hp-lead">
+                Find out where your ad money is leaking. Answer 10 questions and in about 3 minutes you get a scored report: why your leads are not becoming customers, what it is costing you in shillings, and what to fix first.
               </p>
+              <Link href="/questionnaire" className="hp-btn">{CTA} <ArrowRight size={18} aria-hidden="true" /></Link>
+              <p className="hp-fine">Free. No card. No access to your ad accounts.</p>
             </div>
-          </div>
-        </div>
-      </section>
 
-      {/* ── BUSINESS OUTCOMES CALCULATOR ────────────────────────────────── */}
-      <section id="calculator" style={{ background: Dark, borderBottom: `1.5px solid ${DarkBorder}` }}>
-        <div className="container" style={{ paddingTop: 'clamp(56px,8vw,96px)', paddingBottom: 'clamp(56px,8vw,96px)' }}>
-
-          {/* Section header */}
-          <div style={{ marginBottom: 56 }}>
-            <p style={{ fontFamily: fontB, fontSize: 12, color: DarkMuted, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 14px' }}>Business Outcomes Calculator</p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', gap: 24, justifyContent: 'space-between' }}>
-              <h2 style={{ fontFamily: fontSerif, fontSize: 'clamp(28px,4vw,48px)', color: '#fff', fontWeight: 700, margin: 0, lineHeight: 1.08 }}>
-                Model your <span style={{ color: Orange }}>unit economics.</span>
-              </h2>
-              <p style={{ fontFamily: fontB, fontSize: 14, color: DarkMuted, lineHeight: 1.7, margin: 0, maxWidth: 400 }}>
-                Based on 9,000+ diagnoses: fixing ICP alignment improves lead quality by 35 percent and close rate by 30 percent on average.
-              </p>
-            </div>
-          </div>
-
-          <div style={{ gridTemplateColumns: '1fr 1fr', gap: 0, border: `1.5px solid ${DarkBorder}`, borderRadius: 0, overflow: 'hidden' }} className="block md:grid">
-            {/* Left: Inputs */}
-            <div style={{ padding: 'clamp(24px,4vw,40px)', borderRight: `1.5px solid ${DarkBorder}` }}>
-              <p style={{ fontFamily: fontB, fontSize: 11, color: DarkMuted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 20px' }}>Your current numbers</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                <div>
-                  <label style={{ fontFamily: fontB, fontSize: 12, color: DarkMuted, display: 'block', marginBottom: 7, fontWeight: 600 }}>Monthly ad budget</label>
-                  <div style={{ position: 'relative' }}>
-                    <span style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.3)', pointerEvents: 'none' }}>KES</span>
-                    <input type="number" placeholder="e.g. 150,000" value={calcBudget} onChange={e => setCalcBudget(e.target.value)} style={{ ...inputStyle, paddingLeft: 46 }} />
-                  </div>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                  <div>
-                    <label style={{ fontFamily: fontB, fontSize: 12, color: DarkMuted, display: 'block', marginBottom: 7, fontWeight: 600 }}>Monthly leads</label>
-                    <input type="number" placeholder="e.g. 80" value={calcLeads} onChange={e => setCalcLeads(e.target.value)} style={inputStyle} />
-                  </div>
-                  <div>
-                    <label style={{ fontFamily: fontB, fontSize: 12, color: DarkMuted, display: 'block', marginBottom: 7, fontWeight: 600 }}>Close rate</label>
-                    <div style={{ position: 'relative' }}>
-                      <input type="number" placeholder="e.g. 12" value={calcCloseRate} onChange={e => setCalcCloseRate(e.target.value)} style={{ ...inputStyle, paddingRight: 36 }} />
-                      <span style={{ position: 'absolute', right: 13, top: '50%', transform: 'translateY(-50%)', fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>%</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <label style={{ fontFamily: fontB, fontSize: 12, color: DarkMuted, display: 'block', marginBottom: 7, fontWeight: 600 }}>Average customer LTV</label>
-                  <div style={{ position: 'relative' }}>
-                    <span style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.3)', pointerEvents: 'none' }}>KES</span>
-                    <input type="number" placeholder="e.g. 250,000" value={calcLTV} onChange={e => setCalcLTV(e.target.value)} style={{ ...inputStyle, paddingLeft: 46 }} />
-                  </div>
-                </div>
-
-                <div>
-                  <label style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.25)', display: 'block', marginBottom: 7, fontWeight: 600 }}>Monthly churn rate <span style={{ fontWeight: 400 }}>(optional)</span></label>
-                  <div style={{ position: 'relative' }}>
-                    <input type="number" placeholder="e.g. 4" value={calcChurn} onChange={e => setCalcChurn(e.target.value)} style={{ ...inputStyle, paddingRight: 36, background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.07)' }} />
-                    <span style={{ position: 'absolute', right: 13, top: '50%', transform: 'translateY(-50%)', fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.2)' }}>%</span>
-                  </div>
-                </div>
-
-                <button onClick={handleCalc} className="btn-primary" style={{ ...btnPrimary, width: '100%', justifyContent: 'center', marginTop: 4, padding: '15px 22px', fontSize: 14 }}>
-                  Calculate My Business Outcomes <ArrowRight size={15} />
-                </button>
+            <figure className="hp-card hp-chat" style={{ margin: 0 }} aria-label="Example of an inquiry that goes quiet">
+              <div className="hp-chat-top">
+                <span className="hp-ava" aria-hidden="true">W</span>
+                <div><p style={{ font: '600 15px/1.2 var(--body)' }}>Wanjiru</p><p style={{ fontSize: 13, color: 'var(--faint)' }}>Came from your ad</p></div>
               </div>
-            </div>
-
-            {/* Right: Results */}
-            <div style={{ padding: 'clamp(24px,4vw,40px)' }}>
-
-              {/* IDLE: empty prompt */}
-              {calcPhase === 'idle' && (
-                <div style={{ height: '100%', minHeight: 280, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, opacity: 0.35 }}>
-                  <BarChart2 size={40} color="#fff" strokeWidth={1} />
-                  <p style={{ fontFamily: fontB, fontSize: 14, color: '#fff', margin: 0, textAlign: 'center', lineHeight: 1.6 }}>
-                    Fill in your numbers on the left<br />to see your projected outcomes.
-                  </p>
-                </div>
-              )}
-
-              {/* RUNNING: step-by-step animation */}
-              {calcPhase === 'running' && (
-                <div style={{ height: '100%', minHeight: 280, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 0 }}>
-                  <p style={{ fontFamily: fontB, fontSize: 11, color: DarkMuted, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 28px' }}>Running analysis</p>
-                  {[
-                    'Reading your budget and lead volume',
-                    'Computing your current CAC',
-                    'Modelling 35% lead quality improvement',
-                    'Applying 30% close rate uplift',
-                    'Projecting your LTV:CAC ratio',
-                    'Calculating monthly revenue opportunity',
-                  ].map((label, i) => {
-                    const done    = i < calcStep
-                    const active  = i === calcStep
-                    const pending = i > calcStep
-                    return (
-                      <div key={i} className="calc-step" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '11px 0', borderTop: i > 0 ? `1.5px solid ${DarkBorder}` : 'none', opacity: pending ? 0.25 : 1, animation: active || done ? `stepIn 0.25s ease both` : 'none' }}>
-                        {/* Icon: spinner / check / circle */}
-                        <div className={active ? 'calc-spinner' : ''} style={{ width: 22, height: 22, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          border: done ? 'none' : active ? `2px solid rgba(255,255,255,0.12)` : `1.5px solid ${DarkBorder}`,
-                          borderTopColor: active ? Orange : undefined,
-                          background: done ? '#22c55e' : 'transparent',
-                          animation: active ? 'spin 0.8s linear infinite' : 'none',
-                        }}>
-                          {done && <Check size={12} color="#fff" strokeWidth={3} />}
-                        </div>
-                        <span style={{ fontFamily: fontB, fontSize: 13, color: done ? '#fff' : active ? '#fff' : DarkMuted, fontWeight: active ? 600 : 400, lineHeight: 1.4 }}>{label}</span>
-                        {active && <span style={{ marginLeft: 'auto', fontFamily: fontB, fontSize: 11, color: Orange }}>Running</span>}
-                        {done   && <span style={{ marginLeft: 'auto', fontFamily: fontB, fontSize: 11, color: '#22c55e' }}>Done</span>}
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
-
-              {/* DONE: results */}
-              {calcPhase === 'done' && calcMetrics && (
-                <div className="calc-results" style={{ display: 'flex', flexDirection: 'column', gap: 0, height: '100%', animation: 'fadeUp 0.4s ease both' }}>
-                  <p style={{ fontFamily: fontB, fontSize: 11, color: DarkMuted, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 20px' }}>Your projected outcomes</p>
-
-                  {/* 4 metric cells in a 2x2 grid */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', border: `1.5px solid ${DarkBorder}`, borderRadius: 6, overflow: 'hidden', marginBottom: 12 }}>
-                    {[
-                      { label: 'CAC today',    value: `KES ${calcMetrics.cacCurrent.toLocaleString()}`,   accent: false },
-                      { label: 'CAC after fix', value: `KES ${calcMetrics.cacProjected.toLocaleString()}`, accent: true, sub: `${Math.round((1 - calcMetrics.cacProjected / calcMetrics.cacCurrent) * 100)}% lower` },
-                      { label: 'LTV:CAC now',  value: `${calcMetrics.ltvCacCurrent}:1`,                  accent: false, warn: calcMetrics.ltvCacCurrent < 3 },
-                      { label: 'LTV:CAC after', value: `${calcMetrics.ltvCacProjected}:1`,               accent: true, sub: calcMetrics.ltvCacCurrent < 3 ? 'Toward 3:1 benchmark' : 'Compounding gains' },
-                    ].map(({ label, value, accent, sub, warn }, i) => (
-                      <div key={i} style={{ padding: '18px 16px', borderLeft: i % 2 === 1 ? `1.5px solid ${DarkBorder}` : 'none', borderTop: i >= 2 ? `1.5px solid ${DarkBorder}` : 'none' }}>
-                        <p style={{ fontFamily: fontB, fontSize: 11, color: warn ? '#f59e0b' : accent ? '#22c55e' : DarkMuted, fontWeight: 700, margin: '0 0 6px', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{label}</p>
-                        <p style={{ fontFamily: fontSerif, fontSize: 20, fontWeight: 700, color: accent ? '#22c55e' : '#fff', margin: '0 0 3px' }}>{value}</p>
-                        {sub && <p style={{ fontFamily: fontB, fontSize: 11, color: DarkMuted, margin: 0 }}>{sub}</p>}
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Customers row */}
-                  <div style={{ border: `1.5px solid ${DarkBorder}`, borderRadius: 6, padding: '16px', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                    <div>
-                      <p style={{ fontFamily: fontB, fontSize: 11, color: DarkMuted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', margin: '0 0 5px' }}>New customers per month</p>
-                      <p style={{ fontFamily: fontSerif, fontSize: 20, fontWeight: 700, color: '#fff', margin: 0 }}>
-                        {calcMetrics.monthlyCustomers}
-                        <span style={{ color: '#22c55e', fontSize: 15, marginLeft: 10 }}>to {calcMetrics.monthlyCustomersProjected}</span>
-                      </p>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <p style={{ fontFamily: fontB, fontSize: 11, color: DarkMuted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', margin: '0 0 5px' }}>CAC payback</p>
-                      <p style={{ fontFamily: fontSerif, fontSize: 20, fontWeight: 700, color: '#fff', margin: 0 }}>{calcMetrics.paybackMonths} mo.</p>
-                    </div>
-                  </div>
-
-                  {/* Revenue opportunity */}
-                  <div style={{ borderRadius: 6, padding: '20px', background: Orange, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 16 }}>
-                    <div>
-                      <p style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.7)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>Monthly revenue opportunity</p>
-                      <p style={{ fontFamily: fontSerif, fontSize: 'clamp(24px,3vw,36px)', fontWeight: 700, color: '#fff', margin: '0 0 6px', lineHeight: 1 }}>KES {calcMetrics.monthlyRevenueOpportunity.toLocaleString()}</p>
-                      <p style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.75)', margin: 0, lineHeight: 1.6 }}>
-                        {Math.round(calcMetrics.monthlyRevenueOpportunity / 6500)}x ROI on the KES 6,500/mo plan.
-                      </p>
-                    </div>
-                    <Link href="/questionnaire" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#fff', color: Dark, borderRadius: 6, padding: '12px 18px', fontFamily: font, fontSize: 14, fontWeight: 700, textDecoration: 'none', alignSelf: 'flex-start' }}>
-                      Get my free diagnosis <ArrowRight size={14} />
-                    </Link>
-                  </div>
-
-                  <p style={{ fontFamily: fontB, fontSize: 11, color: 'rgba(255,255,255,0.2)', margin: '12px 0 0', textAlign: 'center' }}>
-                    35% lead efficiency gain and 30% close rate lift from observed ICP alignment improvements.
-                  </p>
-                </div>
-              )}
-            </div>
+              <p className="hp-bub hp-in">Hi, I saw your ad. How much is the 2 bedroom?</p>
+              <p className="hp-bub hp-out">Hi Wanjiru! It is KES 8.5M and there is a payment plan. When can you come for a viewing?</p>
+              <p className="hp-bub hp-in">Ok, let me get back to you.</p>
+              <p className="hp-seen">Seen<strong>No reply for 3 weeks</strong></p>
+            </figure>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* ── PRICING ─────────────────────────────────────────────────────── */}
-      <section id="pricing" style={{ background: Warm, borderBottom: `1.5px solid ${Border}` }}>
-        <div className="container" style={{ paddingTop: 'clamp(56px,8vw,88px)', paddingBottom: 'clamp(56px,8vw,88px)' }}>
-          <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 16px' }}>Simple Pricing</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between', gap: 20, marginBottom: 40 }}>
-            <h2 style={{ fontFamily: fontSerif, fontSize: 'clamp(28px,4.5vw,52px)', color: Text, fontWeight: 700, margin: 0, lineHeight: 1.08 }}>
-              Start free. <span style={{ color: Orange }}>Upgrade when ready.</span>
-            </h2>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <span style={{ fontFamily: fontB, fontSize: 14, color: !billingAnnual ? Text : Muted, fontWeight: !billingAnnual ? 700 : 400 }}>Monthly</span>
-              <button onClick={() => setBillingAnnual(b => !b)} style={{ width: 46, height: 25, borderRadius: 100, background: billingAnnual ? Dark : Border, position: 'relative', border: 'none', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0, padding: 0, display: 'block', WebkitAppearance: 'none', appearance: 'none' } as React.CSSProperties}>
-                <div style={{ width: 19, height: 19, borderRadius: '50%', background: '#fff', position: 'absolute', top: 3, left: billingAnnual ? 24 : 3, transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
-              </button>
-              <span style={{ fontFamily: fontB, fontSize: 14, color: billingAnnual ? Text : Muted, fontWeight: billingAnnual ? 700 : 400 }}>
-                Annual <span style={{ color: '#16a34a', fontWeight: 700 }}>(save 2 months)</span>
-              </span>
-            </div>
+        <section style={{ paddingTop: 0 }}>
+          <div className="hp-wrap">
+            <h2>Sound familiar?</h2>
+            <ul className="hp-list">
+              {FAMILIAR.map(t => <li key={t}><span className="hp-dot" aria-hidden="true" />{t}</li>)}
+            </ul>
           </div>
+        </section>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(215px, 1fr))', gap: 0, border: `1.5px solid ${Border}`, borderRadius: 0, overflow: 'hidden' }}>
-            {TIERS.map((tier, i) => (
-              <div key={tier.name} style={{
-                background: tier.highlight ? Dark : '#fff',
-                borderRight: i < TIERS.length - 1 ? `1px solid ${tier.highlight ? DarkBorder : Border}` : 'none',
-                padding: 'clamp(24px,3vw,36px) clamp(20px,3vw,28px)',
-                position: 'relative',
-                display: 'flex', flexDirection: 'column',
-              }}>
-                {tier.highlight && (
-                  <div style={{ position: 'absolute', top: -1, left: 0, right: 0, height: 3, background: Orange }} />
-                )}
-                <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: tier.highlight ? DarkMuted : Muted, margin: '0 0 6px' }}>{tier.name}</p>
-                <p style={{ fontFamily: fontB, fontSize: 13, color: tier.highlight ? DarkMuted : Muted, margin: '0 0 20px', lineHeight: 1.55, minHeight: 40 }}>{tier.desc}</p>
-                <p style={{ fontFamily: fontSerif, fontSize: 32, fontWeight: 700, color: tier.highlight ? '#fff' : Text, margin: '0 0 2px' }}>
-                  {tier.monthly === 'Free' ? 'Free' : (billingAnnual ? (tier as typeof tier & { annualMonthly: string }).annualMonthly + '/mo' : tier.monthly + '/mo')}
-                </p>
-                {billingAnnual && tier.monthly !== 'Free' && (
-                  <p style={{ fontFamily: fontB, fontSize: 12, color: tier.highlight ? 'rgba(255,255,255,0.4)' : Muted, margin: '0 0 4px' }}>
-                    Billed as {(tier as typeof tier & { annual: string }).annual}/year
-                  </p>
-                )}
-                <div style={{ margin: '20px 0 28px', display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
-                  {tier.bullets.map((bullet) => (
-                    <div key={bullet} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                      <Check size={14} color={Orange} style={{ flexShrink: 0, marginTop: 2 }} />
-                      <span style={{ fontFamily: fontB, fontSize: 13, color: tier.highlight ? 'rgba(255,255,255,0.85)' : Text }}>{bullet}</span>
-                    </div>
-                  ))}
-                </div>
-                <Link href={tier.href} className={tier.highlight ? 'btn-primary' : 'btn-ghost'} style={tier.highlight ? { ...btnPrimary, justifyContent: 'center', width: '100%' } : { ...btnGhost, justifyContent: 'center', width: '100%' }}>
-                  {tier.cta}
-                </Link>
-                <p style={{ fontFamily: fontB, fontSize: 12, color: tier.highlight ? DarkMuted : Muted, textAlign: 'center', marginTop: 10, marginBottom: 0 }}>{tier.monthly === 'Free' ? 'No credit card required.' : 'Cancel anytime.'}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Full comparison CTA */}
-          <div style={{ marginTop: 28, textAlign: 'center' }}>
-            <Link href="/pricing" style={{ fontFamily: fontB, fontSize: 14, color: Muted, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6, borderBottom: `1px solid ${Border}`, paddingBottom: 2, transition: 'color 0.15s' }}>
-              See full feature comparison <ArrowRight size={14} />
-            </Link>
-          </div>
-
-          {/* Payment strip */}
-          <div style={{ marginTop: 32, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-            <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: Muted }}>Secure checkout via</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
-              {[
-                { src: '/images/logos/paystack-logo_1.png',                alt: 'Paystack',    h: 20 },
-                { src: '/images/logos/Visa_Inc._logo_(2014-2021).svg.png', alt: 'Visa',        h: 18 },
-                { src: '/images/logos/MasterCard_early_1990s_logo.svg.png', alt: 'Mastercard', h: 26 },
-                { src: '/images/logos/M-PESA_LOGO-01.svg.png',             alt: 'M-Pesa',      h: 20 },
-              ].map(({ src, alt, h }) => (
-                <img key={alt} src={src} alt={alt} style={{ height: h, objectFit: 'contain', opacity: 0.55 }} />
+        {/* Cause */}
+        <section style={{ paddingTop: 0 }}>
+          <div className="hp-wrap">
+            <h2>It is rarely the budget.</h2>
+            <p className="hp-sub">When inquiries come in and sales do not, the cause is usually one of four things. The diagnosis checks each one.</p>
+            <div className="hp-grid2">
+              {CAUSES.map(c => (
+                <div key={c.title} className="hp-card hp-cause"><h3>{c.title}</h3><p>{c.body}</p></div>
               ))}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* ── FAQ ─────────────────────────────────────────────────────────── */}
-      <section id="faq" style={{ background: '#fff', borderBottom: `1.5px solid ${Border}` }}>
-        <div className="container" style={{ paddingTop: 'clamp(56px,8vw,80px)', paddingBottom: 'clamp(56px,8vw,80px)' }}>
-          <div style={{ gridTemplateColumns: '280px 1fr', gap: 'clamp(24px,6vw,80px)', alignItems: 'start' }} className="block md:grid">
-            <div style={{ marginBottom: 'clamp(28px,0vw,0px)' }} className="mb-7 md:mb-0">
-              <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 12px' }}>FAQ</p>
-              <h2 style={{ fontFamily: fontSerif, fontSize: 'clamp(24px,3vw,36px)', color: Text, fontWeight: 700, margin: '0 0 12px', lineHeight: 1.15 }}>You ask, we answer.</h2>
-              <p style={{ fontFamily: fontB, fontSize: 15, color: Muted, margin: 0 }}>Everything you need before getting started.</p>
+        {/* Solution */}
+        <section id="how" style={{ paddingTop: 0, scrollMarginTop: 80 }}>
+          <div className="hp-wrap">
+            <h2>A clear answer in about 3 minutes.</h2>
+            <p className="hp-sub">You tell me about your business and your ads. You get back a report you can act on the same day.</p>
+            <div className="hp-how">
+              <ol className="hp-steps">
+                {STEPS.map(s => <li key={s.title}><h3>{s.title}</h3><p>{s.body}</p></li>)}
+              </ol>
+
+              <div className="hp-card hp-report">
+                <span className="hp-tag">Example report for a made-up Nairobi property agency</span>
+                <div className="hp-score">
+                  <ScoreRing score={42} />
+                  <div>
+                    <p className="hp-small">Estimated leak each month</p>
+                    <p className="hp-waste">KES 38,000</p>
+                    <p className="hp-small">of a KES 120,000 ad budget</p>
+                  </div>
+                </div>
+                <div className="hp-sep" />
+                <div className="hp-find"><span className="hp-sev" style={{ background: '#dc2626' }} aria-hidden="true" />Your ads reach all of Nairobi, not people ready to buy property.</div>
+                <div className="hp-sep" />
+                <div className="hp-find"><span className="hp-sev" style={{ background: '#dc2626' }} aria-hidden="true" />The ad promises a payment plan. The page never mentions it.</div>
+                <div className="hp-sep" />
+                <div className="hp-find"><span className="hp-sev" style={{ background: '#d97706' }} aria-hidden="true" />New inquiries wait more than a day for a first reply.</div>
+                <p className="hp-fix"><strong>Fix this first: </strong>show the payment plan in the first line of the page, so the promise in the ad is the first thing a buyer sees.</p>
+              </div>
             </div>
+          </div>
+        </section>
+
+        {/* Offer: the person */}
+        <section style={{ paddingTop: 0 }}>
+          <div className="hp-wrap hp-me">
+            <div className="hp-photo" role="img" aria-label="Photo of Eugene Kwata">EK</div>
             <div>
-              {FAQS.map((faq, i) => {
-                const isOpen = openFaq === i
-                return (
-                  <div key={i} style={{ borderTop: `1.5px solid ${Border}`, overflow: 'hidden' }}>
-                    <button onClick={() => setOpenFaq(isOpen ? null : i)}
-                      style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 0', border: 'none', background: 'none', cursor: 'pointer', textAlign: 'left', gap: 16 }}>
-                      <span style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: Text, lineHeight: 1.4 }}>{faq.q}</span>
-                      <div style={{ width: 28, height: 28, borderRadius: 4, background: isOpen ? Dark : Warm, border: `1.5px solid ${Border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background 0.2s' }}>
-                        {isOpen ? <ChevronUp size={14} color="#fff" /> : <ChevronDown size={14} color={Text} />}
-                      </div>
-                    </button>
-                    <div style={{ maxHeight: isOpen ? 300 : 0, overflow: 'hidden', transition: 'max-height 0.3s ease' }}>
-                      <p style={{ fontFamily: fontB, fontSize: 14, lineHeight: 1.75, color: Muted, padding: '0 0 20px', margin: 0 }}>{faq.a}</p>
-                    </div>
-                  </div>
-                )
-              })}
-              <div style={{ borderTop: `1.5px solid ${Border}` }} />
+              <h2>A person reads your report. That person is me.</h2>
+              <p>I am Eugene Kwata, a media buyer in Nairobi. I trained as a graphic designer and spent two years making ads before I moved into buying them. Today I run Google and Meta campaigns for a living.</p>
+              <p>I built this because I kept opening ad accounts with the same problem: money going out, inquiries coming in and very few sales. The diagnosis finds where that happens. Then we talk, for 20 minutes, free, about what to fix first.</p>
+              <p style={{ marginTop: 26 }}><Link href="/questionnaire" className="hp-btn">{CTA} <ArrowRight size={18} aria-hidden="true" /></Link></p>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* ── FINAL CTA ────────────────────────────────────────────────────── */}
-      <section style={{ background: Dark, borderBottom: `1.5px solid ${DarkBorder}` }}>
-        <div className="container" style={{ paddingTop: 'clamp(72px,10vw,112px)', paddingBottom: 'clamp(72px,10vw,112px)', textAlign: 'center' }}>
-          <p style={{ fontFamily: fontB, fontSize: 12, color: DarkMuted, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 20px' }}>Get started today</p>
-          <h2 style={{ fontFamily: fontSerif, fontSize: 'clamp(28px,5vw,60px)', color: '#fff', fontWeight: 700, maxWidth: 720, margin: '0 auto 20px', lineHeight: 1.1 }}>
-            Your competitors ran ads today without knowing their <span style={{ color: Orange }}>ICP score.</span>
-          </h2>
-          <p style={{ fontFamily: fontB, fontSize: 'clamp(14px,1.6vw,16px)', color: DarkMuted, maxWidth: 400, margin: '0 auto 40px', lineHeight: 1.65 }}>
-            Every week without a diagnosis is budget you will not get back.
-          </p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center', marginBottom: 24 }}>
-            <Link href="/questionnaire" className="btn-primary" style={{ ...btnPrimary, fontSize: 'clamp(14px,1.6vw,16px)', padding: 'clamp(12px,1.5vw,16px) clamp(20px,2.5vw,32px)' }}>
-              Get My Free ICP Score <ArrowRight size={18} />
-            </Link>
-            <Link href="/auth?tab=login" className="btn-ghost-dark" style={{ ...btnGhostDark, fontSize: 'clamp(14px,1.6vw,16px)', padding: 'clamp(12px,1.5vw,16px) clamp(20px,2.5vw,32px)' }}>
-              Log in
-            </Link>
+        {/* Offer: staying */}
+        <section className="hp-dark">
+          <div className="hp-wrap">
+            <h2>If you want me to keep watching your numbers</h2>
+            <p className="hp-sub">The free diagnosis shows you what is wrong today. A plan keeps you from sliding back.</p>
+            <div className="hp-stay-grid">
+              {STAYING.map(s => <div key={s.title} className="hp-stay"><h3>{s.title}</h3><p>{s.body}</p></div>)}
+            </div>
+            <div className="hp-price">
+              <p><strong>From KES 6,500 a month.</strong> Pay with M-Pesa or card, one month at a time. Nothing renews on its own.</p>
+              <Link href="/pricing" className="hp-textlink">See the plans</Link>
+            </div>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
-            {['Free forever', 'No credit card', '5 minutes'].map((chip, i) => (
-              <span key={chip} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                {i > 0 && <span style={{ color: DarkBorder }}>·</span>}
-                <span style={{ fontFamily: fontB, fontSize: 13, color: DarkMuted }}>{chip}</span>
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
+        </section>
 
-      {/* ── FOOTER ──────────────────────────────────────────────────────── */}
-      <footer style={{ background: Dark, borderTop: `1.5px solid ${DarkBorder}`, padding: 'clamp(32px,5vw,48px) 0 clamp(24px,4vw,32px)' }}>
-        <div className="container">
-          <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 24, alignItems: 'center' }}>
-            <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 9, textDecoration: 'none' }}>
-              <div style={{ width: 24, height: 24, borderRadius: 6, background: Orange, flexShrink: 0 }} />
-              <span style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: '#fff' }}>Ideal ICP</span>
-            </Link>
-            <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'center' }}>
-              {[['About', '/about'], ['Privacy', '/privacy'], ['Terms', '/terms'], ['Contact', 'mailto:info@idealicp.com']].map(([label, href]) => (
-                <Link key={label} href={href} style={{ fontFamily: fontB, fontSize: 13, color: DarkMuted, textDecoration: 'none' }}>{label}</Link>
-              ))}
+        {/* Trigger */}
+        <section>
+          <div className="hp-wrap hp-when">
+            <div>
+              <h2>The best time is before you spend more.</h2>
+              <p className="hp-sub">Three minutes now costs less than another month of ads aimed at the wrong people.</p>
+              <p style={{ marginTop: 28 }}><Link href="/questionnaire" className="hp-btn">{CTA} <ArrowRight size={18} aria-hidden="true" /></Link></p>
+            </div>
+            <ul className="hp-card hp-check" aria-label="Good moments to run the diagnosis">
+              {WHEN.map(w => <li key={w}><span className="hp-tick" aria-hidden="true"><Check size={14} strokeWidth={3} /></span>{w}</li>)}
+            </ul>
+          </div>
+        </section>
+
+        <section id="faq" style={{ paddingTop: 0, scrollMarginTop: 80 }}>
+          <div className="hp-wrap">
+            <h2>Questions people ask first</h2>
+            <div className="hp-card hp-faq">
+              {FAQS.map(f => <details key={f.q}><summary>{f.q}</summary><p>{f.a}</p></details>)}
             </div>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, alignItems: 'center', borderTop: `1.5px solid ${DarkBorder}`, paddingTop: 20 }}>
-            <span style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.22)' }}>2026 Ideal ICP. All rights reserved.</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              {[
-                { src: '/images/logos/paystack-logo_1.png',                alt: 'Paystack',    h: 15 },
-                { src: '/images/logos/Visa_Inc._logo_(2014-2021).svg.png', alt: 'Visa',        h: 13 },
-                { src: '/images/logos/MasterCard_early_1990s_logo.svg.png', alt: 'Mastercard', h: 18 },
-                { src: '/images/logos/M-PESA_LOGO-01.svg.png',             alt: 'M-Pesa',      h: 15 },
-              ].map(({ src, alt, h }) => (
-                <img key={alt} src={src} alt={alt} style={{ height: h, objectFit: 'contain', opacity: 0.3, filter: 'brightness(10)' }} />
-              ))}
-            </div>
+        </section>
+      </main>
+
+      <footer className="hp-dark">
+        <section className="hp-end">
+          <div className="hp-wrap">
+            <h2>Find out why your leads are not buying.</h2>
+            <p className="hp-lead">10 questions, about 3 minutes, and a free call with me to go through the answer.</p>
+            <Link href="/questionnaire" className="hp-btn hp-btn-light">{CTA} <ArrowRight size={18} aria-hidden="true" /></Link>
+          </div>
+        </section>
+        <div className="hp-wrap">
+          <div className="hp-foot">
+            <span>© 2026 Ideal ICP, Nairobi</span>
+            <nav aria-label="Footer">
+              <Link href="/pricing">Pricing</Link><Link href="/about">About</Link><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><a href="mailto:info@idealicp.com">Contact</a>
+            </nav>
           </div>
         </div>
       </footer>
 
       <SocialProofToast />
-
-      {/* ── STICKY BAR ──────────────────────────────────────────────────── */}
-      {showStickyBar && !stickyDismissed && (
-        <div className="sticky-bar" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 999, background: '#fff', borderTop: `1.5px solid ${Border}`, padding: '12px clamp(16px,4vw,24px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-          <p style={{ fontFamily: fontB, fontSize: 14, color: Text, fontWeight: 600, margin: 0, flex: 1 }}>
-            Free ICP Score. 5 minutes. No card needed.
-          </p>
-          <Link href="/questionnaire" className="btn-primary" style={{ ...btnPrimary, fontSize: 13, padding: '9px 18px' }}>
-            Get Free Score
-          </Link>
-          <button onClick={() => { setStickyDismissed(true); sessionStorage.setItem('sticky_dismissed', '1') }}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-            <X size={17} color={Muted} />
-          </button>
-        </div>
-      )}
-    </>
+    </div>
   )
 }
