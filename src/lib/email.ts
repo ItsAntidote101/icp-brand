@@ -425,6 +425,52 @@ ${topFix ? `<p style="margin:28px 0 0;color:${Muted};font-size:14px;line-height:
   return { data, error }
 }
 
+// ─── Monthly note from the media buyer ───────────────────────────────────────
+
+const noteHtml = (text: string) => escapeHtml(text).replace(/\n/g, '<br>')
+
+export async function sendBuyerNoteEmail({
+  to, name, body, hasMedia, baseUrl,
+}: { to: string; name?: string; body: string; hasMedia?: boolean; baseUrl?: string }) {
+  const url = `${baseUrl ?? 'https://www.idealicp.com'}/dashboard`
+  const first = escapeHtml(name?.split(' ')[0] ?? 'there')
+  const content = `
+${heading('A note from Eugene', 34)}
+${sub(`Hi ${first}, Eugene looked at your numbers this month and wrote you this.`)}
+${securityBox(`<p style="margin:0;color:${Dark};font-size:16px;line-height:1.65;font-family:${font};">${noteHtml(body)}</p>`)}
+${hasMedia ? `<p style="margin:0 0 16px;color:${Muted};font-size:14px;font-family:${font};">He also left you a recording. It is in your dashboard.</p>` : ''}
+${cta('Open your dashboard', url)}
+<p style="margin:28px 0 0;color:${Muted};font-size:13px;line-height:1.6;font-family:${font};">Reply to this email and it goes straight to Eugene.</p>`
+
+  const { data, error } = await getResend().emails.send({
+    from: FROM, to, replyTo: FOUNDER_EMAIL,
+    subject: 'A note from Eugene on your numbers',
+    html: base(content),
+  })
+  if (error) console.error('[email] buyer note error:', JSON.stringify(error))
+  return { data, error }
+}
+
+export async function sendNoteReplyToFounder({
+  userName, userEmail, companyName, tier, message, noteBody,
+}: { userName: string; userEmail: string; companyName: string; tier: string; message: string; noteBody: string }) {
+  const who = escapeHtml(companyName || userName || userEmail)
+  const content = `
+${heading(`Reply from ${who}`, 30)}
+${sub(`${escapeHtml(userName || userEmail)} (${escapeHtml(tier)}) replied to your monthly note. Reply to this email to answer them directly.`)}
+${securityBox(`<p style="margin:0;color:${Dark};font-size:16px;line-height:1.65;font-family:${font};">${noteHtml(message)}</p>`)}
+<p style="margin:16px 0 6px;color:${Muted};font-size:13px;font-family:${font};">Your note was:</p>
+<p style="margin:0;color:${Muted};font-size:14px;line-height:1.6;font-family:${font};">${noteHtml(noteBody)}</p>`
+
+  const { data, error } = await getResend().emails.send({
+    from: FROM, to: FOUNDER_EMAIL, replyTo: userEmail,
+    subject: `Reply to your note: ${companyName || userName || userEmail}`,
+    html: base(content, { loginBtn: false }),
+  })
+  if (error) console.error('[email] note reply error:', JSON.stringify(error))
+  return { data, error }
+}
+
 // ─── Email 4: Session request, founder notification ─────────────────────────
 
 export async function sendSessionRequestToFounder({

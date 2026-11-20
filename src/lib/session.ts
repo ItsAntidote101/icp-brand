@@ -54,6 +54,22 @@ export async function getSession(): Promise<{ email: string; userId: string } | 
   } catch { return null }
 }
 
+/**
+ * Session only if the person proved they own the email (OTP or Google).
+ * Sessions created by submitting the questionnaire carry a ttl and are NOT
+ * verified, so they must never unlock anything sensitive such as admin.
+ */
+export async function getVerifiedSession(): Promise<{ email: string; userId: string } | null> {
+  try {
+    const cookieStore = await cookies()
+    const token = cookieStore.get(COOKIE_NAME)?.value
+    if (!token) return null
+    const payload = verify(token) as ({ email: string; userId: string; ttl?: number } | null)
+    if (!payload || payload.ttl !== undefined) return null
+    return { email: payload.email, userId: payload.userId }
+  } catch { return null }
+}
+
 export async function requireSession(): Promise<{ email: string; userId: string }> {
   const session = await getSession()
   if (!session) {

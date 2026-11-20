@@ -67,8 +67,9 @@ export type OverviewProps = {
 
 // ─── Shared styles ───────────────────────────────────────────────────────────
 export function DashStyles() {
+  // Set as raw HTML so quotes in the CSS are identical on server and browser
   return (
-    <style>{`
+    <style dangerouslySetInnerHTML={{ __html: `
       .ov-wrap   { max-width: 1040px; margin: 0 auto; }
       .ov-card   { background: ${T.surface}; border-radius: ${T.radius}px; box-shadow: ${T.shadow}; }
       .ov-h2     { font: 700 20px/1.2 ${T.head}; letter-spacing: -0.015em; color: ${T.ink}; margin: 0; }
@@ -128,7 +129,7 @@ export function DashStyles() {
       .seg       { display: inline-flex; background: rgba(201,192,177,0.3); border-radius: 10px; padding: 2px; max-width: 100%; overflow-x: auto; }
       .seg button { font: 500 14px/1 ${T.font}; color: ${T.ink}; background: none; border: 0; border-radius: 8px; padding: 9px 16px; cursor: pointer; white-space: nowrap; min-height: 36px; }
       .seg button[aria-selected="true"] { background: #fff; font-weight: 600; box-shadow: 0 1px 3px rgba(32,21,21,0.12); }
-    `}</style>
+    ` }} />
   )
 }
 
@@ -320,6 +321,70 @@ function FindingList({ p }: { p: OverviewProps }) {
           </>
         )}
       </div>
+    </section>
+  )
+}
+
+// ─── A note from the media buyer ─────────────────────────────────────────────
+// Written (or edited and approved) by Eugene each month. This is what turns
+// numbers into advice, and the reply box is the client's line to him.
+type Note = { id: string; body: string; media_url: string | null; sent_at: string }
+
+function NoteCard({ buyer }: { buyer: OverviewProps['buyer'] }) {
+  const [note, setNote]     = useState<Note | null>(null)
+  const [open, setOpen]     = useState(false)
+  const [reply, setReply]   = useState('')
+  const [state, setState]   = useState<'idle' | 'sending' | 'sent'>('idle')
+  const [error, setError]   = useState('')
+
+  useEffect(() => {
+    fetch('/api/buyer-note').then(r => r.ok ? r.json() : null).then((j: { note?: Note } | null) => setNote(j?.note ?? null)).catch(() => {})
+  }, [])
+  if (!note) return null
+
+  async function send(e: React.FormEvent) {
+    e.preventDefault()
+    if (!note || reply.trim().length < 2) return
+    setState('sending'); setError('')
+    try {
+      const res = await fetch('/api/buyer-note/reply', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ noteId: note.id, message: reply }) })
+      const j = await res.json() as { error?: string }
+      if (!res.ok) throw new Error(j.error ?? 'Could not send your reply')
+      setState('sent'); setReply('')
+    } catch (err) { setError(err instanceof Error ? err.message : 'Could not send your reply'); setState('idle') }
+  }
+
+  const date = new Date(note.sent_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })
+  return (
+    <section className="ov-card" aria-label={`A note from ${buyer.firstName}`} style={{ padding: 'clamp(20px,3vw,26px) clamp(20px,3vw,28px)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+        <span aria-hidden style={{ width: 40, height: 40, borderRadius: '50%', background: T.ink, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', font: `700 14px/1 ${T.head}`, flexShrink: 0 }}>{buyer.initials}</span>
+        <div>
+          <p style={{ font: `700 16px/1.25 ${T.head}`, color: T.ink, margin: 0 }}>A note from {buyer.firstName}</p>
+          <p style={{ font: `400 13px/1.3 ${T.font}`, color: T.faint, margin: '2px 0 0' }}>{date}</p>
+        </div>
+      </div>
+      <p style={{ font: `400 16px/1.6 ${T.font}`, color: T.ink, margin: 0, whiteSpace: 'pre-wrap', maxWidth: '68ch' }}>{note.body}</p>
+
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 18 }}>
+        {note.media_url && <a className="ov-btn ov-btn-quiet" href={note.media_url} target="_blank" rel="noopener noreferrer">Play {buyer.firstName}&apos;s recording</a>}
+        {state === 'sent'
+          ? <p role="status" style={{ font: `400 15px/1.4 ${T.font}`, color: T.good, margin: 0, alignSelf: 'center' }}>Sent. {buyer.firstName} will reply by email.</p>
+          : !open && <button className="ov-btn ov-btn-quiet" onClick={() => setOpen(true)}>Reply to {buyer.firstName}</button>}
+      </div>
+
+      {open && state !== 'sent' && (
+        <form onSubmit={send} style={{ marginTop: 14 }}>
+          <textarea aria-label={`Your reply to ${buyer.firstName}`} value={reply} onChange={e => setReply(e.target.value)} maxLength={2000} autoFocus
+            placeholder="Ask a question or tell him what happened"
+            style={{ width: '100%', minHeight: 96, resize: 'vertical', boxSizing: 'border-box', border: `1px solid ${T.hairline}`, borderRadius: 14, padding: '12px 14px', font: `400 16px/1.5 ${T.font}`, color: T.ink, background: 'rgba(201,192,177,0.10)' }} />
+          {error && <p role="alert" style={{ font: `400 14px/1.4 ${T.font}`, color: T.bad, margin: '8px 0 0' }}>{error}</p>}
+          <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+            <button type="submit" className="ov-btn ov-btn-primary" disabled={state === 'sending' || reply.trim().length < 2}>{state === 'sending' ? 'Sending' : 'Send reply'}</button>
+            <button type="button" className="ov-btn ov-btn-quiet" onClick={() => { setOpen(false); setError('') }}>Cancel</button>
+          </div>
+        </form>
+      )}
     </section>
   )
 }
@@ -537,6 +602,8 @@ export default function Overview(p: OverviewProps) {
         </div>
       </header>
 
+      {p.tier !== 'free' && <NoteCard buyer={p.buyer} />}
+
       {/* Where you stand */}
       <section className="ov-card ov-hero" aria-label="Where you stand">
         <div style={{ padding: '28px', display: 'flex', alignItems: 'center', gap: 24 }}>
@@ -574,6 +641,14 @@ export default function Overview(p: OverviewProps) {
         <FixList p={p} fx={fx} />
         <FindingList p={p} />
       </div>
+
+      {p.tier === 'free' && (
+        <button className="ov-card ov-row ov-item" onClick={p.onUpgrade} style={{ borderRadius: T.radius }}>
+          <Lock size={16} color={T.faint} style={{ flexShrink: 0 }} />
+          <span style={{ flex: 1, color: T.ink2 }}>Paid plans include {p.buyer.firstName}&apos;s monthly note on your numbers</span>
+          <ChevronRight size={18} color={T.faint} />
+        </button>
+      )}
 
       <HelpCard p={p} />
     </div>
