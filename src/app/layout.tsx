@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from 'next'
 import localFont from 'next/font/local'
 import './globals.css'
 import GoogleTagManager from '@/components/GoogleTagManager'
-import { FAQS } from './home-faqs'
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -36,12 +35,34 @@ export const metadata: Metadata = {
   },
 }
 
+// Tells search engines and AI assistants who is behind the site: a business
+// in Nairobi, founded and run by a named person.
+const organizationSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'ProfessionalService',
+  '@id': 'https://www.idealicp.com/#organization',
+  name: 'Ideal ICP',
+  url: 'https://www.idealicp.com',
+  description: 'Diagnosis and tracking for Kenyan businesses that run ads to get leads: why leads are not buying, what it costs and what to fix first.',
+  areaServed: { '@type': 'Country', name: 'Kenya' },
+  address: { '@type': 'PostalAddress', addressLocality: 'Nairobi', addressCountry: 'KE' },
+  founder: {
+    '@type': 'Person',
+    '@id': 'https://www.idealicp.com/about#eugene',
+    name: 'Eugene Kwata',
+    jobTitle: 'Media buyer',
+    url: 'https://www.idealicp.com/about',
+    worksFor: { '@id': 'https://www.idealicp.com/#organization' },
+  },
+  priceRange: 'KES 0 to KES 26,000 a month',
+}
+
 const softwareSchema = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
   name: 'Ideal ICP',
   description: 'Free diagnosis for Kenyan businesses running ads for leads: why leads are not converting, what it costs and what to fix first. Reviewed by a media buyer.',
-  url: 'https://idealicp.com',
+  url: 'https://www.idealicp.com',
   applicationCategory: 'BusinessApplication',
   operatingSystem: 'Web',
   offers: {
@@ -50,17 +71,7 @@ const softwareSchema = {
     priceCurrency: 'KES',
     description: 'Free diagnosis and a free 20 minute call',
   },
-  provider: {
-    '@type': 'Organization',
-    name: 'Ideal ICP',
-    url: 'https://idealicp.com',
-  },
-}
-
-const faqSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: FAQS.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+  provider: { '@id': 'https://www.idealicp.com/#organization' },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -69,11 +80,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
         />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }}
         />
       </head>
       <body className={geistMono.variable}>

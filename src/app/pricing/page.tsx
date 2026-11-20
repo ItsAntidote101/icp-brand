@@ -1,546 +1,117 @@
-'use client'
-export const dynamic = 'force-static'
-import { useState } from 'react'
+import type { Metadata } from 'next'
 import Link from 'next/link'
-import { useSession } from '@/hooks/useSession'
-import { Check, Minus, ArrowRight, Zap, BarChart2, FileText, Target, Brain, Users, Shield, TrendingDown } from 'lucide-react'
+import { ArrowRight, Check } from 'lucide-react'
+import { HomeNav } from '../home-client'
+import { SiteFooter, SiteStyles } from '../site'
 
-// ── Design tokens (match landing page) ───────────────────────────────────────
-const Warm       = '#fffefb'
-const Dark       = '#201515'
-const Orange     = '#e8330a'
-const Text       = '#201515'
-const Muted      = '#605d52'
-const Border     = '#c5c0b1'
-const DarkMuted  = 'rgba(255,255,255,0.5)'
-const DarkBorder = 'rgba(255,255,255,0.12)'
-const font       = "'PolySans Median', -apple-system, system-ui, sans-serif"
-const fontB      = "'PolySans Neutral', -apple-system, system-ui, sans-serif"
+// Pricing. Every line here describes something the product does today:
+// limits come from the code (3, 20 and unlimited diagnoses a month; market
+// research re-runs weekly, daily, three times a day). Plans are paid one
+// month at a time, so there is no annual price to show.
 
-const btnPrimary: React.CSSProperties = {
-  display: 'inline-flex', alignItems: 'center', gap: 8,
-  background: Orange, color: '#fff', border: 'none',
-  borderRadius: 6, padding: '13px 22px',
-  fontFamily: font, fontSize: 15, fontWeight: 700,
-  cursor: 'pointer', textDecoration: 'none', whiteSpace: 'nowrap',
-}
-const btnGhost: React.CSSProperties = {
-  display: 'inline-flex', alignItems: 'center', gap: 8,
-  background: 'transparent', color: Text,
-  border: `1.5px solid ${Border}`,
-  borderRadius: 6, padding: '12px 22px',
-  fontFamily: font, fontSize: 15, fontWeight: 600,
-  cursor: 'pointer', textDecoration: 'none', whiteSpace: 'nowrap',
+export const dynamic = 'force-static'
+
+export const metadata: Metadata = {
+  title: 'Pricing | Ideal ICP',
+  description: 'Start with a free diagnosis and a free call. Paid plans from KES 6,500 a month track your cost per lead every week, with a media buyer in Nairobi watching your numbers. Pay by M-Pesa or card, month by month.',
+  alternates: { canonical: '/pricing' },
 }
 
-// ── Plan data ─────────────────────────────────────────────────────────────────
 const PLANS = [
   {
-    name: 'Free',
-    tag: 'No card needed',
-    monthly: 0, annualMonthly: 0, annual: 0,
-    highlight: false,
-    cta: 'Start free diagnosis',
-    href: '/questionnaire',
-    desc: 'One lifetime diagnosis. See exactly where your targeting leaks money. Book a free 20-minute call with a media buyer to go through it.',
-    includes: [
-      'ICP health score (0-100)',
-      'Top 3 critical findings',
-      '3 quick wins for this week',
-      'CAC and LTV:CAC estimate',
-      'Monthly waste estimate',
-      'Free 20-minute call with a media buyer',
-      '1 lifetime diagnosis',
-    ],
+    name: 'Free', price: 'KES 0', per: '',
+    forWho: 'See what is wrong before you spend anything.',
+    cta: 'Get my free diagnosis', pick: false,
+    items: ['One diagnosis: 10 questions, about 3 minutes', 'Your score out of 100', 'Your top 3 problems', '3 fixes to start this week', 'A free 20 minute call with Eugene'],
   },
   {
-    name: 'Starter',
-    tag: 'Most popular',
-    monthly: 6500, annualMonthly: 5400, annual: 65000,
-    highlight: false,
-    cta: 'Start with Starter',
-    href: '/questionnaire',
-    desc: 'For solo founders and small teams who need ongoing ICP monitoring and actionable reports.',
-    includes: [
-      'Everything in Free',
-      'All critical findings (no limit)',
-      'Full improvement roadmap',
-      'Executive summary',
-      'Weekly market briefing: three things, each with its source',
-      'Your cost per lead tracked every week',
-      'A monthly note from Eugene on what to change',
-      'Chat with Eugene and an AI assistant in the dashboard',
-      'Print-ready report and diagnostic CSV export',
-      '3 diagnoses per month',
-    ],
+    name: 'Starter', price: 'KES 6,500', per: 'a month',
+    forWho: 'For a business running its own ads that wants them watched.',
+    cta: 'Start free', pick: true,
+    items: ['The full report: every problem and the whole fix plan', 'Your cost per lead tracked every week', 'A written note from Eugene every month', 'A weekly briefing on your market, with sources', 'Message Eugene from your dashboard', 'Up to 3 diagnoses a month'],
   },
   {
-    name: 'Pro',
-    tag: 'Best value',
-    monthly: 13000, annualMonthly: 10800, annual: 130000,
-    highlight: true,
-    cta: 'Go Pro',
-    href: '/questionnaire',
-    desc: 'For growing teams that need deep research, competitive intelligence, and campaign-level precision.',
-    includes: [
-      'Everything in Starter',
-      'Live landing page audit (our system visits your URL)',
-      'Ad copy and CTA audit',
-      'Audience gap identification',
-      'Re-run your market research once a day',
-      'Priority in-dashboard support',
-      'Onboarding call with Eugene to set priorities',
-      '20 diagnoses per month',
-    ],
+    name: 'Pro', price: 'KES 13,000', per: 'a month',
+    forWho: 'For a business spending more, that wants Eugene closer.',
+    cta: 'Start free', pick: false,
+    items: ['Everything in Starter', 'An onboarding call with Eugene to set priorities', 'Monthly notes can include a voice or video walk-through', 'Re-run your market research once a day', 'Up to 20 diagnoses a month'],
   },
   {
-    name: 'Agency',
-    tag: 'For teams',
-    monthly: 26000, annualMonthly: 21600, annual: 260000,
-    highlight: false,
-    cta: 'Talk to Eugene',
-    href: '/questionnaire',
-    desc: 'For agencies and consultants running ads for several clients. Unlimited diagnoses, a monthly call with Eugene and founder-led support.',
-    includes: [
-      'Everything in Pro',
-      'Unlimited diagnoses, run one for each client',
-      'Founder-led support',
-      'White-label reports (coming soon)',
-      'Monthly strategy call with Eugene',
-      'Custom billing and invoicing',
-    ],
+    name: 'Agency', price: 'KES 26,000', per: 'a month',
+    forWho: 'For agencies and consultants running ads for several clients.',
+    cta: 'Start free', pick: false,
+    items: ['Everything in Pro', 'Unlimited diagnoses, one for each client', 'A strategy call with Eugene every month', 'Re-run market research up to 3 times a day'],
   },
 ]
 
-// ── Feature comparison table ──────────────────────────────────────────────────
-type Cell = true | false | string
-type Row  = { feature: string; cells: [Cell, Cell, Cell, Cell]; note?: string }
-type Group = { group: string; rows: Row[] }
-
-const COMPARISON: Group[] = [
-  {
-    group: 'Core Diagnosis',
-    rows: [
-      { feature: 'ICP health score (0-100)',          cells: [true, true, true, true] },
-      { feature: 'Critical findings',                  cells: ['Top 3', 'All', 'All', 'All'] },
-      { feature: 'Quick wins action plan',             cells: ['3 actions', true, true, true] },
-      { feature: 'Monthly waste estimate (KES)',       cells: [true, true, true, true] },
-      { feature: 'CAC before and after projection',   cells: [true, true, true, true] },
-      { feature: 'LTV:CAC ratio analysis',            cells: [true, true, true, true] },
-      { feature: 'Executive summary',                 cells: [false, true, true, true] },
-      { feature: 'Full improvement roadmap',          cells: [false, true, true, true] },
-      { feature: 'Diagnoses included',                 cells: ['1 lifetime', '3 / mo', '20 / mo', 'Unlimited'] },
-    ],
-  },
-  {
-    group: 'Deep Research (AI-Powered)',
-    rows: [
-      { feature: 'Live landing page audit',           cells: [false, false, true, true], note: 'Our system visits your actual URL and scores it' },
-      { feature: 'Ad copy and CTA effectiveness',     cells: [false, false, true, true] },
-      { feature: 'Audience gap identification',       cells: [false, true, true, true] },
-      { feature: 'Funnel leak analysis',              cells: [false, true, true, true] },
-    ],
-  },
-  {
-    group: 'Intelligence and Monitoring',
-    rows: [
-      { feature: 'Weekly market briefing',                 cells: [false, true, true, true], note: 'Three things a week, each with its source' },
-      { feature: 'Cost per lead tracked every week',      cells: [false, true, true, true] },
-      { feature: 'Monthly note from Eugene',              cells: [false, true, true, true] },
-      { feature: 'Re-run market research on demand',       cells: [false, false, true, true], note: 'Re-run live market research once a day (Starter: weekly)' },
-      { feature: 'Monthly ICP health score refresh',      cells: [false, true, true, true] },
-      { feature: 'Ongoing ICP monitoring',                cells: [false, true, true, true] },
-    ],
-  },
-  {
-    group: 'Reporting and Exports',
-    rows: [
-      { feature: 'Print-ready report',                        cells: [false, true, true, true], note: 'Save as PDF via your browser print function' },
-      { feature: 'Diagnostic data export (CSV)',              cells: [false, true, true, true] },
-      { feature: 'Separate client workspaces (coming soon)',  cells: [false, false, false, false], note: 'For now, run each client as its own diagnosis in one account' },
-      { feature: 'White-label reports (coming soon)',         cells: [false, false, false, false], note: 'Reports carrying your agency branding are in development' },
-      { feature: 'Data retained while account is active',     cells: [true, true, true, true] },
-    ],
-  },
-  {
-    group: 'Human Support and Access',
-    rows: [
-      { feature: 'Free 20-minute call to review your report', cells: [true, true, true, true], note: 'Book it from your report page' },
-      { feature: 'AI chat in dashboard',                       cells: [false, true, true, true] },
-      { feature: 'Priority in-dashboard support',              cells: [false, false, true, true] },
-      { feature: 'Onboarding call with Eugene',                cells: [false, false, true, true], note: 'A real media buyer goes through your findings and sets priorities with you' },
-      { feature: 'Monthly strategy call with Eugene',          cells: [false, false, false, true] },
-      { feature: 'Founder-led support',                        cells: [false, false, false, true] },
-      { feature: 'Custom billing and invoicing',               cells: [false, false, false, true] },
-    ],
-  },
-  {
-    group: 'Platform',
-    rows: [
-      { feature: 'Dashboard access',           cells: [true, true, true, true] },
-      { feature: 'Score history and trends',   cells: [false, true, true, true] },
-      { feature: 'Milestone tracking',         cells: [false, true, true, true] },
-    ],
-  },
+const PAYING = [
+  { title: 'Pay with M-Pesa or card', body: 'Checkout runs through Paystack. Prices are in Kenya shillings.' },
+  { title: 'One month at a time', body: 'Nothing renews on its own. You get a reminder a week before your month ends and you decide whether to pay again.' },
+  { title: 'Renew early, lose nothing', body: 'If you pay before your month is up, the new 30 days are added to the end of what you already have.' },
+  { title: 'Stop whenever you like', body: 'If you cancel or simply do not renew, you keep everything until the end of the month you paid for.' },
 ]
 
-// ── "All paid plans include" data ─────────────────────────────────────────────
-const PAID_INCLUDES = [
-  {
-    heading: 'Complete ICP diagnosis',
-    items: ['ICP health score 0-100', 'All critical findings with fixes', 'Ranked improvement roadmap', 'CAC and LTV:CAC projections'],
-  },
-  {
-    heading: 'Ongoing intelligence',
-    items: ['Weekly ICP intelligence briefings', 'Monthly health score refresh', 'Continuous ICP monitoring', 'Audience gap tracking'],
-  },
-  {
-    heading: 'Reports and data',
-    items: ['Print-ready report (save as PDF)', 'Diagnostic data export (CSV)', 'Executive summary', 'Data retained while account is active'],
-  },
-  {
-    heading: 'Platform access',
-    items: ['AI chat in dashboard', 'Score history and trends', 'Milestone tracking', 'Secure HttpOnly session auth'],
-  },
+const QUESTIONS = [
+  { q: 'Why do I start with the free diagnosis?', a: 'Because the paid plans build on it. The diagnosis creates your account and your first report. From your dashboard you can then choose a plan, or stay free.' },
+  { q: 'What is the difference between the free report and the full one?', a: 'The free report asks 10 questions and shows your top 3 problems. The full report asks 22, opens your landing page to check it, and gives you every problem with the complete fix plan.' },
+  { q: 'Can I change plans?', a: 'Yes, from your dashboard. If you move up partway through a month you only pay the difference for the days left.' },
+  { q: 'Do you run my ads for me?', a: 'No. Ideal ICP shows you what to fix and tracks whether it is working, and you or your agency make the changes. If you want Eugene to manage your campaigns, ask him on your call.' },
+  { q: 'Is there a contract?', a: 'No. You pay for a month and decide each month whether to continue.' },
 ]
-
-// ─────────────────────────────────────────────────────────────────────────────
 
 export default function PricingPage() {
-  const session = useSession()
-  const isLoggedIn = session.status === 'authenticated'
-  const [annual, setAnnual] = useState(false)
-
-  const displayPrice = (plan: typeof PLANS[0]) => {
-    if (plan.monthly === 0) return 'Free'
-    const price = annual ? plan.annualMonthly : plan.monthly
-    return `KES ${price.toLocaleString()}`
-  }
-
-  const Col = ({ cell }: { cell: Cell }) => {
-    if (cell === true)  return <Check size={16} color={Orange} strokeWidth={2.5} />
-    if (cell === false) return <Minus size={16} color={`rgba(32,21,21,0.2)`} strokeWidth={1.5} />
-    return <span style={{ fontFamily: fontB, fontSize: 13, color: Text, fontWeight: 600 }}>{cell}</span>
-  }
-
   return (
-    <div style={{ background: Warm, minHeight: '100vh' }}>
-      <style>{`
-        * { box-sizing: border-box; }
-        @media (max-width: 640px) {
-          .plans-grid { grid-template-columns: 1fr !important; }
-          .plans-grid > div { border-left: 1.5px solid #c5c0b1; }
-          .paid-includes-grid { grid-template-columns: 1fr !important; }
-          .paid-includes-inner { grid-template-columns: 1fr !important; }
-          .pricing-faq-grid { grid-template-columns: 1fr !important; gap: 24px !important; }
-        }
-        @media (min-width: 641px) and (max-width: 900px) {
-          .plans-grid { grid-template-columns: 1fr 1fr !important; }
-          .paid-includes-grid { grid-template-columns: 1fr 1fr !important; }
-        }
-        .comparison-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        @media (prefers-reduced-motion: reduce) {
-          *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-        }
-      `}</style>
-
-      {/* ── NAV ───────────────────────────────────────────────────────────── */}
-      <nav style={{ borderBottom: `1.5px solid ${Border}`, position: 'sticky', top: 0, zIndex: 50, background: Warm }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 clamp(16px,4vw,40px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 60 }}>
-          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-            <div style={{ width: 28, height: 28, background: Orange, borderRadius: 4, flexShrink: 0 }} />
-            <span style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: Dark }}>Ideal ICP</span>
-          </Link>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-            <Link href="/" style={{ fontFamily: fontB, fontSize: 14, color: Muted, textDecoration: 'none' }}>Home</Link>
-            {isLoggedIn ? (
-              <Link href="/dashboard" style={btnPrimary}>Dashboard</Link>
-            ) : (
-              <>
-                <Link href="/auth?tab=login" style={{ fontFamily: fontB, fontSize: 14, color: Muted, textDecoration: 'none' }}>Log in</Link>
-                <Link href="/questionnaire" style={btnPrimary}>Get free diagnosis</Link>
-              </>
-            )}
+    <div className="hp">
+      <SiteStyles />
+      <HomeNav />
+      <main>
+        <section className="hp-page-top">
+          <div className="hp-wrap">
+            <h1>Start free. Pay only if you want your numbers watched.</h1>
+            <p className="hp-lead" style={{ marginTop: 20 }}>The diagnosis and the call cost nothing. A plan adds a dashboard that tracks your cost per lead every week, and a media buyer in Nairobi who reads it.</p>
           </div>
-        </div>
-      </nav>
+        </section>
 
-      {/* ── HERO ──────────────────────────────────────────────────────────── */}
-      <section style={{ borderBottom: `1.5px solid ${Border}` }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: 'clamp(48px,7vw,88px) clamp(16px,4vw,40px) clamp(40px,6vw,72px)' }}>
-          <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 14px' }}>Pricing</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: 32, marginBottom: 44 }}>
-            <h1 style={{ fontFamily: font, fontSize: 'clamp(32px,5vw,60px)', fontWeight: 700, color: Text, margin: 0, lineHeight: 1.06 }}>
-              ICP diagnostic plans.
-            </h1>
-            <p style={{ fontFamily: fontB, fontSize: 15, color: Muted, margin: 0, maxWidth: 380, lineHeight: 1.7 }}>
-              Start free. Get your health score and top findings at no cost. Upgrade for ongoing intelligence, deep research, and time with a real media buyer.
-            </p>
-          </div>
-
-          {/* Billing toggle */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <span style={{ fontFamily: fontB, fontSize: 14, color: !annual ? Text : Muted, fontWeight: !annual ? 700 : 400 }}>Monthly</span>
-            <button onClick={() => setAnnual(a => !a)} style={{ width: 46, height: 26, borderRadius: 100, background: annual ? Dark : Border, position: 'relative', border: 'none', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}>
-              <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#fff', position: 'absolute', top: 3, left: annual ? 23 : 3, transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
-            </button>
-            <span style={{ fontFamily: fontB, fontSize: 14, color: annual ? Text : Muted, fontWeight: annual ? 700 : 400 }}>
-              Annual <span style={{ color: '#16a34a', fontWeight: 700, fontSize: 13 }}>(2 months free)</span>
-            </span>
-          </div>
-        </div>
-      </section>
-
-      {/* ── PLAN CARDS ────────────────────────────────────────────────────── */}
-      <section style={{ borderBottom: `1.5px solid ${Border}` }}>
-        <div className="plans-grid" style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', borderLeft: `1.5px solid ${Border}` }}>
-          {PLANS.map((plan) => (
-            <div key={plan.name} style={{ borderRight: `1.5px solid ${Border}`, borderBottom: `1.5px solid ${Border}`, position: 'relative', background: plan.highlight ? Dark : 'transparent', display: 'flex', flexDirection: 'column' }}>
-              {/* Orange top bar for highlight */}
-              {plan.highlight && <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: Orange }} />}
-
-              <div style={{ padding: '32px 28px', borderBottom: `1.5px solid ${plan.highlight ? DarkBorder : Border}`, flex: 1 }}>
-                {/* Tag */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-                  <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: plan.highlight ? DarkMuted : Muted }}>{plan.name}</span>
-                  <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, color: plan.highlight ? Orange : Orange, background: 'rgba(232,51,10,0.1)', padding: '3px 9px', borderRadius: 4 }}>{plan.tag}</span>
-                </div>
-
-                {/* Price */}
-                <p style={{ fontFamily: font, fontSize: 'clamp(26px,4vw,34px)', fontWeight: 700, color: plan.highlight ? '#fff' : Text, margin: '0 0 2px', lineHeight: 1 }}>
-                  {displayPrice(plan)}
-                </p>
-                {plan.monthly > 0 && (
-                  <p style={{ fontFamily: fontB, fontSize: 13, color: plan.highlight ? DarkMuted : Muted, margin: '0 0 4px' }}>/mo</p>
-                )}
-                {annual && plan.monthly > 0 && (
-                  <p style={{ fontFamily: fontB, fontSize: 12, color: plan.highlight ? 'rgba(255,255,255,0.35)' : '#939084', margin: '0 0 0px' }}>
-                    Billed as KES {plan.annual.toLocaleString()}/year
-                  </p>
-                )}
-
-                <p style={{ fontFamily: fontB, fontSize: 13, color: plan.highlight ? DarkMuted : Muted, lineHeight: 1.6, margin: '20px 0 24px' }}>{plan.desc}</p>
-
-                {/* Feature list */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 28 }}>
-                  {plan.includes.map(item => (
-                    <div key={item} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                      <Check size={13} color={Orange} style={{ flexShrink: 0, marginTop: 2 }} />
-                      <span style={{ fontFamily: fontB, fontSize: 13, color: plan.highlight ? 'rgba(255,255,255,0.85)' : Text, lineHeight: 1.45 }}>{item}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* CTA */}
-                <Link href={plan.href} style={plan.highlight ? { ...btnPrimary, width: '100%', justifyContent: 'center', boxSizing: 'border-box' as const } : { ...btnGhost, width: '100%', justifyContent: 'center', boxSizing: 'border-box' as const, color: plan.highlight ? '#fff' : Text }}>
-                  {plan.cta} <ArrowRight size={14} />
-                </Link>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── ALL PAID PLANS INCLUDE ────────────────────────────────────────── */}
-      <section style={{ background: '#fff', borderBottom: `1.5px solid ${Border}` }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: 'clamp(40px,6vw,72px) clamp(16px,4vw,40px)' }}>
-          <div className="paid-includes-grid" style={{ display: 'grid', gridTemplateColumns: 'auto 1fr 1fr 1fr', gap: 'clamp(32px,5vw,64px)', alignItems: 'start' }}>
-            <div>
-              <h2 style={{ fontFamily: font, fontSize: 'clamp(18px,2.5vw,26px)', fontWeight: 700, color: Text, margin: 0, lineHeight: 1.2, maxWidth: 200 }}>All paid plans include</h2>
-            </div>
-            {PAID_INCLUDES.slice(0, 3).map(col => (
-              <div key={col.heading}>
-                <p style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: Text, margin: '0 0 14px' }}>{col.heading}</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {col.items.map(item => (
-                    <div key={item} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                      <Check size={13} color={Orange} style={{ flexShrink: 0, marginTop: 2 }} />
-                      <span style={{ fontFamily: fontB, fontSize: 13, color: Muted, lineHeight: 1.5 }}>{item}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-          {/* 4th column below on same row */}
-          <div style={{ marginTop: 40, paddingTop: 40, borderTop: `1.5px solid ${Border}` }}>
-            <div className="paid-includes-inner" style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: 'clamp(32px,5vw,64px)', alignItems: 'start' }}>
-              <div style={{ maxWidth: 200 }}>
-                <p style={{ fontFamily: font, fontSize: 14, fontWeight: 700, color: Text, margin: 0 }}>{PAID_INCLUDES[3].heading}</p>
-              </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px 48px' }}>
-                {PAID_INCLUDES[3].items.map(item => (
-                  <div key={item} style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                    <Check size={13} color={Orange} style={{ flexShrink: 0 }} />
-                    <span style={{ fontFamily: fontB, fontSize: 13, color: Muted }}>{item}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── FEATURE COMPARISON TABLE ──────────────────────────────────────── */}
-      <section style={{ borderBottom: `1.5px solid ${Border}` }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: 'clamp(40px,6vw,72px) clamp(16px,4vw,40px)' }}>
-          <h2 style={{ fontFamily: font, fontSize: 'clamp(24px,3.5vw,40px)', fontWeight: 700, color: Text, margin: '0 0 40px' }}>Compare all features</h2>
-
-          <div className="comparison-scroll">
-          <div style={{ border: `1.5px solid ${Border}`, minWidth: 680 }}>
-
-            {/* Table header */}
-            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr', borderBottom: `1.5px solid ${Border}`, background: Warm }}>
-              <div style={{ padding: '16px 20px' }} />
-              {['Free', 'Starter', 'Pro', 'Agency'].map((name, i) => (
-                <div key={name} style={{ padding: '16px 20px', borderLeft: `1.5px solid ${Border}`, background: i === 2 ? Dark : 'transparent', textAlign: 'center' }}>
-                  <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: i === 2 ? DarkMuted : Muted, margin: '0 0 4px' }}>{name}</p>
-                  <p style={{ fontFamily: font, fontSize: 17, fontWeight: 700, color: i === 2 ? '#fff' : Text, margin: 0 }}>
-                    {i === 0 ? 'Free' : `KES ${(annual ? [5400, 10800, 21600] : [6500, 13000, 26000])[i - 1].toLocaleString()}`}
-                  </p>
-                  {i > 0 && <p style={{ fontFamily: fontB, fontSize: 11, color: i === 2 ? DarkMuted : Muted, margin: '2px 0 0' }}>/mo</p>}
+        <section style={{ paddingTop: 0 }}>
+          <div className="hp-wrap">
+            <div className="hp-plans">
+              {PLANS.map(p => (
+                <div key={p.name} className={`hp-card hp-plan${p.pick ? ' hp-plan-pick' : ''}`}>
+                  {p.pick && <span className="hp-badge">Where most people start</span>}
+                  <h2 style={{ fontSize: 22 }}>{p.name}</h2>
+                  <p className="hp-plan-for">{p.forWho}</p>
+                  <p className="hp-plan-price">{p.price} {p.per && <small>{p.per}</small>}</p>
+                  <ul>
+                    {p.items.map(i => <li key={i}><Check size={16} strokeWidth={2.5} aria-hidden="true" />{i}</li>)}
+                  </ul>
+                  <Link href="/questionnaire" className={`hp-btn${p.pick || p.name === 'Free' ? '' : ' hp-btn-line'}`}>{p.cta}</Link>
                 </div>
               ))}
             </div>
-
-            {/* Groups and rows */}
-            {COMPARISON.map((group, gi) => (
-              <div key={gi}>
-                {/* Group header */}
-                <div style={{ padding: '14px 20px', background: 'rgba(201,192,177,0.12)', borderBottom: `1.5px solid ${Border}` }}>
-                  <span style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: Text }}>{group.group}</span>
-                </div>
-                {/* Rows */}
-                {group.rows.map((row, ri) => (
-                  <div key={ri} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr', borderBottom: ri < group.rows.length - 1 || gi < COMPARISON.length - 1 ? `1.5px solid ${Border}` : 'none' }}>
-                    <div style={{ padding: '14px 20px' }}>
-                      <span style={{ fontFamily: fontB, fontSize: 14, color: Text }}>{row.feature}</span>
-                      {row.note && <p style={{ fontFamily: fontB, fontSize: 12, color: Muted, margin: '3px 0 0', lineHeight: 1.4 }}>{row.note}</p>}
-                    </div>
-                    {row.cells.map((cell, ci) => (
-                      <div key={ci} style={{ padding: '14px 20px', borderLeft: `1.5px solid ${Border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', background: ci === 2 ? 'rgba(201,192,177,0.18)' : 'transparent' }}>
-                        <Col cell={cell} />
-                      </div>
-                    ))}
-                  </div>
-                ))}
-              </div>
-            ))}
+            <p className="hp-fine" style={{ maxWidth: '70ch' }}>Every plan starts with the free diagnosis, which sets up your account. You choose a paid plan from inside your dashboard.</p>
           </div>
-          </div>
-        </div>
-      </section>
+        </section>
 
-      {/* ── WHAT YOU GET IN EACH LAYER ────────────────────────────────────── */}
-      <section style={{ background: Dark, borderBottom: `1.5px solid ${DarkBorder}` }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: 'clamp(48px,7vw,88px) clamp(16px,4vw,40px)' }}>
-          <h2 style={{ fontFamily: font, fontSize: 'clamp(24px,3.5vw,40px)', fontWeight: 700, color: '#fff', margin: '0 0 48px' }}>How the diagnosis layers work</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', borderLeft: `1.5px solid ${DarkBorder}`, borderTop: `1.5px solid ${DarkBorder}` }}>
-            {[
-              { Icon: Target,       title: 'ICP Foundation',          body: 'Who you are targeting, whether your personas match real buyers, and whether your funnel is designed for them.', tier: 'All plans' },
-              { Icon: BarChart2,    title: 'Funnel and Metrics',      body: 'Your close rate, CAC, LTV, and how your monthly budget maps to qualified outcomes versus wasted spend.', tier: 'All plans' },
-              { Icon: FileText,     title: 'Landing Page Audit',      body: 'Our system visits your actual URL, scores your copy, CTA, trust signals, and conversion friction points in real time.', tier: 'Pro and Agency' },
-              { Icon: Brain,        title: 'Competitive Intelligence', body: 'We research your top 3 competitors, identify their positioning gaps, and benchmark your metrics against your real market.', tier: 'Pro and Agency' },
-              { Icon: TrendingDown, title: 'CAC and LTV Projections', body: 'Your exact cost per customer before and after ICP fixes, your LTV:CAC ratio, and the monthly revenue you recover.', tier: 'All plans' },
-              { Icon: Users,        title: 'Human Strategy Layer',    body: 'Every diagnosis is reviewed by a B2B media buyer, included free. Pro adds an onboarding call with Eugene. Agency adds a monthly strategy call.', tier: 'All plans' },
-              { Icon: Zap,          title: 'Weekly Intelligence',     body: 'Every week your dashboard updates with new signals: audience drift, competitive moves, benchmark changes, and fresh quick wins.', tier: 'Starter and above' },
-              { Icon: Shield,       title: 'Ongoing Monitoring',      body: 'Your ICP health score refreshes monthly. If your targeting drifts or the market shifts, you find out before your CAC spikes.', tier: 'Starter and above' },
-            ].map(({ Icon, title, body, tier }) => (
-              <div key={title} style={{ borderRight: `1.5px solid ${DarkBorder}`, borderBottom: `1.5px solid ${DarkBorder}`, padding: 'clamp(24px,3vw,32px)' }}>
-                <div style={{ width: 32, height: 32, border: `1.5px solid ${DarkBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 18 }}>
-                  <Icon size={15} color={Orange} strokeWidth={1.5} />
-                </div>
-                <p style={{ fontFamily: fontB, fontSize: 11, color: Orange, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 8px' }}>{tier}</p>
-                <h3 style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: '#fff', margin: '0 0 10px' }}>{title}</h3>
-                <p style={{ fontFamily: fontB, fontSize: 13, color: DarkMuted, lineHeight: 1.65, margin: 0 }}>{body}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── FAQ ───────────────────────────────────────────────────────────── */}
-      <section style={{ borderBottom: `1.5px solid ${Border}` }}>
-        <div className="pricing-faq-grid" style={{ maxWidth: 1200, margin: '0 auto', padding: 'clamp(48px,7vw,88px) clamp(16px,4vw,40px)', display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 'clamp(32px,5vw,80px)', alignItems: 'start' }}>
-          <h2 style={{ fontFamily: font, fontSize: 'clamp(22px,3vw,36px)', fontWeight: 700, color: Text, margin: 0, lineHeight: 1.15 }}>Pricing questions</h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-            {[
-              { q: 'Can I upgrade or downgrade at any time?', a: 'Yes. Changes take effect immediately. If you upgrade mid-cycle you are charged the prorated difference. If you downgrade, the change applies at the next billing date.' },
-              { q: 'What happens if I exceed my monthly diagnosis limit?', a: 'You can purchase additional diagnoses at KES 3,000 each, or upgrade to the next plan. Your existing data and reports are never deleted.' },
-              { q: 'Is the media buyer session a real human?', a: 'Yes. Eugene is a Nairobi-based media buyer running Google and Meta campaigns. Every free report gets the option of a free 20-minute call, Pro includes an onboarding call, and Agency includes a monthly strategy call.' },
-              { q: 'How does the annual discount work?', a: 'Annual billing gives you 10 months for the price of 12 (two months free). You pay the full annual amount upfront. Refunds are available within the first 14 days.' },
-              { q: 'What does the free diagnosis include exactly?', a: 'Your ICP health score (0-100), your top 3 critical findings with brief descriptions, 3 quick wins you can act on this week, a CAC estimate, and a monthly waste estimate. You can also book a free 20-minute call with Eugene, a Nairobi media buyer, to go through it. No credit card required. One lifetime diagnosis on the free tier.' },
-            ].map(({ q, a }, i) => (
-              <div key={i} style={{ borderTop: `1.5px solid ${Border}`, padding: '24px 0' }}>
-                <p style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: Text, margin: '0 0 10px' }}>{q}</p>
-                <p style={{ fontFamily: fontB, fontSize: 14, color: Muted, lineHeight: 1.7, margin: 0 }}>{a}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── MEDIA BUYER TRUST STRIP ───────────────────────────────────────── */}
-      <section style={{ background: Warm, borderBottom: `1.5px solid ${Border}` }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: 'clamp(32px,5vw,56px) clamp(16px,4vw,40px)' }}>
-          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 24, justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(34,197,94,0.09)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 100, padding: '5px 14px 5px 10px' }}>
-                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', flexShrink: 0, display: 'inline-block' }} />
-                <span style={{ fontFamily: fontB, fontSize: 12, color: '#22c55e', fontWeight: 600 }}>Buyer review included on every plan</span>
-              </div>
-              {[
-                { initials: 'EK', name: 'Eugene K.', role: 'Founder and B2B Media Buyer' },
-              ].map(({ initials, name, role }) => (
-                <div key={initials} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: Dark, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <span style={{ fontFamily: font, fontSize: 12, fontWeight: 700, color: '#fff' }}>{initials}</span>
-                  </div>
-                  <div>
-                    <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, color: Text, margin: 0 }}>{name}</p>
-                    <p style={{ fontFamily: fontB, fontSize: 11, color: Muted, margin: 0 }}>{role}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-              <span style={{ fontFamily: fontB, fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: Muted }}>Secure checkout via</span>
-              {[
-                { src: '/images/logos/paystack-logo_1.png',                 alt: 'Paystack',   h: 18 },
-                { src: '/images/logos/M-PESA_LOGO-01.svg.png',              alt: 'M-Pesa',     h: 18 },
-                { src: '/images/logos/Visa_Inc._logo_(2014-2021).svg.png',  alt: 'Visa',       h: 16 },
-                { src: '/images/logos/MasterCard_early_1990s_logo.svg.png', alt: 'Mastercard', h: 22 },
-              ].map(({ src, alt, h }) => (
-                <img key={alt} src={src} alt={alt} style={{ height: h, objectFit: 'contain', opacity: 0.5 }} />
-              ))}
+        <section style={{ paddingTop: 0 }}>
+          <div className="hp-wrap">
+            <h2>How paying works</h2>
+            <div className="hp-grid2">
+              {PAYING.map(c => <div key={c.title} className="hp-card hp-cause"><h3>{c.title}</h3><p>{c.body}</p></div>)}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* ── FINAL CTA ─────────────────────────────────────────────────────── */}
-      <section style={{ background: Dark }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: 'clamp(56px,8vw,96px) clamp(16px,4vw,40px)', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 32 }}>
-          <div>
-            <p style={{ fontFamily: fontB, fontSize: 12, color: DarkMuted, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 14px' }}>Get started today</p>
-            <h2 style={{ fontFamily: font, fontSize: 'clamp(26px,4vw,48px)', fontWeight: 700, color: '#fff', margin: '0 0 12px', lineHeight: 1.1 }}>
-              Stop guessing. <span style={{ color: Orange }}>Start diagnosing.</span>
-            </h2>
-            <p style={{ fontFamily: fontB, fontSize: 15, color: DarkMuted, margin: 0, lineHeight: 1.65, maxWidth: 440 }}>
-              Your first diagnosis is free. No card, no setup, no agency. Just 10 questions, a complete picture of where your ad spend is going, and a media buyer reading your results.
-            </p>
+        <section style={{ paddingTop: 0 }}>
+          <div className="hp-wrap">
+            <h2>Questions about plans</h2>
+            <div className="hp-card hp-faq">
+              {QUESTIONS.map(f => <details key={f.q}><summary>{f.q}</summary><p>{f.a}</p></details>)}
+            </div>
+            <p style={{ marginTop: 28 }}><Link href="/questionnaire" className="hp-btn">Get my free diagnosis <ArrowRight size={18} aria-hidden="true" /></Link></p>
           </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14 }}>
-            <Link href="/questionnaire" style={btnPrimary}>
-              Get my free ICP report <ArrowRight size={16} />
-            </Link>
-            <Link href="/" style={{ ...btnGhost, color: '#fff', borderColor: DarkBorder }}>
-              Back to home
-            </Link>
-          </div>
-        </div>
-      </section>
-
+        </section>
+      </main>
+      <SiteFooter title="Not sure yet? Start with the free part." lead="Run the diagnosis, talk it through with me, and decide after that." />
     </div>
   )
 }

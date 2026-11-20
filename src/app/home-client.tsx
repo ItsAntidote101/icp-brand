@@ -9,7 +9,7 @@ import { Menu, X } from 'lucide-react'
 import { useSession } from '@/hooks/useSession'
 import { track } from '@/lib/track'
 
-const LINKS: [string, string][] = [['How it works', '/#how'], ['Pricing', '/pricing'], ['About', '/about'], ['Questions', '/#faq']]
+const LINKS: [string, string][] = [['How it works', '/#how'], ['Pricing', '/pricing'], ['Guides', '/guides'], ['About', '/about']]
 
 export function LandingTracker() {
   useEffect(() => { track('landing_view') }, [])
