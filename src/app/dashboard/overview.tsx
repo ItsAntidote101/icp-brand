@@ -227,6 +227,7 @@ function useFixes(p: OverviewProps) {
 
 function FixList({ p, fx }: { p: OverviewProps; fx: ReturnType<typeof useFixes> }) {
   const [open, setOpen] = useState<number | null>(null)
+  const dr = useDrafts(p.reportId)
   const done = fx.checked.filter(Boolean).length
   return (
     <section aria-labelledby="ov-week">
@@ -272,6 +273,7 @@ function FixList({ p, fx }: { p: OverviewProps; fx: ReturnType<typeof useFixes> 
                         {w.expectedImpact && <><dt>Result</dt><dd>{w.expectedImpact}</dd></>}
                       </dl>
                     ) : !rest ? <p style={{ color: T.faint, margin: 0 }}>No extra detail for this one.</p> : null}
+                    <DraftBox i={i} p={p} dr={dr} />
                   </div>
                 </div>
               </div>
@@ -281,6 +283,68 @@ function FixList({ p, fx }: { p: OverviewProps; fx: ReturnType<typeof useFixes> 
       </div>
       {fx.error && <p role="alert" style={{ font: `400 14px/1.4 ${T.font}`, color: T.bad, margin: '10px 4px 0' }}>{fx.error}</p>}
     </section>
+  )
+}
+
+// ─── Write it for me ─────────────────────────────────────────────────────────
+// The words to paste for a fix, written once from their own answers and kept.
+type Draft = { label: string; body: string }
+function useDrafts(reportId: string) {
+  const [drafts, setDrafts] = useState<Record<number, Draft>>({})
+  const [busy, setBusy]     = useState<number | null>(null)
+  const [error, setError]   = useState<{ i: number; text: string } | null>(null)
+  useEffect(() => {
+    let live = true
+    fetch(`/api/fix-draft?reportId=${encodeURIComponent(reportId)}`)
+      .then(r => (r.ok ? r.json() : null))
+      .then((d: { drafts?: Record<number, Draft> } | null) => { if (live && d?.drafts) setDrafts(d.drafts) })
+      .catch(() => {})
+    return () => { live = false }
+  }, [reportId])
+  async function write(i: number) {
+    if (busy !== null) return
+    setBusy(i); setError(null)
+    try {
+      const res = await fetch('/api/fix-draft', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reportId, index: i }) })
+      const d = await res.json().catch(() => ({})) as { draft?: Draft; error?: string }
+      if (!res.ok || !d.draft) throw new Error(d.error || 'Could not write that just now. Please try again.')
+      setDrafts(prev => ({ ...prev, [i]: d.draft as Draft }))
+    } catch (e) {
+      setError({ i, text: e instanceof Error ? e.message : 'Could not write that just now. Please try again.' })
+    } finally { setBusy(null) }
+  }
+  return { drafts, busy, error, write }
+}
+
+function DraftBox({ i, p, dr }: { i: number; p: OverviewProps; dr: ReturnType<typeof useDrafts> }) {
+  const [copied, setCopied] = useState(false)
+  const draft = dr.drafts[i]
+  const allowed = p.tier !== 'free' || i === 0
+  if (draft) {
+    return (
+      <div style={{ marginTop: 14, background: T.fill, borderRadius: 14, padding: '14px 16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 8 }}>
+          <span style={{ font: `600 13px/1.3 ${T.font}`, color: T.muted }}>{draft.label}</span>
+          <button
+            className="ov-link"
+            onClick={() => { navigator.clipboard?.writeText(draft.body).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800) }).catch(() => {}) }}
+          >{copied ? 'Copied' : 'Copy'}</button>
+        </div>
+        <p style={{ font: `400 15px/1.5 ${T.font}`, color: T.ink, margin: 0, whiteSpace: 'pre-wrap' }}>{draft.body}</p>
+        <p style={{ font: `400 13px/1.4 ${T.font}`, color: T.faint, margin: '10px 0 0' }}>Written from your answers. Fill in anything in [brackets] and check it before you use it.</p>
+      </div>
+    )
+  }
+  if (!allowed) {
+    return <button className="ov-link" onClick={p.onUpgrade} style={{ marginTop: 12, display: 'inline-flex', alignItems: 'center', gap: 6 }}><Lock size={14} /> Starter writes the wording for this one</button>
+  }
+  return (
+    <div style={{ marginTop: 12 }}>
+      <button className="ov-btn ov-btn-quiet" onClick={() => dr.write(i)} disabled={dr.busy !== null}>
+        {dr.busy === i ? 'Writing…' : 'Write it for me'}
+      </button>
+      {dr.error?.i === i && <p role="alert" style={{ font: `400 14px/1.4 ${T.font}`, color: T.bad, margin: '8px 0 0' }}>{dr.error.text}</p>}
+    </div>
   )
 }
 
@@ -616,27 +680,56 @@ function HelpCard({ p }: { p: OverviewProps }) {
 }
 
 // ─── This week in your market: one line, the rest lives in the Market tab ────
-function MarketRow({ email, onOpen }: { email: string; onOpen: () => void }) {
+type Moment = { title: string; date: string; why: string; prepare: string | null; source: string; sourceUrl: string }
+
+function MarketRow({ email, onOpen, onMessage, buyerName }: { email: string; onOpen: () => void; onMessage: () => void; buyerName: string }) {
   const [top, setTop] = useState<{ title: string; kind: string } | null>(null)
+  const [moment, setMoment] = useState<Moment | null>(null)
   useEffect(() => {
     let live = true
     fetch('/api/intelligence/research', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, type: 'fetch' }) })
       .then(r => (r.ok ? r.json() : null))
-      .then((d: { briefing?: { version?: number; items?: { title: string; kind: string }[] } } | null) => {
+      .then((d: { briefing?: { version?: number; items?: { title: string; kind: string }[]; moment?: Moment | null } } | null) => {
         const b = d?.briefing
-        if (live && b?.version === 2 && b.items?.[0]) setTop(b.items[0])
+        if (!live || b?.version !== 2) return
+        if (b.items?.[0]) setTop(b.items[0])
+        if (b.moment?.date) setMoment(b.moment)
       }).catch(() => {})
     return () => { live = false }
   }, [email])
-  if (!top) return null
+
+  // Days from today to the event, by calendar day. Past dates are not shown.
+  const days = moment ? Math.round((new Date(`${moment.date}T00:00:00`).getTime() - new Date(new Date().toDateString()).getTime()) / 86_400_000) : -1
+  const showMoment = moment && days >= 0
+  if (!top && !showMoment) return null
   return (
-    <button className="ov-card ov-row ov-item" onClick={onOpen} style={{ borderRadius: T.radius, alignItems: 'flex-start' }}>
-      <span style={{ flex: 1, minWidth: 0 }}>
-        <span style={{ display: 'block', font: `400 13px/1.3 ${T.font}`, color: T.faint, marginBottom: 3 }}>This week in your market</span>
-        <span className="ov-clamp" style={{ fontWeight: 500 }}>{top.title}</span>
-      </span>
-      <ChevronRight size={18} color={T.faint} style={{ marginTop: 10 }} />
-    </button>
+    <>
+      {showMoment && moment && (
+        <section className="ov-card" aria-labelledby="ov-moment" style={{ padding: '22px' }}>
+          <p style={{ font: `400 13px/1.3 ${T.font}`, color: T.faint, margin: '0 0 6px' }}>Your next selling moment</p>
+          <h2 id="ov-moment" style={{ font: `700 20px/1.25 ${T.head}`, letterSpacing: '-0.015em', color: T.ink, margin: '0 0 4px' }}>{moment.title}</h2>
+          <p style={{ font: `600 15px/1.4 ${T.font}`, color: T.accent, margin: '0 0 12px', fontVariantNumeric: 'tabular-nums' }}>
+            {new Date(`${moment.date}T00:00:00`).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'long' })}
+            {days === 0 ? ', today' : days === 1 ? ', tomorrow' : `, in ${days} days`}
+          </p>
+          <p style={{ font: `400 15px/1.5 ${T.font}`, color: T.ink2, margin: 0, maxWidth: '62ch' }}>{moment.why}</p>
+          {moment.prepare && <p style={{ font: `400 15px/1.5 ${T.font}`, color: T.ink2, margin: '8px 0 0', maxWidth: '62ch' }}><strong style={{ fontWeight: 600, color: T.ink }}>Get ready:</strong> {moment.prepare}</p>}
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '10px 18px', marginTop: 16 }}>
+            <button className="ov-btn ov-btn-quiet" onClick={onMessage}>Plan it with {buyerName}</button>
+            <a className="ov-link" href={moment.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: 14 }}>Source: {moment.source}</a>
+          </div>
+        </section>
+      )}
+      {top && (
+        <button className="ov-card ov-row ov-item" onClick={onOpen} style={{ borderRadius: T.radius, alignItems: 'flex-start' }}>
+          <span style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ display: 'block', font: `400 13px/1.3 ${T.font}`, color: T.faint, marginBottom: 3 }}>This week in your market</span>
+            <span className="ov-clamp" style={{ fontWeight: 500 }}>{top.title}</span>
+          </span>
+          <ChevronRight size={18} color={T.faint} style={{ marginTop: 10 }} />
+        </button>
+      )}
+    </>
   )
 }
 
@@ -835,7 +928,7 @@ export default function Overview(p: OverviewProps) {
 
       {p.tier !== 'free' && <ActivityCard />}
 
-      {p.tier !== 'free' && <MarketRow email={p.email} onOpen={p.onOpenMarket} />}
+      {p.tier !== 'free' && <MarketRow email={p.email} onOpen={p.onOpenMarket} onMessage={p.onRequestCall} buyerName={p.buyer.firstName} />}
 
       <div className="ov-two">
         <FixList p={p} fx={fx} />

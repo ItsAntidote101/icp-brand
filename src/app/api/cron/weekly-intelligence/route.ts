@@ -135,6 +135,7 @@ export async function GET(req: NextRequest) {
       const own  = await loadOwnNumbers(supabase, user.id)
       const data = await generateMarketBriefing(anthropic, {
         companyName: user.company_name ?? '', product, industry, businessModel, region, targetAudience, channels, budget,
+        buyTrigger: typeof r[26] === 'string' ? (r[26] as string).slice(0, 300) : '',
       }, own)
       const now = new Date().toISOString()
 
