@@ -858,6 +858,23 @@ export default function QuestionnairePage() {
   }, [step]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const visible_qs = getVisibleQuestions(answers, !fullMode)
+
+  // Someone who answered the free 10 and then upgraded should land on the first
+  // question they have not answered, not page through their old answers again.
+  // A full re-run (everything already answered) still starts at question 1.
+  const resumed = useRef(false)
+  const pendingIdx = useRef(0)   // where Next is heading, across the between-sections screen
+  const [resumedAt, setResumedAt] = useState(0)
+  useEffect(() => {
+    if (resumed.current || !prefillReady || step !== 'questions' || prefillIds.size === 0 || !fullMode) return
+    resumed.current = true
+    const first = visible_qs.findIndex(v => {
+      const a = answers[v.id]
+      return a === undefined || a === '' || (Array.isArray(a) && a.length === 0)
+    })
+    if (first > 0) { setCurrent(first); setResumedAt(first) }
+  }, [prefillReady, step, prefillIds, fullMode]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const q          = visible_qs[current]
   const totalQ     = visible_qs.length
   const isLast     = current === visible_qs.length - 1
@@ -975,7 +992,16 @@ export default function QuestionnairePage() {
     setVisible(false)
     setTimeout(() => {
       if (dir === 'next') {
-        const nextIdx = current + 1
+        let nextIdx = current + 1
+        // Resuming after an upgrade: go straight to the next question they have not answered
+        if (resumedAt > 0) {
+          const open = visible_qs.findIndex((v, i) => {
+            const a = answers[v.id]
+            return i > current && (a === undefined || a === '' || (Array.isArray(a) && a.length === 0))
+          })
+          nextIdx = open === -1 ? Math.max(current + 1, visible_qs.length - 1) : open
+        }
+        pendingIdx.current = nextIdx
         if (nextIdx < visible_qs.length) {
           const nextLayer = visible_qs[nextIdx].layer
           if (nextLayer !== q.layer && (q.layer === 1 || q.layer === 2)) {
@@ -984,7 +1010,7 @@ export default function QuestionnairePage() {
             return
           }
         }
-        setCurrent(c => c + 1)
+        setCurrent(nextIdx)
         saveProgress(nextIdx)
       } else {
         setCurrent(c => c - 1)
@@ -995,7 +1021,7 @@ export default function QuestionnairePage() {
   const handleLayerContinue = () => {
     setLayerDone(null)
     setVisible(false)
-    setTimeout(() => setCurrent(c => c + 1), 80)
+    setTimeout(() => setCurrent(c => Math.max(c + 1, pendingIdx.current)), 80)
   }
 
   const handleSubmit = async () => {
@@ -1473,7 +1499,7 @@ export default function QuestionnairePage() {
               {prefillBanner && (
                 <div className="mb-5 flex items-start gap-3 px-4 py-3 rounded border border-[#c5c0b1] bg-[rgba(201,192,177,0.18)] text-sm text-[#605d52]">
                   <svg className="flex-shrink-0 mt-0.5 w-3.5 h-3.5 text-[#939084]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-                  <p className="flex-1 leading-snug text-xs">Some answers are pre-filled from your last diagnosis. Review each one and update anything that has changed.</p>
+                  <p className="flex-1 leading-snug text-xs">{resumedAt > 0 ? 'Your earlier answers are saved, so you only see the questions you have not answered yet. Use Back if you want to change any of them.' : 'Some answers are pre-filled from your last diagnosis. Review each one and update anything that has changed.'}</p>
                   <button type="button" onClick={() => setPrefillBanner(false)} className="flex-shrink-0 text-[#939084] hover:text-[#605d52] transition-colors">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M18 6 6 18M6 6l12 12"/></svg>
                   </button>
