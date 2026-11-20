@@ -1,59 +1,43 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { ArrowRight, Check } from 'lucide-react'
+import { ArrowRight, Calculator, ChevronRight, ClipboardList, Clock, Gauge, PhoneCall, Shuffle, Users, Wrench } from 'lucide-react'
 import SocialProofToast from '@/components/SocialProofToast'
 import { HomeNav, LandingTracker } from './home-client'
 import { FAQS } from './home-faqs'
 import { CTA, SiteFooter, SiteStyles } from './site'
 
 // The home page. Written for one reader: a Kenyan business owner who runs ads,
-// gets inquiries and sees few sales. It follows one line of thought:
+// gets inquiries and sees few sales.
+//
+// Few words, big type, one idea per block. The order is fixed:
 //   pain      the inquiry that goes quiet
-//   cause     the four things that usually cause it
-//   solution  the diagnosis, shown with an example report
-//   offer     free, plus a call with Eugene; then what staying looks like
+//   cause     the four usual reasons
+//   solution  the diagnosis, shown as an example report
+//   offer     Eugene and the free call, then what a plan adds
 //   trigger   when it is worth doing
-// Rendered on the server so search engines and slow phones get the words at once.
-// Nothing here is a statistic about past clients. The chat and the report are
-// labelled examples.
+// Anything that needs explaining lives in the questions at the bottom, not in
+// the blocks. The chat and the report are labelled examples; nothing here is a
+// statistic about past clients. Rendered on the server.
 
 export const dynamic = 'force-static'
 // Each page names its own address; a site-wide one made every page claim to be the home page
 export const metadata: Metadata = { alternates: { canonical: '/' } }
 
-const FAMILIAR = [
-  'People ask "how much?" and go quiet the moment you answer.',
-  'Your agency sends a report full of clicks and reach. Your phone stays quiet.',
-  'You boosted a post, got plenty of likes and not one sale.',
-  'Leads say "let me get back to you" and never do.',
-  'You got a few customers, but you cannot tell which ad brought them.',
+const STEPS = [
+  { icon: ClipboardList, label: 'Answer 10 questions' },
+  { icon: Gauge,         label: 'Get your score' },
+  { icon: Wrench,        label: 'See what to fix first' },
+  { icon: PhoneCall,     label: 'Talk it through, free' },
 ]
 
 const CAUSES = [
-  { title: 'The wrong people see your ad', body: 'The ad reaches people who are curious, not people who are ready and able to buy. They inquire, then vanish.' },
-  { title: 'Your ad and your page say different things', body: 'The ad promises one thing. The page or the first WhatsApp reply talks about another. The buyer loses trust and leaves.' },
-  { title: 'Serious buyers get lost among the rest', body: 'Every inquiry gets the same slow reply, so the few people who were ready to pay cool off before anyone calls them.' },
-  { title: 'Nobody knows what a customer really costs', body: 'Without that number you cannot tell a good month from a bad one, or whether more budget would help or hurt.' },
+  { icon: Users,      label: 'The wrong people see your ad' },
+  { icon: Shuffle,    label: 'Your ad and your page disagree' },
+  { icon: Clock,      label: 'Slow replies lose serious buyers' },
+  { icon: Calculator, label: 'Nobody knows the cost per customer' },
 ]
 
-const STEPS = [
-  { title: 'Answer 10 questions', body: 'What you sell, what you spend on ads and what comes back. About 3 minutes. No access to your ad accounts.' },
-  { title: 'Get your report', body: 'A score out of 100, an estimate of what is leaking in shillings each month, and your fixes in order.' },
-  { title: 'Go through it with me', body: 'Book a free 20 minute call. We decide together what to fix first.' },
-]
-
-const STAYING = [
-  { title: 'Your cost per lead, every week', body: 'You log spend and leads in 30 seconds on Monday. The dashboard shows whether each lead is getting cheaper.' },
-  { title: 'A note from me every month', body: 'I read your numbers and write to you about what I would change next. You can reply in the dashboard.' },
-  { title: 'Three things from your market', body: 'Each week: what changed, what a competitor did and what to do about it, each with its source.' },
-]
-
-const WHEN = [
-  'You are about to raise your ad budget.',
-  'Your agency contract is up for renewal.',
-  'A new intake, launch or season is coming.',
-  'You have had a month of inquiries and almost no sales.',
-]
+const WHEN = ['Raising your ad budget', 'Renewing with your agency', 'A new intake or launch', 'A month of leads, no sales']
 
 function ScoreRing({ score }: { score: number }) {
   const r = 42, c = 2 * Math.PI * r
@@ -68,6 +52,8 @@ function ScoreRing({ score }: { score: number }) {
   )
 }
 
+const Go = () => <Link href="/questionnaire" className="hp-btn">{CTA} <ArrowRight size={18} aria-hidden="true" /></Link>
+
 export default function Page() {
   return (
     <div className="hp">
@@ -79,19 +65,15 @@ export default function Page() {
 
       <main>
         {/* Pain */}
-        <section className="hp-hero">
-          <div className="hp-wrap hp-hero-grid">
-            <div>
-              <p className="hp-kicker">For Kenyan businesses that run ads to get leads</p>
-              <h1>Getting leads that never buy?</h1>
-              <p className="hp-lead">
-                Find out where your ad money is leaking. Answer 10 questions and in about 3 minutes you get a scored report: why your leads are not becoming customers, what it is costing you in shillings, and what to fix first.
-              </p>
-              <Link href="/questionnaire" className="hp-btn">{CTA} <ArrowRight size={18} aria-hidden="true" /></Link>
-              <p className="hp-fine">Free. No card. No access to your ad accounts.</p>
-            </div>
+        <section className="hp-top hp-c">
+          <div className="hp-wrap">
+            <p className="hp-kicker">For Kenyan businesses that run ads</p>
+            <h1>Leads that never buy?</h1>
+            <p className="hp-lead">Find out why in 3 minutes. Free.</p>
+            <Go />
+            <p className="hp-fine">No card. No access to your ad accounts.</p>
 
-            <figure className="hp-card hp-chat" style={{ margin: 0 }} aria-label="Example of an inquiry that goes quiet">
+            <figure className="hp-card hp-chat" aria-label="Example of an inquiry that goes quiet">
               <div className="hp-chat-top">
                 <span className="hp-ava" aria-hidden="true">W</span>
                 <div><p style={{ font: '600 15px/1.2 var(--body)' }}>Wanjiru</p><p style={{ fontSize: 13, color: 'var(--faint)' }}>Came from your ad</p></div>
@@ -101,43 +83,35 @@ export default function Page() {
               <p className="hp-bub hp-in">Ok, let me get back to you.</p>
               <p className="hp-seen">Seen<strong>No reply for 3 weeks</strong></p>
             </figure>
+
+            <ol id="how" className="hp-four" style={{ scrollMarginTop: 90 }}>
+              {STEPS.map(s => <li key={s.label}><span className="hp-ico" aria-hidden="true"><s.icon size={24} strokeWidth={1.75} /></span>{s.label}</li>)}
+            </ol>
           </div>
         </section>
 
         <section style={{ paddingTop: 0 }}>
-          <div className="hp-wrap">
-            <h2>Sound familiar?</h2>
-            <ul className="hp-list">
-              {FAMILIAR.map(t => <li key={t}><span className="hp-dot" aria-hidden="true" />{t}</li>)}
-            </ul>
-          </div>
-        </section>
-
-        {/* Cause */}
-        <section style={{ paddingTop: 0 }}>
-          <div className="hp-wrap">
-            <h2>It is rarely the budget.</h2>
-            <p className="hp-sub">When inquiries come in and sales do not, the cause is usually one of four things. The diagnosis checks each one.</p>
-            <div className="hp-grid2">
-              {CAUSES.map(c => (
-                <div key={c.title} className="hp-card hp-cause"><h3>{c.title}</h3><p>{c.body}</p></div>
-              ))}
+          <div className="hp-wrap hp-tiles">
+            {/* Cause */}
+            <div className="hp-tile">
+              <div className="hp-tt">
+                <h2>Plenty of inquiries. No sales.</h2>
+                <p>It is rarely the budget. It is usually one of these four.</p>
+              </div>
+              <ul className="hp-rows">
+                {CAUSES.map(c => <li key={c.label}><span className="hp-ico" aria-hidden="true"><c.icon size={22} strokeWidth={1.75} /></span>{c.label}</li>)}
+              </ul>
             </div>
-          </div>
-        </section>
 
-        {/* Solution */}
-        <section id="how" style={{ paddingTop: 0, scrollMarginTop: 80 }}>
-          <div className="hp-wrap">
-            <h2>A clear answer in about 3 minutes.</h2>
-            <p className="hp-sub">You tell me about your business and your ads. You get back a report you can act on the same day.</p>
-            <div className="hp-how">
-              <ol className="hp-steps">
-                {STEPS.map(s => <li key={s.title}><h3>{s.title}</h3><p>{s.body}</p></li>)}
-              </ol>
-
+            {/* Solution */}
+            <div className="hp-tile hp-tile-dark hp-tile-flip">
+              <div className="hp-tt">
+                <h2>A clear answer. In shillings.</h2>
+                <p>Your score, what is leaking each month and what to fix first.</p>
+                <Link href="/questionnaire" className="hp-more">{CTA} <ChevronRight size={18} aria-hidden="true" /></Link>
+              </div>
               <div className="hp-card hp-report">
-                <span className="hp-tag">Example report for a made-up Nairobi property agency</span>
+                <span className="hp-tag">Example report, made-up property agency</span>
                 <div className="hp-score">
                   <ScoreRing score={42} />
                   <div>
@@ -147,62 +121,75 @@ export default function Page() {
                   </div>
                 </div>
                 <div className="hp-sep" />
-                <div className="hp-find"><span className="hp-sev" style={{ background: '#dc2626' }} aria-hidden="true" />Your ads reach all of Nairobi, not people ready to buy property.</div>
+                <div className="hp-find"><span className="hp-sev" style={{ background: '#dc2626' }} aria-hidden="true" />Ads reach all of Nairobi, not people ready to buy.</div>
                 <div className="hp-sep" />
-                <div className="hp-find"><span className="hp-sev" style={{ background: '#dc2626' }} aria-hidden="true" />The ad promises a payment plan. The page never mentions it.</div>
-                <div className="hp-sep" />
-                <div className="hp-find"><span className="hp-sev" style={{ background: '#d97706' }} aria-hidden="true" />New inquiries wait more than a day for a first reply.</div>
-                <p className="hp-fix"><strong>Fix this first: </strong>show the payment plan in the first line of the page, so the promise in the ad is the first thing a buyer sees.</p>
+                <div className="hp-find"><span className="hp-sev" style={{ background: '#d97706' }} aria-hidden="true" />New inquiries wait over a day for a reply.</div>
+                <p className="hp-fix"><strong>Fix first: </strong>put the payment plan in the first line of the page.</p>
+              </div>
+            </div>
+
+            {/* Offer: the person */}
+            <div className="hp-tile hp-tile-warm">
+              <div className="hp-photo" role="img" aria-label="Photo of Eugene Kwata">EK</div>
+              <div className="hp-tt">
+                <h2>A person reads your report.</h2>
+                <p>I am Eugene Kwata, a media buyer in Nairobi. We talk for 20 minutes, free, and pick your first fixes.</p>
+                <Link href="/about" className="hp-more">More about me <ChevronRight size={18} aria-hidden="true" /></Link>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Offer: the person */}
-        <section style={{ paddingTop: 0 }}>
-          <div className="hp-wrap hp-me">
-            <div className="hp-photo" role="img" aria-label="Photo of Eugene Kwata">EK</div>
-            <div>
-              <h2>A person reads your report. That person is me.</h2>
-              <p>I am Eugene Kwata, a media buyer in Nairobi. I trained as a graphic designer and spent two years making ads before I moved into buying them. Today I run Google and Meta campaigns for a living.</p>
-              <p>I built this because I kept opening ad accounts with the same problem: money going out, inquiries coming in and very few sales. The diagnosis finds where that happens. Then we talk, for 20 minutes, free, about what to fix first.</p>
-              <p style={{ marginTop: 26 }}><Link href="/questionnaire" className="hp-btn">{CTA} <ArrowRight size={18} aria-hidden="true" /></Link></p>
-            </div>
-          </div>
-        </section>
-
         {/* Offer: staying */}
-        <section className="hp-dark">
+        <section className="hp-c" style={{ paddingTop: 0 }}>
           <div className="hp-wrap">
-            <h2>If you want me to keep watching your numbers</h2>
-            <p className="hp-sub">The free diagnosis shows you what is wrong today. A plan keeps you from sliding back.</p>
-            <div className="hp-stay-grid">
-              {STAYING.map(s => <div key={s.title} className="hp-stay"><h3>{s.title}</h3><p>{s.body}</p></div>)}
+            <h2>Want your numbers watched?</h2>
+            <div className="hp-minis">
+              <div className="hp-card hp-mini">
+                <div className="hp-mini-vis" aria-hidden="true">
+                  <svg viewBox="0 0 220 90" width="100%" height="100%" preserveAspectRatio="none">
+                    <polyline points="6,18 48,26 90,40 132,46 174,62 214,70" fill="none" stroke="#201515" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                    <circle cx="214" cy="70" r="6" fill="#e8330a" />
+                  </svg>
+                </div>
+                <h3>Cost per lead, every week</h3>
+                <p>Log two numbers on Monday. See if leads are getting cheaper.</p>
+              </div>
+              <div className="hp-card hp-mini">
+                <div className="hp-mini-vis" aria-hidden="true" style={{ alignItems: 'flex-end', justifyContent: 'flex-start' }}>
+                  <span style={{ background: '#201515', color: '#fff', borderRadius: '16px 16px 16px 5px', padding: '11px 14px', font: '400 14px/1.4 var(--body)', maxWidth: '88%' }}>Your leads are cheaper, but replies are slow. Fix that next.</span>
+                </div>
+                <h3>A note from me, every month</h3>
+                <p>What I would change next, written for your business.</p>
+              </div>
+              <div className="hp-card hp-mini">
+                <div className="hp-mini-vis" aria-hidden="true" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 9 }}>
+                  {['What changed', 'A competitor', 'What to do'].map((t, i) => (
+                    <span key={t} style={{ background: '#fff', borderRadius: 10, padding: '8px 12px', font: '500 13px/1 var(--body)', color: i === 2 ? '#e8330a' : '#605d52' }}>{t}</span>
+                  ))}
+                </div>
+                <h3>Your market, in three points</h3>
+                <p>Each week, with the source for every claim.</p>
+              </div>
             </div>
-            <div className="hp-price">
-              <p><strong>From KES 6,500 a month.</strong> Pay with M-Pesa or card, one month at a time. Nothing renews on its own.</p>
-              <Link href="/pricing" className="hp-textlink">See the plans</Link>
-            </div>
+            <p className="hp-priceline"><strong>From KES 6,500 a month.</strong> M-Pesa or card. Nothing renews on its own. <Link href="/pricing" style={{ color: 'var(--ink)', fontWeight: 600, textUnderlineOffset: 4 }}>See the plans</Link></p>
           </div>
         </section>
 
         {/* Trigger */}
-        <section>
-          <div className="hp-wrap hp-when">
-            <div>
-              <h2>The best time is before you spend more.</h2>
-              <p className="hp-sub">Three minutes now costs less than another month of ads aimed at the wrong people.</p>
-              <p style={{ marginTop: 28 }}><Link href="/questionnaire" className="hp-btn">{CTA} <ArrowRight size={18} aria-hidden="true" /></Link></p>
-            </div>
-            <ul className="hp-card hp-check" aria-label="Good moments to run the diagnosis">
-              {WHEN.map(w => <li key={w}><span className="hp-tick" aria-hidden="true"><Check size={14} strokeWidth={3} /></span>{w}</li>)}
+        <section className="hp-c" style={{ paddingTop: 0 }}>
+          <div className="hp-wrap">
+            <h2>Do it before you spend more.</h2>
+            <ul className="hp-chips" aria-label="Good moments to run the diagnosis">
+              {WHEN.map(w => <li key={w}>{w}</li>)}
             </ul>
+            <Go />
           </div>
         </section>
 
         <section id="faq" style={{ paddingTop: 0, scrollMarginTop: 80 }}>
           <div className="hp-wrap">
-            <h2>Questions people ask first</h2>
+            <h2 className="hp-c">Questions? Answers.</h2>
             <div className="hp-card hp-faq">
               {FAQS.map(f => <details key={f.q}><summary>{f.q}</summary><p>{f.a}</p></details>)}
             </div>
@@ -210,8 +197,7 @@ export default function Page() {
         </section>
       </main>
 
-      <SiteFooter title="Find out why your leads are not buying." />
-
+      <SiteFooter title="Find out why your leads are not buying." lead="3 minutes. Free. Then a call with me." />
       <SocialProofToast />
     </div>
   )
