@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from '@/hooks/useSession'
 import { track } from '@/lib/track'
+import { rangeNumber, rangeKind } from '@/lib/answers'
 
 type QuestionType = 'text' | 'url' | 'textarea' | 'select' | 'radio' | 'checkbox' | 'number' | 'slider' | 'yesno'
 
@@ -19,6 +20,10 @@ interface Question {
   comingSoon?: string[]
   placeholder?: string
   showIf?: (answers: Answers) => boolean
+  // Wording that picks up what they already told us. Falls back to `question`.
+  ask?: (answers: Answers) => string | null
+  // A line under the question, worked out from their own answers as they type.
+  context?: (answers: Answers) => string | null
 }
 
 // Three paths share one list. Ids are storage keys (see src/lib/answers.ts) and
@@ -30,6 +35,21 @@ interface Question {
 const SPEND_RANGES = ['Under KES 20,000', 'KES 20,000 to 50,000', 'KES 50,000 to 100,000', 'KES 100,000 to 250,000', 'KES 250,000 to 500,000', 'Over KES 500,000']
 const SALE_RANGES  = ['Under KES 5,000', 'KES 5,000 to 20,000', 'KES 20,000 to 100,000', 'KES 100,000 to 500,000', 'KES 500,000 to 2,000,000', 'Over KES 2,000,000']
 const OUT_OF_TEN   = ['Less than 1', '1', '2', '3', '4', '5 or more']
+
+const kes = (n: number) => `KES ${Math.round(n).toLocaleString('en-US')}`
+// A figure built on a range answer, worded so it never claims more than the range does
+const approx = (v: unknown, times = 1) => {
+  const n = rangeNumber(v); if (!n) return ''
+  const k = rangeKind(v)
+  return k === 'over' ? `at least ${kes(n * times)}` : k === 'under' ? `up to ${kes(n * 2 * times)}` : k === 'exact' ? kes(n * times) : `about ${kes(n * times)}`
+}
+const inquiriesOf = (a: Answers) => { const n = rangeNumber(a[14]); return n !== null && n >= 1 ? Math.round(n) : null }
+const buyersOf    = (a: Answers) => { const i = inquiriesOf(a); const b = rangeNumber(a[35]); return i !== null && b !== null && b >= 0 && b <= i ? b : null }
+const oneChannel  = (a: Answers) => {
+  const c = Array.isArray(a[9]) ? (a[9] as string[]) : []
+  return c.length === 1 && c[0] !== 'Somewhere else' ? c[0].replace(/\s*\(.*\)$/, '') : null
+}
+const countsBuyers = (a: Answers) => runsAds(a) && inquiriesOf(a) !== null
 
 const L1 = 'Your business'
 const L2 = 'Your numbers'
@@ -77,6 +97,26 @@ const QUESTIONS: Question[] = [
     type: 'number',
     placeholder: 'Calls, WhatsApp messages and forms together. A rough number is fine.',
     showIf: runsAds,
+    context: a => {
+      const spend = rangeNumber(a[13]); const inq = inquiriesOf(a)
+      return spend && inq ? `That is ${approx(a[13], 1 / inq)} per inquiry, going by the spend you chose.` : null
+    },
+  },
+  {
+    id: 35, layer: 2, layerName: L2,
+    question: 'How many of your inquiries end up buying in a month?',
+    type: 'number',
+    placeholder: 'A rough number is fine. Put 0 if none have bought yet.',
+    showIf: countsBuyers,
+    ask: a => `You get about ${inquiriesOf(a)} ${inquiriesOf(a) === 1 ? 'inquiry' : 'inquiries'} a month. How many of them end up buying?`,
+    context: a => {
+      const inq = inquiriesOf(a); const raw = rangeNumber(a[35])
+      if (inq === null || raw === null) return null
+      if (raw > inq) return 'That is more than the inquiries you entered. Check the two numbers.'
+      if (raw === 0) return 'None yet. That is useful to know, and it is what your report will focus on.'
+      const perTen = raw / inq * 10
+      return `That is about ${perTen >= 1 ? Math.round(perTen) : 'less than 1'} in every 10.`
+    },
   },
 
   // Not running ads yet: the free seven
@@ -93,6 +133,10 @@ const QUESTIONS: Question[] = [
     type: 'number',
     placeholder: 'A rough number is fine. Put 0 if you have not started.',
     showIf: notYet,
+    context: a => {
+      const how = String(a[5] ?? '')
+      return how && !how.startsWith('I do not') ? `You said most of them come through ${how.charAt(0).toLowerCase()}${how.slice(1)}.` : null
+    },
   },
 
   // Both paths
@@ -101,12 +145,22 @@ const QUESTIONS: Question[] = [
     question: 'Out of 10 people who inquire, how many end up buying?',
     type: 'radio',
     options: OUT_OF_TEN,
+    showIf: a => !countsBuyers(a),
   },
   {
     id: 6, layer: 2, layerName: L2,
     question: 'What is one sale worth to you?',
     type: 'radio',
     options: SALE_RANGES,
+    context: a => {
+      const value = rangeNumber(a[6]); if (!value) return null
+      if (notYet(a)) {
+        const cust = rangeNumber(a[32])
+        return cust && cust >= 1 ? `With ${Math.round(cust)} ${Math.round(cust) === 1 ? 'customer' : 'customers'} a month, that is ${approx(a[6], Math.round(cust))} in sales a month today.` : null
+      }
+      const b = buyersOf(a); const spend = rangeNumber(a[13])
+      return b && spend ? `${b} ${b === 1 ? 'sale' : 'sales'} a month is ${approx(a[6], b)} in sales, from ${approx(a[13])} in ads.` : null
+    },
   },
   {
     id: 15, layer: 2, layerName: L2,
@@ -114,6 +168,12 @@ const QUESTIONS: Question[] = [
     type: 'radio',
     options: ['Mostly', 'Some of them', 'Rarely', 'Not sure'],
     showIf: runsAds,
+    ask: a => {
+      const inq = inquiriesOf(a); const b = buyersOf(a)
+      return inq !== null && b !== null && inq - b >= 1
+        ? `${Math.round(inq - b)} of your ${inq} inquiries did not buy. Do the people who inquire look like your best customers?`
+        : null
+    },
   },
   {
     id: 29, layer: 2, layerName: L2,
@@ -121,6 +181,12 @@ const QUESTIONS: Question[] = [
     type: 'radio',
     options: ['Within 5 minutes', 'Within an hour', 'The same day', 'The next day or later', 'It depends on the day'],
     showIf: runsAds,
+    context: a => {
+      const inq = inquiriesOf(a); if (inq === null) return null
+      if (inq >= 30) return `${inq} inquiries a month is about ${Math.round(inq / 30)} new ${Math.round(inq / 30) === 1 ? 'person' : 'people'} a day.`
+      if (inq >= 5)  return `${inq} inquiries a month is about ${Math.round(inq / 4.3)} new ${Math.round(inq / 4.3) === 1 ? 'person' : 'people'} a week.`
+      return null
+    },
   },
   {
     id: 24, layer: 2, layerName: L2,
@@ -135,6 +201,12 @@ const QUESTIONS: Question[] = [
     type: 'radio',
     options: [...SPEND_RANGES, 'Not sure yet'],
     showIf: notYet,
+    context: a => {
+      const budget = rangeNumber(a[33]); const value = rangeNumber(a[6])
+      if (!budget || !value || rangeKind(a[33]) !== 'between' || rangeKind(a[6]) !== 'between') return null
+      const n = Math.max(1, Math.ceil(budget / value))
+      return `At about ${kes(budget)} a month, you would need ${n} ${n === 1 ? 'sale' : 'sales'} to cover it.`
+    },
   },
   {
     id: 34, layer: 2, layerName: L2,
@@ -151,6 +223,9 @@ const QUESTIONS: Question[] = [
     type: 'textarea',
     placeholder: 'Think of a real customer you would love ten more of. Who are they, where are they, what can they afford?',
     showIf: runsAds,
+    ask: a => a[15] === 'Rarely' ? 'You said the people who inquire rarely look like your best customers. So who is your best customer?'
+      : a[15] === 'Some of them' ? 'You said only some of the people who inquire look like your best customers. So who is your best customer?'
+      : null,
   },
   {
     id: 4, layer: 3, layerName: L3,
@@ -176,6 +251,7 @@ const QUESTIONS: Question[] = [
     type: 'textarea',
     placeholder: 'Ages, places, interests or search words you chose. Say so if you left it on automatic.',
     showIf: runsAds,
+    ask: a => oneChannel(a) ? `Who are your ${oneChannel(a)} ads aimed at?` : null,
   },
   {
     id: 30, layer: 3, layerName: L3,
@@ -183,6 +259,7 @@ const QUESTIONS: Question[] = [
     type: 'radio',
     options: ['A page on my website', 'WhatsApp', 'A form inside Facebook or Instagram', 'My social media page', 'Somewhere else'],
     showIf: runsAds,
+    ask: a => oneChannel(a) ? `Where do your ${oneChannel(a)} ads send people?` : null,
   },
   {
     id: 10, layer: 3, layerName: L3,
@@ -196,6 +273,11 @@ const QUESTIONS: Question[] = [
     question: 'What do you say in your first reply to a new inquiry?',
     type: 'textarea',
     placeholder: 'Paste or type what you normally send',
+    ask: a => {
+      const speed: Record<string, string> = { 'Within 5 minutes': 'within 5 minutes', 'Within an hour': 'within an hour', 'The same day': 'the same day', 'The next day or later': 'the next day or later' }
+      const when = speed[String(a[29] ?? '')]
+      return when ? `You said a new inquiry gets a reply ${when}. What does that first reply say?` : null
+    },
   },
   {
     id: 17, layer: 3, layerName: L3,
@@ -221,7 +303,7 @@ function runsAds(answers: Answers): boolean {
 
 // Answers that only belong to one path. Cleared when someone changes path so a
 // stale answer never reaches the report.
-const RUNNING_ONLY  = [9, 13, 14, 15, 29, 12, 30, 10]
+const RUNNING_ONLY  = [9, 13, 14, 35, 15, 29, 12, 30, 10]
 const NOT_YET_ONLY  = [5, 32, 33, 34]
 
 // Free diagnosis: the first three plus the seven numbers. Paying users, or
@@ -921,6 +1003,7 @@ export default function QuestionnairePage() {
     if (q.type === 'checkbox') return Array.isArray(a) && a.length > 0
     if (q.type === 'slider')   return true
     if (q.type === 'yesno' || q.type === 'radio' || q.type === 'select') return typeof a === 'string' && a.length > 0
+    if (q.id === 35) { const inq = inquiriesOf(answers); const b = rangeNumber(a); return b !== null && b >= 0 && (inq === null || b <= inq) }
     if (q.type === 'number')   return typeof a === 'string' && a.length > 0
     if (q.type === 'url') {
       if (typeof a !== 'string' || !a.trim()) return false
@@ -1533,7 +1616,10 @@ export default function QuestionnairePage() {
                 )}
               </div>
 
-              <h2 className="text-xl sm:text-2xl font-bold text-[#201515] mb-6 leading-snug">{q.question}</h2>
+              <h2 className={`text-xl sm:text-2xl font-bold text-[#201515] leading-snug ${q.context?.(answers) ? 'mb-2' : 'mb-6'}`}>{q.ask?.(answers) || q.question}</h2>
+              {q.context?.(answers) && (
+                <p className="text-sm text-[#605d52] mb-6 leading-snug" aria-live="polite">{q.context(answers)}</p>
+              )}
 
               <div className="mb-8">
                 {q.type === 'text'     && <TextInput     value={textVal} onChange={setAnswer} placeholder={q.placeholder} />}

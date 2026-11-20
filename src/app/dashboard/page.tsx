@@ -172,7 +172,7 @@ type DiagnosisData = {
   monthly_waste_estimate?: string
   is_deep_research?: boolean
   pre_launch?: boolean
-  numbers?: { pre_launch?: boolean; cost_per_inquiry?: number | null; cost_per_sale?: number | null; sale_value?: number | null; one_more_in_ten?: number | null; sales_to_cover_budget?: number | null }
+  numbers?: { pre_launch?: boolean; cost_per_inquiry?: number | null; cost_per_sale?: number | null; sale_value?: number | null; one_more_in_ten?: number | null; sales_to_cover_budget?: number | null; at_least?: boolean }
   breakdown?: BreakdownItem[]
   business_outcomes?: BusinessOutcomes
   audience?: CategoryData
@@ -5225,7 +5225,7 @@ export default function DashboardPage() {
                           : { label: 'Your launch plan', value: 'Ready below', note: 'Tell us your budget and what a sale is worth in a new diagnosis to see the sales you need.' }
                       }
                       if (n.one_more_in_ten) {
-                        return { label: 'One more buyer in every ten inquiries', value: `${money(n.one_more_in_ten)} a month`, note: n.cost_per_sale ? `In extra sales, from your own numbers. Each sale costs you about ${money(n.cost_per_sale)} in ads today.` : 'In extra sales, worked out from your own numbers.' }
+                        return { label: 'One more buyer in every ten inquiries', value: `${n.at_least ? 'At least ' : ''}${money(n.one_more_in_ten)} a month`, note: n.cost_per_sale ? `In extra sales, from your own numbers. Each sale costs you about ${money(n.cost_per_sale)} in ads today.` : 'In extra sales, worked out from your own numbers.' }
                       }
                       if (n.cost_per_inquiry) {
                         return { label: 'Cost per inquiry', value: money(n.cost_per_inquiry), note: 'Your monthly ad spend divided by the inquiries it brought.' }

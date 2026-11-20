@@ -54,7 +54,7 @@ interface ReportData {
   executive_summary?:       string
   monthly_waste_estimate?:  string
   pre_launch?:              boolean
-  numbers?:                 { pre_launch?: boolean; cost_per_sale?: number | null; one_more_in_ten?: number | null; sales_to_cover_budget?: number | null }
+  numbers?:                 { pre_launch?: boolean; cost_per_sale?: number | null; one_more_in_ten?: number | null; sales_to_cover_budget?: number | null; at_least?: boolean }
 }
 
 interface BuyerIntro {
@@ -406,7 +406,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
             </p>
             {report.numbers?.one_more_in_ten ? (
               <p className="text-sm font-semibold text-[#e8330a] mt-2">
-                If one more inquiry in every ten bought: about KES {report.numbers.one_more_in_ten.toLocaleString('en-US')} more in sales a month.
+                If one more inquiry in every ten bought: {report.numbers.at_least ? 'at least' : 'about'} KES {report.numbers.one_more_in_ten.toLocaleString('en-US')} more in sales a month.
               </p>
             ) : report.numbers?.sales_to_cover_budget ? (
               <p className="text-sm font-semibold text-[#e8330a] mt-2">
