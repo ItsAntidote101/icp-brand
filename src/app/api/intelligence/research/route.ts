@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { stripDashes } from '@/lib/strip-dashes'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import Anthropic from '@anthropic-ai/sdk'
 import { getSession } from '@/lib/session'
+import { generateMarketBriefing, loadOwnNumbers } from '@/lib/market-briefing'
 
 export const dynamic    = 'force-dynamic'
 export const maxDuration = 120  // web search calls can take 60-90s
@@ -129,183 +129,6 @@ function buildProfile(
     primaryCta, trustSignals, mobilityScore,
     icpScore, estimatedCpa, ltvCacRatio,
   }
-}
-
-// ─── Intelligence Briefing (with live web research) ──────────────────────────
-
-async function generateBriefing(profile: FullProfile & { companyName: string }): Promise<Record<string, unknown>> {
-
-  const now        = new Date()
-  const dayOfWeek  = now.toLocaleDateString('en-GB', { weekday: 'long' })
-  const dateStr    = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
-  const monthYear  = now.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
-
-  const systemPrompt = `You are a senior competitive intelligence analyst specialising in digital advertising and paid acquisition.
-
-Your job is to produce a highly specific, data-backed market intelligence briefing for a paying subscriber. Generic advice is unacceptable. Every insight must reference actual numbers, named platforms, or real trends specific to this exact industry and region.
-
-You have access to web_search. You MUST perform the following searches before writing any part of your output:
-1. Search "${profile.industry} digital advertising benchmarks ${profile.region} ${monthYear}"
-2. Search "${profile.channels.slice(0, 2).join(' ')} CPC CPM ${profile.region} ${profile.industry} ${new Date().getFullYear()}"
-3. Search "${profile.industry} competitors ${profile.region} digital marketing"
-4. Search "${profile.channels[0] ?? 'Meta'} algorithm update ${monthYear}"
-${profile.landingPage ? `5. Search "${profile.landingPage}" to understand their offer and landing page positioning` : ''}
-
-Use the search results as your primary data source. Only fall back to training knowledge for context you cannot find via search. Cite real sources in the "source" field. Include the actual URL you found in sourceUrl for each insight. These will be shown to users as clickable verification links. If you could not find a URL for a specific insight, set sourceUrl to null. Do not use em dashes or en dashes. Use commas, colons, or full stops instead.`
-
-  const userPrompt = `Generate a market intelligence briefing as of ${dayOfWeek}, ${dateStr} for this marketer.
-
-MARKETER PROFILE:
-- Company: ${profile.companyName || 'Not provided'}
-- Product/Service: ${profile.product}
-- Industry: ${profile.industry}
-- Business model: ${profile.businessModel}
-- Target region: ${profile.region}
-- Target audience: ${profile.targetAudience || 'Not specified'}
-- Decision maker/buyer: ${profile.decisionMaker || 'Not specified'}
-- Core problem they solve: ${profile.coreProblem || 'Not specified'}
-- Ad channels active: ${profile.channels.join(', ')}
-- Monthly ad budget: ${profile.budget || 'Not specified'}
-- Current targeting approach: ${profile.targeting || 'Not specified'}
-${profile.landingPage ? `- Landing page: ${profile.landingPage}` : ''}
-- Monthly leads generated: ${profile.monthlyLeads || 'Not specified'}
-- Close/conversion rate: ${profile.closeRate || 'Not specified'}%
-- Customer LTV: ${profile.ltv || 'Not specified'}
-- Estimated CPA: ${profile.estimatedCpa || 'Not computed (missing budget or leads data)'}
-- LTV:CAC ratio: ${profile.ltvCacRatio || 'Not computed'}
-- ICP Health Score: ${profile.icpScore ?? 'Not yet scored'}/100
-
-REQUIRED: Use your web search results to populate all fields. Every insight must reference specific numbers or named entities. The "source" field must name the actual publication, platform, or dataset you found the data in.
-
-For "timeLabel", use realistic relative timestamps reflecting when each underlying event/data point was published: "2 days ago", "3 days ago", "Earlier this week", "Yesterday", "Last week". Vary them. Never use "Now" or "This week" for every item.
-
-For "competitorPositions", research actual competitor names in the ${profile.industry} space in ${profile.region}. Use the real company names, not "Competitor A". Position them on a 0-100 x/y grid where x = market presence and y = ICP targeting quality.
-
-For "benchmarks", populate industryAvg and top10 from your web search results for the ${profile.industry} industry in ${profile.region}. If the user's own metrics can be computed (see profile above), populate userValue. Otherwise null.
-
-Return ONLY valid JSON with no markdown fences:
-{
-  "insights": [
-    {
-      "id": "i1",
-      "type": "market_movement",
-      "title": "<specific title with numbers from web research>",
-      "body": "<2-3 sentences with specific data from search results, no generic statements>",
-      "source": "<actual publication or dataset name from search>",
-      "sourceUrl": "<actual URL from your web search results, or null if not found>",
-      "timeLabel": "<realistic relative timestamp>",
-      "implication": null,
-      "recommendation": null
-    },
-    {
-      "id": "i2",
-      "type": "competitor_strategy",
-      "title": "<what named competitor(s) in ${profile.region} are doing>",
-      "body": "<specific observation with real company or campaign details from web research>",
-      "source": "<actual source>",
-      "sourceUrl": "<actual URL from your web search results, or null if not found>",
-      "timeLabel": "<realistic relative timestamp>",
-      "implication": "<specific implication for this marketer given their product and audience>",
-      "recommendation": null
-    },
-    {
-      "id": "i3",
-      "type": "opportunity",
-      "title": "<specific, named opportunity in the ${profile.industry} market in ${profile.region}>",
-      "body": "<actionable opportunity with specifics: platform, audience segment, estimated cost or reach>",
-      "source": "<actual source or null>",
-      "sourceUrl": "<actual URL from your web search results, or null if not found>",
-      "timeLabel": "<realistic relative timestamp>",
-      "implication": null,
-      "recommendation": "<specific action: what to do, where, targeting parameters>"
-    },
-    {
-      "id": "i4",
-      "type": "platform_update",
-      "title": "<specific algorithm or policy update on ${profile.channels[0] ?? 'Meta'} or Google>",
-      "body": "<what changed, when it was announced, how it affects ${profile.industry} campaigns>",
-      "source": "<platform blog, press release, or trade publication>",
-      "sourceUrl": "<actual URL from your web search results, or null if not found>",
-      "timeLabel": "<realistic relative timestamp>",
-      "implication": null,
-      "recommendation": "<specific campaign adjustment to make>"
-    },
-    {
-      "id": "i5",
-      "type": "market_movement",
-      "title": "<second market movement specific to ${profile.industry} in ${profile.region}>",
-      "body": "<another market shift with specific numbers or named entities>",
-      "source": "<actual source>",
-      "sourceUrl": "<actual URL from your web search results, or null if not found>",
-      "timeLabel": "<realistic relative timestamp>",
-      "implication": "<what this means for their campaigns given their budget and channels>",
-      "recommendation": null
-    }
-  ],
-  "benchmarks": [
-    { "name": "Click-Through Rate (CTR)", "userValue": null, "industryAvg": <from web research for ${profile.industry} in ${profile.region}>, "top10": <from web research>, "unit": "%", "higherIsBetter": true },
-    { "name": "Cost Per Acquisition (CPA)", "userValue": ${profile.estimatedCpa ? `<compute from profile: ${profile.estimatedCpa}>` : 'null'}, "industryAvg": <from web research>, "top10": <from web research>, "unit": "<currency for ${profile.region}>", "higherIsBetter": false },
-    { "name": "Landing Page Conversion Rate", "userValue": null, "industryAvg": <from web research>, "top10": <from web research>, "unit": "%", "higherIsBetter": true },
-    { "name": "Lead Quality Score", "userValue": ${profile.icpScore ?? 'null'}, "industryAvg": <typical for ${profile.industry}>, "top10": <typical top 10%>, "unit": "", "higherIsBetter": true },
-    { "name": "LTV:CAC Ratio", "userValue": ${profile.ltvCacRatio ? `"${profile.ltvCacRatio}"` : 'null'}, "industryAvg": <typical for ${profile.industry}>, "top10": <top performers>, "unit": ":1", "higherIsBetter": true },
-    { "name": "ICP Health Score", "userValue": ${profile.icpScore ?? 'null'}, "industryAvg": 55, "top10": 82, "unit": "", "higherIsBetter": true }
-  ],
-  "competitorPositions": [
-    { "label": "<real competitor name from web search>", "x": <market presence 0-100>, "y": <ICP quality 0-100> },
-    { "label": "<real competitor name>", "x": <integer>, "y": <integer> },
-    { "label": "<real competitor name>", "x": <integer>, "y": <integer> },
-    { "label": "<real competitor name>", "x": <integer>, "y": <integer> }
-  ],
-  "userPosition": { "x": ${Math.min(95, Math.max(10, (profile.icpScore ?? 50) * 0.85))}, "y": ${Math.min(95, Math.max(10, profile.icpScore ?? 50))} },
-  "researchSources": [
-    { "title": "<page title from search result>", "url": "<actual URL from search>", "query": "<what you searched for>" },
-    { "title": "<page title from search result>", "url": "<actual URL from search>", "query": "<what you searched for>" },
-    { "title": "<page title from search result>", "url": "<actual URL from search>", "query": "<what you searched for>" }
-  ]
-}`
-
-  const res = await anthropic.messages.create({
-    model:      'claude-sonnet-4-6',
-    max_tokens: 6000,
-    system:     systemPrompt,
-    tools:      [{ type: 'web_search_20250305' as const, name: 'web_search' }],
-    messages:   [{ role: 'user', content: userPrompt }],
-  }, {
-    headers: { 'anthropic-beta': 'web-search-2025-03-05' },
-  })
-
-  const raw = res.content
-    .filter(b => b.type === 'text')
-    .map(b => (b as { type: 'text'; text: string }).text)
-    .join('')
-
-  // Robustly extract the JSON object — find first '{' to matching last '}'
-  const start = raw.indexOf('{')
-  const end   = raw.lastIndexOf('}')
-  if (start === -1 || end === -1 || end < start) {
-    console.error('[intelligence/research] No JSON object found in response. Raw output:', raw.slice(0, 500))
-    throw new Error('No JSON in model response')
-  }
-  const clean = raw.slice(start, end + 1)
-
-  let parsed: Record<string, unknown>
-  try {
-    parsed = JSON.parse(clean)
-  } catch (e) {
-    console.error('[intelligence/research] JSON.parse failed. Clean output:', clean.slice(0, 500))
-    throw e
-  }
-
-  // Ensure required fields exist so the frontend doesn't crash
-  const safe = {
-    insights:             Array.isArray(parsed.insights)             ? parsed.insights             : [],
-    benchmarks:           Array.isArray(parsed.benchmarks)           ? parsed.benchmarks           : [],
-    competitorPositions:  Array.isArray(parsed.competitorPositions)  ? parsed.competitorPositions  : [],
-    userPosition:         parsed.userPosition ?? { x: 50, y: 50 },
-    researchSources:      Array.isArray(parsed.researchSources)      ? parsed.researchSources      : [],
-    ...parsed,
-  }
-  return stripDashes(safe) as Record<string, unknown>
 }
 
 // ─── Ask-your-market question (with live web research) ────────────────────────
@@ -545,7 +368,8 @@ export async function POST(req: NextRequest) {
         userData.company_name ?? '',
       )
 
-      const data = await generateBriefing(profile)
+      const own  = await loadOwnNumbers(supabase, userData.id)
+      const data = await generateMarketBriefing(anthropic, profile, own)
       const now  = new Date().toISOString()
 
       await supabase.from('intelligence_briefings').insert({

@@ -63,8 +63,14 @@ export async function GET(req: NextRequest) {
       const fix  = diag.quick_wins?.[0]?.action
       const topFix = fix ? (fix.length > 110 ? `${fix.slice(0, fix.lastIndexOf(' ', 110))}…` : fix) : undefined
 
+      // Top item from the latest market briefing, if it is recent and in the new format
+      const { data: brief } = await supabase.from('intelligence_briefings').select('briefing_data, research_date').eq('user_id', u.id).order('research_date', { ascending: false }).limit(1).maybeSingle()
+      const bd = brief?.briefing_data as { version?: number; items?: { title?: string }[] } | undefined
+      const fresh = brief?.research_date ? now - new Date(brief.research_date as string).getTime() < 8 * DAY_MS : false
+      const market = fresh && bd?.version === 2 && bd.items?.[0]?.title ? `${bd.items[0].title}.` : undefined
+
       const r = await sendWeeklyNumbersEmail({
-        to: u.email, name: u.full_name ?? undefined, week: label, lastCpl, change, topFix, baseUrl,
+        to: u.email, name: u.full_name ?? undefined, week: label, lastCpl, change, topFix, market, baseUrl,
         unsubscribeUrl: `${baseUrl}/api/weekly-checkin/unsubscribe?u=${u.id}&t=${unsubscribeToken(u.id)}`,
       })
       if (r.error) failed++; else sent++

@@ -60,6 +60,7 @@ export type OverviewProps = {
   wins:         QuickWin[]
   buyer:        { firstName: string; initials: string; calLink: string }
   onOpenDiagnosis: () => void
+  onOpenMarket:    () => void
   onUpgrade:    () => void
   onRequestCall: () => void
   onFixDone:    (streak: number) => void
@@ -587,6 +588,31 @@ function HelpCard({ p }: { p: OverviewProps }) {
   )
 }
 
+// ─── This week in your market: one line, the rest lives in the Market tab ────
+function MarketRow({ email, onOpen }: { email: string; onOpen: () => void }) {
+  const [top, setTop] = useState<{ title: string; kind: string } | null>(null)
+  useEffect(() => {
+    let live = true
+    fetch('/api/intelligence/research', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, type: 'fetch' }) })
+      .then(r => (r.ok ? r.json() : null))
+      .then((d: { briefing?: { version?: number; items?: { title: string; kind: string }[] } } | null) => {
+        const b = d?.briefing
+        if (live && b?.version === 2 && b.items?.[0]) setTop(b.items[0])
+      }).catch(() => {})
+    return () => { live = false }
+  }, [email])
+  if (!top) return null
+  return (
+    <button className="ov-card ov-row ov-item" onClick={onOpen} style={{ borderRadius: T.radius, alignItems: 'flex-start' }}>
+      <span style={{ flex: 1, minWidth: 0 }}>
+        <span style={{ display: 'block', font: `400 13px/1.3 ${T.font}`, color: T.faint, marginBottom: 3 }}>This week in your market</span>
+        <span className="ov-clamp" style={{ fontWeight: 500 }}>{top.title}</span>
+      </span>
+      <ChevronRight size={18} color={T.faint} style={{ marginTop: 10 }} />
+    </button>
+  )
+}
+
 // ─── Since you started: the reason to stay ───────────────────────────────────
 // Only real movement is shown. With fewer than two usable weeks there is
 // nothing honest to say yet, so the card stays hidden.
@@ -732,6 +758,8 @@ export default function Overview(p: OverviewProps) {
       <NumbersCard currency={p.currency} onWeeks={setWeeks} />
 
       {weeks && <ProofCard p={p} weeks={weeks} doneNow={done} />}
+
+      {p.tier !== 'free' && <MarketRow email={p.email} onOpen={p.onOpenMarket} />}
 
       <div className="ov-two">
         <FixList p={p} fx={fx} />
