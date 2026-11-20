@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import localFont from 'next/font/local'
 import './globals.css'
 import GoogleTagManager from '@/components/GoogleTagManager'
+import { FAQS } from './home-faqs'
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -19,14 +20,11 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: 'Ideal ICP | Why Your Ad Leads Don\'t Buy, Free Diagnosis for Kenyan Businesses',
   description: 'Getting leads that never buy? Answer 10 questions and find out where your ad budget is leaking, what it costs you in KES and what to fix first. Free, reviewed by a Nairobi media buyer.',
-  metadataBase: new URL('https://idealicp.com'),
-  alternates: {
-    canonical: '/',
-  },
+  metadataBase: new URL('https://www.idealicp.com'),
   openGraph: {
     title: 'Ideal ICP | Getting leads that never buy?',
     description: 'Free 3-minute diagnosis for Kenyan businesses running ads for leads. Find where your budget is leaking.',
-    url: 'https://idealicp.com',
+    url: 'https://www.idealicp.com',
     type: 'website',
     images: [{ url: '/images/og-image.png', width: 1200, height: 630 }],
   },
@@ -49,8 +47,8 @@ const softwareSchema = {
   offers: {
     '@type': 'Offer',
     price: '0',
-    priceCurrency: 'USD',
-    description: 'Free ICP diagnostic report',
+    priceCurrency: 'KES',
+    description: 'Free diagnosis and a free 20 minute call',
   },
   provider: {
     '@type': 'Organization',
@@ -62,32 +60,7 @@ const softwareSchema = {
 const faqSchema = {
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
-  mainEntity: [
-    {
-      '@type': 'Question',
-      name: 'What is the difference between the free report and the subscriber report?',
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: 'The free report diagnoses your ICP based on questionnaire answers. The subscriber report includes live landing page assessment, competitor research, and regional benchmarks.',
-      },
-    },
-    {
-      '@type': 'Question',
-      name: 'Do you need access to my ad accounts?',
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: 'No. We never ask for access to your Google or Meta accounts. You answer our diagnostic questions and optionally upload a CSV export.',
-      },
-    },
-    {
-      '@type': 'Question',
-      name: 'How is this different from hiring a marketing consultant?',
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: 'A consultant charges KES 50,000 or more for a strategy session. We give you a living diagnostic that updates every month and tells you what to fix next automatically.',
-      },
-    },
-  ],
+  mainEntity: FAQS.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

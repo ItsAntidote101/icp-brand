@@ -186,7 +186,7 @@ export default function AboutPage() {
               <div style={{ fontFamily: font, fontWeight: 700, fontSize: 20, color: Dark, margin: '16px 0 4px' }}>The Intelligence System</div>
               <div style={{ fontFamily: fontB, fontSize: 14, color: Orange }}>Market Research Specialist</div>
               <p style={{ fontFamily: fontB, fontSize: 14, color: Muted, lineHeight: 1.7, margin: '12px 0 20px' }}>
-                Monitors competitor activity, tracks regional ad cost benchmarks across 10+ markets, and delivers weekly market briefings for every subscriber. Updated every Monday automatically.
+                Researches each subscriber's market every week and reports up to three things that affect their business, each with its source.
               </p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
                 {['Competitor Monitoring', 'Weekly Briefings', '10+ Regions', 'Benchmark Tracking'].map((tag) => (
@@ -195,20 +195,6 @@ export default function AboutPage() {
               </div>
             </div>
 
-            {/* Card 4, Regional Advisors */}
-            <div style={{ background: '#f8f4f0', border: `1.5px dashed ${Border}`, padding: 32 }}>
-              <div style={{ width: 64, height: 64, background: 'rgba(201,192,177,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Users size={28} color={Muted} />
-              </div>
-              <div style={{ fontFamily: font, fontWeight: 700, fontSize: 20, color: Dark, margin: '16px 0 4px' }}>Regional Advisors</div>
-              <div style={{ fontFamily: fontB, fontSize: 14, color: Orange }}>Onboarding Q3 2026</div>
-              <p style={{ fontFamily: fontB, fontSize: 14, color: Muted, lineHeight: 1.7, margin: '12px 0 20px' }}>
-                We are onboarding specialist media buyers for East Africa, West Africa, South Africa, and UK markets. Each advisor brings deep regional expertise to support Agency tier clients.
-              </p>
-              <a href="mailto:info@idealicp.com" style={{ fontFamily: fontB, fontSize: 14, color: Dark, textDecoration: 'underline' }}>
-                Join as an Advisor →
-              </a>
-            </div>
           </div>
         </div>
       </section>
