@@ -123,7 +123,7 @@ export default function ControlRoom() {
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 6 }}>
                               <span className="cr-tag" style={URGENT.has(t.type) ? { background: 'rgba(232,51,10,0.10)', color: T.accent } : { background: T.fill, color: T.ink2 }}>{TYPE_LABEL[t.type] ?? t.type}</span>
-                              <span style={{ font: `400 13px/1 ${T.font}`, color: T.faint }}>{t.type === 'renewal' ? day(t.at) : ago(t.at)}</span>
+                              {t.type !== 'note_due' && <span style={{ font: `400 13px/1 ${T.font}`, color: T.faint }}>{t.type === 'renewal' ? day(t.at) : ago(t.at)}</span>}
                             </div>
                             <p style={{ font: `500 16px/1.35 ${T.font}`, margin: '0 0 3px' }}>{t.who}: {t.title}</p>
                             {t.detail && <p className="ov-clamp" style={{ font: `400 14px/1.5 ${T.font}`, color: T.muted, margin: 0, whiteSpace: 'pre-line' }}>{t.detail}</p>}
@@ -152,7 +152,7 @@ export default function ControlRoom() {
                         <span style={{ flex: 1, minWidth: 0 }}>
                           <span className="ov-clamp" style={{ fontWeight: 500 }}>{c.name || c.email}</span>
                           <span style={{ display: 'block', font: `400 13px/1.35 ${T.font}`, color: T.faint, marginTop: 3 }}>
-                            {[cap(c.tier), c.tier !== 'free' && c.renewsIn !== null ? `${c.cancelled ? 'ends' : 'renews'} in ${c.renewsIn}d` : '', `seen ${ago(c.lastSeen)}`, c.weeksLogged ? `${c.weeksLogged} weeks logged` : ''].filter(Boolean).join(', ')}
+                            {[cap(c.tier), c.tier !== 'free' && c.renewsIn !== null ? `${c.cancelled ? 'ends' : 'renews'} in ${c.renewsIn}d` : '', `seen ${ago(c.lastSeen)}`, c.weeksLogged ? `${c.weeksLogged} ${c.weeksLogged === 1 ? 'week' : 'weeks'} logged` : ''].filter(Boolean).join(', ')}
                           </span>
                         </span>
                         {c.open > 0 && <span className="cr-tag" style={{ background: 'rgba(232,51,10,0.10)', color: T.accent }}>{c.open} waiting</span>}

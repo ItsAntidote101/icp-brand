@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getAdmin } from '@/lib/admin'
+import { adminEmails, getAdmin } from '@/lib/admin'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { callItem, escalationItems, messageItem, type ThreadItem } from '@/lib/admin-data'
 
@@ -31,7 +31,9 @@ export async function GET() {
   ])
   if (usersQ.error) return NextResponse.json({ error: usersQ.error.message }, { status: 500 })
 
-  const users   = usersQ.data ?? []
+  // Admin logins are not clients
+  const admins  = new Set(adminEmails())
+  const users   = (usersQ.data ?? []).filter(u => !admins.has(u.email.toLowerCase()))
   const byId    = new Map(users.map(u => [u.id, u]))
   const byEmail = new Map(users.map(u => [u.email.toLowerCase(), u]))
   const nameOf  = (u?: { full_name: string | null; email: string } | null, fallback = 'Someone') => u ? (u.full_name || u.email) : fallback
