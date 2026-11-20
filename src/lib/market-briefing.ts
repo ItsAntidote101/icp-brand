@@ -19,6 +19,7 @@ import { leadCostChange, type WeekRow } from '@/lib/progress'
 export type BriefProfile = {
   companyName: string; product: string; industry: string; businessModel: string
   region: string; targetAudience: string; channels: string[]; budget: string
+  buyTrigger?: string                 // their own words on what makes customers buy now
 }
 
 export type OwnNumbers = {
@@ -52,9 +53,20 @@ export type BriefComparison = {
   source: string; sourceUrl: string; published: string | null
 } | null
 
+// A dated event coming up that changes when this business's customers buy.
+// Kept only when the page it came from was returned by the search.
+export type BriefMoment = {
+  title: string
+  date: string                        // YYYY-MM-DD
+  why: string
+  prepare: string | null
+  source: string; sourceUrl: string
+} | null
+
 export type MarketBriefing = {
   version: 2
   items: BriefItem[]
+  moment: BriefMoment
   comparison: BriefComparison
   quiet: boolean
   sources: { title: string; url: string }[]
@@ -115,7 +127,7 @@ const text = (v: unknown, max: number) => (typeof v === 'string' ? v.trim().slic
 const num  = (v: unknown) => { const n = typeof v === 'number' ? v : parseFloat(String(v ?? '').replace(/[^0-9.]/g, '')); return isFinite(n) && n > 0 ? n : null }
 
 /** Turn the model's draft into a briefing, keeping only what the search backs up. */
-export function buildBriefing(draft: unknown, found: Found[], own: OwnNumbers): MarketBriefing {
+export function buildBriefing(draft: unknown, found: Found[], own: OwnNumbers, now: Date = new Date()): MarketBriefing {
   const d       = (draft && typeof draft === 'object' ? draft : {}) as Record<string, unknown>
   const byUrl   = new Map(found.map(f => [norm(f.url), f]))
   const match   = (u: unknown) => (typeof u === 'string' && norm(u) ? byUrl.get(norm(u)) ?? null : null)
@@ -158,7 +170,22 @@ export function buildBriefing(draft: unknown, found: Found[], own: OwnNumbers): 
     }
   }
 
-  const sources = [...kept.map(i => i.sourceUrl), comparison?.sourceUrl].filter((u): u is string => !!u)
+  let moment: BriefMoment = null
+  const m    = (d.moment && typeof d.moment === 'object' ? d.moment : null) as Record<string, unknown> | null
+  const mHit = m ? match(m.sourceUrl) : null
+  const mDay = m ? text(m.date, 10) : ''
+  if (m && mHit && /^\d{4}-\d{2}-\d{2}$/.test(mDay)) {
+    const when  = new Date(`${mDay}T00:00:00Z`).getTime()
+    const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+    const days  = (when - today) / 86_400_000
+    const title = text(m.title, 120), why = text(m.why, 320)
+    // Only a real, upcoming date: today up to four months out
+    if (Number.isFinite(when) && days >= 0 && days <= 120 && title && why) {
+      moment = { title, date: mDay, why, prepare: text(m.prepare, 240) || null, source: text(m.source, 80) || mHit.title, sourceUrl: mHit.url }
+    }
+  }
+
+  const sources = [...kept.map(i => i.sourceUrl), comparison?.sourceUrl, moment?.sourceUrl].filter((u): u is string => !!u)
     .filter((u, i, a) => a.indexOf(u) === i)
     .map(u => ({ title: byUrl.get(norm(u))?.title ?? u, url: u }))
   const act = kept.find(i => i.action)
@@ -166,6 +193,7 @@ export function buildBriefing(draft: unknown, found: Found[], own: OwnNumbers): 
   return stripDashes({
     version: 2,
     items: kept,
+    moment,
     comparison,
     quiet: kept.length === 0,
     sources,
@@ -199,6 +227,7 @@ Run these searches first (${today}):
 2. "${profile.industry} ${profile.region}" news ${month}, to find what named competitors or large players have done recently.
 3. Changes announced in the last 30 days on ${channels.slice(0, 2).join(' and ')} that affect advertisers.
 4. A published cost per lead or cost per click range for ${profile.industry} advertisers, in ${profile.region} if one exists, otherwise the closest region you can find.
+5. One dated event in the next 90 days in ${profile.region} that changes when people buy ${what}: for example school term or intake dates, a tax or filing deadline, a public holiday, a rate or price change taking effect, a trade fair. The page must state the date.
 
 Rules you must not break:
 - Use only facts that appear in pages returned by your searches. Never fill a gap from memory. Never estimate a figure.
@@ -224,6 +253,7 @@ Region: ${profile.region}
 Customers: ${profile.targetAudience || 'not given'}
 Advertises on: ${channels.join(', ')}
 Monthly ad budget: ${profile.budget || 'not given'}
+What makes their customers buy now, in their words: ${profile.buyTrigger || 'not given'}
 
 WHAT THEIR DASHBOARD SHOWS
 ${ownLines}
@@ -235,6 +265,8 @@ Write at most three items, one of each kind:
 
 For every item, "forYou" must connect it to THIS business using the facts above: what they sell, who buys, where they advertise, their cost per lead, their open problems. If you cannot make an honest, specific connection, drop the item. Do not repeat their numbers back without a reason.
 
+"moment": only if search 5 found a page that states an upcoming date. Give the date as YYYY-MM-DD exactly as the page states it, "why" as one sentence on how it changes when this business's customers buy, and "prepare" as the one thing to have ready before it. If the page does not state the date, or the link to this business is weak, set moment to null. Never work a date out yourself.
+
 "comparison": only if search 4 found a published range. Give low and high as plain numbers in the currency the source uses, the currency code, the region the source covers in "scope", and "local": true only if the source is about ${profile.region}. Otherwise set comparison to null. Do not convert currencies and do not include the client's own figure.
 
 Return ONLY this JSON, no markdown:
@@ -242,14 +274,15 @@ Return ONLY this JSON, no markdown:
   "items": [
     { "kind": "change", "title": "<max 12 words, plain, sentence case>", "body": "<max 2 sentences: what happened, with the figure or date from the source>", "forYou": "<max 2 sentences: what it means for this business>", "action": "<max 1 sentence, or null>", "source": "<publication name>", "sourceUrl": "<exact URL from your search results>" }
   ],
+  "moment": { "title": "<max 10 words: the event>", "date": "YYYY-MM-DD", "why": "<1 sentence>", "prepare": "<1 sentence>", "source": "<publication name>", "sourceUrl": "<exact URL from your search results>" },
   "comparison": { "low": 0, "high": 0, "currency": "KES", "scope": "<region the source covers>", "local": true, "source": "<publication name>", "sourceUrl": "<exact URL from your search results>" }
 }`
 
   const res = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
-    max_tokens: 2500,
+    max_tokens: 2800,
     system,
-    tools: [{ type: 'web_search_20250305' as const, name: 'web_search', max_uses: 6 }],
+    tools: [{ type: 'web_search_20250305' as const, name: 'web_search', max_uses: 7 }],
     messages: [{ role: 'user', content: user }],
   }, { headers: { 'anthropic-beta': 'web-search-2025-03-05' } })
 

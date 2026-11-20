@@ -54,6 +54,7 @@ type FullProfile = {
   // Audience
   targetAudience:  string
   decisionMaker:   string
+  buyTrigger:      string
   coreProblem:     string
   discovery:       string
   // Channels & spend
@@ -124,6 +125,7 @@ function buildProfile(
     businessModel:  businessModel || 'Not specified',
     region:         region || 'Kenya',
     targetAudience, decisionMaker, coreProblem, discovery,
+    buyTrigger: typeof r[26] === 'string' ? (r[26] as string).slice(0, 300) : '',
     channels, budget, targeting, landingPage,
     monthlyLeads, closeRate, ltv, dealSize,
     primaryCta, trustSignals, mobilityScore,
