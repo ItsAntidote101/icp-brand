@@ -396,16 +396,21 @@ function NoteCard({ buyer }: { buyer: OverviewProps['buyer'] }) {
 // ─── Your numbers: the weekly check-in ───────────────────────────────────────
 // The reason to come back each week. The Monday email asks for last week's
 // spend, leads and sales; saving them shows cost per lead and how it moved.
-type Week = { week_start: string; spend: number; currency: string; leads: number; sales: number }
+type Week = { week_start: string; spend: number; currency: string; leads: number; sales: number; sales_value?: number | null }
+// The client's own trade words for a lead and a sale (src/lib/trade-words.ts)
+type Words = { lead: string; leads: string; sale: string; sales: string; closed: string }
+const PLAIN: Words = { lead: 'lead', leads: 'leads', sale: 'sale', sales: 'sales', closed: 'Sales closed' }
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
 const money = (n: number, cur: string) => `${cur} ${Math.round(n).toLocaleString()}`
 const cplOf = (w?: Week) => w && w.leads > 0 ? w.spend / w.leads : null
 
-function NumbersCard({ currency, onWeeks }: { currency: string; onWeeks: (w: Week[]) => void }) {
+function NumbersCard({ currency, onWeeks }: { currency: string; onWeeks: (w: Week[], words: Words) => void }) {
   const [weeks, setWeeks]   = useState<Week[] | null>(null)
   const [due, setDue]       = useState<{ week: string; label: string } | null>(null)
   const [editing, setEdit]  = useState(false)
-  const [form, setForm]     = useState({ spend: '', leads: '', sales: '' })
+  const [form, setForm]     = useState({ spend: '', leads: '', sales: '', value: '' })
+  const [words, setWords]   = useState<Words>(PLAIN)
   const [saving, setSaving] = useState(false)
   const [error, setError]   = useState('')
   const ref = React.useRef<HTMLElement>(null)
@@ -414,9 +419,10 @@ function NumbersCard({ currency, onWeeks }: { currency: string; onWeeks: (w: Wee
     try {
       const res = await fetch('/api/weekly-checkin')
       if (!res.ok) throw new Error()
-      const j = await res.json() as { weeks: Week[]; dueWeek: string; dueLabel: string }
-      setWeeks(j.weeks ?? []); setDue({ week: j.dueWeek, label: j.dueLabel }); onWeeks(j.weeks ?? [])
-    } catch { setWeeks([]); onWeeks([]) }
+      const j = await res.json() as { weeks: Week[]; dueWeek: string; dueLabel: string; words?: Words }
+      const w = j.words ?? PLAIN
+      setWords(w); setWeeks(j.weeks ?? []); setDue({ week: j.dueWeek, label: j.dueLabel }); onWeeks(j.weeks ?? [], w)
+    } catch { setWeeks([]); onWeeks([], PLAIN) }
   }
   useEffect(() => { load() }, [])
 
@@ -437,12 +443,12 @@ function NumbersCard({ currency, onWeeks }: { currency: string; onWeeks: (w: Wee
 
   async function save(e: React.FormEvent) {
     e.preventDefault()
-    if (form.spend.trim() === '' || form.leads.trim() === '') { setError('Add your ad spend and your leads. Use 0 if there were none.'); return }
+    if (form.spend.trim() === '' || form.leads.trim() === '') { setError(`Add your ad spend and your ${words.leads}. Use 0 if there were none.`); return }
     setSaving(true); setError('')
     try {
       const res = await fetch('/api/weekly-checkin', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ spend: num(form.spend), leads: Math.round(num(form.leads)), sales: Math.round(num(form.sales || '0')), currency }),
+        body: JSON.stringify({ spend: num(form.spend), leads: Math.round(num(form.leads)), sales: Math.round(num(form.sales || '0')), salesValue: form.value.trim() === '' ? null : num(form.value), currency }),
       })
       const j = await res.json() as { error?: string }
       if (!res.ok) throw new Error(j.error ?? 'Could not save your numbers')
@@ -453,15 +459,16 @@ function NumbersCard({ currency, onWeeks }: { currency: string; onWeeks: (w: Wee
   }
 
   function startEdit() {
-    if (latest && logged) setForm({ spend: String(latest.spend), leads: String(latest.leads), sales: String(latest.sales) })
+    if (latest && logged) setForm({ spend: String(latest.spend), leads: String(latest.leads), sales: String(latest.sales), value: latest.sales_value == null ? '' : String(latest.sales_value) })
     setEdit(true)
   }
 
   if (showForm) {
-    const fields: { key: 'spend' | 'leads' | 'sales'; label: string; hint: string; mode: 'decimal' | 'numeric' }[] = [
+    const fields: { key: 'spend' | 'leads' | 'sales' | 'value'; label: string; hint: string; mode: 'decimal' | 'numeric' }[] = [
       { key: 'spend', label: `Ad spend (${currency})`, hint: '0', mode: 'decimal' },
-      { key: 'leads', label: 'Leads',                  hint: '0', mode: 'numeric' },
-      { key: 'sales', label: 'Sales closed',           hint: 'Optional', mode: 'numeric' },
+      { key: 'leads', label: cap(words.leads),         hint: '0', mode: 'numeric' },
+      { key: 'sales', label: words.closed,             hint: 'Optional', mode: 'numeric' },
+      { key: 'value', label: `What they were worth (${currency})`, hint: 'Optional', mode: 'decimal' },
     ]
     const prev = cplOf(latest && !logged ? latest : weeks[1])
     return (
@@ -485,8 +492,8 @@ function NumbersCard({ currency, onWeeks }: { currency: string; onWeeks: (w: Wee
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, padding: '14px 20px', flexWrap: 'wrap' }}>
             <p style={{ font: `400 14px/1.45 ${T.font}`, color: error ? T.bad : T.muted, margin: 0, flex: '1 1 200px' }} role={error ? 'alert' : undefined}>
               {error || (prev !== null && latest
-                ? `Last time: ${money(prev, latest.currency)} per lead. Save to see how last week compares.`
-                : 'About 30 seconds. Save to see your cost per lead.')}
+                ? `Last time: ${money(prev, latest.currency)} per ${words.lead}. Save to see how last week compares.`
+                : `About 30 seconds. Save to see your cost per ${words.lead}.`)}
             </p>
             <div style={{ display: 'flex', gap: 8 }}>
               {editing && <button type="button" className="ov-btn ov-btn-quiet" onClick={() => { setEdit(false); setError('') }}>Cancel</button>}
@@ -514,13 +521,13 @@ function NumbersCard({ currency, onWeeks }: { currency: string; onWeeks: (w: Wee
       </div>
       <div className="ov-card num-grid">
         <div style={{ padding: '24px 28px' }}>
-          <p style={{ font: `400 15px/1.2 ${T.font}`, color: T.muted, margin: '0 0 6px' }}>Cost per lead, {due.label}</p>
+          <p style={{ font: `400 15px/1.2 ${T.font}`, color: T.muted, margin: '0 0 6px' }}>Cost per {words.lead}, {due.label}</p>
           <p style={{ font: `700 clamp(28px,4vw,36px)/1.1 ${T.head}`, letterSpacing: '-0.025em', color: T.ink, margin: '0 0 8px', fontVariantNumeric: 'tabular-nums' }}>
-            {cpl !== null ? money(cpl, latest.currency) : 'No leads'}
+            {cpl !== null ? money(cpl, latest.currency) : `No ${words.leads}`}
           </p>
           <p style={{ font: `400 14px/1.45 ${T.font}`, color: T.muted, margin: 0 }}>
             {cpl === null
-              ? `${money(latest.spend, latest.currency)} spent with no leads. Start with the first fix below.`
+              ? `${money(latest.spend, latest.currency)} spent with no ${words.leads}. Start with the first fix below.`
               : pct === null
                 ? 'First week logged. Add next week on Monday to see the change.'
                 : pct === 0
@@ -530,18 +537,19 @@ function NumbersCard({ currency, onWeeks }: { currency: string; onWeeks: (w: Wee
         </div>
         <div style={{ padding: '24px 28px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 16 }}>
           <p style={{ font: `400 15px/1.5 ${T.font}`, color: T.ink2, margin: 0 }}>
-            {money(latest.spend, latest.currency)} spent, {latest.leads} {latest.leads === 1 ? 'lead' : 'leads'}
-            {latest.sales > 0 && <>, {latest.sales} {latest.sales === 1 ? 'sale' : 'sales'}{perSale !== null && <> ({money(perSale, latest.currency)} per sale)</>}</>}
+            {money(latest.spend, latest.currency)} spent, {latest.leads} {latest.leads === 1 ? words.lead : words.leads}
+            {latest.sales > 0 && <>, {latest.sales} {latest.sales === 1 ? words.sale : words.sales}{perSale !== null && <> ({money(perSale, latest.currency)} per {words.sale})</>}</>}
+            {latest.sales_value != null && latest.sales_value > 0 && <>. <strong style={{ fontWeight: 600, color: T.ink }}>{money(latest.sales_value, latest.currency)} in sales</strong></>}
           </p>
           {series.length > 1 && (
             <div>
-              <div className="num-bars" role="img" aria-label={`Cost per lead over the last ${series.length} weeks`}>
+              <div className="num-bars" role="img" aria-label={`Cost per ${words.lead} over the last ${series.length} weeks`}>
                 {series.map((w, i) => {
                   const v = cplOf(w)
-                  return <span key={w.week_start} data-latest={i === series.length - 1} title={v !== null ? money(v, w.currency) : 'No leads'} style={{ height: `${Math.max(6, ((v ?? 0) / maxCpl) * 100)}%` }} />
+                  return <span key={w.week_start} data-latest={i === series.length - 1} title={v !== null ? money(v, w.currency) : `No ${words.leads}`} style={{ height: `${Math.max(6, ((v ?? 0) / maxCpl) * 100)}%` }} />
                 })}
               </div>
-              <p style={{ font: `400 12px/1.3 ${T.font}`, color: T.faint, margin: '6px 0 0' }}>Cost per lead, last {series.length} weeks</p>
+              <p style={{ font: `400 12px/1.3 ${T.font}`, color: T.faint, margin: '6px 0 0' }}>Cost per {words.lead}, last {series.length} weeks</p>
             </div>
           )}
         </div>
@@ -613,12 +621,51 @@ function MarketRow({ email, onOpen }: { email: string; onOpen: () => void }) {
   )
 }
 
+// ─── What happened on your account ───────────────────────────────────────────
+// The work that is otherwise invisible: what the client did, what Eugene did
+// and what the system did, from real records of the last two weeks.
+function ActivityCard() {
+  const [events, setEvents] = useState<{ at: string; who: 'you' | 'eugene' | 'system'; text: string }[] | null>(null)
+  const [all, setAll] = useState(false)
+  useEffect(() => {
+    let live = true
+    fetch('/api/activity').then(r => (r.ok ? r.json() : { events: [] })).then((d: { events?: typeof events }) => { if (live) setEvents(d.events ?? []) }).catch(() => live && setEvents([]))
+    return () => { live = false }
+  }, [])
+  if (!events || events.length === 0) return null
+  const shown = all ? events : events.slice(0, 4)
+  const when = (iso: string) => {
+    const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000)
+    return days <= 0 ? 'Today' : days === 1 ? 'Yesterday' : new Date(iso).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })
+  }
+  const dot = { you: T.ink, eugene: T.accent, system: T.faint } as const
+  return (
+    <section aria-labelledby="ov-activity">
+      <div style={{ margin: '0 4px 12px' }}><h2 id="ov-activity" className="ov-h2">On your account lately</h2></div>
+      <ol className="ov-card" style={{ listStyle: 'none', margin: 0, padding: '6px 0', overflow: 'hidden' }}>
+        {shown.map((e, i) => (
+          <li key={`${e.at}-${i}`} style={{ display: 'flex', alignItems: 'flex-start', gap: 14, padding: '13px 20px' }}>
+            <span aria-hidden style={{ width: 9, height: 9, borderRadius: '50%', background: dot[e.who], marginTop: 7, flexShrink: 0 }} />
+            <span style={{ flex: 1, minWidth: 0, font: `400 16px/1.4 ${T.font}`, color: T.ink }}>{e.text}</span>
+            <span style={{ font: `400 13px/1.7 ${T.font}`, color: T.faint, whiteSpace: 'nowrap' }}>{when(e.at)}</span>
+          </li>
+        ))}
+      </ol>
+      {events.length > 4 && !all && <button className="ov-link" style={{ margin: '10px 4px 0' }} onClick={() => setAll(true)}>Show the last two weeks</button>}
+    </section>
+  )
+}
+
 // ─── Since you started: the reason to stay ───────────────────────────────────
 // Only real movement is shown. With fewer than two usable weeks there is
 // nothing honest to say yet, so the card stays hidden.
-function ProofCard({ p, weeks, doneNow }: { p: OverviewProps; weeks: Week[]; doneNow: number }) {
+function ProofCard({ p, weeks, doneNow, words }: { p: OverviewProps; weeks: Week[]; doneNow: number; words: Words }) {
   const c = leadCostChange(weeks)
   if (!c) return null
+  // Money in against money out, over the weeks where they told us what sales were worth
+  const valued = weeks.filter(w => w.currency === c.currency && w.sales_value != null && w.sales_value > 0)
+  const earned = valued.reduce((n, w) => n + (w.sales_value ?? 0), 0)
+  const spent  = valued.reduce((n, w) => n + w.spend, 0)
   const fixes  = Math.max(p.fixesTotal, doneNow)
   const points = p.score !== null && p.firstScore !== null ? p.score - p.firstScore : 0
   const better = c.pct <= -3, worse = c.pct >= 3
@@ -626,19 +673,24 @@ function ProofCard({ p, weeks, doneNow }: { p: OverviewProps; weeks: Week[]; don
     <section aria-labelledby="ov-proof">
       <div style={{ margin: '0 4px 12px' }}><h2 id="ov-proof" className="ov-h2">Since you started tracking</h2></div>
       <div className="ov-card" style={{ padding: '24px 28px' }}>
-        <p style={{ font: `400 15px/1.2 ${T.font}`, color: T.muted, margin: '0 0 8px' }}>{c.averaged ? 'Cost per lead, first two weeks against the last two' : 'Cost per lead, first week against the latest'}</p>
+        <p style={{ font: `400 15px/1.2 ${T.font}`, color: T.muted, margin: '0 0 8px' }}>{c.averaged ? `Cost per ${words.lead}, first two weeks against the last two` : `Cost per ${words.lead}, first week against the latest`}</p>
         <p style={{ font: `700 clamp(24px,3.6vw,32px)/1.15 ${T.head}`, letterSpacing: '-0.02em', color: T.ink, margin: '0 0 8px', fontVariantNumeric: 'tabular-nums' }}>
           <span style={{ color: T.faint, fontWeight: 500 }}>{money(c.from, c.currency)}</span>
           <span aria-hidden style={{ color: T.faint, fontWeight: 400 }}> to </span>
           <span className="sr-only">now </span>{money(c.to, c.currency)}
         </p>
         <p style={{ font: `400 15px/1.5 ${T.font}`, color: T.ink2, margin: 0, maxWidth: '62ch' }}>
-          {better ? <><span style={{ color: T.good, fontWeight: 600 }}>{Math.abs(c.pct)}% cheaper</span> per lead</> : worse ? <><span style={{ color: T.warn, fontWeight: 600 }}>{c.pct}% higher</span> per lead</> : <>Holding steady</>}
-          {' '}over {c.weeks} weeks, with {c.leads.toLocaleString()} leads logged
+          {better ? <><span style={{ color: T.good, fontWeight: 600 }}>{Math.abs(c.pct)}% cheaper</span> per {words.lead}</> : worse ? <><span style={{ color: T.warn, fontWeight: 600 }}>{c.pct}% higher</span> per {words.lead}</> : <>Holding steady</>}
+          {' '}over {c.weeks} weeks, with {c.leads.toLocaleString()} {words.leads} logged
           {fixes > 0 && <> and {fixes} {fixes === 1 ? 'fix' : 'fixes'} done</>}
           {points > 0 && <>. Your ICP score is up {points} {points === 1 ? 'point' : 'points'}</>}.
           {worse && <> The fixes below are aimed at bringing this back down.</>}
         </p>
+        {earned > 0 && spent > 0 && (
+          <p style={{ font: `400 15px/1.5 ${T.font}`, color: T.ink2, margin: '12px 0 0', maxWidth: '62ch' }}>
+            <strong style={{ fontWeight: 600, color: T.ink }}>{money(earned, c.currency)} in sales</strong> from {money(spent, c.currency)} of ads, over the {valued.length} {valued.length === 1 ? 'week' : 'weeks'} you gave a sales value.
+          </p>
+        )}
       </div>
     </section>
   )
@@ -707,6 +759,7 @@ export default function Overview(p: OverviewProps) {
   const done = fx.checked.filter(Boolean).length
   const st   = p.score !== null ? statusOf(p.score) : null
   const [weeks, setWeeks] = useState<Week[] | null>(null)
+  const [words, setWords] = useState<Words>(PLAIN)
 
   return (
     <div className="ov-wrap" style={{ display: 'flex', flexDirection: 'column', gap: 32, fontFamily: T.font }}>
@@ -755,9 +808,11 @@ export default function Overview(p: OverviewProps) {
         </div>
       </section>
 
-      <NumbersCard currency={p.currency} onWeeks={setWeeks} />
+      <NumbersCard currency={p.currency} onWeeks={(w, t) => { setWeeks(w); setWords(t) }} />
 
-      {weeks && <ProofCard p={p} weeks={weeks} doneNow={done} />}
+      {weeks && <ProofCard p={p} weeks={weeks} doneNow={done} words={words} />}
+
+      {p.tier !== 'free' && <ActivityCard />}
 
       {p.tier !== 'free' && <MarketRow email={p.email} onOpen={p.onOpenMarket} />}
 

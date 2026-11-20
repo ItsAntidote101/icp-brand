@@ -19,6 +19,9 @@ export async function GET(req: NextRequest) {
     .eq('id', id).maybeSingle()
   if (!u) return NextResponse.json({ error: 'Client not found' }, { status: 404 })
 
+  // Opening a client's page is the moment their numbers were looked at; their dashboard may say so
+  await supabase.from('admin_client_views').upsert({ user_id: u.id, last_viewed_at: new Date().toISOString() }, { onConflict: 'user_id' })
+
   const [snapshot, thread, notesQ, payQ, privQ] = await Promise.all([
     clientSnapshot(supabase, u.id, u.total_fixes_completed ?? 0),
     clientThread(supabase, { id: u.id, email: u.email }),

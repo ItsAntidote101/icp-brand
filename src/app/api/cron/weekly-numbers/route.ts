@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { sendWeeklyNumbersEmail } from '@/lib/email'
 import { readStoredReport } from '@/lib/repair-json'
+import { loadIndustry, tradeWords } from '@/lib/trade-words'
 import { lastCompletedWeekStart, weekLabel, unsubscribeToken } from '@/lib/weeks'
 
 export const dynamic = 'force-dynamic'
@@ -71,6 +72,7 @@ export async function GET(req: NextRequest) {
 
       const r = await sendWeeklyNumbersEmail({
         to: u.email, name: u.full_name ?? undefined, week: label, lastCpl, change, topFix, market, baseUrl,
+        words: tradeWords(await loadIndustry(supabase, u.id, u.email)),
         unsubscribeUrl: `${baseUrl}/api/weekly-checkin/unsubscribe?u=${u.id}&t=${unsubscribeToken(u.id)}`,
       })
       if (r.error) failed++; else sent++
