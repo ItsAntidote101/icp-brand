@@ -417,9 +417,10 @@ ${cta('Renew my plan', url)}`
 // ─── Monday numbers: the weekly prompt to log last week's results ───────────
 
 export async function sendWeeklyNumbersEmail({
-  to, name, week, lastCpl, change, topFix, market, baseUrl, unsubscribeUrl,
+  to, name, week, lastCpl, change, topFix, market, baseUrl, unsubscribeUrl, words,
 }: {
   to: string; name?: string
+  words?: { lead: string; leads: string; sales: string }   // the client's trade words
   market?: string                    // top item from this week's market briefing
   week: string                       // "10 to 16 Nov"
   lastCpl?: string                   // "KES 850", from the most recent week logged
@@ -429,13 +430,14 @@ export async function sendWeeklyNumbersEmail({
 }) {
   const url = `${baseUrl ?? 'https://www.idealicp.com'}/dashboard?checkin=1`
   const first = escapeHtml(name?.split(' ')[0] ?? 'there')
+  const w = words ?? { lead: 'lead', leads: 'leads', sales: 'sales' }
 
   const content = `
 ${ICON.chart}
 ${heading('How did last week go?', 38)}
-${sub(`Hi ${first}, add your numbers for <strong style="color:${Dark};">${escapeHtml(week)}</strong>: ad spend, leads and sales. It takes about 30 seconds and shows your cost per lead straight away.`)}
+${sub(`Hi ${first}, add your numbers for <strong style="color:${Dark};">${escapeHtml(week)}</strong>: ad spend, ${w.leads} and ${w.sales}. It takes about 30 seconds and shows your cost per ${w.lead} straight away.`)}
 ${lastCpl ? securityBox(`<p style="margin:0 0 4px;color:${Muted};font-size:13px;font-family:${font};">Last time you logged</p>
-<p style="margin:0;color:${Dark};font-size:22px;font-weight:700;font-family:${font};">${escapeHtml(lastCpl)} per lead</p>
+<p style="margin:0;color:${Dark};font-size:22px;font-weight:700;font-family:${font};">${escapeHtml(lastCpl)} per ${w.lead}</p>
 ${change ? `<p style="margin:4px 0 0;color:${Muted};font-size:14px;font-family:${font};">${escapeHtml(change)}</p>` : ''}`) : ''}
 ${cta('Add last week\'s numbers', url)}
 ${topFix ? `<p style="margin:28px 0 0;color:${Muted};font-size:14px;line-height:1.6;font-family:${font};">Still open this week: <span style="color:${Dark};">${escapeHtml(topFix)}</span></p>` : ''}
@@ -444,7 +446,7 @@ ${market ? `<p style="margin:14px 0 0;color:${Muted};font-size:14px;line-height:
 
   const { data, error } = await getResend().emails.send({
     from: FROM, to,
-    subject: lastCpl ? `Last time: ${lastCpl} per lead. How was ${week}?` : `Your ad numbers for ${week}: 30 seconds to log`,
+    subject: lastCpl ? `Last time: ${lastCpl} per ${w.lead}. How was ${week}?` : `Your ad numbers for ${week}: 30 seconds to log`,
     html: base(content),
     headers: { 'List-Unsubscribe': `<${unsubscribeUrl}>` },
   })
