@@ -1,9 +1,11 @@
 'use client'
 
-// The control room. One login, three places:
+// The control room. One login, five places:
 //   Today     everything that needs Eugene, most urgent first
 //   Clients   everyone; tap one for their whole story on a single page
 //   Messages  one conversation per client, however it started
+//   Money     what came in, what is due, who slipped away
+//   Funnel    visits to diagnoses to calls to paid, by ad source
 // Everything hangs off the client, so a complaint, a payment and a note are
 // always found in the same place.
 
@@ -11,6 +13,7 @@ import React, { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { ChevronRight, ChevronLeft } from 'lucide-react'
 import { DashStyles, Segmented, T } from '../dashboard/overview'
+import { FunnelView, MoneyView } from './business'
 
 type Ref = { type: 'call' | 'message' | 'escalation'; id: string }
 type ThreadItem = { key: string; at: string; from: 'client' | 'eugene'; kind: string; label: string; body: string; open: boolean; ref?: Ref }
@@ -26,7 +29,7 @@ type Detail = {
   payments: { reference: string; tier: string; kind: string; status: string; paid_amount: number | null; expected_amount: number | null; created_at: string; paid_at: string | null }[]
   privateNote: string
 }
-type View = 'today' | 'clients' | 'messages'
+type View = 'today' | 'clients' | 'messages' | 'money' | 'funnel'
 
 const day     = (iso: string) => new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
 const weekDay = (ymd: string) => new Date(`${ymd}T00:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' })
@@ -85,6 +88,7 @@ export default function ControlRoom() {
         .cr-stat dd { margin: 2px 0 0; font: 700 20px/1.2 ${T.head}; color: ${T.ink}; font-variant-numeric: tabular-nums; }
         .cr-bubble { max-width: 82%; padding: 12px 16px; border-radius: 18px; font: 400 15px/1.5 ${T.font}; white-space: pre-wrap; overflow-wrap: anywhere; }
         .cr-tag { font: 600 12px/1 ${T.font}; padding: 5px 9px; border-radius: 980px; white-space: nowrap; }
+        @media (max-width: 480px) { .cr-wrap > header .seg { width: 100%; } .cr-wrap > header .seg button { flex: 1 0 auto; padding: 9px 8px; font-size: 13px; } }
       ` }} />
 
       <div className="cr-wrap">
@@ -101,8 +105,10 @@ export default function ControlRoom() {
               </div>
               <Segmented<View> label="Sections" value={view} onChange={setView} options={[
                 { value: 'today', label: `Today${data?.today.length ? ` ${data.today.length}` : ''}` },
-                { value: 'clients', label: `Clients${data ? ` ${data.clients.length}` : ''}` },
+                { value: 'clients', label: 'Clients' },
                 { value: 'messages', label: `Messages${openMsgs ? ` ${openMsgs}` : ''}` },
+                { value: 'money', label: 'Money' },
+                { value: 'funnel', label: 'Funnel' },
               ]} />
             </header>
 
@@ -157,6 +163,9 @@ export default function ControlRoom() {
                 </div>
               </>
             )}
+
+            {data && view === 'money' && <MoneyView onOpen={setOpenId} />}
+            {data && view === 'funnel' && <FunnelView />}
 
             {data && view === 'messages' && (
               threads.length === 0
