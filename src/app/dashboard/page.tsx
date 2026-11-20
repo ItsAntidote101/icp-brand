@@ -315,9 +315,9 @@ const TIER_LABEL: Record<string, string> = { starter: 'Starter', pro: 'Pro', age
 // Base prices in KES
 const TIER_PRICE_KES: Record<string, number> = { starter: 6500, pro: 13000, agency: 26000, free: 0 }
 const TIER_DESC: Record<string, string> = {
-  starter: 'Monthly ICP diagnostic with full report, findings, and quick wins.',
-  pro:     'Everything in Starter plus priority re-diagnosis and campaign CSV analysis.',
-  agency:  'Everything in Pro plus unlimited diagnoses (one per client) and a monthly strategy call with Eugene.',
+  starter: 'The full report, files ready to upload, weekly tracking and a monthly note from Eugene.',
+  pro:     'Everything in Starter plus a campaign setup plan and one hands-on session with Eugene a month.',
+  agency:  'Everything in Pro plus unlimited diagnoses (one per client), up to 4 hands-on sessions and a monthly strategy call.',
   free:    'Basic ICP diagnostic based on questionnaire answers only.',
 }
 
@@ -2232,27 +2232,25 @@ const CANCEL_REASONS = [
 
 const PLAN_FEATURES: Record<string, string[]> = {
   starter: [
-    'Monthly ICP health check',
-    'Top 3 critical findings',
-    'Funnel friction score',
-    'Quick wins report',
+    'Every problem with its fix, and the words to paste',
+    'Keywords, blocked words and Meta files ready to upload',
+    'Your cost per lead tracked every week',
+    'A monthly note from Eugene',
+    'A weekly market briefing with sources',
   ],
   pro: [
     'Everything in Starter',
-    'Weekly performance snapshots',
-    'CSV campaign analysis',
-    'Benchmark comparisons',
-    'Deep research reports',
-    'Complete report history',
+    'A campaign setup plan for your stage',
+    'One hands-on session with Eugene a month',
+    'An onboarding call with Eugene',
+    'Campaign export analysis',
   ],
   agency: [
     'Everything in Pro',
     'Unlimited diagnoses, one per client',
+    'Up to 4 hands-on sessions a month',
     'Monthly strategy call with Eugene',
     'White-label reports (coming soon)',
-    'Founder-led support',
-    'Custom billing and invoicing',
-    'Priority support',
   ],
 }
 

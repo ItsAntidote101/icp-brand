@@ -625,7 +625,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                   ))}
                   {[
                     'Monthly ICP health score refresh with trend tracking',
-                    'Weekly intelligence briefings from your media buyer',
+                    'A weekly market briefing with sources',
                   ].map((item, i) => (
                     <div key={i} className="flex gap-3 items-center bg-white rounded-xl px-4 py-3 border border-[#c5c0b1]">
                       <div className="w-4 h-4 rounded-full bg-[rgba(232,51,10,0.15)] flex-shrink-0" />
@@ -648,7 +648,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                       : 'Get your full optimisation roadmap'}
                   </h2>
                   <p className="text-[rgba(255,255,255,0.6)] text-sm max-w-lg mx-auto mb-7 leading-relaxed">
-                    Your report surfaces the problems. Your dashboard gives you the full fix plan, progress tracking, weekly intelligence from your media buyer, and a score that updates as you improve.
+                    Your report shows the problems. A plan gives you every fix with the words to use, files ready to upload, your numbers tracked every week and a monthly note from Eugene.
                   </p>
 
                   {/* Pricing tiers */}
@@ -657,15 +657,15 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                       [
                         {
                           name: 'Starter' as Tier, highlight: false,
-                          features: ['Full fix plan for all findings', 'Score history and trend tracking', 'Weekly intelligence briefings', 'Buyer message each month'],
+                          features: ['Every problem with its fix and the words to paste', 'Keywords and Meta files ready to upload', 'Cost per lead tracked every week', 'A monthly note from Eugene'],
                         },
                         {
                           name: 'Pro' as Tier, highlight: true,
-                          features: ['Everything in Starter', 'Live landing page audit', 'Regional and competitor benchmarks', 'Onboarding call with Eugene'],
+                          features: ['Everything in Starter', 'A campaign setup plan for your stage', 'One hands-on session with Eugene a month', 'Onboarding call with Eugene'],
                         },
                         {
                           name: 'Agency' as Tier, highlight: false,
-                          features: ['Everything in Pro', 'Unlimited diagnoses, one per client', 'Monthly call with Eugene', 'White-label reports (coming soon)'],
+                          features: ['Everything in Pro', 'Unlimited diagnoses, one per client', 'Up to 4 hands-on sessions a month', 'Monthly call with Eugene'],
                         },
                       ]
                     ).map(tier => (

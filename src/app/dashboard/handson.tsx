@@ -6,9 +6,9 @@
 import { useEffect, useState } from 'react'
 import { ChevronRight, Lock } from 'lucide-react'
 import { T } from './overview'
-import { JOBS, type JobId } from '@/lib/hands-on'
+import { JOBS, monthlyLimit, type JobId } from '@/lib/hands-on'
 
-type State = { limit: number | null; used: number; requests: { id: string; job: string; open: boolean; at: string }[] }
+type State = { limit: number; used: number; requests: { id: string; job: string; open: boolean; at: string }[] }
 const TIMES = ['Weekday morning', 'Weekday afternoon', 'Weekday evening', 'Saturday']
 
 export default function HandsOnCard({ tier, buyerName, onUpgrade }: { tier: string; buyerName: string; onUpgrade: () => void }) {
@@ -37,7 +37,7 @@ export default function HandsOnCard({ tier, buyerName, onUpgrade }: { tier: stri
       const res = await fetch('/api/hands-on', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ job, tools, whatsapp: phone, preferredTime: time, notes }) })
       const d = await res.json().catch(() => ({})) as Partial<State> & { error?: string }
       if (!res.ok) throw new Error(d.error || 'Could not send that. Please try again.')
-      if (typeof d.used === 'number') setState({ limit: d.limit ?? null, used: d.used, requests: d.requests ?? [] })
+      if (typeof d.used === 'number') setState({ limit: d.limit ?? monthlyLimit(tier), used: d.used, requests: d.requests ?? [] })
       setSentJob(JOBS.find(j => j.id === job)?.title ?? ''); setOpen(null); setTools(''); setNotes('')
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not send that. Please try again.')
@@ -59,7 +59,7 @@ export default function HandsOnCard({ tier, buyerName, onUpgrade }: { tier: stri
           <Lock size={15} color={T.faint} style={{ flexShrink: 0, marginTop: 3 }} />
           <span style={{ flex: 1, minWidth: 0 }}>
             <span style={{ display: 'block', fontWeight: 500, color: T.ink2 }}>{buyerName} sets it up with you</span>
-            <span style={{ display: 'block', font: `400 13px/1.35 ${T.font}`, color: T.faint, marginTop: 3 }}>CRM connection, conversion tracking and campaign setup, one session a month</span>
+            <span style={{ display: 'block', font: `400 13px/1.35 ${T.font}`, color: T.faint, marginTop: 3 }}>CRM connection, conversion tracking and campaign setup, in a session each month</span>
           </span>
           <ChevronRight size={18} color={T.faint} />
         </button>
@@ -67,16 +67,16 @@ export default function HandsOnCard({ tier, buyerName, onUpgrade }: { tier: stri
     )
   }
 
-  const limit = state?.limit ?? (tier === 'agency' ? null : 1)
+  const limit = state?.limit ?? monthlyLimit(tier)
   const used  = state?.used ?? 0
-  const full  = limit !== null && used >= limit
+  const full  = used >= limit
   const small = { font: `400 14px/1.5 ${T.font}`, color: T.muted, margin: 0 } as const
   const field = { font: `400 15px/1.3 ${T.font}`, color: T.ink, background: '#fff', border: `1px solid ${T.hairline}`, borderRadius: 12, padding: '11px 12px', width: '100%', boxSizing: 'border-box' } as const
   const lab   = { display: 'block', font: `400 13px/1.3 ${T.font}`, color: T.muted, margin: '0 0 5px' } as const
 
   return (
     <section aria-labelledby="ov-hands">
-      {head(limit === null ? '' : `${Math.min(used, limit)} of ${limit} used this month`)}
+      {head(`${Math.min(used, limit)} of ${limit} used this month`)}
       <div className="ov-card" style={{ overflow: 'hidden' }}>
         <p style={{ ...small, padding: '16px 20px 12px', color: T.ink2 }}>
           Some jobs are quicker done together. Pick one and {buyerName} sets it up with you on a call or over WhatsApp.
@@ -90,7 +90,7 @@ export default function HandsOnCard({ tier, buyerName, onUpgrade }: { tier: stri
         )}
 
         {full ? (
-          <p style={{ ...small, padding: '0 20px 18px' }}>This month&apos;s session is booked. A new one opens on the 1st, and you can message {buyerName} any time in between.</p>
+          <p style={{ ...small, padding: '0 20px 18px' }}>{limit === 1 ? 'This month\u2019s session is booked. A new one opens on the 1st' : 'This month\u2019s sessions are booked. New ones open on the 1st'}, and you can message {buyerName} any time in between.</p>
         ) : JOBS.map((j, i) => {
           const isOpen = open === j.id
           return (

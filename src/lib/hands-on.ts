@@ -1,5 +1,5 @@
 // "Done with you": hands-on jobs the media buyer does together with a client.
-// Pro includes one a month, Agency has no monthly cap. Requests are saved as
+// Pro includes one a month, Agency up to four. Requests are saved as
 // session_requests so they land in the control room's Today queue.
 
 export const JOBS = [
@@ -13,9 +13,9 @@ export type JobId = typeof JOBS[number]['id']
 export const FORMAT_PREFIX = 'Hands-on: '
 export const formatFor = (id: JobId) => `${FORMAT_PREFIX}${JOBS.find(j => j.id === id)?.title ?? 'Something else'}`
 
-/** Sessions a plan includes each calendar month. null means no monthly cap; 0 means not included. */
-export function monthlyLimit(tier: string): number | null {
-  return tier === 'agency' ? null : tier === 'pro' ? 1 : 0
+/** Sessions a plan includes each calendar month. 0 means not included. */
+export function monthlyLimit(tier: string): number {
+  return tier === 'agency' ? 4 : tier === 'pro' ? 1 : 0
 }
 
 /** First moment of the current month in Nairobi (UTC+3), as an ISO string. */
