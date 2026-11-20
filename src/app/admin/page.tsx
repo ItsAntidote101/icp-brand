@@ -18,7 +18,7 @@ import { FunnelView, MoneyView } from './business'
 type Ref = { type: 'call' | 'message' | 'escalation'; id: string }
 type ThreadItem = { key: string; at: string; from: 'client' | 'eugene'; kind: string; label: string; body: string; open: boolean; ref?: Ref }
 type TodayItem  = { key: string; type: string; at: string; userId: string | null; who: string; title: string; detail: string; ref?: Ref }
-type ClientRow  = { id: string; name: string | null; email: string; company: string | null; tier: string; status: string; renewsIn: number | null; cancelled: boolean; lastSeen: string; weeksLogged: number; open: number; lastMessage: ThreadItem | null }
+type ClientRow  = { id: string; name: string | null; email: string; company: string | null; tier: string; status: string; renewsIn: number | null; cancelled: boolean; notAdvertisingYet?: boolean; lastSeen: string; weeksLogged: number; open: number; lastMessage: ThreadItem | null }
 type Week       = { week_start: string; spend: number; currency: string; leads: number; sales: number; cpl: number | null }
 type Detail = {
   client: { id: string; email: string; name: string | null; company: string | null; tier: string; status: string; cancelled: boolean; renewalDate: string | null; joined: string; lastSeen: string }
@@ -157,7 +157,7 @@ export default function ControlRoom() {
                         <span style={{ flex: 1, minWidth: 0 }}>
                           <span className="ov-clamp" style={{ fontWeight: 500 }}>{c.name || c.email}</span>
                           <span style={{ display: 'block', font: `400 13px/1.35 ${T.font}`, color: T.faint, marginTop: 3 }}>
-                            {[cap(c.tier), c.tier !== 'free' && c.renewsIn !== null ? `${c.cancelled ? 'ends' : 'renews'} in ${c.renewsIn}d` : '', `seen ${ago(c.lastSeen)}`, c.weeksLogged ? `${c.weeksLogged} ${c.weeksLogged === 1 ? 'week' : 'weeks'} logged` : ''].filter(Boolean).join(', ')}
+                            {[cap(c.tier), c.notAdvertisingYet ? 'not advertising yet' : '', c.tier !== 'free' && c.renewsIn !== null ? `${c.cancelled ? 'ends' : 'renews'} in ${c.renewsIn}d` : '', `seen ${ago(c.lastSeen)}`, c.weeksLogged ? `${c.weeksLogged} ${c.weeksLogged === 1 ? 'week' : 'weeks'} logged` : ''].filter(Boolean).join(', ')}
                           </span>
                         </span>
                         {c.open > 0 && <span className="cr-tag" style={{ background: 'rgba(232,51,10,0.10)', color: T.accent }}>{c.open} waiting</span>}

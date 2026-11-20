@@ -5,6 +5,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { sendWelcomeEmail } from '@/lib/email'
 import { fetchLandingPage, describeLandingPage } from '@/lib/safe-fetch'
 import { parseModelJson } from '@/lib/repair-json'
+import { answersBlock, figuresBlock, isPreLaunch, keyNumbers } from '@/lib/answers'
 
 export const maxDuration = 120
 export const dynamic = 'force-dynamic'
@@ -319,25 +320,30 @@ export async function POST(req: NextRequest) {
   console.log(`[diagnostic] isSubscriber=${isSubscriber}`)
 
   const landingPageUrl: string = (responses[10] as string) ?? ''
-  const geographicRegion: string = (responses[11] as string) ?? 'Global/Multiple Regions'
+  const geographicRegion: string = (responses[11] as string) || 'Kenya'
   const industry: string = (responses[2] as string) ?? ''
   const adChannels: string = Array.isArray(responses[9]) ? (responses[9] as string[]).join(', ') : ((responses[9] as string) ?? '')
   const monthYear = new Date().toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
 
   // Pre-compute derived metrics to give Claude real numbers
-  const budgetNum = parseFloat(String(responses[13] ?? '').replace(/[^0-9.]/g, ''))
-  const leadsNum  = parseFloat(String(responses[14] ?? '').replace(/[^0-9.]/g, ''))
-  const ltvNum    = parseFloat(String(responses[22] ?? responses[6] ?? responses[25] ?? '').replace(/[^0-9.]/g, ''))
-  const closeNum  = parseFloat(String(responses[21] ?? '').replace(/[^0-9.]/g, ''))
-
-  const estimatedCpa    = budgetNum > 0 && leadsNum > 0 ? (budgetNum / leadsNum).toFixed(0) : null
-  const ltvCacRatio     = estimatedCpa && ltvNum > 0 ? (ltvNum / parseFloat(estimatedCpa)).toFixed(1) : null
-  const monthlyWaste    = estimatedCpa && budgetNum > 0 && closeNum > 0
-    ? ((budgetNum * (1 - closeNum / 100)) * 0.35).toFixed(0)
-    : null
-  const revenueOppty    = ltvNum > 0 && leadsNum > 0 && closeNum > 0
-    ? ((leadsNum * 0.15) * ltvNum).toFixed(0)
-    : null
+  const answersText = answersBlock(responses)
+  const figuresText = figuresBlock(responses)
+  const preLaunch   = isPreLaunch(responses)
+  const modeBlock   = preLaunch
+    ? `THIS BUSINESS IS NOT ADVERTISING YET. Write a launch plan, not a diagnosis of ads.
+- overall_score and every score mean readiness to start advertising: how clear the customer, the offer, the numbers and the follow up are.
+- Findings are gaps to close before spending money. Never say money is being wasted, that ads are underperforming, or that targeting is wrong: there are no ads.
+- Quick wins are the first steps in order: which one channel to start on for this business and budget and why, what to prepare before the first shilling is spent, how to handle the first inquiries.
+- "search" covers which channel to start on. "funnel" covers what happens after someone inquires. "economics" covers whether the planned budget fits their numbers, using the sales needed figure if given.
+- Use "Critical" only for something that would lose money on day one.
+- monthly_waste_estimate must be an empty string. cac_current and ltv_cac_current must be "Not advertising yet".
+- executive_summary: say plainly whether they look ready to start, and the one thing to sort out first.`
+    : `HOW TO READ THE ANSWERS:
+- monthly_waste_estimate must be an empty string. We do not estimate wasted spend: it cannot be known from these answers.
+- monthly_revenue_opportunity must be the "If one more inquiry in every ten bought" figure, in those words, or an empty string if it is not listed.
+- cac_current must be the "Ad cost per sale" figure if listed, otherwise "Not enough numbers yet".
+- Never present an assumed percentage as their result.`
+  const readingRule = `The Q numbers inside the structure below are hints from an older form: go by the labelled answers above. Where an answer a field needs was not given, work from what is there and say in a few words what they have not told us yet. Never guess an answer they did not give.`
 
   // Paid reports: actually load the landing page so the assessment is based on
   // what a visitor sees, not a guess from the domain name.
@@ -347,6 +353,7 @@ export async function POST(req: NextRequest) {
 
   const regionContext = buildRegionContext(geographicRegion)
   const primaryChannel = adChannels.split(',')[0]?.trim() || 'Meta'
+  const channelsForRules = adChannels || (preLaunch ? 'none yet, recommend the one channel that fits' : 'not stated')
 
   const systemPrompt = `You are an expert ICP (Ideal Customer Profile) diagnostic analyst specialising in paid acquisition, funnel optimisation, and regional market strategy.
 
@@ -360,40 +367,13 @@ MARKETER PROFILE:
 - Name: ${profile?.name ?? 'Not provided'}
 - Company: ${profile?.company ?? 'Not provided'}
 
-LAYER 1, ICP Foundation:
-- Business offering: ${responses[1] ?? ''}
-- Industry/vertical: ${responses[2] ?? ''}
-- Business model: ${responses[23] ?? 'Not specified'}
-- Customer profile: ${responses[3] ?? responses[24] ?? ''}
-- Core problem customers had: ${responses[4] ?? ''}
-- How best customers discovered them: ${responses[5] ?? ''}
-- Deal size or average order value: ${responses[6] ?? responses[25] ?? ''}
-- Decision maker or purchase trigger: ${responses[7] ?? responses[26] ?? ''}
+WHAT THEY TOLD US:
+${answersText}
 
-LAYER 2, Targeting Mismatch:
-- Perceived ideal customer: ${responses[8] ?? ''}
-- Active ad channels: ${adChannels || 'Not specified'}
-- Landing page URL: ${landingPageUrl || 'Not provided'}
-- Target region: ${geographicRegion}
-- Current targeting parameters: ${responses[12] ?? ''}
-- Monthly ad spend: ${responses[13] ?? ''}
-- New customers/leads last 3 months: ${responses[14] ?? ''}
-- Ads match best customer profile: ${responses[15] ?? ''}
-- Conversion/close rate: ${responses[21] ?? ''}%
-- Average customer lifetime value: ${responses[22] ?? ''}
+${figuresText}
 
-LAYER 3, Funnel Friction:
-- Primary CTA: ${responses[16] ?? ''}
-- Steps/friction before purchase: ${responses[17] ?? ''}
-- Mobile usability score: ${responses[18] ?? ''}/10
-- Trust signals: ${responses[19] ?? ''}
-- Differentiation clarity score: ${responses[20] ?? ''}/10
-
-PRE-COMPUTED METRICS (use these as the user's actual data in benchmarks):
-- Estimated CPA: ${estimatedCpa ? `${estimatedCpa} (calculated from budget / leads)` : 'Cannot compute: missing budget or leads data'}
-- LTV:CAC ratio: ${ltvCacRatio ? `${ltvCacRatio}:1` : 'Cannot compute'}
-- Estimated monthly ad waste: ${monthlyWaste ? `${monthlyWaste} (35% of non-converting spend)` : 'Cannot compute'}
-- Revenue opportunity if ICP improved 15%: ${revenueOppty ? `${revenueOppty}` : 'Cannot compute'}
+${modeBlock}
+${readingRule}
 
 ${landingPageBlock || (landingPageUrl ? '' : 'LANDING PAGE: none provided. Say so in landing_page_assessment instead of guessing.')}
 Use your knowledge of ${geographicRegion} benchmarks in the ${industry || 'relevant'} industry for benchmark fields, and describe them as typical ranges, not measured data. Do not name specific competitor companies: competitor research with real sources happens separately in the Intelligence tab. In competitor_insights describe the type of competition only.
@@ -423,7 +403,7 @@ Return this exact JSON structure:
         "action": "<1 sentence: what to do, naming the exact platform and step>",
         "platform": "<platform name>",
         "where": "<location in tool>",
-        "expectedImpact": "<specific number or % improvement>",
+        "expectedImpact": "<what should change; a number only if it is in FIGURES FROM THEIR ANSWERS, otherwise plain words>",
         "effort": "<Low|Medium|High>",
         "impact": "<High|Medium|Low>",
         "timeline": "<This week|This month|Next quarter>"
@@ -432,7 +412,7 @@ Return this exact JSON structure:
         "action": "<1 sentence: what to do, naming the exact platform and step>",
         "platform": "<platform name>",
         "where": "<location in tool>",
-        "expectedImpact": "<specific number or % improvement>",
+        "expectedImpact": "<what should change; a number only if it is in FIGURES FROM THEIR ANSWERS, otherwise plain words>",
         "effort": "<Low|Medium|High>",
         "impact": "<High|Medium|Low>",
         "timeline": "<This week|This month|Next quarter>"
@@ -474,7 +454,7 @@ Return this exact JSON structure:
         "action": "<1 sentence: what to do, naming the exact platform and step>",
         "platform": "<platform name>",
         "where": "<location in tool>",
-        "expectedImpact": "<specific number or % improvement>",
+        "expectedImpact": "<what should change; a number only if it is in FIGURES FROM THEIR ANSWERS, otherwise plain words>",
         "effort": "<Low|Medium|High>",
         "impact": "<High|Medium|Low>",
         "timeline": "<This week|This month|Next quarter>"
@@ -483,7 +463,7 @@ Return this exact JSON structure:
         "action": "<1 sentence: what to do, naming the exact platform and step>",
         "platform": "<platform name>",
         "where": "<location in tool>",
-        "expectedImpact": "<specific number or % improvement>",
+        "expectedImpact": "<what should change; a number only if it is in FIGURES FROM THEIR ANSWERS, otherwise plain words>",
         "effort": "<Low|Medium|High>",
         "impact": "<High|Medium|Low>",
         "timeline": "<This week|This month|Next quarter>"
@@ -526,7 +506,7 @@ Return this exact JSON structure:
         "action": "<1 sentence: what to do, naming the exact platform and step>",
         "platform": "<platform name>",
         "where": "<location in tool>",
-        "expectedImpact": "<specific number or % improvement>",
+        "expectedImpact": "<what should change; a number only if it is in FIGURES FROM THEIR ANSWERS, otherwise plain words>",
         "effort": "<Low|Medium|High>",
         "impact": "<High|Medium|Low>",
         "timeline": "<This week|This month|Next quarter>"
@@ -535,7 +515,7 @@ Return this exact JSON structure:
         "action": "<1 sentence: what to do, naming the exact platform and step>",
         "platform": "<platform name>",
         "where": "<location in tool>",
-        "expectedImpact": "<specific number or % improvement>",
+        "expectedImpact": "<what should change; a number only if it is in FIGURES FROM THEIR ANSWERS, otherwise plain words>",
         "effort": "<Low|Medium|High>",
         "impact": "<High|Medium|Low>",
         "timeline": "<This week|This month|Next quarter>"
@@ -560,13 +540,13 @@ Return this exact JSON structure:
   "economics": {
     "score": <integer 0-100>,
     "summary": "<2 sentences specific to budget efficiency and unit economics>",
-    "monthly_waste_estimate": "<estimated monthly budget being wasted with reasoning based on their spend, leads, and conversion data>",
+    "monthly_waste_estimate": "",
     "business_outcomes": {
-      "cac_current": "<estimated current CAC, calculate from monthly budget divided by (leads x close rate), show the figure with brief working>",
-      "cac_projected": "<projected CAC after implementing top 3 fixes, show expected percentage reduction and resulting figure>",
-      "ltv_cac_current": "<current LTV:CAC ratio based on their stated deal size or LTV, e.g. 1.8:1. Flag if below 3:1 benchmark>",
-      "ltv_cac_projected": "<projected LTV:CAC after fixes, target at least 3:1 for healthy B2B unit economics>",
-      "monthly_revenue_opportunity": "<additional monthly revenue opportunity from fixing ICP, quantify with brief reasoning>"
+      "cac_current": "<the ad cost per sale figure given above, or the fallback wording instructed above>",
+      "cac_projected": "",
+      "ltv_cac_current": "<what one sale is worth set against the ad cost per sale, in plain words, only if both figures are given above; otherwise say which number is missing>",
+      "ltv_cac_projected": "<what to aim for, in plain words, without inventing a figure>",
+      "monthly_revenue_opportunity": "<as instructed above, or empty string>"
     },
     "findings": [
       {
@@ -585,7 +565,7 @@ Return this exact JSON structure:
         "action": "<1 sentence: what to do, naming the exact platform and step>",
         "platform": "<platform name>",
         "where": "<location in tool>",
-        "expectedImpact": "<specific number or % improvement>",
+        "expectedImpact": "<what should change; a number only if it is in FIGURES FROM THEIR ANSWERS, otherwise plain words>",
         "effort": "<Low|Medium|High>",
         "impact": "<High|Medium|Low>",
         "timeline": "<This week|This month|Next quarter>"
@@ -594,7 +574,7 @@ Return this exact JSON structure:
         "action": "<1 sentence: what to do, naming the exact platform and step>",
         "platform": "<platform name>",
         "where": "<location in tool>",
-        "expectedImpact": "<specific number or % improvement>",
+        "expectedImpact": "<what should change; a number only if it is in FIGURES FROM THEIR ANSWERS, otherwise plain words>",
         "effort": "<Low|Medium|High>",
         "impact": "<High|Medium|Low>",
         "timeline": "<This week|This month|Next quarter>"
@@ -638,7 +618,7 @@ Return this exact JSON structure:
       "action": "<1 sentence: what to do, naming the exact platform and step>",
       "platform": "<platform name>",
       "where": "<location in tool>",
-      "expectedImpact": "<specific number or % improvement>",
+      "expectedImpact": "<what should change; a number only if it is in FIGURES FROM THEIR ANSWERS, otherwise plain words>",
       "effort": "<Low|Medium|High>",
       "impact": "<High|Medium|Low>",
       "timeline": "<This week|This month|Next quarter>"
@@ -647,7 +627,7 @@ Return this exact JSON structure:
       "action": "<1 sentence: what to do, naming the exact platform and step>",
       "platform": "<platform name>",
       "where": "<location in tool>",
-      "expectedImpact": "<specific number or % improvement>",
+      "expectedImpact": "<what should change; a number only if it is in FIGURES FROM THEIR ANSWERS, otherwise plain words>",
       "effort": "<Low|Medium|High>",
       "impact": "<High|Medium|Low>",
       "timeline": "<This week|This month|Next quarter>"
@@ -656,7 +636,7 @@ Return this exact JSON structure:
       "action": "<1 sentence: what to do, naming the exact platform and step>",
       "platform": "<platform name>",
       "where": "<location in tool>",
-      "expectedImpact": "<specific number or % improvement>",
+      "expectedImpact": "<what should change; a number only if it is in FIGURES FROM THEIR ANSWERS, otherwise plain words>",
       "effort": "<Low|Medium|High>",
       "impact": "<High|Medium|Low>",
       "timeline": "<This week|This month|Next quarter>"
@@ -715,7 +695,7 @@ Rules:
 - LENGTH LIMITS (the client reads this on a phone, and long reports get cut off): executive_summary max 45 words. Every "title" max 9 words, in sentence case (capitalise only the first word and names), no colons or figures in brackets. Every "explanation" max 30 words: say what is wrong and what it costs, nothing else. Every "summary" max 30 words. Every quick win "action" max 22 words, starting with a verb. Every "expectedImpact" max 12 words. Any other text field max 30 words. Never repeat the same finding or quick win in two sections
 - TONE AND HONESTY (a client who spots one exaggerated claim stops trusting the whole report): write calmly for a business owner. Never use alarm words such as catastrophic, disastrous, completely, entirely, fundamentally, broken, non-functional or blocker. Only state a figure or ratio if every number behind it was given in the answers and is plausible. If an answer needed to judge something is missing, vague, or looks like a test entry, do not guess: the title says what is missing (for example "We could not judge your funnel yet"), the severity is "Warning", and the explanation names the one thing to add in a new diagnosis. Never say a page is broken or slow unless the LANDING PAGE CHECK says so
 - Keep ALL text fields to 1 sentence maximum. No exceptions.
-- Every quick_win (in all sections) must include platform, where, expectedImpact, and effort fields. Never use vague language like "your platform" -- always name the exact platform. The action must name the user's actual channels (${adChannels}), region (${geographicRegion}), and business model. The expectedImpact must reference real numbers from estimatedCpa (${estimatedCpa}), monthlyWaste (${monthlyWaste}), revenueOppty (${revenueOppty}), or ltvCacRatio (${ltvCacRatio}) where available
+- Every quick_win (in all sections) must include platform, where, expectedImpact, and effort fields. Never use vague language like "your platform" -- always name the exact platform. The action must name the user's actual channels (${channelsForRules}), region (${geographicRegion}), and business model. The expectedImpact may use a number only if it appears in FIGURES FROM THEIR ANSWERS; otherwise describe the expected change in plain words without a number
 - DATA INTEGRITY: If the landing page URL is a test/placeholder domain (e.g. test.com, example.com, localhost, abc.com, yoursite.com, or any domain that is clearly not a real business), set landing_page_assessment to exactly: "URL appears to be a test or placeholder — provide your real landing page URL for an accurate assessment." and do not fabricate any page analysis. If questionnaire data contains implausible values (e.g. 0% or 100% conversion rate, zero ad budget with thousands of leads, monthly budget above $500,000 for an apparent small business), flag the anomaly in executive_summary and base scores conservatively rather than building analysis on unreliable inputs`
 
   // ── Branched Claude call ──────────────────────────────────────────────────
@@ -746,34 +726,13 @@ PROFILE:
 - Name: ${profile?.name ?? 'Not provided'}
 - Company: ${profile?.company ?? 'Not provided'}
 
-LAYER 1, ICP Foundation:
-- Business offering: ${responses[1] ?? ''}
-- Industry/vertical: ${responses[2] ?? ''}
-- Business model: ${responses[23] ?? 'Not specified'}
-- Customer profile: ${responses[3] ?? responses[24] ?? ''}
-- Core problem customers had: ${responses[4] ?? ''}
-- How best customers discovered them: ${responses[5] ?? ''}
-- Deal size or average order value: ${responses[6] ?? responses[25] ?? ''}
-- Decision maker or purchase trigger: ${responses[7] ?? responses[26] ?? ''}
+WHAT THEY TOLD US:
+${answersText}
 
-LAYER 2, Targeting Mismatch:
-- Perceived ideal customer: ${responses[8] ?? ''}
-- Active ad channels: ${Array.isArray(responses[9]) ? (responses[9] as string[]).join(', ') : (responses[9] ?? '')}
-- Landing page URL: ${landingPageUrl || 'Not provided'}
-- Target region: ${geographicRegion}
-- Current targeting parameters: ${responses[12] ?? ''}
-- Monthly ad spend: ${responses[13] ?? ''}
-- New customers/leads last 3 months: ${responses[14] ?? ''}
-- Ads match best customer profile: ${responses[15] ?? ''}
-- Conversion/close rate: ${responses[21] ?? ''}%
-- Average customer lifetime value: ${responses[22] ?? ''}
+${figuresText}
 
-LAYER 3, Funnel Friction:
-- Primary CTA: ${responses[16] ?? ''}
-- Steps/friction before purchase: ${responses[17] ?? ''}
-- Mobile usability score: ${responses[18] ?? ''}/10
-- Trust signals: ${responses[19] ?? ''}
-- Differentiation clarity score: ${responses[20] ?? ''}/10
+${modeBlock}
+${readingRule}
 
 Return this exact JSON structure:
 {
@@ -800,7 +759,7 @@ Return this exact JSON structure:
         "action": "<1 sentence: what to do, naming the exact platform and step>",
         "platform": "<platform name>",
         "where": "<location in tool>",
-        "expectedImpact": "<specific number or % improvement>",
+        "expectedImpact": "<what should change; a number only if it is in FIGURES FROM THEIR ANSWERS, otherwise plain words>",
         "effort": "<Low|Medium|High>",
         "impact": "<High|Medium|Low>",
         "timeline": "<This week|This month|Next quarter>"
@@ -809,7 +768,7 @@ Return this exact JSON structure:
         "action": "<1 sentence: what to do, naming the exact platform and step>",
         "platform": "<platform name>",
         "where": "<location in tool>",
-        "expectedImpact": "<specific number or % improvement>",
+        "expectedImpact": "<what should change; a number only if it is in FIGURES FROM THEIR ANSWERS, otherwise plain words>",
         "effort": "<Low|Medium|High>",
         "impact": "<High|Medium|Low>",
         "timeline": "<This week|This month|Next quarter>"
@@ -851,7 +810,7 @@ Return this exact JSON structure:
         "action": "<1 sentence: what to do, naming the exact platform and step>",
         "platform": "<platform name>",
         "where": "<location in tool>",
-        "expectedImpact": "<specific number or % improvement>",
+        "expectedImpact": "<what should change; a number only if it is in FIGURES FROM THEIR ANSWERS, otherwise plain words>",
         "effort": "<Low|Medium|High>",
         "impact": "<High|Medium|Low>",
         "timeline": "<This week|This month|Next quarter>"
@@ -860,7 +819,7 @@ Return this exact JSON structure:
         "action": "<1 sentence: what to do, naming the exact platform and step>",
         "platform": "<platform name>",
         "where": "<location in tool>",
-        "expectedImpact": "<specific number or % improvement>",
+        "expectedImpact": "<what should change; a number only if it is in FIGURES FROM THEIR ANSWERS, otherwise plain words>",
         "effort": "<Low|Medium|High>",
         "impact": "<High|Medium|Low>",
         "timeline": "<This week|This month|Next quarter>"
@@ -903,7 +862,7 @@ Return this exact JSON structure:
         "action": "<1 sentence: what to do, naming the exact platform and step>",
         "platform": "<platform name>",
         "where": "<location in tool>",
-        "expectedImpact": "<specific number or % improvement>",
+        "expectedImpact": "<what should change; a number only if it is in FIGURES FROM THEIR ANSWERS, otherwise plain words>",
         "effort": "<Low|Medium|High>",
         "impact": "<High|Medium|Low>",
         "timeline": "<This week|This month|Next quarter>"
@@ -912,7 +871,7 @@ Return this exact JSON structure:
         "action": "<1 sentence: what to do, naming the exact platform and step>",
         "platform": "<platform name>",
         "where": "<location in tool>",
-        "expectedImpact": "<specific number or % improvement>",
+        "expectedImpact": "<what should change; a number only if it is in FIGURES FROM THEIR ANSWERS, otherwise plain words>",
         "effort": "<Low|Medium|High>",
         "impact": "<High|Medium|Low>",
         "timeline": "<This week|This month|Next quarter>"
@@ -937,13 +896,13 @@ Return this exact JSON structure:
   "economics": {
     "score": <integer 0-100>,
     "summary": "<2 sentences specific to budget efficiency and unit economics>",
-    "monthly_waste_estimate": "<estimated monthly budget being wasted with reasoning based on their spend, leads, and conversion data>",
+    "monthly_waste_estimate": "",
     "business_outcomes": {
-      "cac_current": "<estimated current CAC, calculate from monthly budget divided by (leads x close rate), show the figure with brief working>",
-      "cac_projected": "<projected CAC after implementing top 3 fixes, show expected percentage reduction and resulting figure>",
-      "ltv_cac_current": "<current LTV:CAC ratio based on their stated deal size or LTV, e.g. 1.8:1. Flag if below 3:1 benchmark>",
-      "ltv_cac_projected": "<projected LTV:CAC after fixes, target at least 3:1 for healthy B2B unit economics>",
-      "monthly_revenue_opportunity": "<additional monthly revenue opportunity from fixing ICP, quantify with brief reasoning>"
+      "cac_current": "<the ad cost per sale figure given above, or the fallback wording instructed above>",
+      "cac_projected": "",
+      "ltv_cac_current": "<what one sale is worth set against the ad cost per sale, in plain words, only if both figures are given above; otherwise say which number is missing>",
+      "ltv_cac_projected": "<what to aim for, in plain words, without inventing a figure>",
+      "monthly_revenue_opportunity": "<as instructed above, or empty string>"
     },
     "findings": [
       {
@@ -962,7 +921,7 @@ Return this exact JSON structure:
         "action": "<1 sentence: what to do, naming the exact platform and step>",
         "platform": "<platform name>",
         "where": "<location in tool>",
-        "expectedImpact": "<specific number or % improvement>",
+        "expectedImpact": "<what should change; a number only if it is in FIGURES FROM THEIR ANSWERS, otherwise plain words>",
         "effort": "<Low|Medium|High>",
         "impact": "<High|Medium|Low>",
         "timeline": "<This week|This month|Next quarter>"
@@ -971,7 +930,7 @@ Return this exact JSON structure:
         "action": "<1 sentence: what to do, naming the exact platform and step>",
         "platform": "<platform name>",
         "where": "<location in tool>",
-        "expectedImpact": "<specific number or % improvement>",
+        "expectedImpact": "<what should change; a number only if it is in FIGURES FROM THEIR ANSWERS, otherwise plain words>",
         "effort": "<Low|Medium|High>",
         "impact": "<High|Medium|Low>",
         "timeline": "<This week|This month|Next quarter>"
@@ -1015,7 +974,7 @@ Return this exact JSON structure:
       "action": "<1 sentence: what to do, naming the exact platform and step>",
       "platform": "<platform name>",
       "where": "<location in tool>",
-      "expectedImpact": "<specific number or % improvement>",
+      "expectedImpact": "<what should change; a number only if it is in FIGURES FROM THEIR ANSWERS, otherwise plain words>",
       "effort": "<Low|Medium|High>",
       "impact": "<High|Medium|Low>",
       "timeline": "<This week|This month|Next quarter>"
@@ -1024,7 +983,7 @@ Return this exact JSON structure:
       "action": "<1 sentence: what to do, naming the exact platform and step>",
       "platform": "<platform name>",
       "where": "<location in tool>",
-      "expectedImpact": "<specific number or % improvement>",
+      "expectedImpact": "<what should change; a number only if it is in FIGURES FROM THEIR ANSWERS, otherwise plain words>",
       "effort": "<Low|Medium|High>",
       "impact": "<High|Medium|Low>",
       "timeline": "<This week|This month|Next quarter>"
@@ -1033,7 +992,7 @@ Return this exact JSON structure:
       "action": "<1 sentence: what to do, naming the exact platform and step>",
       "platform": "<platform name>",
       "where": "<location in tool>",
-      "expectedImpact": "<specific number or % improvement>",
+      "expectedImpact": "<what should change; a number only if it is in FIGURES FROM THEIR ANSWERS, otherwise plain words>",
       "effort": "<Low|Medium|High>",
       "impact": "<High|Medium|Low>",
       "timeline": "<This week|This month|Next quarter>"
@@ -1140,6 +1099,8 @@ Rules:
     ? {
         ...parsedObj,
         is_deep_research: isSubscriber,
+        pre_launch: preLaunch,
+        numbers: keyNumbers(responses),
         ...(overallScore !== undefined && topWins?.length
           ? { score_predictions: computeScorePredictions(overallScore, topWins) }
           : {}),

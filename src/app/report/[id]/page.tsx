@@ -53,6 +53,8 @@ interface ReportData {
   business_outcomes?:       BusinessOutcomes
   executive_summary?:       string
   monthly_waste_estimate?:  string
+  pre_launch?:              boolean
+  numbers?:                 { pre_launch?: boolean; cost_per_sale?: number | null; one_more_in_ten?: number | null; sales_to_cover_budget?: number | null }
 }
 
 interface BuyerIntro {
@@ -100,6 +102,8 @@ function mapDiagnosis(d: Record<string, unknown>): ReportData {
     business_outcomes:       (d.business_outcomes ?? undefined) as ReportData['business_outcomes'],
     executive_summary:       (d.executive_summary ?? undefined) as string | undefined,
     monthly_waste_estimate:  (d.monthly_waste_estimate ?? undefined) as string | undefined,
+    pre_launch:              d.pre_launch === true,
+    numbers:                 (d.numbers ?? undefined) as ReportData['numbers'],
   }
 }
 
@@ -384,10 +388,12 @@ export default function ReportPage({ params }: { params: { id: string } }) {
         <section className="fade-up flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 sm:gap-10 pb-8 sm:pb-10 border-b border-[#c5c0b1]">
           <div className="flex-1">
             <span className="inline-block text-[11px] font-semibold uppercase tracking-widest text-[#e8330a] bg-[rgba(232,51,10,0.08)] border border-[rgba(232,51,10,0.2)] px-3 py-1 rounded-full mb-4">
-              Ideal ICP Report
+              {report.pre_launch ? 'Your launch plan' : 'Ideal ICP Report'}
             </span>
             <h1 className="text-3xl sm:text-4xl font-extrabold text-[#201515] leading-tight mb-3">
-              {report.health_score < 41
+              {report.pre_launch
+                ? (report.health_score < 41 ? 'A few things to sort out before you spend.' : report.health_score < 71 ? 'You are close to ready.' : 'You look ready to start.')
+                : report.health_score < 41
                 ? 'Your targeting is costing you.'
                 : report.health_score < 71
                   ? 'Your targeting has significant gaps.'
@@ -398,11 +404,19 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                 ? report.executive_summary.slice(0, 180) + (report.executive_summary.length > 180 ? '…' : '')
                 : `We found ${criticalCount} critical issue${criticalCount !== 1 ? 's' : ''} in your targeting, messaging, and funnel setup.`}
             </p>
-            {report.monthly_waste_estimate && (
+            {report.numbers?.one_more_in_ten ? (
+              <p className="text-sm font-semibold text-[#e8330a] mt-2">
+                If one more inquiry in every ten bought: about KES {report.numbers.one_more_in_ten.toLocaleString('en-US')} more in sales a month.
+              </p>
+            ) : report.numbers?.sales_to_cover_budget ? (
+              <p className="text-sm font-semibold text-[#e8330a] mt-2">
+                Sales needed each month to cover your ad budget: {report.numbers.sales_to_cover_budget}.
+              </p>
+            ) : report.monthly_waste_estimate ? (
               <p className="text-sm font-semibold text-[#e8330a] mt-2">
                 Estimated monthly waste: {report.monthly_waste_estimate}
               </p>
-            )}
+            ) : null}
 
             <div className="mt-6 grid grid-cols-3 gap-2 sm:gap-3 max-w-xs sm:max-w-none">
               {[
