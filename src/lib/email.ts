@@ -478,6 +478,24 @@ ${securityBox(`<p style="margin:0;color:${Dark};font-size:16px;line-height:1.65;
   return { data, error }
 }
 
+export async function sendClientMessageToFounder({
+  userName, userEmail, companyName, tier, message,
+}: { userName: string; userEmail: string; companyName: string; tier: string; message: string }) {
+  const who = escapeHtml(companyName || userName || userEmail)
+  const content = `
+${heading(`Message from ${who}`, 30)}
+${sub(`${escapeHtml(userName || userEmail)} (${escapeHtml(tier)}) wrote to you from their dashboard chat. Answer in the control room so the reply shows in their dashboard.`)}
+${securityBox(`<p style="margin:0;color:${Dark};font-size:16px;line-height:1.65;font-family:${font};">${noteHtml(message)}</p>`)}`
+
+  const { data, error } = await getResend().emails.send({
+    from: FROM, to: FOUNDER_INBOX, replyTo: userEmail,
+    subject: `Message from ${companyName || userName || userEmail}`,
+    html: base(content + controlRoomLink, { loginBtn: false }),
+  })
+  if (error) console.error('[email] client message error:', JSON.stringify(error))
+  return { data, error }
+}
+
 // ─── Email 4: Session request, founder notification ─────────────────────────
 
 export async function sendSessionRequestToFounder({
