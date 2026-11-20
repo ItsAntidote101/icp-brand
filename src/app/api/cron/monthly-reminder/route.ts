@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { leadCostChange, leadCostSentence, type WeekRow } from '@/lib/progress'
 import { createClient } from '@supabase/supabase-js'
 import { sendRenewalReminderEmail, sendPlanEndedEmail } from '@/lib/email'
 
@@ -68,9 +69,12 @@ export async function GET(req: NextRequest) {
   for (const u of users ?? []) {
     const daysLeft = Math.ceil((new Date(u.renewal_date as string).getTime() - now.getTime()) / 86_400_000)
     if (daysLeft !== 7 && daysLeft !== 1) continue
+    // What their own numbers show, so the ask to renew comes with the reason
+    const { data: weeks } = await supabase.from('weekly_checkins').select('week_start, spend, leads, currency').eq('user_id', u.id).order('week_start', { ascending: false }).limit(26)
     const r = await sendRenewalReminderEmail({
       to: u.email, name: u.full_name ?? undefined, tier: u.subscription_tier,
       renewalDate: u.renewal_date as string, daysLeft, baseUrl,
+      progress: leadCostSentence(leadCostChange((weeks ?? []) as WeekRow[])),
     })
     if (r.error) failed++; else sent++
   }
