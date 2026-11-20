@@ -33,6 +33,8 @@ export async function POST(req: NextRequest) {
     supabase.from('users').update({ has_unread_reply: true }).eq('id', user.id),
     supabase.from('client_messages').update({ handled_at: now }).eq('user_id', user.id).eq('direction', 'in').is('handled_at', null),
     supabase.from('escalations').update({ status: 'replied', admin_reply: body, replied_at: now }).eq('user_id', user.id).eq('status', 'pending'),
+    // Call requests are stored by email, not user id
+    supabase.from('session_requests').update({ status: 'handled' }).ilike('user_email', user.email.replace(/[%_\\]/g, (m: string) => `\\${m}`)).or('status.is.null,status.eq.pending'),
   ])
 
   const r = await sendAdminReplyToUser({ to: user.email, name: user.full_name ?? user.email, reply: body })

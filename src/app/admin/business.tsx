@@ -215,7 +215,7 @@ export function FunnelView() {
             <div><dt>New paying clients</dt><dd>{f.outcomes.paid}</dd></div>
           </dl>
           <p style={{ font: `400 13px/1.5 ${T.font}`, color: T.faint, margin: '16px 0 0' }}>
-            {finished > 0 ? `${pct(f.outcomes.calls, finished)} of finished diagnoses ask for a call and ${pct(f.outcomes.paid, finished)} become paying clients. ` : ''}
+            {finished >= 10 && f.outcomes.calls <= finished && f.outcomes.paid <= finished ? `${pct(f.outcomes.calls, finished)} of finished diagnoses ask for a call and ${pct(f.outcomes.paid, finished)} become paying clients. ` : ''}
             Counts are people, not page views, and include your own test visits.{f.capped ? ' This period has more events than this screen reads, so the totals are a little low.' : ''}
           </p>
         </div>
