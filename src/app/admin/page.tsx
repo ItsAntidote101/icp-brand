@@ -13,12 +13,14 @@ import React, { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { ChevronRight, ChevronLeft } from 'lucide-react'
 import { DashStyles, Segmented, T } from '../dashboard/overview'
+import { PlanUseBody } from '../dashboard/plan-use'
+import type { Allowances } from '@/lib/allowances'
 import { FunnelView, MoneyView } from './business'
 
 type Ref = { type: 'call' | 'message' | 'escalation'; id: string }
 type ThreadItem = { key: string; at: string; from: 'client' | 'eugene'; kind: string; label: string; body: string; open: boolean; ref?: Ref }
 type TodayItem  = { key: string; type: string; at: string; userId: string | null; who: string; title: string; detail: string; ref?: Ref }
-type ClientRow  = { id: string; name: string | null; email: string; company: string | null; tier: string; status: string; renewsIn: number | null; cancelled: boolean; notAdvertisingYet?: boolean; lastSeen: string; weeksLogged: number; open: number; lastMessage: ThreadItem | null }
+type ClientRow  = { id: string; name: string | null; email: string; company: string | null; tier: string; status: string; renewsIn: number | null; cancelled: boolean; notAdvertisingYet?: boolean; sessionsLeft?: number; lastSeen: string; weeksLogged: number; open: number; lastMessage: ThreadItem | null }
 type Week       = { week_start: string; spend: number; currency: string; leads: number; sales: number; cpl: number | null }
 type Detail = {
   client: { id: string; email: string; name: string | null; company: string | null; tier: string; status: string; cancelled: boolean; renewalDate: string | null; joined: string; lastSeen: string }
@@ -28,6 +30,7 @@ type Detail = {
   draft: { body: string; media_url: string | null } | null
   payments: { reference: string; tier: string; kind: string; status: string; paid_amount: number | null; expected_amount: number | null; created_at: string; paid_at: string | null }[]
   privateNote: string
+  allowances?: Allowances
 }
 type View = 'today' | 'clients' | 'messages' | 'money' | 'funnel'
 
@@ -157,7 +160,7 @@ export default function ControlRoom() {
                         <span style={{ flex: 1, minWidth: 0 }}>
                           <span className="ov-clamp" style={{ fontWeight: 500 }}>{c.name || c.email}</span>
                           <span style={{ display: 'block', font: `400 13px/1.35 ${T.font}`, color: T.faint, marginTop: 3 }}>
-                            {[cap(c.tier), c.notAdvertisingYet ? 'not advertising yet' : '', c.tier !== 'free' && c.renewsIn !== null ? `${c.cancelled ? 'ends' : 'renews'} in ${c.renewsIn}d` : '', `seen ${ago(c.lastSeen)}`, c.weeksLogged ? `${c.weeksLogged} ${c.weeksLogged === 1 ? 'week' : 'weeks'} logged` : ''].filter(Boolean).join(', ')}
+                            {[cap(c.tier), c.notAdvertisingYet ? 'not advertising yet' : '', c.sessionsLeft ? `${c.sessionsLeft} hands-on unused` : '', c.tier !== 'free' && c.renewsIn !== null ? `${c.cancelled ? 'ends' : 'renews'} in ${c.renewsIn}d` : '', `seen ${ago(c.lastSeen)}`, c.weeksLogged ? `${c.weeksLogged} ${c.weeksLogged === 1 ? 'week' : 'weeks'} logged` : ''].filter(Boolean).join(', ')}
                           </span>
                         </span>
                         {c.open > 0 && <span className="cr-tag" style={{ background: 'rgba(232,51,10,0.10)', color: T.accent }}>{c.open} waiting</span>}
@@ -351,6 +354,14 @@ function ClientPage({ id, onBack, onChanged }: { id: string; onBack: () => void;
               </div>
             </div>
           </div>
+        </section>
+      )}
+
+      {/* What their plan includes and what they have used */}
+      {d.allowances && (
+        <section aria-labelledby="cr-use">
+          <H2><span id="cr-use">Plan use, {d.allowances.month}</span></H2>
+          <div className="ov-card" style={{ overflow: 'hidden' }}><PlanUseBody a={d.allowances} admin /></div>
         </section>
       )}
 

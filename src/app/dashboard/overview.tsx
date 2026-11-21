@@ -12,6 +12,7 @@ import { Check, ChevronRight, Lock } from 'lucide-react'
 import ReadyToUpload from './ready'
 import SetupPlanCard from './setup'
 import HandsOnCard from './handson'
+import PlanUseCard from './plan-use'
 import { leadCostChange } from '@/lib/progress'
 
 // ─── Design tokens (shared with page.tsx by value) ───────────────────────────
@@ -943,6 +944,8 @@ export default function Overview(p: OverviewProps) {
       <SetupPlanCard tier={p.tier} buyerName={p.buyer.firstName} onUpgrade={p.onUpgrade} />
 
       <HandsOnCard tier={p.tier} buyerName={p.buyer.firstName} onUpgrade={p.onUpgrade} />
+
+      <PlanUseCard tier={p.tier} />
 
       {p.tier === 'free' && (
         <section className="ov-card" aria-labelledby="ov-plan" style={{ padding: '24px 22px' }}>

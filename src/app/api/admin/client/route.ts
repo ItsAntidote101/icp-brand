@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAdmin } from '@/lib/admin'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { clientSnapshot } from '@/lib/client-snapshot'
+import { loadAllowances } from '@/lib/allowances'
 import { clientThread } from '@/lib/admin-data'
 
 export const dynamic = 'force-dynamic'
@@ -46,5 +47,7 @@ export async function GET(req: NextRequest) {
     // Paystack amounts are stored in cents; the screen shows whole shillings
     payments: (payQ.data ?? []).map(p => ({ ...p, paid_amount: p.paid_amount != null ? p.paid_amount / 100 : null, expected_amount: p.expected_amount != null ? p.expected_amount / 100 : null })),
     privateNote: privQ.data?.body ?? '',
+    // What their plan includes this month, what they have used, and past months
+    allowances: await loadAllowances(supabase, { id: u.id, email: u.email, subscription_tier: u.subscription_tier, billing_status: u.billing_status }),
   })
 }

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { leadCostChange, leadCostSentence, type WeekRow } from '@/lib/progress'
 import { createClient } from '@supabase/supabase-js'
-import { sendRenewalReminderEmail, sendPlanEndedEmail } from '@/lib/email'
+import { sendRenewalReminderEmail, sendPlanEndedEmail, sendUnusedSessionEmail } from '@/lib/email'
+import { loadAllowances } from '@/lib/allowances'
 
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization')
@@ -80,5 +81,30 @@ export async function GET(req: NextRequest) {
   }
 
   console.log('[cron] renewal reminders sent:', sent, '| failed:', failed)
-  return NextResponse.json({ expired: expired?.length ?? 0, sent, failed }, { status: 200 })
+
+  // ── Unused hands-on sessions ─────────────────────────────────────────────
+  // This job runs once a day, so sending only on the day with exactly 5 days
+  // left in the month means one reminder per client per month.
+  let sessionReminders = 0
+  try {
+    const { data: planned } = await supabase
+      .from('users')
+      .select('id, email, full_name, subscription_tier, billing_status, renewal_date, weekly_numbers_opt_out')
+      .eq('billing_status', 'active')
+      .in('subscription_tier', ['pro', 'agency'])
+      .gte('renewal_date', now.toISOString())
+    for (const u of planned ?? []) {
+      if (u.weekly_numbers_opt_out) continue
+      const a = await loadAllowances(supabase, u, now)
+      const s = a.items.find(i => i.key === 'sessions')
+      if (a.daysLeft !== 5 || !s || !s.left) continue
+      const r = await sendUnusedSessionEmail({ to: u.email, name: u.full_name ?? undefined, month: a.month, daysLeft: a.daysLeft, left: s.left, baseUrl })
+      if (!r.error) sessionReminders++
+    }
+  } catch (e) {
+    console.error('[cron] unused session reminders failed:', e instanceof Error ? e.message : e)
+  }
+  console.log('[cron] unused session reminders sent:', sessionReminders)
+
+  return NextResponse.json({ expired: expired?.length ?? 0, sent, failed, sessionReminders }, { status: 200 })
 }

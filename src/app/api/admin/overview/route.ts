@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { adminEmails, getAdmin } from '@/lib/admin'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { FORMAT_PREFIX, monthlyLimit, monthStart } from '@/lib/hands-on'
 import { callItem, escalationItems, messageItem, type ThreadItem } from '@/lib/admin-data'
 
 export const dynamic = 'force-dynamic'
@@ -78,6 +79,15 @@ export async function GET() {
     if (!notYet.has(q.user_id)) notYet.set(q.user_id, String(q.ads ?? '').startsWith('Not yet'))
   }
 
+  // Hands-on sessions asked for this month, by email, to show what each plan still has unused
+  const sessionsUsed = new Map<string, number>()
+  const monthFrom = monthStart()
+  for (const c of callsQ.data ?? []) {
+    if (!String(c.session_format ?? '').startsWith(FORMAT_PREFIX) || c.status === 'cancelled' || c.created_at < monthFrom) continue
+    const e = (c.user_email ?? '').toLowerCase()
+    sessionsUsed.set(e, (sessionsUsed.get(e) ?? 0) + 1)
+  }
+
   const clients = users.map(u => {
     const paid     = u.subscription_tier !== 'free' && u.billing_status === 'active'
     const renewsIn = u.renewal_date ? Math.ceil((new Date(u.renewal_date).getTime() - now) / DAY_MS) : null
@@ -101,6 +111,7 @@ export async function GET() {
       id: u.id, name: u.full_name, email: u.email, company: u.company_name,
       tier: u.subscription_tier, status: u.billing_status, renewsIn, cancelled: !!u.cancelled_at,
       notAdvertisingYet: notYet.get(u.id) === true,
+      sessionsLeft: u.billing_status === 'active' ? Math.max(0, monthlyLimit(u.subscription_tier) - (sessionsUsed.get((u.email ?? '').toLowerCase()) ?? 0)) : 0,
       lastSeen: new Date(seen).toISOString(), weeksLogged: wk?.count ?? 0, open,
       lastMessage: thread.length ? thread.reduce((a, b) => (a.at > b.at ? a : b)) : null,
     }
