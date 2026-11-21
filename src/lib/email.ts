@@ -393,6 +393,30 @@ ${cta(`Renew ${label}`, url)}`
   return { data, error }
 }
 
+// Sent once, a few days before the month ends, to a client whose plan includes
+// a hands-on session they have not used. The session really does reset on the 1st.
+export async function sendUnusedSessionEmail({
+  to, name, month, daysLeft, left, baseUrl,
+}: { to: string; name?: string; month: string; daysLeft: number; left: number; baseUrl?: string }) {
+  const url = `${baseUrl ?? 'https://www.idealicp.com'}/dashboard`
+  const first = escapeHtml(name?.split(' ')[0] ?? 'there')
+  const what = left === 1 ? `Your ${month} session with Eugene is unused` : `You have ${left} sessions with Eugene left for ${month}`
+  const content = `
+${ICON.calendar}
+${heading(what, 36)}
+${sub(`Hi ${first}, your plan includes hands-on time with Eugene each month, and ${left === 1 ? 'this month\u2019s session has' : 'these sessions have'} not been used. ${left === 1 ? 'It resets' : 'They reset'} on the 1st, in ${daysLeft} days.`)}
+${securityBox(`<p style="margin:0 0 8px;color:${Dark};font-size:14px;font-weight:600;font-family:${font};">What you can use it for</p>
+<p style="margin:0;color:${Muted};font-size:14px;line-height:1.6;font-family:${font};">Connecting your CRM or lead sheet, fixing conversion tracking, setting up or restructuring campaigns, or anything else in your ad account you want a hand with.</p>`)}
+${cta('Book my session', url)}`
+  const { data, error } = await getResend().emails.send({
+    from: FROM, to,
+    subject: `${what}, ${daysLeft} days left`,
+    html: base(content),
+  })
+  if (error) console.error('[email] unused session error:', JSON.stringify(error))
+  return { data, error }
+}
+
 export async function sendPlanEndedEmail({
   to, name, baseUrl,
 }: { to: string; name?: string; baseUrl?: string }) {
