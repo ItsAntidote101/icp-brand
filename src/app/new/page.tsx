@@ -4,6 +4,7 @@ import { ArrowRight, ArrowUpRight, Check, ClipboardList, Gauge, LineChart, Wrenc
 import { GUIDES } from '../guides/content'
 import { FAQS } from '../home-faqs'
 import { CTA, SiteStyles } from '../site'
+import Opener from './opener'
 
 // Preview of the new public look, kept off the home page and out of search
 // until it is approved. The layout follows the consulting demo of the Ohio
@@ -20,6 +21,14 @@ const STEPS = [
   { icon: Gauge,         title: 'Score',  text: 'A score out of 100, or a launch plan if you have not started.' },
   { icon: Wrench,        title: 'Fix',    text: 'The first three fixes, with the words to use.' },
   { icon: LineChart,     title: 'Track',  text: 'Your cost per inquiry, checked every week.' },
+]
+
+// Every line here is something a plan already includes today.
+const HUMAN = [
+  { when: 'With your free report', what: 'One free 20 minute call with Eugene to go over your results. Only if you ask for it.' },
+  { when: 'On Starter', what: 'Message Eugene from your dashboard and he replies himself. Every month he writes you a note on your numbers.' },
+  { when: 'On Pro', what: 'Eugene reviews your campaign setup plan and sits with you for one hands-on session a month: tracking, CRM or campaign setup.' },
+  { when: 'On Agency', what: 'Up to four hands-on sessions a month and a monthly strategy call.' },
 ]
 
 const CAUSES = [
@@ -84,6 +93,19 @@ const css = `
 .oh .oh-note p{font-size:15px;line-height:1.6;color:rgba(255,255,255,.82)}
 .oh .oh-note strong{color:#fff;font-weight:600}
 .oh-hero-txt{padding-top:28px;order:-1}
+
+.oh .oh-h1{font-size:clamp(40px,6.2vw,76px);line-height:1}
+.oh-vows{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.oh-hero .oh-hero-in{gap:28px}
+.oh-hero .oh-hero-txt{padding-top:20px}
+.oh-hero .oh-p{margin-top:14px!important}
+.oh-vows li{display:flex;gap:10px;align-items:flex-start;font:500 16px/1.4 var(--body)}
+.oh-vows svg{flex-shrink:0;color:var(--accent);margin-top:2px}
+.oh-ladder{list-style:none;margin:0;padding:0;display:grid}
+.oh-ladder li{display:grid;gap:6px;padding:20px 0;border-top:1px solid var(--line)}
+.oh-ladder li:last-child{border-bottom:1px solid var(--line)}
+.oh-ladder span{font:600 14px/1.3 var(--body);color:var(--accent)}
+.oh .oh-ladder p{font-size:17px;line-height:1.55;color:var(--ink)}
 
 .oh-steps{display:grid;grid-template-columns:1fr 1fr;gap:34px 20px;text-align:center}
 .oh-steps span{display:grid;place-items:center;width:56px;height:56px;border-radius:50%;background:var(--blush);color:var(--accent);margin:0 auto 14px}
@@ -168,12 +190,14 @@ const css = `
   .oh-foot-in{grid-template-columns:1.2fr 1fr;align-items:start}
   .oh-copy{grid-column:1/-1}
   .oh-steps{grid-template-columns:repeat(4,1fr)}
+  .oh-ladder li{grid-template-columns:170px 1fr;gap:20px}
   .oh-packs,.oh-posts{grid-template-columns:repeat(3,1fr)}
   .oh-plans{grid-template-columns:1fr 1fr}
 }
 @media(min-width:960px){
   .oh-menu{display:flex}
-  .oh-hero-in{grid-template-columns:1fr 1fr;gap:clamp(40px,7vw,96px);align-items:center}
+  .oh-hero .oh-hero-in{grid-template-columns:1fr 1fr;gap:26px clamp(40px,7vw,96px);align-items:center;grid-template-areas:'stage txt' 'stage vows'}
+  .oh-hero .oh-stage{grid-area:stage}.oh-hero .oh-hero-txt{grid-area:txt;align-self:end;padding-top:0}.oh-vows{grid-area:vows;align-self:start}
   .oh-stage{margin:0 0 0 calc(-1 * max(clamp(20px,5vw,40px), (100vw - 1180px) / 2 + clamp(20px,5vw,40px)));min-height:560px}
   .oh-hero-txt{padding-top:0;order:0}
   .oh-split{grid-template-columns:1fr 1fr;gap:clamp(40px,7vw,96px)}
@@ -233,35 +257,42 @@ export default function Page() {
       <main>
         <section className="oh-hero">
           <div className="oh-wrap oh-hero-in">
-            <div className="oh-stage">
+            <div className="oh-stage" style={{ paddingBottom: 34 }}>
               <span className="oh-dots" style={{ left: '8%', top: 18 }} aria-hidden="true" />
-              <figure className="oh-chat" aria-label="Example of an inquiry that goes quiet" style={{ margin: 0 }}>
-                <div className="oh-chat-top">
-                  <span className="oh-ava" aria-hidden="true">W</span>
-                  <div><p style={{ font: '600 15px/1.2 var(--body)' }}>Wanjiru</p><p style={{ fontSize: 13, color: 'var(--faint)' }}>Came from your ad</p></div>
-                </div>
-                <p className="oh-bub oh-in">Hi, I saw your ad. How much is the 2 bedroom?</p>
-                <p className="oh-bub oh-out">Hi Wanjiru! It is KES 8.5M with a payment plan. When can you view?</p>
-                <p className="oh-bub oh-in">Ok, let me get back to you.</p>
-                <p className="oh-seen">Seen<strong>No reply for 3 weeks</strong></p>
-              </figure>
-              <div className="oh-note">
-                <p>Built and read by <strong>Eugene Kwata, a media buyer in Nairobi</strong> who runs Google and Meta campaigns for a living.</p>
-              </div>
+              <Opener />
             </div>
             <div className="oh-hero-txt">
               <p className="oh-eye">For Kenyan businesses that run ads</p>
-              <h1>Leads that never buy<em>.</em></h1>
-              <p className="oh-p">Answer 10 questions and see <strong>why your inquiries go quiet</strong>, what it is costing you and what to fix first.</p>
-              <div className="oh-acts">
-                <Link href="/questionnaire" className="oh-btn">{CTA}</Link>
-                <a href="#how" className="oh-link"><span aria-hidden="true"><ArrowRight size={18} /></span>How it works</a>
-              </div>
+              <h1 className="oh-h1">Don&apos;t put another shilling into ads yet.</h1>
+              <p className="oh-p">First find out why the inquiries you <strong>already paid for</strong> are not buying.</p>
             </div>
+            <ul className="oh-vows">
+              <li><Check size={18} aria-hidden="true" />Nobody will call you unless you ask.</li>
+              <li><Check size={18} aria-hidden="true" />No access to your ad account needed.</li>
+              <li><Check size={18} aria-hidden="true" />Rough numbers from memory are enough.</li>
+            </ul>
           </div>
         </section>
 
-        <section id="how" style={{ scrollMarginTop: 70 }}>
+        <section>
+          <div className="oh-wrap oh-split">
+            <div>
+              <p className="oh-eye">Not another audit tool</p>
+              <h2>The tool finds the leak. A person helps you close it.</h2>
+              <p className="oh-p">Most audits hand you a score and leave. Here the report is where the work starts, and <strong>Eugene is on the other side of it</strong>.</p>
+            </div>
+            <ol className="oh-ladder">
+              {HUMAN.map(h => (
+                <li key={h.when}>
+                  <span>{h.when}</span>
+                  <p>{h.what}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </section>
+
+        <section id="how" style={{ scrollMarginTop: 70, paddingTop: 0 }}>
           <div className="oh-wrap">
             <ol className="oh-steps" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
               {STEPS.map(s => (
