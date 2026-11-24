@@ -916,9 +916,16 @@ export default function QuestionnairePage() {
     ]).then(([d, me]: [PrefillPayload | null, { status?: string; user?: { subscription_tier?: string } } | null]) => {
       const isFree = me?.user?.subscription_tier === 'free'
 
-      if (!d?.prefill) { setPrefillReady(true); return }
+      // Answers tapped on the landing page carry over for someone with no
+      // saved diagnosis, so they are not asked the same thing twice.
+      let opener: Answers = {}
+      try { opener = keepValidAnswers(JSON.parse(sessionStorage.getItem('icp_opener_answers') ?? '{}')) } catch { /* nothing carried over */ }
+      const hasOpener = Object.keys(opener).length > 0
+
+      if (!d?.prefill) { if (hasOpener) setAnswers(opener); setPrefillReady(true); return }
       const { profile: p } = d.prefill
       const a = keepValidAnswers(d.prefill.answers)
+      if (Object.keys(a).length === 0 && hasOpener) setAnswers(opener)
 
       if (p.name || p.email || p.company) {
         setProfile({ name: p.name, email: p.email, company: p.company })
