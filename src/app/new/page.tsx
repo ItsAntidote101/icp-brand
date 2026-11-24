@@ -277,9 +277,9 @@ export default function Page() {
         <section>
           <div className="oh-wrap oh-split">
             <div>
-              <p className="oh-eye">Not another audit tool</p>
-              <h2>The tool finds the leak. A person helps you close it.</h2>
-              <p className="oh-p">Most audits hand you a score and leave. Here the report is where the work starts, and <strong>Eugene is on the other side of it</strong>.</p>
+              <p className="oh-eye">Who you are dealing with</p>
+              <h2>You get a media buyer, not a score.</h2>
+              <p className="oh-p">The questions find where your sales leak. Then <strong>Eugene works on it with you</strong>, with your real numbers in front of him.</p>
             </div>
             <ol className="oh-ladder">
               {HUMAN.map(h => (
