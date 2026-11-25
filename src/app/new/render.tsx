@@ -1,7 +1,7 @@
 import Link from 'next/link'
-import { ArrowRight, Check, ImageIcon } from 'lucide-react'
+import { ArrowRight, Check, ChevronDown, ImageIcon } from 'lucide-react'
 import { SiteStyles } from '../site'
-import { allCopy, copyByPath, type Block, type CopyPage, type Item, type Section } from '@/lib/site-copy'
+import { allCopy, copyByPath, teaser, type Block, type CopyPage, type Item, type Section } from '@/lib/site-copy'
 import Opener from './opener'
 import { PLANS } from './plans'
 import { MAP_DOTS, MAP_H, MAP_POINTS, MAP_W } from './world-dots'
@@ -14,13 +14,52 @@ import { MAP_DOTS, MAP_H, MAP_POINTS, MAP_W } from './world-dots'
 /** Where the new pages live while they are a hidden preview. Set to '' at launch. */
 export const BASE = '/new'
 
-const NAV = [
-  { href: '/how-it-works', label: 'How it works' },
-  { href: '/for', label: 'Who it is for' },
-  { href: '/case-studies', label: 'Case studies' },
-  { href: '/resources', label: 'Resources' },
-  { href: '/pricing', label: 'Pricing' },
-]
+type MenuLink = [href: string, label: string, note?: string]
+interface MenuItem {
+  href: string
+  label: string
+  cols?: { title: string; links: MenuLink[] }[]
+  aside?: { title: string; text: string; button: [string, string] }
+}
+/** The main menu. Items with columns open a wide panel on desktop; on a phone they are listed in the menu. */
+const menu = (): MenuItem[] => {
+  const guides = allCopy().filter(c => c.path.startsWith('/guides/')).slice(0, 5)
+    .map((c): MenuLink => [c.path, teaser(c).title])
+  return [
+    {
+      href: '/how-it-works', label: 'How it works',
+      cols: [{ title: 'What you get', links: [
+        ['/how-it-works', 'From first question to month three', 'The whole path on one page'],
+        ['/services/diagnosis', 'The free diagnosis', 'Ten questions, no login'],
+        ['/services/ready-to-upload', 'Ready to upload files', 'Keywords, Meta files and the words to paste'],
+        ['/services/campaign-setup', 'Campaign setup plan', 'A starting plan your media buyer reviews'],
+        ['/services/done-with-you', 'Hands-on sessions', 'Set up together, in your own accounts'],
+      ] }],
+      aside: { title: 'Start with your own numbers', text: 'Ten questions, about 3 minutes. No card and no login.', button: ['Start my free diagnosis', '/questionnaire'] },
+    },
+    {
+      href: '/for', label: 'Who it is for',
+      cols: [{ title: 'By trade', links: [
+        ['/for/property', 'Property and real estate', 'Site visits that never happen'],
+        ['/for/schools', 'Schools and colleges', 'Parents who asked and went quiet'],
+        ['/for/insurance', 'Insurance and financial services', 'Quotes sent, nothing back'],
+        ['/for/clinics', 'Clinics and beauty', 'Bookings that never show'],
+        ['/for/professional-services', 'Law, accounting and consulting', 'Free advice, no brief'],
+      ] }],
+      aside: { title: 'Not on the list?', text: 'The diagnosis works for any business that pays for inquiries.', button: ['Start my free diagnosis', '/questionnaire'] },
+    },
+    { href: '/case-studies', label: 'Case studies' },
+    {
+      href: '/resources', label: 'Resources',
+      cols: [
+        { title: 'Guides', links: [...guides, ['/resources', 'All guides']] },
+        { title: 'Compare', links: [['/compare/hiring-an-agency', 'Ideal ICP or an agency'], ['/compare/doing-it-yourself', 'Ideal ICP or doing it yourself']] },
+        { title: 'More', links: [['/glossary', 'Glossary'], ['/reviews', 'Reviews'], ['/about', 'About us'], ['/contact', 'Contact']] },
+      ],
+    },
+    { href: '/pricing', label: 'Pricing' },
+  ]
+}
 const FOOT = [
   { title: 'Start', links: [['/how-it-works', 'How it works'], ['/pricing', 'Pricing'], ['/questionnaire', 'Free diagnosis'], ['/auth', 'Log in']] },
   { title: 'Who it is for', links: [['/for/property', 'Property'], ['/for/schools', 'Schools and colleges'], ['/for/insurance', 'Insurance and finance'], ['/for/clinics', 'Clinics and beauty'], ['/for/professional-services', 'Professional services']] },
@@ -295,6 +334,7 @@ export function CopyPageView({ page }: { page: CopyPage }) {
   let splits = 0
   let seenGrid = false
   const hasOpener = page.sections.some(s => s.kind === 'opener')
+  const MENU = menu()
   return (
     <div className={`hp oh ic${hasOpener ? ' ic-home' : ''}`}>
       <SiteStyles />
@@ -302,15 +342,53 @@ export function CopyPageView({ page }: { page: CopyPage }) {
       <header className="ic-nav">
         <div className="ic-wrap ic-nav-in">
           <Link href={to('/')} className="ic-logo"><i aria-hidden="true" />Ideal ICP</Link>
-          <nav className="ic-links" aria-label="Main">{NAV.map(n => <Link key={n.href} href={to(n.href)}>{n.label}</Link>)}</nav>
+          <nav className="ic-links" aria-label="Main">
+            <ul className="ic-mega">
+              {MENU.map(m => (
+                <li key={m.href} className={m.cols ? 'ic-has-panel' : ''}>
+                  <Link href={to(m.href)} className="ic-top-link">{m.label}{m.cols && <ChevronDown size={15} aria-hidden="true" />}</Link>
+                  {m.cols && (
+                    <div className="ic-panel">
+                      <div className={`ic-wrap ic-panel-in ic-panel-${m.cols.length}${m.aside ? ' ic-panel-aside' : ''}`}>
+                        {m.cols.map(c => (
+                          <div key={c.title} className="ic-panel-col">
+                            <p className="ic-panel-title">{c.title}</p>
+                            <ul>
+                              {c.links.map(([href, label, note]) => (
+                                <li key={href + label}><Link href={to(href)}><span>{label}</span>{note && <small>{note}</small>}</Link></li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
+                        {m.aside && (
+                          <div className="ic-panel-box">
+                            <p className="ic-panel-box-title">{m.aside.title}</p>
+                            <p>{m.aside.text}</p>
+                            <Link href={to(m.aside.button[1])} className="ic-btn ic-btn-sm">{m.aside.button[0]}<ArrowRight size={16} aria-hidden="true" /></Link>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </nav>
           <Link href={hasOpener ? '#start' : '/questionnaire'} className="ic-btn ic-btn-sm">Free diagnosis</Link>
           <details className="ic-menu">
             <summary aria-label="Menu"><span /><span /><span /></summary>
             <nav aria-label="Menu">
-              {NAV.map(n => <Link key={n.href} href={to(n.href)}>{n.label}</Link>)}
-              <Link href={to('/about')}>About us</Link>
-              <Link href={to('/contact')}>Contact</Link>
-              <Link href="/auth">Log in</Link>
+              {MENU.map(m => (
+                <div key={m.href} className="ic-menu-group">
+                  <Link href={to(m.href)} className="ic-menu-top">{m.label}</Link>
+                  {m.cols && m.aside && m.cols[0].links.filter(([href]) => href !== m.href).map(([href, label]) => <Link key={href} href={to(href)} className="ic-menu-sub">{label}</Link>)}
+                </div>
+              ))}
+              <div className="ic-menu-group">
+                <Link href={to('/about')} className="ic-menu-top">About us</Link>
+                <Link href={to('/contact')} className="ic-menu-top">Contact</Link>
+                <Link href="/auth" className="ic-menu-top">Log in</Link>
+              </div>
             </nav>
           </details>
         </div>
@@ -378,16 +456,38 @@ const css = `
 .ic-nav-in{height:66px;display:flex;align-items:center;gap:14px}
 .ic-logo{display:inline-flex;align-items:center;gap:9px;font:700 18px/1 var(--head);letter-spacing:-.02em;color:inherit;text-decoration:none;margin:0 auto 0 0}
 .ic-logo i{width:10px;height:10px;border-radius:50%;background:var(--red)}
-.ic-links{display:none;gap:26px}
-.ic-links a{font:500 15px/1 var(--body);color:var(--ink);text-decoration:none}
-.ic-links a:hover{color:var(--red)}
+.ic-links{display:none}
+.ic-mega{list-style:none;margin:0;padding:0;display:flex;gap:4px}
+.ic-mega>li{height:66px;display:flex;align-items:center}
+.ic-top-link{display:inline-flex;align-items:center;gap:5px;height:40px;padding:0 12px;border-radius:6px;font:500 15px/1 var(--body);color:var(--ink);text-decoration:none}
+.ic-top-link svg{transition:transform .15s;color:var(--muted)}
+.ic-mega>li:hover>.ic-top-link,.ic-mega>li:focus-within>.ic-top-link{color:var(--red)}
+.ic-mega>li:hover>.ic-top-link svg,.ic-mega>li:focus-within>.ic-top-link svg{transform:rotate(180deg);color:var(--red)}
+.ic-panel{position:absolute;left:0;right:0;top:66px;background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line);box-shadow:0 30px 50px -30px rgba(32,21,21,.35);padding:30px 0 34px;visibility:hidden;opacity:0;transition:opacity .15s,visibility 0s .15s}
+.ic-mega>li:hover>.ic-panel,.ic-mega>li:focus-within>.ic-panel{visibility:visible;opacity:1;transition-delay:.05s,0s}
+.ic-panel-in{display:grid;gap:40px;align-items:start}
+.ic-panel-aside{grid-template-columns:1fr 300px}
+.ic-panel-3{grid-template-columns:1.5fr 1fr 1fr}
+.ic .ic-panel-title{font:600 13.5px/1.3 var(--body);color:var(--muted);margin:0 0 12px}
+.ic-panel-col ul{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.ic-panel-aside .ic-panel-col ul{grid-template-columns:1fr 1fr;gap:4px 24px}
+.ic-panel-col a{display:grid;gap:4px;padding:10px 12px;margin:0 -12px;border-radius:6px;text-decoration:none;color:var(--ink)}
+.ic-panel-col a:hover{background:#f8f4f0}
+.ic-panel-col a span{font:600 15.5px/1.3 var(--head)}
+.ic-panel-col a small{font:400 14px/1.4 var(--body);color:var(--muted)}
+.ic-panel-box{background:var(--blush);border-radius:6px;padding:22px;display:grid;gap:10px;justify-items:start}
+.ic .ic-panel-box-title{font:600 18px/1.25 var(--head);margin:0}
+.ic .ic-panel-box p{font-size:15px;line-height:1.5;color:var(--ink2);margin:0}
 .ic-menu{position:static}
 .ic-menu summary{list-style:none;width:44px;height:44px;display:grid;place-content:center;gap:5px;cursor:pointer;border-radius:6px}
 .ic-menu summary::-webkit-details-marker{display:none}
 .ic-menu summary span{display:block;width:22px;height:2px;background:var(--ink)}
-.ic-menu nav{position:absolute;left:0;right:0;top:66px;background:#fff;border-bottom:1px solid var(--line);padding:8px clamp(20px,5vw,44px) 20px;display:grid;box-shadow:0 24px 40px -24px rgba(32,21,21,.3)}
-.ic-menu nav a{padding:14px 0;font:500 17px/1.2 var(--body);color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line)}
-.ic-menu nav a:last-child{border-bottom:0}
+.ic-menu nav{position:absolute;left:0;right:0;top:66px;max-height:calc(100dvh - 66px);overflow-y:auto;background:#fff;border-bottom:1px solid var(--line);padding:4px clamp(20px,5vw,44px) 20px;display:grid;box-shadow:0 24px 40px -24px rgba(32,21,21,.3)}
+.ic-menu-group{display:grid;padding:6px 0;border-bottom:1px solid var(--line)}
+.ic-menu-group:last-child{border-bottom:0}
+.ic-menu nav a{display:flex;align-items:center;min-height:44px;text-decoration:none;color:var(--ink)}
+.ic-menu-top{font:600 17px/1.2 var(--body)}
+.ic-menu-sub{font:400 16px/1.2 var(--body);padding-left:14px;color:var(--ink2)!important}
 .ic .ic-sample{margin:0;background:#201515;color:#fff;text-align:center;font:500 14px/1.4 var(--body);padding:10px 16px}
 
 .ic-photo{position:relative;width:100%;display:grid;place-content:center;justify-items:center;gap:8px;padding:20px;text-align:center;color:#6b5f55;border-radius:4px;overflow:hidden;
@@ -503,9 +603,9 @@ const css = `
   .ic-band .ic-act{margin:0}
 }
 @media (min-width:980px){
-  .ic-links{display:flex}
+  .ic-links{display:block}
   .ic-logo{margin-right:auto}
-  .ic-nav-in{gap:30px}
+  .ic-nav-in{gap:18px}
   .ic-menu{display:none}
   .ic-hero-in{grid-template-columns:repeat(12,1fr);align-items:center;padding-top:28px}
   .ic-hero-photo{grid-column:1 / 9;grid-row:1;aspect-ratio:16/11!important}
