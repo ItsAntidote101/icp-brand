@@ -139,7 +139,7 @@ export default function PrivacyPage() {
             <li><strong>Google Tag Manager, Google Ads and the Meta pixel:</strong> These load tags from Google and Meta that set their own cookies (for example _gcl, _ga, _fbp) and tell those companies which pages you visit on this site and which steps you complete, so we can measure our advertising and show our ads to people like those who used the diagnosis</li>
             <li><strong>Matching results to ads:</strong> When you finish a diagnosis, ask for a call or pay, a scrambled (hashed) form of your email address and phone number is passed to Google and Meta so they can match that result to an ad you saw. They receive the scrambled form, never the plain text</li>
           </ul>
-          <Para>If you close the cookie notice or carry on without opening &quot;Cookie settings&quot;, all three optional groups stay on. If you switch Marketing off, we stop the Google and Meta tags and remove the advertising cookies they set on this site. While it is off, none of those tags load.</Para>
+          <Para>If you carry on without opening &quot;Cookie settings&quot;, all three optional groups stay on. If you switch Marketing off, we stop the Google and Meta tags and remove the advertising cookies they set on this site. While it is off, none of those tags load.</Para>
         </Section>
 
         <Section title="6. How We Share Your Information">
