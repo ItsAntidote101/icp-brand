@@ -4,7 +4,7 @@ title: For insurance agents, brokers and lenders | Ideal ICP
 description: Quotes go out and clients go quiet. A free diagnosis shows your cost per inquiry and per policy, and where people are lost after the quote.
 question: Why do people ask for an insurance quote and then go quiet?
 status: ready
-links_to: /case-studies, /guides/cost-per-lead-kenya, /guides/google-ads-or-facebook-ads, /services/ready-to-upload, /questionnaire
+links_to: /guides/cost-per-lead-kenya, /guides/google-ads-or-facebook-ads, /services/ready-to-upload, /questionnaire
 ---
 
 ## hero
@@ -45,9 +45,6 @@ Insurers and lenders skip the Meta customer list file. Meta does not accept list
 
 ## cards
 ### Where to look next
-#### Sample case studies
-We have no insurance case study yet and will not invent one. The samples show how a receipt is laid out: spend, inquiries, buyers, dates.
-[LINK: See the sample case studies -> /case-studies]
 #### What should an inquiry cost in Kenya?
 How to work out your own number, and why the cost of each policy matters more.
 [LINK: Read the cost guide -> /guides/cost-per-lead-kenya]
@@ -85,3 +82,4 @@ Voice changed to company and role on 25 Nov 2026.
 Sources:
 - https://www.facebook.com/business/help/170456843145568
 - https://www.facebook.com/business/help/606443329504150
+Case studies and reviews are held back until real clients replace the samples (25 Nov 2026). The card or section that pointed to them was taken out of this page for launch; put one back when the first real case study is published.

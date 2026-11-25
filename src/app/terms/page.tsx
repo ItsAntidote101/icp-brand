@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { SiteShell } from '../new/render'
 
 export const metadata: Metadata = {
   title: 'Terms and Conditions | Ideal ICP',
@@ -19,38 +20,13 @@ const LAST_UPDATED = '25 November 2026'
 
 export default function TermsPage() {
   return (
-    <div style={{ fontFamily: fontB, color: P, backgroundColor: '#fffefb', margin: 0, padding: 0 }}>
-
-      {/* Nav */}
-      <nav style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 100,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '14px clamp(16px,4vw,40px)',
-        background: 'rgba(32,21,21,0.92)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
-        borderBottom: '1px solid rgba(255,255,255,0.08)',
-      }}>
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-          <div style={{ width: 28, height: 28, background: '#e8330a', flexShrink: 0 }} />
-          <span style={{ fontFamily: font, fontWeight: 700, fontSize: 16, color: '#fff' }}>Ideal ICP</span>
-        </Link>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-          <Link href="/privacy" style={{ fontFamily: fontB, fontSize: 13, color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>Privacy Policy</Link>
-          <Link href="/auth" style={{ fontFamily: fontB, fontSize: 13, color: '#fff', textDecoration: 'none', fontWeight: 600 }}>Sign in</Link>
-        </div>
-      </nav>
+    <SiteShell ask={false}>
+    <main className="ic-legal" style={{ fontFamily: fontB, color: P, backgroundColor: '#fffefb' }}>
 
       {/* Hero */}
       <section style={{
         background: '#201515',
-        padding: 'clamp(88px,12vw,140px) clamp(16px,4vw,24px) clamp(48px,6vw,80px)',
+        padding: 'clamp(48px,7vw,88px) clamp(16px,4vw,24px) clamp(48px,6vw,80px)',
         textAlign: 'center',
       }}>
         <p style={{ fontFamily: fontB, fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', marginBottom: 16 }}>
@@ -176,23 +152,8 @@ export default function TermsPage() {
 
       </div>
 
-      {/* Footer */}
-      <footer style={{
-        borderTop: `1px solid ${Pborder}`,
-        padding: '32px 24px',
-        textAlign: 'center',
-        fontSize: 13,
-        color: Pmuted,
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 24, flexWrap: 'wrap', marginBottom: 12 }}>
-          <Link href="/" style={{ color: Pmuted, textDecoration: 'none' }}>Home</Link>
-          <Link href="/privacy" style={{ color: Pmuted, textDecoration: 'none' }}>Privacy Policy</Link>
-          <Link href="/terms" style={{ color: P, textDecoration: 'none', fontWeight: 600 }}>Terms</Link>
-          <Link href="/about" style={{ color: Pmuted, textDecoration: 'none' }}>About</Link>
-        </div>
-        <p style={{ margin: 0 }}>Copyright {new Date().getFullYear()} Ideal ICP. All rights reserved.</p>
-      </footer>
-    </div>
+    </main>
+    </SiteShell>
   )
 }
 

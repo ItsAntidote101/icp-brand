@@ -4,7 +4,7 @@ title: For schools and colleges running intake ads | Ideal ICP
 description: Parents ask for the fee structure and go quiet. A free diagnosis shows where admissions are lost between the inquiry and first term fees.
 question: Why do parents ask for the fee structure and never enrol?
 status: ready
-links_to: /case-studies/college-intake, /guides/boost-post-or-ads-manager, /guides/click-to-whatsapp-or-lead-forms, /pricing, /questionnaire
+links_to: /guides/boost-post-or-ads-manager, /guides/click-to-whatsapp-or-lead-forms, /pricing, /questionnaire
 ---
 
 ## hero
@@ -43,10 +43,7 @@ The first fix comes with its wording, free. On Starter, KES 6,500 a month, every
 [IMAGE: A media buyer and a school bursar looking at an inquiry register beside a laptop | 4:3]
 
 ## cards
-### One sample and two guides
-#### Sample case study: a college intake
-What was spent, how many inquired and how many enrolled, before and after. Marked as a sample until a real one replaces it.
-[LINK: Read the sample intake case study -> /case-studies/college-intake]
+### Two guides for schools and colleges
 #### Boost post or Ads Manager
 If the open day post collected likes and no parents, start with this one.
 [LINK: Read boost post or Ads Manager -> /guides/boost-post-or-ads-manager]
@@ -80,3 +77,4 @@ No market figure is used, so no Sources list.
 The case study card says "sample" in the visible copy and must be updated when a real college replaces it.
 Humanize skill run on 24 Nov 2026, and again after the voice change.
 Voice changed to company and role on 25 Nov 2026.
+Case studies and reviews are held back until real clients replace the samples (25 Nov 2026). The card or section that pointed to them was taken out of this page for launch; put one back when the first real case study is published.

@@ -4,7 +4,7 @@ title: For property agents and land sellers in Kenya | Ideal ICP
 description: Buyers ask the price and vanish, or confirm a site visit and never come. A free diagnosis shows where they are lost and what to fix first.
 question: Why do property inquiries from my ads never turn into site visits or deposits?
 status: ready
-links_to: /case-studies/property-agency, /guides/last-price-and-disappear, /guides/why-facebook-leads-dont-buy, /services/ready-to-upload, /questionnaire
+links_to: /guides/last-price-and-disappear, /guides/why-facebook-leads-dont-buy, /services/ready-to-upload, /questionnaire
 ---
 
 ## hero
@@ -44,9 +44,6 @@ The free diagnosis gives you the words for your first fix. Starter, KES 6,500 a 
 
 ## cards
 ### What to read next
-#### Sample case study: a property agency
-Spend, inquiries and buyers before and after, with dates. It is a sample until real numbers replace it.
-[LINK: Read the sample property case study -> /case-studies/property-agency]
 #### Why people ask for last price and disappear
 Sending the price alone is where the chat ends. This guide covers what to send with it.
 [LINK: Read the last price guide -> /guides/last-price-and-disappear]
@@ -82,3 +79,4 @@ Humanize skill run on 24 Nov 2026, and again after the voice change.
 Voice changed to company and role on 25 Nov 2026.
 Sources:
 - https://nation.africa/kenya/life-and-style/realtors-lean-on-tiktok-youtube-to-grow-business--4510164
+Case studies and reviews are held back until real clients replace the samples (25 Nov 2026). The card or section that pointed to them was taken out of this page for launch; put one back when the first real case study is published.

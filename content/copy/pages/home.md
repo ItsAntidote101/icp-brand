@@ -4,7 +4,7 @@ title: Why your ad inquiries are not buying | Ideal ICP
 description: A free 10 question diagnosis for Kenyan businesses that pay for ads. See where inquiries are lost and get 3 fixes this week. No login, no sales call.
 question: Why do my ads bring inquiries but no sales?
 status: ready
-links_to: /questionnaire, /about, /services/ready-to-upload, /for/property, /for/schools, /for/insurance, /for/clinics, /for/professional-services, /case-studies, /how-it-works
+links_to: /questionnaire, /about, /services/ready-to-upload, /for/property, /for/schools, /for/insurance, /for/clinics, /for/professional-services, /how-it-works
 ---
 
 ## hero
@@ -87,13 +87,6 @@ Forty quotes sent as PDFs, each one ending "Kindly advise".
 Forty minutes of free advice by phone, then a request for a small discount.
 [LINK: Professional services clients -> /for/professional-services]
 
-## split
-eyebrow: Proof
-### Proof comes as receipts.
-Each case study lays out ad spend, inquiries and buyers, before and after, with dates. Every percentage lift comes with its starting figure. One job is no benchmark for yours, so read each as a receipt.
-[LINK: Read the case studies -> /case-studies]
-[IMAGE: A printed one page table of monthly ad spend, inquiries and buyers, with the dates written across the top | 4:3]
-
 ## map
 ### Built on campaigns run in three countries
 Before Ideal ICP, our founder ran paid campaigns for companies in these markets. Businesses in Kenya now get what those campaigns taught.
@@ -143,3 +136,4 @@ The international experience sentence sits in the "You get a media buyer, not a 
 The live opener (src/app/new/opener.tsx) still shows a name above its first line. It needs the same voice change, or the page will name a person the copy no longer names.
 Sources:
 - Meta does not allow customer lists based on health or financial information: https://www.facebook.com/business/help/170456843145568 and https://www.facebook.com/business/help/606443329504150 (read 24 Nov 2026, per research/kenya-and-demand.md)
+Case studies and reviews are held back until real clients replace the samples (25 Nov 2026). The card or section that pointed to them was taken out of this page for launch; put one back when the first real case study is published.
