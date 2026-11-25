@@ -9,9 +9,11 @@ links_to: /questionnaire, /about, /services/ready-to-upload, /for/property, /for
 
 ## hero
 eyebrow: For owners in Kenya paying for Google or Meta ads
+rotate: They asked "How much?" and went quiet. | The form came in at 11pm. Nobody called for two days. | Two hundred likes. No deposit.
 # Do not put another shilling into ads yet.
 You already paid for the inquiries you have. Answer a few questions and see where they stopped before the money came in.
 [BUTTON: Start my free diagnosis -> /questionnaire]
+[LINK: See how it works -> /how-it-works]
 [IMAGE: A phone showing a WhatsApp chat where the customer asked "How much?", the business sent a price, and nothing follows | 4:3]
 
 ## opener

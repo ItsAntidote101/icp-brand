@@ -45,15 +45,31 @@ export default function Opener() {
     if (log) log.scrollTo({ top: log.scrollHeight, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
   }, [step])
 
+  // Pick the conversation up from answers saved earlier in this visit, or
+  // from the floating bar, which saves the first answer and then signals.
+  useEffect(() => {
+    const restore = () => {
+      let saved: Answers = {}
+      try { saved = JSON.parse(sessionStorage.getItem(OPENER_KEY) ?? '{}') ?? {} } catch { return }
+      if (!saved[27]) return
+      setA(saved); setTyped(''); setWarn('')
+      setStep(saved[27] === 'Not yet' ? 'notyet' : !saved[13] ? 'spend' : !saved[14] ? 'inquiries' : !saved[35] ? 'buyers' : !saved[6] ? 'worth' : 'done')
+    }
+    restore()
+    window.addEventListener('icp-ask', restore)
+    return () => window.removeEventListener('icp-ask', restore)
+  }, [])
+
   const save = (next: Answers) => {
     try { sessionStorage.setItem(OPENER_KEY, JSON.stringify(next)) } catch { /* private mode: the questions are simply asked again */ }
+    window.dispatchEvent(new Event('icp-opener-changed'))
   }
   const answer = (id: number, value: string, to: Step) => {
     moved.current = true
     const next = { ...a, [id]: value }
     setA(next); save(next); setTyped(''); setWarn(''); setStep(to)
   }
-  const restart = () => { setA({}); setStep('ads'); setTyped(''); setWarn(''); try { sessionStorage.removeItem(OPENER_KEY) } catch { /* nothing to clear */ } }
+  const restart = () => { setA({}); setStep('ads'); setTyped(''); setWarn(''); try { sessionStorage.removeItem(OPENER_KEY) } catch { /* nothing to clear */ } window.dispatchEvent(new Event('icp-opener-changed')) }
 
   const inquiries = Number(a[14] ?? 0)
   const buyers    = Number(a[35] ?? 0)
