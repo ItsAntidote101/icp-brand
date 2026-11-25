@@ -54,7 +54,7 @@ Then there is your own selling time. A salon booking can close the same afternoo
 
 One buyer costs you less than you keep from the sale, with room to spare, and that holds for several weeks running. That is the whole test.
 
-If your line passes it, the ads are working and I will say so. If inquiries are steady and buyers are thin, the ads may be fine and the leak sits after the inquiry: who is asking, how fast they get a reply, whether anyone follows up. Putting more money in will not fix that part. On a paid plan, the Ideal ICP dashboard tracks your cost per lead every week, so it keeps the first half of the line for you. See [LINK: how the dashboard works -> /how-it-works].
+If your line passes it, the ads are working and we will say so. If inquiries are steady and buyers are thin, the ads may be fine and the leak sits after the inquiry: who is asking, how fast they get a reply, whether anyone follows up. Putting more money in will not fix that part. On a paid plan, the Ideal ICP dashboard tracks your cost per lead every week, so it keeps the first half of the line for you. See [LINK: how the dashboard works -> /how-it-works].
 
 ### What should I stop counting?
 
@@ -75,6 +75,7 @@ Answer ten questions from memory and get a score out of 100, your top problems a
 [BUTTON: Start my free diagnosis -> /questionnaire]
 
 ## notes
+Voice changed to company and role on 25 Nov 2026.
 Article for topic 8 in research/kenya-and-demand.md. Opening answer follows the research line for that topic.
 All shilling figures are arithmetic on made-up inputs (15,000 / 30 = 500; 15,000 / 2 = 7,500). No benchmark is implied.
 The dashboard claim is limited to the brief's fact: it tracks cost per lead every week on paid plans. The research suggested linking to the cost per lead dashboard; the sitemap has no separate dashboard page, so the link goes to /how-it-works.

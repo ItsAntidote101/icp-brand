@@ -4,6 +4,7 @@ import { SiteStyles } from '../site'
 import { allCopy, copyByPath, type Block, type CopyPage, type Item, type Section } from '@/lib/site-copy'
 import Opener from './opener'
 import { PLANS } from './plans'
+import { MAP_DOTS, MAP_H, MAP_POINTS, MAP_W } from './world-dots'
 
 // Draws a page from its copy file (content/copy/pages) in the Ohio look:
 // Demo 23 for the home sections, with the plans beside questions block from
@@ -24,7 +25,7 @@ const FOOT = [
   { title: 'Start', links: [['/how-it-works', 'How it works'], ['/pricing', 'Pricing'], ['/questionnaire', 'Free diagnosis'], ['/auth', 'Log in']] },
   { title: 'Who it is for', links: [['/for/property', 'Property'], ['/for/schools', 'Schools and colleges'], ['/for/insurance', 'Insurance and finance'], ['/for/clinics', 'Clinics and beauty'], ['/for/professional-services', 'Professional services']] },
   { title: 'Read', links: [['/case-studies', 'Case studies'], ['/resources', 'Resources'], ['/reviews', 'Reviews'], ['/glossary', 'Glossary']] },
-  { title: 'Ideal ICP', links: [['/about', 'About Eugene'], ['/contact', 'Contact'], ['/privacy', 'Privacy'], ['/terms', 'Terms']] },
+  { title: 'Ideal ICP', links: [['/about', 'About us'], ['/contact', 'Contact'], ['/privacy', 'Privacy'], ['/terms', 'Terms']] },
 ]
 
 /** Pages that exist as copy are linked inside the preview; everything else keeps its live address. */
@@ -242,9 +243,38 @@ function SectionView({ s, index, page, flip, dark }: { s: Section; index: number
                   </label>
                 )
               })}
-              <button type="button" className="ic-btn" disabled>Send to Eugene</button>
+              <button type="button" className="ic-btn" disabled>Send message</button>
               <p id="ic-form-note" className="ic-fine">Preview only. This form is not connected yet.</p>
             </form>
+          </div>
+        </section>
+      )
+    }
+    case 'map': {
+      const home = MAP_POINTS['Kenya']
+      const shown = s.items.filter(it => MAP_POINTS[it.title])
+      return (
+        <section className="ic-sec ic-dark ic-map-sec">
+          <div className="ic-wrap">
+            <Head s={s} />
+            <div className="ic-map">
+              <svg viewBox={`0 0 ${MAP_W} ${MAP_H}`} role="img" aria-label={`World map marking ${shown.map(it => it.title).join(', ')}`}>
+                <path d={MAP_DOTS} className="ic-map-land" />
+                {shown.filter(it => it.title !== 'Kenya').map(it => {
+                  const [x, y] = MAP_POINTS[it.title]
+                  const mx = (x + home[0]) / 2, my = Math.min(y, home[1]) - Math.abs(x - home[0]) * 0.22 - 24
+                  return <path key={it.title} d={`M${x} ${y}Q${mx} ${my} ${home[0]} ${home[1]}`} className="ic-map-arc" />
+                })}
+                {shown.map(it => {
+                  const [x, y] = MAP_POINTS[it.title]
+                  const base = it.title === 'Kenya'
+                  return <g key={it.title}><circle cx={x} cy={y} r={base ? 15 : 11} className="ic-map-halo" /><circle cx={x} cy={y} r={base ? 6.5 : 5} className={base ? 'ic-map-base' : 'ic-map-pin'} /></g>
+                })}
+              </svg>
+            </div>
+            <ol className={`ic-cards ic-cards-${shown.length > 4 ? 3 : shown.length}`}>
+              {s.items.map(it => <ItemCard key={it.title} item={it} />)}
+            </ol>
           </div>
         </section>
       )
@@ -278,7 +308,7 @@ export function CopyPageView({ page }: { page: CopyPage }) {
             <summary aria-label="Menu"><span /><span /><span /></summary>
             <nav aria-label="Menu">
               {NAV.map(n => <Link key={n.href} href={to(n.href)}>{n.label}</Link>)}
-              <Link href={to('/about')}>About Eugene</Link>
+              <Link href={to('/about')}>About us</Link>
               <Link href={to('/contact')}>Contact</Link>
               <Link href="/auth">Log in</Link>
             </nav>
@@ -302,7 +332,7 @@ export function CopyPageView({ page }: { page: CopyPage }) {
         <div className="ic-wrap ic-foot-in">
           <div>
             <p className="ic-logo"><i aria-hidden="true" />Ideal ICP</p>
-            <p>A media buyer in Nairobi for businesses whose ads bring inquiries that do not buy.</p>
+            <p>A media buying service in Nairobi for businesses whose ads bring inquiries that do not buy.</p>
           </div>
           {FOOT.map(g => (
             <nav key={g.title} aria-label={g.title}>
@@ -439,6 +469,13 @@ const css = `
 .ic-form label{display:grid;gap:8px;font:600 15px/1.3 var(--body)}
 .ic-form input,.ic-form textarea{width:100%;padding:14px;border:1.5px solid var(--line);border-radius:6px;font:400 16px/1.4 var(--body);background:#fff;color:var(--ink)}
 .ic-form .ic-btn{justify-self:start}
+.ic-map{margin:0 0 clamp(24px,4vw,40px)}
+.ic-map svg{display:block;width:100%;height:auto}
+.ic-map-land{fill:none;stroke:rgba(255,255,255,.3);stroke-width:3.4;stroke-linecap:round}
+.ic-map-arc{fill:none;stroke:var(--red);stroke-width:2;stroke-dasharray:1 7;stroke-linecap:round}
+.ic-map-halo{fill:var(--red);opacity:.25}
+.ic-map-pin{fill:#fff}
+.ic-map-base{fill:var(--red);stroke:#fff;stroke-width:2.5}
 .ic .ic-band{background:var(--red);color:#fff;padding:clamp(44px,6vw,72px) 0}
 .ic-band h2{color:#fff}
 .ic-band .ic-p{color:rgba(255,255,255,.92)}

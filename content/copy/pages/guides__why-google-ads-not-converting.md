@@ -72,6 +72,7 @@ Answer ten questions in about three minutes and see where the inquiries you alre
 [BUTTON: Show me where they are lost -> /questionnaire]
 
 ## notes
+Voice changed to company and role on 25 Nov 2026.
 Topic 1 in research/kenya-and-demand.md. Opens with the one sentence answer given there.
 The hero carries the diagnosis button because the hero layout in the brief has one button. Remove it if article heroes should have none.
 No market statistics used. The KES 30,000 and KES 10,000 figures are a made-up sum and are labelled as such in the copy.

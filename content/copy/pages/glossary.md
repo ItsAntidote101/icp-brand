@@ -82,6 +82,7 @@ Ten questions, about three minutes, no access to your ad account.
 [BUTTON: Show me where they are lost -> /questionnaire]
 
 ## notes
+Voice changed to company and role on 25 Nov 2026.
 All 25 terms and their definitions follow the glossary in research/kenya-and-demand.md, Part 3, which was checked against the help pages listed below on 24 Nov 2026. Grouping: money words 8, Meta words 6, Google words 7, tracking words 4.
 Shilling examples are arithmetic. From the research file: 20,000 / 40 = 500; 3,000 / 100 = 30; 150,000 / 50,000 = 3; KES 800 as a named target. Added by the copywriter as plain arithmetic: CPM, 2,000 / 10,000 x 1,000 = 200; frequency, 30,000 / 10,000 = 3. None is a benchmark, and the hero says so.
 "CPL (cost per lead)" keeps the platform's word in the term and uses "inquiry" in the definition, as the brief asks.

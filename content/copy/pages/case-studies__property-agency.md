@@ -74,3 +74,4 @@ This is the case where inquiries go down while buyers go up, and cost per inquir
 The scene (price sent, no reply; eleven confirmed, three showed up) is the typical property scene from research/kenya-and-demand.md Part 2, which is marked there as unsourced typical phrasing, not recorded speech.
 The changes use Starter plan items only: ad text and reply wording to paste, and the Google file of words to block.
 The quote section is a slot, not a quote. Do not publish it as written.
+Voice changed to company and role on 25 Nov 2026.

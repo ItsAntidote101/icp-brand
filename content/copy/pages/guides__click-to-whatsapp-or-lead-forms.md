@@ -74,6 +74,7 @@ Ten questions, about three minutes, no access to your ad account.
 [BUTTON: Show me where they are lost -> /questionnaire]
 
 ## notes
+Voice changed to company and role on 25 Nov 2026.
 Article for topic 9 in research/kenya-and-demand.md. Opening answer follows the research line for that topic.
 The two-channel comparison uses made-up inputs and is labelled as such in the copy (12,000 / 60 = 200; 12,000 / 3 = 4,000; 12,000 / 24 = 500; 12,000 / 4 = 3,000).
 "From the Starter plan ... the words to paste for every fix" is the brief's Starter fact. The Free plan gives wording for the first fix only.

@@ -55,7 +55,7 @@ Not freely. This is what Meta's pages say:
 - An account set up for automatic billing does not get M-Pesa added.
 - You can change an account's currency once every 60 days if no balance is owing, but doing so closes the old ad account, stops its ads and opens a new one.
 
-Meta does not spell out whether that new account will offer M-Pesa, so I will not promise it. Settle country, currency and payment method before the first ad, as part of planning the launch.
+Meta does not spell out whether that new account will offer M-Pesa, so we will not promise it. Settle country, currency and payment method before the first ad, as part of planning the launch.
 [LINK: See the campaign setup plan -> /services/campaign-setup]
 
 Paying is the easy half. Next, decide what you are asking Meta for.
@@ -68,7 +68,7 @@ Meta says it charges no provider fee for adding funds. Your payment provider mig
 #### Can I get unused funds back?
 Do not count on it. Meta says unused funds are generally not refundable. You can ask for a refund after closing the ad account, and Meta decides each request case by case.
 #### How much should I add the first time?
-I will not give you a number, because it depends on what a buyer is worth to you. Add only what you have planned to spend.
+No single number fits, because it depends on what a buyer is worth to you. Add only what you have planned to spend.
 
 ## band
 ### Sort out who buys before you top up.
@@ -76,6 +76,7 @@ The free diagnosis is ten questions, takes about three minutes and needs no logi
 [BUTTON: Start my free diagnosis -> /questionnaire]
 
 ## notes
+Voice changed to company and role on 25 Nov 2026.
 Topic 3 in research/kenya-and-demand.md. Opens with the one sentence answer given there.
 The hero carries the diagnosis button because the hero layout in the brief has one button. Remove it if article heroes should have none.
 Spelling: "M-Pesa" follows the brief and the live guides. Meta and Safaricom write "M-PESA". Change globally if the site prefers the brand spelling.

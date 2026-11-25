@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, MessageCircle } from 'lucide-react'
 import { rangeKind, rangeNumber } from '@/lib/answers'
 
 // The first screen of the site is the diagnosis itself, already started.
@@ -77,10 +77,10 @@ export default function Opener() {
     <div className="op" aria-label="Start your diagnosis">
       <style dangerouslySetInnerHTML={{ __html: css }} />
       <div className="op-top">
-        <span className="op-ava" aria-hidden="true">E</span>
+        <span className="op-ava" aria-hidden="true"><MessageCircle size={19} /></span>
         <div>
-          <p className="op-name">Eugene Kwata</p>
-          <p className="op-role">Media buyer, Nairobi. These are the questions he asks every new client.</p>
+          <p className="op-name">Ideal ICP media buyer</p>
+          <p className="op-role">Nairobi. The questions we ask every new client.</p>
         </div>
       </div>
 

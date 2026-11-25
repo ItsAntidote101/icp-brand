@@ -16,7 +16,7 @@ Each trade loses them in its own way. Find yours below and see where, before ano
 
 ## cards
 ### Pick your trade
-Your page shows where the sale goes missing and what I hand you to fix it.
+Your page shows where the sale goes missing and what you are handed to fix it.
 #### Property and real estate
 Joyriders fill the site visit list while the serious buyers ghost after the price.
 [LINK: Go to the property page -> /for/property]
@@ -55,3 +55,4 @@ The five card sentences use each trade's own vocabulary from research/kenya-and-
 No market figure is used on this page, so there is no Sources list.
 Product facts (ten questions, about 3 minutes, no ad account login, nobody calls unless asked) come from the brief and src/app/pricing/page.tsx.
 Humanize skill run on 24 Nov 2026.
+Voice changed to company and role on 25 Nov 2026.

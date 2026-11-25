@@ -34,7 +34,7 @@ Ten questions from memory, no login: spend, how many ask, how many book and show
 [IMAGE: A clinic owner between patients, reading a report on her phone at the front desk | 3:4]
 
 ## split
-### What I hand the front desk
+### What we hand the front desk
 Your first fix is worded free. Starter, KES 6,500 a month, covers the rest:
 - A reply to "How much?" with the price and two open slots
 - A polite deposit request
@@ -58,9 +58,9 @@ Spend, inquiries and bookings on one line each week. Likes are not on it.
 
 ## faq
 ### Questions clinics and salons ask
-#### Should I ask for a deposit before I book someone?
-That is your decision, and some treatments suit it better than others. If no-shows turn out to be the problem, I give you the words to ask for one politely.
-#### My receptionist has no time for WhatsApp. What then?
+#### Should a deposit come before the booking?
+That is your decision, and some treatments suit it better than others. If no-shows turn out to be the problem, the fix comes with the words to ask for one politely.
+#### The receptionist has no time for WhatsApp. What then?
 Then she pastes a first reply that was written once: price, two slots, one question. That is the kind of wording you get.
 #### Do you need patient names or records?
 None. The diagnosis asks for counts and rough shillings, and patient details stay in your clinic.
@@ -69,19 +69,20 @@ A facial and a filling are lost the same way: a price, no slot, no reminder. The
 
 ## band
 ### Count the no-shows before you buy more inquiries.
-Ten questions on your phone between appointments, and I only call if you ask me to.
+Ten questions on your phone between appointments, and a media buyer calls only if you ask.
 [BUTTON: Start my free diagnosis -> /questionnaire]
 
 ## notes
 Hero scene (2pm slot, chair empty, last message "I'll come tomorrow") is the clinics scene in research/kenya-and-demand.md part 2. That part of the research is typical phrasing drawn from general knowledge, with no recording behind it. It describes no real clinic or patient.
-From the clinics entry I took: no-shows, walk-ins, price shoppers, bookings, "How much is braces?", "Bei ya facial?", deposit by M-Pesa.
+Taken from the clinics entry: no-shows, walk-ins, price shoppers, bookings, "How much is braces?", "Bei ya facial?", deposit by M-Pesa.
 No Meta customer list on this page. The research file records that Meta does not allow customer lists based on health information (Meta help pages below, read 24 Nov 2026). The line in the second split says the whole trade skips it, salons and spas included, to keep the page simple and safe. If the owner wants salons treated differently, that needs a decision, not a copy change.
 The second Meta file, the one made from a sales spreadsheet, is left out here too for the same reason.
-"What I hand the front desk": the three messages stand for the sort of wording a fix carries. The product writes the wording fix by fix from the answers given, so the real messages follow the report.
+"What we hand the front desk": the three messages stand for the sort of wording a fix carries. The product writes the wording fix by fix from the answers given, so the real messages follow the report.
 The deposit card says a deposit gives the client a reason to keep the time. It does not say how many more will show up, and no figure should be added.
 Clinics may have their own rules on advertising health services. Nobody has checked them for this page. Worth a look before launch.
 The case study card says "sample" in the visible copy.
 Humanize skill run on 24 Nov 2026.
+Voice changed to company and role on 25 Nov 2026.
 Sources:
 - https://www.facebook.com/business/help/170456843145568
 - https://www.facebook.com/business/help/606443329504150

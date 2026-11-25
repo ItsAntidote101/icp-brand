@@ -42,11 +42,11 @@ The audience is there. In the Communications Authority's survey for April to Jun
 The catch is the interruption. Plenty of people who tap were curious and nothing more, so the sorting has to happen in your reply.
 
 ### Which one costs less?
-I will not quote you a typical cost, because any figure I gave would be somebody else's. Compare the two on one line instead: what each buyer cost.
+We will not quote you a typical cost, because any figure would be somebody else's. Compare the two on one line instead: what each buyer cost.
 
 Say Google takes KES 20,000 and brings 25 inquiries, 5 of whom buy. That is KES 800 an inquiry and KES 4,000 a buyer. Say Meta takes the same KES 20,000 and brings 80 inquiries, 4 of whom buy. That is KES 250 an inquiry and KES 5,000 a buyer. The cheaper inquiry turned out to be the dearer customer.
 
-I invented those numbers to show the sum. They are not benchmarks, and with your own figures the result may run the other way.
+Those numbers are invented to show the sum. They are not benchmarks, and with your own figures the result may run the other way.
 
 ### Should I run both at once?
 Not at the start on a small budget. KES 20,000 split two ways is KES 10,000 each, and you learn half as much about either.
@@ -71,6 +71,7 @@ Ten questions, about three minutes, no login, and if your numbers are healthy th
 [BUTTON: Show me where they are lost -> /questionnaire]
 
 ## notes
+Voice changed to company and role on 25 Nov 2026.
 Topic 4 in research/kenya-and-demand.md. Opens with the one sentence answer given there.
 The hero carries the diagnosis button because the hero layout in the brief has one button. Remove it if article heroes should have none.
 One market fact is used: Facebook and WhatsApp as the two most used platforms, from the Communications Authority audience measurement report for April to June 2026, as given in the research file. The DataReportal figures are not used, in line with the research file's warning not to mix the two.

@@ -40,7 +40,7 @@ How quickly a new inquiry gets a reply.
 ## cards
 ### What comes back
 #### Your own arithmetic
-Your cost per inquiry, your cost per sale, and what one more buyer in every ten inquiries would be worth. All of it comes from the figures you gave.
+Your cost per inquiry, your cost per sale, and what one more buyer in every ten inquiries would be worth. All from the figures you gave.
 #### A score out of 100
 Or a launch plan, if you have not started ads.
 #### Your top problems
@@ -49,7 +49,7 @@ In plain language.
 With the words to use for the first one. Wording for every fix comes with Starter.
 [LINK: What the paid plans add -> /pricing]
 #### A call, if you ask for it
-One free 20 minute call with me. We open your report and agree what to fix first.
+One free 20 minute call with a media buyer. You open your report together and agree what to fix first.
 #### A healthy verdict, if you earned one
 If most of your inquiries buy, the report says so and shows what to protect before you spend more.
 
@@ -71,8 +71,8 @@ The questions are about calls, WhatsApp messages and forms. They will not match 
 #### You want your account audited line by line
 That needs account access, and the diagnosis takes none.
 #### You want someone to run the ads
-Ideal ICP does not run ads. Ask me about full management by message.
-[LINK: Write to Eugene -> /contact]
+Ideal ICP does not run ads. Ask us about full management by message.
+[LINK: Write to us -> /contact]
 
 ## faq
 ### Questions about the diagnosis
@@ -94,8 +94,9 @@ Find out where they went, in about three minutes.
 Service page structure borrowed from research/competitors.md: summary box on top, what you get, a plain "not a fit" section, questions, one action. The summary box is written as a ladder so it renders as label and one sentence. The same is done on every service page.
 "What it asks" follows the ten questions in src/app/questionnaire/page.tsx for an owner already running ads: what you sell, kind of business, running ads, where you advertise, monthly spend, inquiries, buyers, sale value, whether inquirers look like your best customers, and reply speed.
 "What comes back" uses the brief's list plus the three figures the opener works out. There is no loss estimate. The healthy verdict line follows the opener's own wording for owners whose inquiries mostly buy.
-"We open your report and agree what to fix first" comes from src/app/home-faqs.ts.
+"You open your report together and agree what to fix first" restates "We open your report and agree what to fix first" from src/app/home-faqs.ts.
 The free and full report difference comes from src/app/pricing/page.tsx.
 "They will not match an online shop" is a judgement from the brief's reader (owners who sell through inquiries), not a stated product rule. Check with Eugene.
 No market facts are used on this page.
 Humanize skill run on 24 Nov 2026.
+Voice changed to company and role on 25 Nov 2026.

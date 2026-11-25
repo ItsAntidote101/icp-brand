@@ -31,7 +31,7 @@ export interface CopyPage {
 
 const DIR = path.join(process.cwd(), 'content', 'copy', 'pages')
 const META_KEYS = ['eyebrow', 'period', 'attribution', 'fields']
-export const KINDS = ['hero', 'opener', 'split', 'cards', 'steps', 'ladder', 'receipts', 'quote', 'faq', 'plans', 'prose', 'form', 'band']
+export const KINDS = ['hero', 'opener', 'split', 'cards', 'steps', 'ladder', 'receipts', 'quote', 'faq', 'plans', 'prose', 'form', 'map', 'band']
 
 const cells = (line: string) => line.trim().replace(/^\||\|$/g, '').split('|').map(c => c.trim())
 

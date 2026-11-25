@@ -4,7 +4,7 @@ Run from the repo root: python3 scripts/copy-lint.py"""
 import re, sys, pathlib
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 PAGES = ROOT / 'content' / 'copy' / 'pages'
-KINDS = {'hero','opener','split','cards','steps','ladder','receipts','quote','faq','plans','prose','form','band','notes'}
+KINDS = {'hero','opener','split','cards','steps','ladder','receipts','quote','faq','plans','prose','form','map','band','notes'}
 BANNED = ['unlock','unleash','elevate','supercharge','seamless','game changer','game-changer','cutting edge','cutting-edge','next level',"today's digital landscape",'leverage','empower','robust','tailored','holistic','journey']
 CHECK = ['platform','software',' app ','solution']  # fine for Google, Meta or WhatsApp; never for Ideal ICP itself
 LIVE = {'/questionnaire','/auth','/privacy','/terms','/guides/why-facebook-leads-dont-buy','/guides/cost-per-lead-kenya','/guides/qualify-leads-on-whatsapp'}
@@ -32,6 +32,12 @@ for f in files:
         if n: bad(f, f'{n} x {name}')
     low = shown.lower()
     if re.search(r'\btools?\b', low): bad(f, 'says "tool"')
+    if f.name != 'about.md' and 'eugene' in (meta.get('title','') + meta.get('description','') + shown).lower(): bad(f, 'names Eugene outside the About page')
+    voice = re.sub(r'"[^"]*"', '', re.sub(r'^(> .*|\[BUTTON.*|\[LINK.*|#{1,4} .*\?)$', '', shown, flags=re.M))   # quoted wording an owner would say or paste may use I
+    hits = re.findall(r"(?<![A-Za-z'])(?:I|I'm|I'll|I've|me|my|myself)(?![A-Za-z'])", voice)
+    hits = [h for h in hits if h not in ()]
+    if f.name != 'about.md' and hits: print(f'  check {f.name}: {len(hits)} first person words outside quotes')
+    if re.search(r'our team of|our experts|our specialists', low): bad(f, 'claims a team size')
     for w in BANNED:
         if w in low: bad(f, f'banned word: {w.strip()}')
     for w in CHECK:

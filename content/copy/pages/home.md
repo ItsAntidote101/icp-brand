@@ -33,29 +33,29 @@ The 2pm slot is empty. Their last message still reads "I'll come tomorrow". You 
 ## split
 eyebrow: Who is on the other side
 ### You get a media buyer, not a score.
-A score by itself fixes nothing. It is where I start. On a plan I read the numbers you log each week and answer your messages, and once a month I write you a note. I am one media buyer in Nairobi. That is the whole team.
-[LINK: Who Eugene is -> /about]
-[IMAGE: Eugene at his desk in Nairobi with a client's weekly numbers open on the laptop | 4:3]
+A score alone fixes nothing. On a plan, your media buyer reads the numbers you log each week, answers your messages and writes you a monthly note.
+[LINK: Who is behind Ideal ICP -> /about]
+[IMAGE: A media buyer at a desk in Nairobi with a client's weekly numbers open on the laptop | 4:3]
 
 ## split
 eyebrow: What you walk away with
-### I hand you the work as files and words.
+### We hand you the work as files and words.
 - Google keywords and words to block, ready to upload
 - Your customer and sales spreadsheets turned into Meta files, on your own device
 - The words to paste for every fix: replies, ad text, form questions
-Clinics, lenders and insurers: ask me before using the customer list file. Meta does not allow lists based on health or financial information.
+Clinics, lenders and insurers: ask your media buyer before using the customer list file. Meta does not allow lists based on health or financial information.
 [LINK: See the files -> /services/ready-to-upload]
 [IMAGE: A laptop showing a keyword file imported into Google Ads Editor, the rows waiting to be kept or rejected | 4:3]
 
 ## ladder
-### What I do at each plan
+### Your media buyer, plan by plan
 Every row says how often.
 #### Free, KES 0
 One 20 minute call to go through your report, if you ask for it.
 #### Starter, KES 6,500 a month
-I answer your messages from the dashboard and write you a note every month.
+Answers your messages from the dashboard and writes you a note every month.
 #### Pro, KES 13,000 a month
-I review your campaign setup plan, hold an onboarding call and set one thing up with you in a hands-on session each month.
+Reviews your campaign setup plan, holds an onboarding call and sets one thing up with you in a hands-on session each month.
 #### Agency, KES 26,000 a month
 Everything in Pro, with up to four hands-on sessions and a strategy call every month.
 
@@ -85,25 +85,37 @@ Each case study lays out ad spend, inquiries and buyers, before and after, with 
 [LINK: Read the case studies -> /case-studies]
 [IMAGE: A printed one page table of monthly ad spend, inquiries and buyers, with the dates written across the top | 4:3]
 
+## map
+### Built on campaigns run in three countries
+Before Ideal ICP, our founder ran paid campaigns for companies in these markets. That experience now works for businesses in Kenya.
+#### South Africa
+Ad campaigns for consumer brands selling online.
+#### United Kingdom
+Lead generation for claims companies.
+#### United States
+Lead generation for legal services and claims companies.
+#### Kenya
+Home. Ideal ICP is based in Nairobi and built for businesses here.
+
 ## plans
 
 ## faq
 ### Questions owners ask before they start
 #### Is this another audit that gives me a score?
-You do get a score out of 100. It comes with your top problems, three fixes for this week and the words to use for the first. After that there is a person, and that person is me.
+You do get a score out of 100. It comes with your top problems, three fixes for this week and the words to use for the first. After that comes a person, your media buyer.
 #### Will someone call me?
 No. Nobody calls unless you ask. The free 20 minute call is there if you want it, and there is no pitch to sit through.
 #### Do you need a login to my Google or Meta account?
 No. You answer questions about your ads, your inquiries and your sales. Rough numbers from memory are enough.
 #### Do you run my ads for me?
-No. I show you what to fix, hand you the files and the wording, and track whether it is working. If you want full management, ask me by message.
+No. We show you what to fix, hand you the files and the wording, and track whether it is working. For full management, ask us by message.
 #### What does it cost?
 The diagnosis and the call are free, with no card. Plans start at KES 6,500 a month, paid by M-Pesa or card, one month at a time. Nothing renews on its own.
 #### I have not started ads yet. Is this for me?
 Yes. Say so at the first question and you get a launch plan in place of a score. Before the first shilling is the cheapest time to get this right.
 
 ## band
-### If your numbers are healthy, I will say so.
+### If your numbers are healthy, we will say so.
 Ten questions, about three minutes, no card and no login.
 [BUTTON: Show me where they are lost -> /questionnaire]
 
@@ -111,11 +123,14 @@ Ten questions, about three minutes, no card and no login.
 Hero headline is fixed by the owner. Do not change it.
 The opener is the live conversation from src/app/new/opener.tsx. Its last button already reads "Show me where they are lost", which is why the band uses the same words.
 The plans section shows "Your cost per lead tracked every week" from src/app/new/plans.ts. The page copy says "inquiries" throughout, as the brief asks. Consider changing that plan line to "cost per inquiry" so the two match.
-Ladder rows use only the facts in the brief (calls, messages, notes, sessions, how often). The Pro note with voice or video was left out to keep each row to one sentence.
+Ladder rows use only the facts in the brief (calls, messages, notes, sessions, how often). The Starter and Pro rows start with a verb because the heading names who does it: your media buyer. The Pro note with voice or video was left out to keep each row to one sentence.
 The scenes in the cards and trade cards come from the brief and from part 2 of research/kenya-and-demand.md, which is typical phrasing and not recorded speech. They are scenes, not statistics. "Forty quotes" and "forty minutes" are scene details from that file, not measured figures.
 The case studies are samples until real client material is supplied. This section makes no claim that they are real clients. Hide it or keep it only while the case study pages carry their sample label.
 "There is no pitch to sit through" comes from src/app/home-faqs.ts.
 The old "How do you work out what I am losing?" question is gone on purpose. There is no loss estimate any more.
 Humanize skill run on 24 Nov 2026.
+Voice changed to company and role on 25 Nov 2026.
+The international experience sentence sits in the "You get a media buyer, not a score." section. It follows the brief: the campaigns are the founder's, the company is new, no company is named. It appears once on this page.
+The live opener (src/app/new/opener.tsx) still shows a name above its first line. It needs the same voice change, or the page will name a person the copy no longer names.
 Sources:
 - Meta does not allow customer lists based on health or financial information: https://www.facebook.com/business/help/170456843145568 and https://www.facebook.com/business/help/606443329504150 (read 24 Nov 2026, per research/kenya-and-demand.md)

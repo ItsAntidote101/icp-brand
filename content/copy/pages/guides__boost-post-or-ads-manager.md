@@ -27,7 +27,7 @@ Because of the goal. Meta looks for the people most likely to do the thing you a
 
 Meta's own page says boosting fits when you want more engagement on your Page or more awareness of your name. Two hundred likes and no deposit is the boost doing what it was told.
 
-Run this sum on your last boost. Say KES 3,000 brought 200 likes and 2 messages, and neither message turned into a sale. Counted by likes, that is KES 15 each and looks cheap. Counted by messages, it is KES 1,500 each. Counted by buyers, it is KES 3,000 for nothing. I made those numbers up to show the arithmetic, so do not read them as a benchmark.
+Run this sum on your last boost. Say KES 3,000 brought 200 likes and 2 messages, and neither message turned into a sale. Counted by likes, that is KES 15 each and looks cheap. Counted by messages, it is KES 1,500 each. Counted by buyers, it is KES 3,000 for nothing. Those numbers are made up to show the arithmetic, so do not read them as a benchmark.
 
 ### How do I check what my last boost was asking for?
 Open your Facebook Page and go to Ad Center. Find the boosted post and click View results. Meta names the ad after the goal you chose, so a boost that ran for engagement is titled "Post engagements". If that is what you see, you paid for likes and got them.
@@ -43,7 +43,7 @@ Three things that matter when you want inquiries:
 - Instant forms, which open inside Facebook or Instagram with no website involved. The "Higher intent" form type adds a review screen, so people check their details before they send.
 - More say over who sees the ad. You can upload your own customer list as a custom audience, then ask Meta for a lookalike audience of people who resemble it. Two limits to know: Meta does not allow health or financial information in those lists, and lookalike audiences are restricted for some housing and finance ads.
 
-The screen has far more switches than the Boost button. That is the price of being able to choose. If you want the choices laid out for your stage, the Pro plan includes a campaign setup plan that I review myself.
+The screen has far more switches than the Boost button. That is the price of being able to choose. If you want the choices laid out for your stage, the Pro plan includes a campaign setup plan your media buyer reviews.
 [LINK: See the campaign setup plan -> /services/campaign-setup]
 
 ### So which one should I use this week?
@@ -69,11 +69,12 @@ Answer ten questions in about three minutes and see why the people who asked did
 [BUTTON: Start my free diagnosis -> /questionnaire]
 
 ## notes
+Voice changed to company and role on 25 Nov 2026.
 Topic 2 in research/kenya-and-demand.md. The hero uses the one sentence answer given there. The body is careful to add that a boost can also ask for messages, because Meta's page on boosting to WhatsApp confirms the "Get more messages" goal.
 The hero carries the diagnosis button because the hero layout in the brief has one button. Remove it if article heroes should have none.
 No market statistics used. The KES 3,000 boost is a made-up sum and is labelled as such in the copy.
 "Leads" appears only as the exact name of Meta's objective. People are called inquiries throughout.
-Plan fact (Pro includes a campaign setup plan reviewed by Eugene) is from the brief.
+Plan fact (Pro includes a campaign setup plan reviewed by the client's media buyer) is from the brief.
 Checked on Meta Business Help Center, read 24 Nov 2026. The help pages block direct fetching, so the article text was retrieved through the Meta Ads connector's help article lookup, which returns the page text with its URL:
 - A boosted post is an ad and appears on the bill as one; the five things you decide when boosting; audience by interests, age and gender; boosting suits Page engagement and brand awareness; Ads Manager adds objectives such as leads and sales, lookalike audiences and more placements.
 - Ad Center, View results, and the ad being titled after the goal ("Post engagements").
