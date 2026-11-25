@@ -52,16 +52,16 @@ export async function POST(req: NextRequest) {
   const tools = typeof b.tools === 'string' ? b.tools.trim().slice(0, 200) : ''
   const notes = typeof b.notes === 'string' ? b.notes.trim().slice(0, 1000) : ''
   const preferredTime = typeof b.preferredTime === 'string' ? b.preferredTime.slice(0, 60) : ''
-  if (job === 'other' && notes.length < 5) return NextResponse.json({ error: 'Tell Eugene in a line what you need.' }, { status: 400 })
+  if (job === 'other' && notes.length < 5) return NextResponse.json({ error: 'Tell your media buyer in a line what you need.' }, { status: 400 })
 
   const s = await load(session.userId)
   if (!s) return NextResponse.json({ error: 'Account not found.' }, { status: 404 })
   const { supabase, user, rows, limit } = s
-  if (limit === 0) return NextResponse.json({ error: 'Hands-on sessions with Eugene are included from the Pro plan.', upgrade: true }, { status: 403 })
+  if (limit === 0) return NextResponse.json({ error: 'Hands-on sessions with your media buyer are included from the Pro plan.', upgrade: true }, { status: 403 })
   if (rows.length >= limit)
-    return NextResponse.json({ error: `Your plan includes ${limit} hands-on ${limit === 1 ? 'session' : 'sessions'} a month, and you have used ${limit === 1 ? 'it' : 'them'}. You can still message Eugene any time.` }, { status: 429 })
+    return NextResponse.json({ error: `Your plan includes ${limit} hands-on ${limit === 1 ? 'session' : 'sessions'} a month, and you have used ${limit === 1 ? 'it' : 'them'}. You can still message your media buyer any time.` }, { status: 429 })
   if (rows.some(r => r.status === 'pending' && r.session_format === formatFor(job)))
-    return NextResponse.json({ error: 'You have already asked for this one. Eugene will be in touch.' }, { status: 409 })
+    return NextResponse.json({ error: 'You have already asked for this one. Your media buyer will be in touch.' }, { status: 409 })
 
   const detail = [`WhatsApp: ${whatsapp}`, tools ? `Uses today: ${tools}` : '', notes].filter(Boolean).join('\n\n')
   const { error } = await supabase.from('session_requests').insert({

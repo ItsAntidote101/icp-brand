@@ -57,12 +57,6 @@ interface ReportData {
   numbers?:                 { pre_launch?: boolean; cost_per_sale?: number | null; one_more_in_ten?: number | null; sales_to_cover_budget?: number | null; at_least?: boolean }
 }
 
-interface BuyerIntro {
-  buyer_name:     string
-  buyer_initials: string
-  message:        string
-}
-
 // ── Demo / fallback data ──────────────────────────────────────────────────────
 
 const DEMO: ReportData = {
@@ -242,7 +236,6 @@ export default function ReportPage({ params }: { params: { id: string } }) {
   const [subscribing,      setSubscribing]      = useState(false)
   const [subscribeError,   setSubscribeError]   = useState('')
   const [isSubscribed,     setIsSubscribed]     = useState(false)
-  const [buyerIntro,       setBuyerIntro]       = useState<BuyerIntro | null>(null)
   const [showBreakdown,    setShowBreakdown]    = useState(false)
   const [callPhone,        setCallPhone]        = useState('')
   const [callTime,         setCallTime]         = useState('Weekday morning')
@@ -254,10 +247,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
   useEffect(() => {
     async function load() {
       try {
-        const [reportRes, introRes] = await Promise.all([
-          fetch(`/api/report/${params.id}`),
-          fetch('/api/monthly-checkin?type=intro'),
-        ])
+        const reportRes = await fetch(`/api/report/${params.id}`)
 
         if (reportRes.status === 401) {
           // Report belongs to an account: send them to log in, then back here
@@ -275,10 +265,6 @@ export default function ReportPage({ params }: { params: { id: string } }) {
           setReport(DEMO)
         }
 
-        if (introRes.ok) {
-          const introData = await introRes.json()
-          if (introData?.checkin) setBuyerIntro(introData.checkin as BuyerIntro)
-        }
       } catch {
         setReport(DEMO)
       } finally {
@@ -292,6 +278,23 @@ export default function ReportPage({ params }: { params: { id: string } }) {
   useEffect(() => {
     if (showModal) setTimeout(() => emailRef.current?.focus(), 50)
   }, [showModal])
+
+  // The person on this page has just given their email in the diagnosis, so
+  // the checkout box starts with it filled in. They can still change it.
+  useEffect(() => {
+    let live = true
+    ;(async () => {
+      try {
+        const saved = window.localStorage.getItem('dashboard_email')
+        if (saved) { if (live) setEmail(e => e || saved); return }
+        const res = await fetch('/api/auth/session-check')
+        if (!res.ok) return
+        const who = await res.json() as { email?: string }
+        if (live && who?.email) setEmail(e => e || who.email!)
+      } catch { /* leave the box empty */ }
+    })()
+    return () => { live = false }
+  }, [])
 
   const openSubscribe = (tier: Tier) => {
     setSelectedTier(tier)
@@ -648,7 +651,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                       : 'Get your full optimisation roadmap'}
                   </h2>
                   <p className="text-[rgba(255,255,255,0.6)] text-sm max-w-lg mx-auto mb-7 leading-relaxed">
-                    Your report shows the problems. A plan gives you every fix with the words to use, files ready to upload, your numbers tracked every week and a monthly note from Eugene.
+                    Your report shows the problems. A plan gives you every fix with the words to use, files ready to upload, your numbers tracked every week and a monthly note from your media buyer.
                   </p>
 
                   {/* Pricing tiers */}
@@ -657,15 +660,15 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                       [
                         {
                           name: 'Starter' as Tier, highlight: false,
-                          features: ['Every problem with its fix and the words to paste', 'Keywords and Meta files ready to upload', 'Cost per lead tracked every week', 'A monthly note from Eugene'],
+                          features: ['Every problem with its fix and the words to paste', 'Keywords and Meta files ready to upload', 'Cost per lead tracked every week', 'A monthly note from your media buyer'],
                         },
                         {
                           name: 'Pro' as Tier, highlight: true,
-                          features: ['Everything in Starter', 'A campaign setup plan for your stage', 'One hands-on session with Eugene a month', 'Onboarding call with Eugene'],
+                          features: ['Everything in Starter', 'A campaign setup plan for your stage', 'One hands-on session with your media buyer a month', 'Onboarding call with your media buyer'],
                         },
                         {
                           name: 'Agency' as Tier, highlight: false,
-                          features: ['Everything in Pro', 'Unlimited diagnoses, one per client', 'Up to 4 hands-on sessions a month', 'Monthly call with Eugene'],
+                          features: ['Everything in Pro', 'Unlimited diagnoses, one per client', 'Up to 4 hands-on sessions a month', 'Monthly call with your media buyer'],
                         },
                       ]
                     ).map(tier => (
@@ -717,28 +720,23 @@ export default function ReportPage({ params }: { params: { id: string } }) {
           )}
         </section>
 
-        {/* ── Free call with Eugene: the quiet option, below the plan ─────────── */}
+        {/* ── Free call with a media buyer: the quiet option, below the plan ──── */}
         <section id="book-call" className="fade-up no-print" style={{ animationDelay: '0.22s' }}>
           <div className="bg-white border border-[#c5c0b1] rounded-2xl p-6 sm:p-8">
             <div className="flex items-start gap-4 mb-5">
-              <BuyerAvatar initials="EK" color="#e8330a" />
+              <BuyerAvatar initials="MB" color="#e8330a" />
               <div>
                                 <h2 className="text-[#201515] font-bold text-lg sm:text-xl leading-tight mb-1">Prefer to talk first?</h2>
                 <p className="text-[#605d52] text-sm leading-relaxed max-w-xl">
-                  One free 20-minute call with Eugene, the media buyer behind this report. You go through the findings together and agree what to fix first.
+                  One free 20-minute call with a dedicated media buyer. You go through the findings together and agree what to fix first.
                 </p>
-                {buyerIntro && (
-                  <p className="text-[#939084] text-xs leading-relaxed mt-3 line-clamp-2 italic">
-                    &ldquo;{buyerIntro.message.slice(0, 160)}{buyerIntro.message.length > 160 ? '…' : ''}&rdquo;
-                  </p>
-                )}
               </div>
             </div>
 
             {callStatus === 'sent' ? (
               <div className="rounded-xl border border-[rgba(34,197,94,0.3)] bg-[rgba(34,197,94,0.08)] p-5">
                 <p className="text-[#201515] font-semibold text-sm mb-1">Request sent.</p>
-                <p className="text-[#605d52] text-sm">Eugene will message you on WhatsApp to agree a time. A confirmation is on its way to your inbox.</p>
+                <p className="text-[#605d52] text-sm">Your media buyer will message you on WhatsApp to agree a time. A confirmation is on its way to your inbox.</p>
               </div>
             ) : (
               <form
@@ -770,7 +768,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                   {callStatus === 'sending' ? 'Sending…' : 'Request a call'}
                 </button>
                 <label className="block sm:col-span-3">
-                  <span className="block text-[11px] font-semibold uppercase tracking-widest text-[#939084] mb-1.5">Anything Eugene should know? (optional)</span>
+                  <span className="block text-[11px] font-semibold uppercase tracking-widest text-[#939084] mb-1.5">Anything your media buyer should know? (optional)</span>
                   <input
                     type="text" maxLength={500}
                     value={callNote} onChange={e => setCallNote(e.target.value)}

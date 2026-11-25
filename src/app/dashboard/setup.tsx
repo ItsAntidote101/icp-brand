@@ -4,6 +4,7 @@
 // from their own numbers, with a starting point for Meta and Google. Campaign
 // structure depends on the account, so the screen says plainly that the media
 // buyer confirms it, and one tap sends him their numbers to review.
+import { cap } from '@/lib/buyer'
 import { useEffect, useState } from 'react'
 import { ChevronRight, Lock } from 'lucide-react'
 import { T } from './overview'
@@ -101,7 +102,7 @@ export default function SetupPlanCard({ tier, buyerName, onUpgrade }: { tier: st
         <div style={{ borderTop: `1px solid ${T.hairline}`, marginTop: 20, paddingTop: 18 }}>
           <p style={p}>This is a starting point from your numbers. The right setup depends on what is inside your ad account, so {buyerName} confirms it after looking at your data.</p>
           {sent === 'sent'
-            ? <p style={{ ...p, color: T.good, fontWeight: 600, marginTop: 12 }}>Sent. {buyerName} will reply here and by email.</p>
+            ? <p style={{ ...p, color: T.good, fontWeight: 600, marginTop: 12 }}>Sent. {cap(buyerName)} will reply here and by email.</p>
             : <button className="ov-btn ov-btn-primary" onClick={askReview} disabled={sent === 'sending'} style={{ marginTop: 14 }}>{sent === 'sending' ? 'Sending…' : `Ask ${buyerName} to review my setup`}</button>}
           {error && <p role="alert" style={{ font: `400 14px/1.4 ${T.font}`, color: T.bad, margin: '8px 0 0' }}>{error}</p>}
         </div>

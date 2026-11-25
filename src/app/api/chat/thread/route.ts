@@ -24,7 +24,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const session = await getVerifiedSession()
-  if (!session) return NextResponse.json({ error: 'Log in again to message Eugene.' }, { status: 401 })
+  if (!session) return NextResponse.json({ error: 'Log in again to message your media buyer.' }, { status: 401 })
   let b: { message?: unknown }
   try { b = await req.json() } catch { return NextResponse.json({ error: 'Invalid request' }, { status: 400 }) }
   const message = typeof b.message === 'string' ? b.message.trim() : ''
@@ -35,12 +35,12 @@ export async function POST(req: NextRequest) {
   const { data: user } = await supabase.from('users').select('id, email, full_name, company_name, subscription_tier, billing_status').eq('id', session.userId).maybeSingle()
   if (!user) return NextResponse.json({ error: 'Account not found.' }, { status: 404 })
   if (user.subscription_tier === 'free' || user.billing_status !== 'active')
-    return NextResponse.json({ error: 'Messaging Eugene is included from the Starter plan.' }, { status: 403 })
+    return NextResponse.json({ error: 'Messaging your media buyer is included from the Starter plan.' }, { status: 403 })
 
   const dayStart = new Date(); dayStart.setUTCHours(0, 0, 0, 0)
   const { count } = await supabase.from('client_messages').select('id', { count: 'exact', head: true })
     .eq('user_id', user.id).eq('direction', 'in').gte('created_at', dayStart.toISOString())
-  if ((count ?? 0) >= DAILY_LIMIT) return NextResponse.json({ error: 'That is a lot of messages for one day. Eugene has them and will reply.' }, { status: 429 })
+  if ((count ?? 0) >= DAILY_LIMIT) return NextResponse.json({ error: 'That is a lot of messages for one day. Your media buyer has them and will reply.' }, { status: 429 })
 
   const { error } = await supabase.from('client_messages').insert({ user_id: user.id, direction: 'in', kind: 'message', body: message })
   if (error) {

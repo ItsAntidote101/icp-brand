@@ -5,7 +5,7 @@ import { sendCallRequestToFounder, sendCallConfirmationToUser } from '@/lib/emai
 
 export const dynamic = 'force-dynamic'
 
-// "Book a free 20-minute call with Eugene": the main ask after the free report.
+// "Book a free 20-minute call with a media buyer": the main ask after the free report.
 // Everything about the lead (name, company, score, spend) is read server-side
 // from their own report, so the browser only sends contact details.
 export async function POST(req: NextRequest) {
