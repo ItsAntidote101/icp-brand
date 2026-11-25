@@ -291,7 +291,11 @@ export function CopyPageView({ page }: { page: CopyPage }) {
           const flip = s.kind === 'split' || s.kind === 'quote' ? splits++ % 2 === 1 : false
           const dark = (s.kind === 'cards' || s.kind === 'steps') && !seenGrid
           if (s.kind === 'cards' || s.kind === 'steps') seenGrid = true
-          return <SectionView key={i} s={s} index={i} page={page} flip={flip} dark={dark} />
+          // On the home page the conversation sits right under the hero, so the hero button goes to it.
+          const sec = hasOpener && s.kind === 'hero'
+            ? { ...s, blocks: s.blocks.map(b => b.t === 'button' ? { ...b, href: '#start' } : b) }
+            : s
+          return <SectionView key={i} s={sec} index={i} page={page} flip={flip} dark={dark} />
         })}
       </main>
       <footer className="ic-foot">
@@ -372,7 +376,7 @@ const css = `
 .ic-home .ic-hero-photo{display:none}
 .ic-home .ic-disc{margin-top:0;border-radius:4px}
 
-.ic .ic-opener{background:var(--blush);padding:clamp(32px,6vw,72px) 0}
+.ic .ic-opener{background:var(--blush);padding:clamp(32px,6vw,72px) 0;scroll-margin-top:66px}
 .ic-opener-in{display:grid;gap:26px;justify-items:center}
 .ic-vows{list-style:none;margin:0;padding:0;display:grid;gap:10px}
 .ic-vows li{display:flex;gap:10px;align-items:flex-start;font:500 16px/1.4 var(--body)}

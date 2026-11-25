@@ -18,21 +18,21 @@ Not yet. First find out why the inquiries you already paid for did not buy, beca
 
 Because of what an agency is paid to do. It runs ads. A good one runs them well, with sharper targeting and better ad text. What comes out the other end is more inquiries.
 
-If your inquiries already turn into buyers, more of them is what you need. If forty people asked last month and one paid, the trouble sits between the inquiry and the sale: who asked, how fast they got a reply, whether anyone followed up. Ask whether that part is in the proposal.
+If your inquiries already turn into buyers, more of them is what you need. If forty people asked last month and one paid, the trouble is between the inquiry and the sale: who asked, how fast they got a reply, whether anyone followed up. Ask whether that part is in the proposal.
 
 ### What does the sum look like?
 
-These are made-up numbers to show the order of things. They are no forecast.
+I made these numbers up to show the order of things. They are not a forecast.
 
 You spend KES 40,000 a month on ads and get 40 inquiries and 1 buyer. That buyer cost KES 40,000.
 
 You add an agency at KES 35,000 a month. Say the inquiries double to 80 and still one in forty buys. You now pay KES 75,000 for 2 buyers, which is KES 37,500 each. Hardly a change.
 
-Now fix the replies first, so that 4 of the 40 buy. Same KES 40,000, no fee, KES 10,000 a buyer. Bring the agency in after that and the same doubling gives 8 buyers for KES 75,000, about KES 9,400 each. Same agency, same fee. The order made the difference.
+Now fix the replies first, so that 4 of the 40 buy. Same KES 40,000, no fee, KES 10,000 a buyer. Bring the agency in after that and the same doubling gives 8 buyers for KES 75,000, about KES 9,400 each. With the same agency and the same fee, the order made the difference.
 
 ### What does an agency cost in Kenya?
 
-These are fees published on Kenyan agency sites, which I read on 24 November 2026. All of them are before ad spend.
+These fees are published on Kenyan agency sites. I read them on 24 November 2026, and all of them are before ad spend.
 
 - One states Google Ads management from KES 35,000 a month or 12 percent of ad spend, whichever is higher.
 - One charges KES 55,000 to set up Google Ads campaigns and quotes monthly management separately.
@@ -48,7 +48,7 @@ That is three sites, so treat it as a sample. Another I read shows no price and 
 
 ### What should I ask before I sign?
 
-- Who owns the ad accounts? They should be yours, with the agency added as a guest. In Google Ads, people are added under Admin, then Access and security. Standard access lets someone edit campaigns. Only Admin access can give other people access, change access levels or unlink an agency's manager account, so keep Admin for yourself. In Meta Business Suite, you add the agency under Partners in your settings, choose which tasks it may do and can remove it there later. That needs full control of the business portfolio, so that stays with you too.
+- Who owns the ad accounts? They should be yours, with the agency added as a guest. In Google Ads, you add people under Admin, then Access and security. Standard access lets someone edit campaigns. Only Admin access can give other people access, change access levels or unlink an agency's manager account, so keep Admin for yourself. In Meta Business Suite, you add the agency under Partners in your settings, choose which tasks it may do and can remove it there later. That needs full control of the business portfolio, so full control stays with you too.
 - Who pays Google and Meta? You should, from your own account, so you see every charge.
 - What will the monthly report show? Ask for spend, inquiries and buyers. If they cannot report buyers, ask how the two of you will count them.
 - Who replies to the inquiries, and how fast? If the answer is "that is your side", you now know what to fix first.
@@ -56,7 +56,7 @@ That is three sites, so treat it as a sample. Another I read shows no price and 
 
 ### What can I do before deciding?
 
-Check the inquiries you already paid for. [LINK: The free diagnosis -> /services/diagnosis] is ten questions and takes about three minutes. It needs no login to Google or Meta, rough numbers from memory are enough, and nobody calls you unless you ask. You get a score out of 100, your top problems and three fixes for this week.
+Check the inquiries you already paid for. [LINK: The free diagnosis -> /services/diagnosis] is ten questions and takes about three minutes. It needs no login to Google or Meta, and rough numbers from memory are enough. Nobody calls you unless you ask. You get a score out of 100, your top problems and three fixes for this week.
 
 If your numbers are healthy, the report says so. Then hiring someone to run more ads is a sensible next step, and you will walk into that meeting knowing what to ask for.
 
@@ -83,7 +83,7 @@ Platform statements and where each was checked on 24 Nov 2026:
 - Google Ads access levels (Standard edits campaigns; Admin gives access, changes access levels and unlinks manager accounts) and the path Admin, then Access and security: Google Ads help.
 - Meta: add a partner under Partners in Meta Business Suite settings, give partial access for chosen tasks, remove the partner from the same place, all needing full control of the business portfolio: Meta help, via the Meta help article lookup (facebook.com blocks direct fetching).
 Ideal ICP facts (plan prices, payment, no contract, no login, nobody calls, does not run ads, full management by message) are from the brief.
-Humanize skill not run on this file.
+Humanize skill run on 24 Nov 2026.
 Sources:
 - https://akus.co.ke/google-ads-agency-in-kenya
 - https://nairobimarketing.com/google-ads-agency-kenya

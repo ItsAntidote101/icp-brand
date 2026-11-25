@@ -10,7 +10,7 @@ links_to: /case-studies/property-agency, /case-studies/college-intake, /case-stu
 ## hero
 eyebrow: Sample. Replace with a real client before this page goes live.
 # Spend, inquiries, buyers. Before and after, with dates.
-A case study here is a receipt and nothing more. Each one is a single business in a single season, so do not read it as a benchmark for yours.
+A case study here is a receipt. Each one is a single business in a single season, so do not read it as a benchmark for yours.
 [BUTTON: Show me where mine are lost -> /questionnaire]
 [IMAGE: A notebook page with three handwritten columns, spend, inquiries and buyers, beside a phone showing an M-Pesa statement | 4:3]
 
@@ -45,6 +45,7 @@ Ten questions, about 3 minutes, and no login to your ad account.
 [BUTTON: Start my free diagnosis -> /questionnaire]
 
 ## notes
+Humanize skill run on 24 Nov 2026.
 Status is sample. The three cards repeat the headline figures from the three sample case study files; if a figure changes there, change it here.
 The receipts idea (spend, inquiries, buyers, dates) and the "one job is no benchmark" warning are borrowed structures named in research/competitors.md. No market fact is used, so there is no Sources list.
 The list of what a case study never contains comes from "The sameness" items 5, 6 and 7 in research/competitors.md. No competitor is named.

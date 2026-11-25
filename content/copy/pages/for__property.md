@@ -26,15 +26,15 @@ Someone who filled a form from abroad wants to read "title deed ready", and how 
 
 ## split
 ### What the diagnosis checks for a property seller
-Ten questions, about 3 minutes, rough numbers from memory. It asks who inquires, how fast they hear back and how many pay. Back comes:
+Ten questions, about 3 minutes. Rough numbers from memory will do. It asks who inquires and how fast they hear back, then how many pay. You get back:
 - Your cost per inquiry and cost per sale
 - What one more buyer in every ten inquiries is worth
-- A score out of 100, your top problems, 3 fixes for this week
+- A score out of 100, your top problems and 3 fixes for this week
 [IMAGE: A phone held over a desk of site plans, showing a report with cost per inquiry and cost per sale | 3:4]
 
 ## split
 ### What I hand you
-The free diagnosis carries the words for your first fix. Starter, KES 6,500 a month, adds the rest:
+The free diagnosis gives you the words for your first fix. Starter, KES 6,500 a month, adds the rest:
 - A reply to "How much?" that ends with a question
 - The site visit confirmation message
 - Google keywords and words to block, such as "to let"
@@ -57,9 +57,9 @@ For when the forms keep coming and the site visits do not.
 ## faq
 ### Questions property sellers ask
 #### Can you get rid of the joyriders?
-Not every one. The diagnosis shows whether the wrong people are your main problem, or whether good buyers are being lost after they ask. Each needs a different fix.
+Not every one. The diagnosis shows whether the wrong people are your main problem, or whether you are losing good buyers after they ask. Each needs a different fix.
 #### Most of my buyers are abroad. Does that change anything?
-The questions stay the same. What changes is the reply: a form filled overnight from abroad needs an answer waiting in the morning, and proof they can check from where they are.
+The questions stay the same, but the reply changes. A form filled overnight from abroad needs an answer waiting in the morning, and proof the buyer can check from where they are.
 #### What if my numbers turn out fine?
 Then the report says so and shows what to protect before you spend more. I would sooner tell you that than sell you a fix you do not need.
 #### What does it cost after the free part?
@@ -78,6 +78,6 @@ The third loss card (trust) leans on the research note that a Nairobi agent told
 The Meta customer list file is offered here without saying what it is used for, because Meta limits some audience features for housing ads (research glossary, lookalike audience entry). Do not add a lookalike promise. The list is converted in the owner's browser and is not sent to Ideal ICP (src/lib/customer-list.ts).
 The case study card is labelled as a sample in the visible copy. Update the card when a real client replaces it.
 Plan facts from the brief and src/app/pricing/page.tsx.
-The humanize skill was not run on this file.
+Humanize skill run on 24 Nov 2026.
 Sources:
 - https://nation.africa/kenya/life-and-style/realtors-lean-on-tiktok-youtube-to-grow-business--4510164

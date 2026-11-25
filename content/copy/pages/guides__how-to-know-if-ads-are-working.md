@@ -24,7 +24,7 @@ Three numbers, written down every Monday for the week before.
 
 A notebook is enough. So is a spreadsheet with four columns: week, spend, inquiries, buyers.
 
-Then do two sums. Spend divided by inquiries is what one inquiry cost. Spend divided by buyers is what one buyer cost. Say a week reads KES 15,000 spent, 30 inquiries, 2 buyers. Each inquiry cost KES 500. Each buyer cost KES 7,500. Whether KES 7,500 is fine depends on what you keep from one sale, and that sum is in [LINK: the guide on cost per lead in Kenya -> /guides/cost-per-lead-kenya].
+Then do two sums. Divide spend by inquiries to see what one inquiry cost. Do the same with buyers. Say a week reads KES 15,000 spent, 30 inquiries, 2 buyers. Each inquiry cost KES 500 and each buyer KES 7,500. Whether KES 7,500 is fine depends on what you keep from one sale, and that sum is in [LINK: the guide on cost per lead in Kenya -> /guides/cost-per-lead-kenya].
 
 ### Why do the ad reports look good when sales do not?
 
@@ -42,7 +42,7 @@ You count them yourself. Three habits make it easy.
 - Keep ad inquiries apart. In the WhatsApp Business app, give chats that came from ads their own label.
 - When someone pays, go back to the list and mark them as a buyer, with the date and the amount.
 
-Later, the same list can be sent back to the platforms so they learn what a buyer looks like. Meta takes it as a file uploaded in Events Manager or through the Conversions API. Google calls it offline conversion imports and now recommends a route named enhanced conversions for leads. That is a setup job for later. The notebook comes first.
+Later, you can send the same list back to the platforms so they learn what a buyer looks like. Meta takes it as a file uploaded in Events Manager or through the Conversions API. Google calls it offline conversion imports and now recommends a route named enhanced conversions for leads. That is a setup job for another day. The notebook comes first.
 
 ### How long should I wait before I judge?
 
@@ -54,16 +54,16 @@ Then there is your own selling time. A salon booking can close the same afternoo
 
 One buyer costs you less than you keep from the sale, with room to spare, and that holds for several weeks running. That is the whole test.
 
-If your line passes it, the ads are working and I will say so. If inquiries are steady and buyers are thin, the ads may be fine and the leak sits after the inquiry: who is asking, how fast they get a reply, whether anyone follows up. Putting more money in will not fix that part. On a paid plan, the Ideal ICP dashboard tracks your cost per lead every week, so the first half of the line is kept for you. See [LINK: how the dashboard works -> /how-it-works].
+If your line passes it, the ads are working and I will say so. If inquiries are steady and buyers are thin, the ads may be fine and the leak sits after the inquiry: who is asking, how fast they get a reply, whether anyone follows up. Putting more money in will not fix that part. On a paid plan, the Ideal ICP dashboard tracks your cost per lead every week, so it keeps the first half of the line for you. See [LINK: how the dashboard works -> /how-it-works].
 
 ### What should I stop counting?
 
-Likes, reach, impressions and click rates tell you whether people saw the ad. They are worth a look when something breaks. They stay off the line because none of them is money.
+Likes, reach, impressions and click rates tell you whether people saw the ad. They are worth a look when something breaks, but they stay off the line because none of them is money.
 
 ## faq
 ### Short answers
 #### Do likes and followers mean my ads are working?
-No. They show the ad was seen. Only inquiries and buyers show it was worth paying for.
+No. They show that people saw the ad. Only inquiries and buyers show it was worth paying for.
 #### What if I cannot tell which buyers came from ads?
 Start asking every new inquiry where they saw you, from today. After four weeks you have four lines to compare.
 #### Do I need tracking set up on Google or Meta first?
@@ -85,7 +85,7 @@ Platform statements and where each was checked on 24 Nov 2026:
 - WhatsApp Business labels: WhatsApp help.
 - "Conversion is the action you told the platform to count": research file glossary, term 6.
 Not included because it could not be confirmed: any statement about where Google's Conversions column sits or what it shows by default.
-Humanize skill not run on this file.
+Humanize skill run on 24 Nov 2026.
 Sources:
 - https://www.facebook.com/business/help/592742404263530
 - https://www.facebook.com/business/help/840929489608411

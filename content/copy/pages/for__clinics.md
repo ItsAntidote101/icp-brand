@@ -16,9 +16,9 @@ Her last message still reads "I'll come tomorrow". Before more money goes into a
 
 ## cards
 ### Why the slot stays empty
-Price shoppers are part of it. The reply is the other part.
+Price shoppers are part of it. So is the reply.
 #### A price list and no slot
-"How much is braces?" gets a price list. Nobody offers Thursday at 10 or Saturday at 2, so there is nothing for her to say yes to.
+"How much is braces?" gets a price list. Nobody offers Thursday at 10 or Saturday at 2, so she has nothing to say yes to.
 #### No deposit, so no reason to turn up
 A booking with nothing paid is a maybe. A small deposit by M-Pesa gives her a reason to keep the time.
 #### The front desk cannot keep up with WhatsApp
@@ -61,7 +61,7 @@ Spend, inquiries and bookings on one line each week. Likes are not on it.
 #### Should I ask for a deposit before I book someone?
 That is your decision, and some treatments suit it better than others. If no-shows turn out to be the problem, I give you the words to ask for one politely.
 #### My receptionist has no time for WhatsApp. What then?
-Then the first reply should be written once and pasted: price, two slots, one question. That is the kind of wording you get.
+Then she pastes a first reply that was written once: price, two slots, one question. That is the kind of wording you get.
 #### Do you need patient names or records?
 None. The diagnosis asks for counts and rough shillings, and patient details stay in your clinic.
 #### Does it work for a salon, a spa or a barbershop?
@@ -81,7 +81,7 @@ The second Meta file, the one made from a sales spreadsheet, is left out here to
 The deposit card says a deposit gives the client a reason to keep the time. It does not say how many more will show up, and no figure should be added.
 Clinics may have their own rules on advertising health services. Nobody has checked them for this page. Worth a look before launch.
 The case study card says "sample" in the visible copy.
-The humanize skill was not run on this file.
+Humanize skill run on 24 Nov 2026.
 Sources:
 - https://www.facebook.com/business/help/170456843145568
 - https://www.facebook.com/business/help/606443329504150

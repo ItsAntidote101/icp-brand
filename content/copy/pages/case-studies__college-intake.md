@@ -49,7 +49,7 @@ attribution: [Client name, business, town]
 
 ## split
 ### What did not work
-Nobody answers WhatsApp at 9pm, and that did not change. The office is closed. The college settled for a list that is cleared first thing every morning. The extra question on the form also turned away some people in a hurry, and I cannot tell you whether any of them would have enrolled.
+Nobody answers WhatsApp at 9pm, and that did not change. The office is closed. The college settled for a list it clears first thing every morning. The extra question on the form also turned away some people in a hurry, and I cannot tell you whether any of them would have enrolled.
 [IMAGE: A closed admissions office door in the evening with the lights off | 4:3]
 
 ## cards
@@ -67,6 +67,7 @@ Ten questions, about 3 minutes, and no login to your ad account.
 [BUTTON: Start my free diagnosis -> /questionnaire]
 
 ## notes
+Humanize skill run on 24 Nov 2026.
 Status is sample. No real client. The business is described, not named. Every figure and both intakes are illustrative and must be replaced with a real client's receipt before launch.
 Arithmetic: 80,000 / 400 = 200. 60,000 / 400 = 150. 80,000 / 8 = 10,000. 60,000 / 16 = 3,750. Spend difference 80,000 minus 60,000 = 20,000.
 The scene (fee structure PDF and nothing after; evening inquiries waiting for the office) is the typical schools scene from research/kenya-and-demand.md Part 2, marked there as unsourced typical phrasing.

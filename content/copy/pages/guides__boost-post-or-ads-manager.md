@@ -23,11 +23,11 @@ When you boost, you decide five things: a goal, the text, the schedule, the budg
 It takes two minutes, which is the whole appeal.
 
 ### Why did my boost bring likes and no customers?
-Because of the goal. Meta looks for the people most likely to do the thing you asked for. Ask for engagement and it finds people who like and comment. They are real people. Liking is simply what they do.
+Because of the goal. Meta looks for the people most likely to do the thing you asked for. Ask for engagement and it finds people who like and comment. They are real people, and liking is what they do.
 
 Meta's own page says boosting fits when you want more engagement on your Page or more awareness of your name. Two hundred likes and no deposit is the boost doing what it was told.
 
-Run this sum on your last boost. Say KES 3,000 brought 200 likes and 2 messages, and neither message turned into a sale. Counted by likes, that is KES 15 each and looks cheap. Counted by messages, it is KES 1,500 each. Counted by buyers, it is KES 3,000 for nothing. Those numbers are made up to show the arithmetic. They are not a benchmark.
+Run this sum on your last boost. Say KES 3,000 brought 200 likes and 2 messages, and neither message turned into a sale. Counted by likes, that is KES 15 each and looks cheap. Counted by messages, it is KES 1,500 each. Counted by buyers, it is KES 3,000 for nothing. I made those numbers up to show the arithmetic, so do not read them as a benchmark.
 
 ### How do I check what my last boost was asking for?
 Open your Facebook Page and go to Ad Center. Find the boosted post and click View results. Meta names the ad after the goal you chose, so a boost that ran for engagement is titled "Post engagements". If that is what you see, you paid for likes and got them.
@@ -35,7 +35,7 @@ Open your Facebook Page and go to Ad Center. Find the boosted post and click Vie
 ### Can a boost bring inquiries at all?
 Yes, if you change the goal before you pay. The boost screen on Facebook has a goal called "Get more messages", and you can point it at WhatsApp. For that you need a WhatsApp Business number connected to your Page. Meta offers this for posts with a single photo, a video or a link.
 
-That is the cheapest fix on this page. Same post, same budget, a different request.
+That is the cheapest fix on this page. You keep the post and the budget and change what you ask for.
 
 ### What does Ads Manager add?
 Three things that matter when you want inquiries:
@@ -57,7 +57,7 @@ If the inquiries are already coming and nobody buys, the button is not your prob
 ## faq
 ### Questions owners ask next
 #### Is a boosted post cheaper than an Ads Manager ad?
-Neither has a fixed price. You set the budget in both. What changes is what Meta tries to get you for the money.
+Neither has a fixed price. You set the budget in both. The difference is what Meta tries to get you for the money.
 #### Do I need a website to use Ads Manager?
 No. An instant form opens inside Facebook or Instagram, and an ad that clicks to WhatsApp opens a chat with your business number.
 #### I have never run an ad. Where do I start?
@@ -81,7 +81,7 @@ Checked on Meta Business Help Center, read 24 Nov 2026. The help pages block dir
 - The six objectives and what Leads collects.
 From the research file (confirmed there 24 Nov 2026): instant form types and the "Higher intent" review screen; customer list custom audience and the ban on health or financial information; lookalike audiences being limited for some finance and housing ads (glossary term 13).
 Could not confirm from a help page whether a customer list audience can also be selected inside the boost screen, so the copy only says the list is something Ads Manager adds and makes no claim about the boost screen.
-The humanize skill was not run on this file (instructed not to run skills). Run it afterwards.
+Humanize skill run on 24 Nov 2026.
 Sources:
 - https://www.facebook.com/business/help/317083072148603
 - https://www.facebook.com/business/help/299873430094007

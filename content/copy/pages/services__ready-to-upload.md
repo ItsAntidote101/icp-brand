@@ -28,7 +28,7 @@ Your customer or sales records in Excel or CSV, and someone who can open the ad 
 ## split
 eyebrow: Google
 ### Keywords and words to block, in one file
-A starter list for Google Search, built from what you sell and who buys it. Import the CSV in Google Ads Editor under Account, Import, From file. The rows arrive as proposed changes to keep or reject, and the words to block go in as negative keywords. It has no search volumes, because I have no honest source for them.
+A starter list for Google Search, built from what you sell and who buys it. Import the CSV in Google Ads Editor under Account, Import, From file. The rows arrive as proposed changes to keep or reject, and the words to block go in as negative keywords. The list has no search volumes, because I have no honest source for them.
 [IMAGE: Google Ads Editor showing imported keywords and negative keywords as proposed changes | 4:3]
 
 ## split
@@ -40,13 +40,13 @@ Choose the spreadsheet you already keep. It becomes the CSV Meta accepts for a c
 ## split
 eyebrow: Meta
 ### Your sales, so Meta knows who paid
-Your sales spreadsheet becomes a CSV for your dataset in Events Manager. Each sale needs a date, an amount and a phone number or email. That is how a sale paid by M-Pesa or in person gets reported back to Meta. It is converted on your device too, and the same caution applies to clinics, lenders and insurers.
+Your sales spreadsheet becomes a CSV for your dataset in Events Manager. Each sale needs a date, an amount and a phone number or email. That is how a sale paid by M-Pesa or in person gets reported back to Meta. This file is converted on your device too, and the same caution applies to clinics, lenders and insurers.
 [IMAGE: A phone showing an M-Pesa payment message next to a sales spreadsheet with dates and amounts | 4:3]
 
 ## split
 eyebrow: Words
 ### The words to paste for every fix
-Each fix in your plan comes with the thing itself: a first WhatsApp reply, ad text, the questions for an Instant form, or the exact values for a setting. Anything only you know, such as a price, is left in square brackets for you to fill in. Nothing is invented on your behalf.
+Each fix in your plan comes with the thing itself: a first WhatsApp reply, ad text, the questions for an Instant form, or the exact values for a setting. Anything only you know, such as a price, stays in square brackets for you to fill in. I invent nothing.
 [LINK: See what Starter includes -> /pricing]
 [IMAGE: A phone with a drafted first WhatsApp reply being pasted into a chat, the price still in square brackets | 3:4]
 
@@ -78,7 +78,7 @@ Only people who gave you their details themselves. Meta scrambles the list befor
 
 ## band
 ### The diagnosis comes first. The files follow.
-The keyword list is built from your answers, so the ten questions are where it starts.
+The keyword list is built from your answers, so it starts with the ten questions.
 [BUTTON: Start my free diagnosis -> /questionnaire]
 
 ## notes
@@ -91,7 +91,7 @@ Product details checked against the code, not only the brief:
 - Wording forms (WhatsApp reply, ad text, form questions, setting values, square brackets for facts only the owner knows) are in src/lib/fix-draft.ts.
 The health and financial caution is repeated in the customer list split, the sales file split and the "not a fit" card on purpose. The owner asked for it wherever the customer list file is mentioned. Extending it to the sales file is my addition. Confirm with Eugene.
 The dashboard also tells owners to upload sales every week or two "because Meta only uses recent sales". That reason has no source in the research file, so it is left out.
-Humanize skill was not run on this file.
+Humanize skill run on 24 Nov 2026.
 Sources:
 - Google Ads Editor, import a CSV file, rows arrive as proposed changes: https://support.google.com/google-ads/editor/answer/30564?hl=en
 - Google Ads Editor, add multiple keywords: https://support.google.com/google-ads/editor/answer/56501?hl=en

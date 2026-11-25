@@ -10,13 +10,13 @@ links_to: /questionnaire, /services/ready-to-upload, /services/done-with-you, /s
 ## hero
 eyebrow: From the first question to month three
 # Ten questions first. Then the work, week by week.
-No login to Google or Meta is needed. Your ad account shows the click; the WhatsApp chat that went quiet afterwards is something only you can tell me.
+The diagnosis needs no login to Google or Meta. Your ad account shows the click, but only you can tell me about the WhatsApp chat that went quiet afterwards.
 [BUTTON: Start my free diagnosis -> /questionnaire]
 [IMAGE: An owner at a shop counter answering a question on a phone between customers | 4:3]
 
 ## split
 ### Why answers beat account access
-An ad account records everything up to the click. What comes after sits in your phone and your head: who replied, how fast, whether anyone wrote again. That is the part the diagnosis checks, so it asks you. Rough numbers from memory are enough.
+An ad account records everything up to the click. What comes after sits in your phone and your head: who replied and how fast, and whether anyone wrote again. That is the part the diagnosis checks, so it asks you. Rough numbers from memory are enough.
 [IMAGE: Two phones side by side, one showing ad results full of clicks, the other an unanswered WhatsApp inquiry | 4:3]
 
 ## steps
@@ -28,7 +28,7 @@ From the figures you give, you see your cost per inquiry, your cost per sale, an
 #### The report
 A score out of 100 and your top problems, in plain language. If you have not started ads you get a launch plan, and if your numbers are healthy the report says so.
 #### Three fixes for this week
-Most important first, with the words to use for the first one.
+Most important first, with the words to use for that one.
 #### A call, if you ask
 One free 20 minute call with me to go through the report. Nobody calls you otherwise.
 
@@ -45,7 +45,7 @@ Clinics, lenders and insurers: ask me before using the customer list file. Meta 
 ## split
 eyebrow: Every Monday
 ### Two numbers on your dashboard
-Log last week's ad spend and inquiries. The dashboard works out your cost per inquiry, which ad people call cost per lead, and shows it against the week before. Add your sales and you see cost per sale as well. A briefing on your market also arrives each week, with its sources.
+Log last week's ad spend and inquiries. The dashboard works out your cost per inquiry, which ad people call cost per lead, and shows it against the week before. Add your sales and you see cost per sale. A briefing on your market also arrives each week, with its sources.
 [IMAGE: A phone showing a dashboard with last week's cost per inquiry beside the week before | 3:4]
 
 ## split
@@ -67,7 +67,7 @@ Ask for a hands-on session from your dashboard and pick the job: connect your CR
 #### Month one
 You put in the first three fixes and upload the files. You log your first Mondays.
 #### Month two
-You work down the rest of the fix plan, using the wording for each fix. My note says what I would change next.
+You work down the rest of the fix plan, with the words for each one ready to paste. My note says what I would change next.
 #### Month three
 Three months of spend, inquiries and buyers sit side by side, with dates. That is the time to decide about the ad budget.
 [LINK: The campaign setup plan on Pro -> /services/campaign-setup]
@@ -94,6 +94,6 @@ The three figures under "Your own numbers" are the ones the opener works out fro
 "Who writes the report": the split between software and Eugene follows the "Who does what" block on the About page. The word software describes what sits behind the business, as the brief allows. The product itself is never called software.
 The hands-on jobs are the four in src/lib/hands-on.ts. The image assumes a session happens on a call. Confirm the format before choosing the photo.
 "Three months, if you do the work" describes what the owner does and what is on the dashboard by then. It promises no result.
-Humanize skill was not run on this file.
+Humanize skill run on 24 Nov 2026.
 Sources:
 - Meta does not allow customer lists based on health or financial information: https://www.facebook.com/business/help/170456843145568 and https://www.facebook.com/business/help/606443329504150 (read 24 Nov 2026, per research/kenya-and-demand.md)

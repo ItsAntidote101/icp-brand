@@ -43,7 +43,7 @@ The threshold starts small and rises as payments go through, so several charges 
 If the account's currency differs from your card's, each charge is converted. Meta says it adds no fee of its own for that, but your bank may. Ask the bank before the first charge, not after the fifth.
 
 ### Is VAT added on top?
-Yes. Since November 2022 Meta has added Kenyan VAT to ad charges for every advertiser whose "sold to" country is Kenya, whether the ads are for a business or personal. Meta gives the rate only as the applicable local rate.
+Yes. Since November 2022 Meta has added Kenyan VAT to ad charges for every advertiser whose "sold to" country is Kenya, whether the ads are for business or personal use. Meta gives the rate only as the applicable local rate.
 
 On a card, VAT is added on top of each charge. On M-Pesa, it is applied at the moment you add funds, so the amount you send and the amount left for ads are two different figures. Read the breakdown on the confirm screen. A KES 20,000 budget that forgets the tax buys less than KES 20,000 of ads.
 
@@ -55,7 +55,7 @@ Not freely. This is what Meta's pages say:
 - An account set up for automatic billing does not get M-Pesa added.
 - You can change an account's currency once every 60 days if no balance is owing, but doing so closes the old ad account, stops its ads and opens a new one.
 
-Meta does not spell out whether that new account will offer M-Pesa, so I will not promise it. The safe rule: settle country, currency and payment method before the first ad, as part of planning the launch.
+Meta does not spell out whether that new account will offer M-Pesa, so I will not promise it. Settle country, currency and payment method before the first ad, as part of planning the launch.
 [LINK: See the campaign setup plan -> /services/campaign-setup]
 
 Paying is the easy half. Next, decide what you are asking Meta for.
@@ -66,7 +66,7 @@ Paying is the easy half. Next, decide what you are asking Meta for.
 #### Does Meta charge a fee when I add funds by M-Pesa?
 Meta says it charges no provider fee for adding funds. Your payment provider might charge its own.
 #### Can I get unused funds back?
-Do not count on it. Meta says unused funds are generally not refundable. You can ask for a refund after closing the ad account, and each request is decided case by case.
+Do not count on it. Meta says unused funds are generally not refundable. You can ask for a refund after closing the ad account, and Meta decides each request case by case.
 #### How much should I add the first time?
 I will not give you a number, because it depends on what a buyer is worth to you. Add only what you have planned to spend.
 
@@ -91,7 +91,7 @@ Checked on Meta Business Help Center, read 24 Nov 2026. The help pages block dir
 - No extra fee from Meta for currency exchange; the bank may charge.
 - Kenya VAT: from November 2022, all advertisers with "sold to" country Kenya, business or personal, added on top of charges, applied when a manually paid account is funded, VAT ID shown on receipts.
 Not confirmed, and so not claimed: whether a new ad account created by a currency change can then choose M-Pesa; whether VAT on a top-up is taken out of the amount sent or added to it at checkout (the copy says only that the two figures differ and to read the confirm screen); whether the Apple fee applies in Kenya specifically (Meta says "most regions").
-The humanize skill was not run on this file (instructed not to run skills). Run it afterwards.
+Humanize skill run on 24 Nov 2026.
 Sources:
 - https://www.facebook.com/business/help/1946853292237629
 - https://www.facebook.com/business/help/311330675698510

@@ -16,20 +16,20 @@ I am Eugene Kwata. I got tired of watching good businesses pay for inquiries tha
 
 ## split
 ### I made ads before I bought them
-I trained as a graphic designer and spent two years making ads. Then I crossed to the buying side, and today I run Google and Meta campaigns for a living. So I can tell a good ad from a bad one, and I can tell when the ad is innocent.
+I trained as a graphic designer and spent two years making ads. Then I crossed to the buying side. Today I run Google and Meta campaigns for a living. So I can tell a good ad from a bad one, and I can tell when the ad is innocent.
 [IMAGE: Eugene sketching an ad layout on paper, a second screen behind him showing a campaign | 3:4]
 
 ## split
 ### The same story in every account
-Real money going out every month. Plenty of inquiries. Very few sales. The owner blamed the agency, the agency blamed the budget, and nobody told the owner plainly what was wrong. In the accounts I opened it was almost never the budget. The wrong people were asking, or a serious buyer got the same slow reply as everyone else.
+Real money went out every month and plenty of inquiries came in, but very few became sales. The owner blamed the agency and the agency blamed the budget. Nobody told the owner plainly what was wrong. In the accounts I opened it was almost never the budget. The wrong people were asking, or a serious buyer got the same slow reply as everyone else.
 [IMAGE: Eugene pointing at a row in a client's spreadsheet on his laptop, phone face up beside it | 4:3]
 
 ## split
 ### What I believe
 - Do not put another shilling into ads until you know why the inquiries you already paid for are not buying.
-- You should be handed the work: files to upload and words to paste.
+- You should get the work: files to upload and words to paste.
 - A media buyer who stays with you is worth more than any score.
-- If your numbers are healthy, you should be told so.
+- If your numbers are healthy, you should hear it.
 [IMAGE: Eugene on a call at his desk, notebook open, a WhatsApp chat on the phone in front of him | 3:4]
 
 ## split
@@ -43,7 +43,7 @@ You should know which is which.
 #### What I do myself
 I take the free calls, read the numbers you log, write your monthly note and answer your messages.
 #### What the software does
-It asks the questions, drafts your report from your answers and researches your market every week, labelled as AI and showing its sources.
+It asks the questions, drafts your report from your answers and researches your market every week. It is labelled as AI and shows its sources.
 #### What neither of us does
 Log in to your ad accounts, or dress an estimate up as a fact.
 
@@ -66,6 +66,7 @@ Ten questions, about 3 minutes. If the numbers are healthy, I will say so.
 [BUTTON: Start my free diagnosis -> /questionnaire]
 
 ## notes
+Humanize skill run on 24 Nov 2026.
 Facts about Eugene (designer by training, two years making ads, now runs Google and Meta campaigns, the "same story" he kept seeing, who does what) are taken from src/app/about/page.tsx and the brief, with the words rewritten. No employer or client is named.
 The "What the software does" row says the software is AI and labelled as AI. That comes from the current about page, not from the brief's facts list. Keep it only if it is still true.
 The current about page also says "I reply within a working day". The brief does not list a reply time, so it is left out here.

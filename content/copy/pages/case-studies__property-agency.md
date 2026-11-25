@@ -16,7 +16,7 @@ A property agency in Kilimani, on the same KES 120,000 a month. Inquiries went d
 
 ## split
 ### Where they were in March
-240 inquiries a month and a phone that never rested. "Is this still available?" "How much?" An agent sent the price and nothing came back. On Saturdays the van waited for eleven people who had confirmed a site visit on WhatsApp. Three showed up. Two deposits a month paid for all of it.
+240 inquiries a month and a phone that never went quiet. "Is this still available?" "How much?" An agent sent the price and nothing came back. On Saturdays the van waited for eleven people who had confirmed a site visit on WhatsApp. Three showed up. Two deposits a month paid for all of it.
 [IMAGE: A phone showing a WhatsApp chat that ends at the price of a two bedroom apartment | 3:4]
 
 ## steps
@@ -58,7 +58,7 @@ April looked worse. Inquiries dropped in the first weeks and deposits had not mo
 How this works for agents and developers, in the words you use: joyriders, site visits, deposits.
 [LINK: Ideal ICP for property -> /for/property]
 #### What this would cost you
-Everything in this receipt sits on the Starter plan, KES 6,500 a month by M-Pesa or card. Nothing renews on its own.
+Everything in this receipt is on the Starter plan, KES 6,500 a month by M-Pesa or card. Nothing renews on its own.
 [LINK: See the plans -> /pricing]
 
 ## band
@@ -67,6 +67,7 @@ Ten questions, about 3 minutes. Nobody calls you unless you ask.
 [BUTTON: Start my free diagnosis -> /questionnaire]
 
 ## notes
+Humanize skill run on 24 Nov 2026.
 Status is sample. No real client. The business is described, not named. Every figure and both months are illustrative and must be replaced with a real client's receipt before launch.
 Arithmetic: 120,000 / 240 = 500. 120,000 / 150 = 800. 120,000 / 2 = 60,000. 120,000 / 5 = 24,000. The KES 300 in "What took longer" is 800 minus 500.
 This is the case where inquiries go down while buyers go up, and cost per inquiry rises while cost per sale falls. Keep that shape if the figures are replaced, or move the point to another case study.

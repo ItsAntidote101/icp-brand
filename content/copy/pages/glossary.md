@@ -10,7 +10,7 @@ links_to: /questionnaire
 ## hero
 eyebrow: Glossary
 # Ad words in plain language
-Twenty five terms from Google and Meta reports, each in a sentence or two. The shilling examples are sums to show the working, never what you should expect to pay.
+Twenty five terms from Google and Meta reports, each in a sentence or two. The shilling examples are sums that show the working. Do not take them as what you should expect to pay.
 [BUTTON: Start my free diagnosis -> /questionnaire]
 [IMAGE: A printed ad report with CPM and CTR circled in pen, a calculator and a cup of tea beside it | 4:3]
 
@@ -25,13 +25,13 @@ The cost of showing your ad 1,000 times. KES 2,000 for 10,000 showings is a CPM 
 #### CTR (click-through rate)
 Clicks divided by the number of times the ad was shown. Meta reports two: "CTR (all)" counts any click on the ad, and "CTR (link)" counts only clicks through to your site or chat.
 #### ROAS (return on ad spend)
-Sales value divided by ad spend. KES 150,000 in sales from KES 50,000 of ads is 3, and that is revenue, so your costs still have to come out of it.
+Sales value divided by ad spend. KES 150,000 in sales from KES 50,000 of ads is 3. That is revenue, so your costs still have to come out of it.
 #### Impressions
 How many times your ad was shown, repeats included.
 #### Reach
 How many different people saw your ad at least once.
 #### Frequency
-Impressions divided by reach, which gives the average number of times each person saw the ad. 30,000 impressions to 10,000 people is a frequency of 3.
+Impressions divided by reach: the average number of times each person saw the ad. 30,000 impressions to 10,000 people is a frequency of 3.
 
 ## faq
 ### Meta words
@@ -42,7 +42,7 @@ A form that opens inside Facebook or Instagram with the person's details already
 #### Customer list custom audience
 Your own customer list, uploaded so Meta can show those people ads or leave them out. Meta matches it in scrambled form, and the list may not hold health or financial information.
 #### Lookalike audience
-New people Meta picks because they resemble a list you gave it. The source list needs at least 100 people, and the option is limited for some finance and housing ads.
+New people Meta picks because they resemble a list you gave it. The source list needs at least 100 people, and Meta limits the option for some finance and housing ads.
 #### Advantage+ campaign budget
 One budget for the whole Meta campaign, which Meta moves between your ad sets. The other choice is a separate budget on each ad set.
 #### Learning phase
@@ -51,7 +51,7 @@ The stretch after a new ad set or a big edit, when results swing. Meta says it u
 ## faq
 ### Google words
 #### Negative keyword
-A word or phrase that stops your Google ad from showing. Add "jobs" and you stop paying for job seekers, but plurals and similar words are not covered, so add "job" as well.
+A word or phrase that stops your Google ad from showing. Add "jobs" and you stop paying for job seekers. Plurals and similar words are not covered, so add "job" as well.
 #### Search terms report
 The list of what people really typed before your ad showed. Keywords are what you chose, and search terms are what you got.
 #### Match type
@@ -87,7 +87,7 @@ Shilling examples are arithmetic. From the research file: 20,000 / 40 = 500; 3,0
 "CPL (cost per lead)" keeps the platform's word in the term and uses "inquiry" in the definition, as the brief asks.
 Re-checked by the copywriter on 24 Nov 2026 through the Meta help article lookup (facebook.com blocks direct fetching): learning phase wording ("about 50 results in the week after the ad set's last significant edit"), ads that click to WhatsApp needing a WhatsApp Business account connected to the Page, instant form prefill. Everything else rests on the research file's own check.
 Each faq item renders closed until tapped. If the glossary should show every definition open, that is a layout change, not a copy change.
-Humanize skill not run on this file.
+Humanize skill run on 24 Nov 2026.
 Sources:
 - https://www.facebook.com/business/help/877711998984611
 - https://www.facebook.com/business/help/753932008002620

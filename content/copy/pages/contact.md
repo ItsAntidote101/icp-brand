@@ -22,7 +22,7 @@ fields: name, WhatsApp number, what you need help with
 ## cards
 ### What happens after you write
 #### Eugene replies
-Every message is read and answered by me. There is no sales desk to pass it to.
+I read and answer every message. There is no sales desk to pass it to.
 #### No pitch follows
 I answer what you asked. Nobody phones you unless you ask for a call.
 #### The diagnosis is the faster route
@@ -40,10 +40,11 @@ Message me from your dashboard instead. It comes to me as well.
 
 ## band
 ### Or skip the message and see for yourself.
-Ten questions about your inquiries, about 3 minutes, and no access to your ad account.
+Ten questions about your inquiries. It takes about 3 minutes and needs no access to your ad account.
 [BUTTON: Show me where they are lost -> /questionnaire]
 
 ## notes
+Humanize skill run on 24 Nov 2026.
 The WhatsApp number is a placeholder: "[WhatsApp number to come]". No phone number, address or reply time is stated anywhere on the page, by instruction. Replace the placeholder with the real number, and consider making it a tappable WhatsApp button beside the form.
 The form fields are exactly: name, WhatsApp number, what you need help with.
 The hero button goes to the free diagnosis because the brief allows one action per page. The form sits directly under the hero.

@@ -10,13 +10,13 @@ links_to: /for/clinics, /pricing, /case-studies, /questionnaire
 ## hero
 eyebrow: Sample. Replace with a real client before this page goes live.
 # From 20 patients a month to 40 in eight weeks
-A dental clinic in Westlands, on the same KES 60,000 a month. The budget did not move, but the front desk's replies did.
+A dental clinic in Westlands, on the same KES 60,000 a month. The budget stayed put and the front desk's replies changed.
 [BUTTON: Show me where mine are lost -> /questionnaire]
 [IMAGE: A receptionist at a Westlands dental clinic replying on WhatsApp with the appointment book open | 4:3]
 
 ## split
 ### Where they were in July
-200 inquiries a month, most asking "How much is braces?" The front desk sent the price list between patients and went back to the queue. A booking was a promise on WhatsApp with nothing paid. At 2pm the chair sat empty under a last message that read "I'll come tomorrow."
+200 inquiries a month, most asking "How much is braces?" The front desk sent the price list between patients and went back to the queue. A booking was a promise on WhatsApp with nothing paid. At 2pm the chair sat empty, and the last message read "I'll come tomorrow."
 [IMAGE: An empty dental chair at 2pm with a phone on the tray beside it | 3:4]
 
 ## steps
@@ -24,7 +24,7 @@ A dental clinic in Westlands, on the same KES 60,000 a month. The budget did not
 #### The price came with a slot
 New wording to paste: the price, then two appointment times to choose from. A price list sent alone ends the chat.
 #### A deposit held the booking
-The fix plan added a small M-Pesa deposit to confirm a slot, with the message that asks for it politely.
+The fix plan added a small M-Pesa deposit to confirm a slot, and a message that asks for it politely.
 #### Google stopped paying for job seekers
 One uploaded file blocked searches for dental jobs, dental courses and free clinics.
 #### The numbers went in every Friday
@@ -49,16 +49,16 @@ attribution: [Client name, business, town]
 
 ## split
 ### What did not work
-The deposit put some people off, and the front desk hated asking for it in the first week. No-shows fell. They did not disappear. One pack stayed unused: Meta does not allow health information in customer lists, so the patient list was never turned into a Meta file.
+The deposit put some people off, and the front desk hated asking for it in the first week. No-shows fell but did not disappear. One pack stayed unused: Meta does not allow health information in customer lists, so the patient list never became a Meta file.
 [IMAGE: An appointment book with one slot crossed out in pen | 4:3]
 
 ## cards
 ### Where to go next
 #### If you run a clinic or a salon
-How this works for bookings, in the words you use: price shoppers, no-shows, walk-ins.
+How this works for bookings, in the words you use: price shoppers, no-shows and walk-ins.
 [LINK: Ideal ICP for clinics and beauty -> /for/clinics]
 #### What this would cost you
-Everything in this receipt sits on the Starter plan, KES 6,500 a month by M-Pesa or card. Nothing renews on its own.
+Everything in this receipt is on the Starter plan, KES 6,500 a month by M-Pesa or card. Nothing renews on its own.
 [LINK: See the plans -> /pricing]
 
 ## band
@@ -67,6 +67,7 @@ Ten questions, about 3 minutes. Rough numbers from memory are enough.
 [BUTTON: Start my free diagnosis -> /questionnaire]
 
 ## notes
+Humanize skill run on 24 Nov 2026.
 Status is sample. No real client. The business is described, not named. Every figure and both months are illustrative and must be replaced with a real client's receipt before launch.
 Arithmetic: 60,000 / 200 = 300. 60,000 / 240 = 250. 60,000 / 20 = 3,000. 60,000 / 40 = 1,500.
 The scene (price list sent with no slot offered; no deposit so no-shows; the empty 2pm chair) is the typical clinics scene from research/kenya-and-demand.md Part 2, marked there as unsourced typical phrasing.

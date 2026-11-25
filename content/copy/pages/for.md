@@ -16,13 +16,13 @@ Each trade loses them in its own way. Find yours below and see where, before ano
 
 ## cards
 ### Pick your trade
-Each page shows where the sale goes missing and what I hand you to fix it.
+Your page shows where the sale goes missing and what I hand you to fix it.
 #### Property and real estate
 Joyriders fill the site visit list while the serious buyers ghost after the price.
 [LINK: Go to the property page -> /for/property]
 [IMAGE: A site agent showing a plot in Kitengela to a couple | 4:3]
 #### Schools and colleges
-The fee structure goes out, the parent goes quiet, and reporting day arrives without her child.
+The fee structure goes out and the parent stops replying. Reporting day arrives without her child.
 [LINK: Go to the schools page -> /for/schools]
 [IMAGE: A parent and child at a school admissions desk with a printed fee structure | 4:3]
 #### Insurance and financial services
@@ -34,7 +34,7 @@ Price shoppers ask "Bei ya facial?", book for tomorrow and turn into no-shows.
 [LINK: Go to the clinics page -> /for/clinics]
 [IMAGE: A receptionist at a clinic front desk with a phone in one hand and the booking diary open | 4:3]
 #### Law, accounting and consulting
-They send a long voice note, take the free advice and never pay the consultation fee.
+They get free advice out of a long voice note and never pay the consultation fee.
 [LINK: Go to the professional services page -> /for/professional-services]
 [IMAGE: An advocate on a phone call at a desk stacked with files | 4:3]
 
@@ -46,7 +46,7 @@ Run the diagnosis anyway. Its ten questions are about your inquiries and your bu
 
 ## band
 ### Start with ten questions.
-About 3 minutes, no login to your ad account, and nobody calls you unless you ask.
+It takes about 3 minutes and needs no login to your ad account. Nobody calls you unless you ask.
 [BUTTON: Start my free diagnosis -> /questionnaire]
 
 ## notes
@@ -54,4 +54,4 @@ Index page, kept short on purpose: hero, five trade cards, one split for trades 
 The five card sentences use each trade's own vocabulary from research/kenya-and-demand.md part 2. That part is typical phrasing from general knowledge, not recorded speech, so the lines are written as description and not as quotes from anyone.
 No market figure is used on this page, so there is no Sources list.
 Product facts (ten questions, about 3 minutes, no ad account login, nobody calls unless asked) come from the brief and src/app/pricing/page.tsx.
-The humanize skill was not run on this file. Run it before the page goes live.
+Humanize skill run on 24 Nov 2026.

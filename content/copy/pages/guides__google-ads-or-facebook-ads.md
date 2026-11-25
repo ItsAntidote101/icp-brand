@@ -20,24 +20,24 @@ On Google Search, your ad shows when someone types words that match your keyword
 
 On Meta, which is Facebook and Instagram bought from one account, nobody typed anything. Meta shows the ad to people it judges most likely to do what you asked for, in the middle of their scrolling.
 
-One answers a question somebody already had. The other starts a conversation with a stranger. Neither is better. They are different jobs.
+One answers a question somebody already had. The other starts a conversation with a stranger. Neither is better, because the two do different jobs.
 
 ### Do my buyers search for this?
 You can test it today without spending anything:
-- Type your service the way a customer would, with your town, and see whether ads appear. Businesses paying to be there is a hint that the search brings work. It is a hint and no more.
-- If you have a Google Ads account with billing details added, open Keyword Planner and enter the same phrases. It gives an estimate of how many searches each one gets in a month. Treat it as an estimate.
-- Ask your last five buyers what they did on the day they first needed you. Some will say they searched. Some will say they saw you on Facebook or a friend sent your number.
+- Type your service the way a customer would, with your town, and see whether ads appear. Businesses paying to be there is a hint that the search brings work, and only a hint.
+- If you have a Google Ads account with billing details added, open Keyword Planner and enter the same phrases. It estimates how many searches each one gets in a month. Treat the number as an estimate.
+- Ask your last five buyers what they did on the day they first needed you. Some will say they searched. Others will say they saw you on Facebook, or that a friend sent your number.
 
 ### When does Google fit?
 When the need is already there and has a name. A cracked tooth. A land dispute. "How much is comprehensive for a 2015 Axio?" People with those problems go looking, and a search ad puts you in front of them at that moment.
 
-The catch is that you pay for each click, and the wrong searches get in alongside the right ones.
+You pay for each click, though, and the wrong searches get in alongside the right ones.
 [LINK: Why Google Ads clicks do not convert -> /guides/why-google-ads-not-converting]
 
 ### When does Meta fit?
 When people would want it but are not searching yet, or when it sells on a picture. A show house in a place they had not considered. A school compound. A short course starting next month.
 
-The audience is certainly there. In the Communications Authority's survey for April to June 2026, Facebook and WhatsApp were the two most used platforms in Kenya. And the inquiry can land where you already work: an ad that clicks to WhatsApp opens a chat with your business number, and an instant form opens inside Facebook or Instagram with the person's details filled in.
+The audience is there. In the Communications Authority's survey for April to June 2026, Facebook and WhatsApp were the two most used platforms in Kenya. And the inquiry can land where you already work: an ad that clicks to WhatsApp opens a chat with your business number, and an instant form opens inside Facebook or Instagram with the person's details filled in.
 
 The catch is the interruption. Plenty of people who tap were curious and nothing more, so the sorting has to happen in your reply.
 
@@ -46,7 +46,7 @@ I will not quote you a typical cost, because any figure I gave would be somebody
 
 Say Google takes KES 20,000 and brings 25 inquiries, 5 of whom buy. That is KES 800 an inquiry and KES 4,000 a buyer. Say Meta takes the same KES 20,000 and brings 80 inquiries, 4 of whom buy. That is KES 250 an inquiry and KES 5,000 a buyer. The cheaper inquiry turned out to be the dearer customer.
 
-Those numbers are invented to show the sum. They are not benchmarks, and with your own figures the result may run the other way.
+I invented those numbers to show the sum. They are not benchmarks, and with your own figures the result may run the other way.
 
 ### Should I run both at once?
 Not at the start on a small budget. KES 20,000 split two ways is KES 10,000 each, and you learn half as much about either.
@@ -59,7 +59,7 @@ And if inquiries already arrive and do not buy, changing channel moves the same 
 ## faq
 ### Questions owners ask next
 #### Is Instagram a third option?
-No. Instagram and Facebook are both bought through Meta, from the same account, and one ad can run on both.
+No. You buy Instagram and Facebook through Meta, from the same account, and one ad can run on both.
 #### Which is easier to start with if I have no website?
 Meta. An inquiry can go straight to WhatsApp or to an instant form, with no website involved.
 #### What if I tried both and neither worked?
@@ -81,7 +81,7 @@ Checked on official help pages, read 24 Nov 2026:
 - Google: Keyword Planner gives estimates of monthly searches and needs account setup with billing information.
 - Meta (via the Meta Ads connector's help article lookup, since the help pages block direct fetching): ads that click to WhatsApp open a chat and need a WhatsApp Business number connected to the Page; ads can be placed across Facebook and Instagram; Meta finds people likely to take the action asked for.
 - From the research file: instant forms open inside Facebook or Instagram with details prefilled.
-The humanize skill was not run on this file (instructed not to run skills). Run it afterwards.
+Humanize skill run on 24 Nov 2026.
 Sources:
 - https://www.ca.go.ke/sites/default/files/2026-08/%20Audience%20Measurement%20and%20Industry%20Trends%20Report%20Quarter%204%202025-2026.pdf
 - https://support.google.com/google-ads/answer/7337243?hl=en

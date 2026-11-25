@@ -30,7 +30,7 @@ Three parts, in one message.
 - One thing the price includes, so the number means something.
 - One question that is easy to answer and moves things forward.
 
-The question does the work. "Which day suits you?" can be answered in one word. "Let me know" asks for nothing, and nothing is what comes back.
+The question does the work. "Which day suits you?" takes one word to answer. "Let me know" asks for nothing, so nothing comes back.
 
 ### What can I paste into WhatsApp today?
 
@@ -66,13 +66,13 @@ Whoever holds the phone on Saturday now answers the way you would.
 
 ### How many times should I follow up?
 
-More than once, and each time with something new: an open slot, a photo, a date that is filling up. The pattern I use, and when to stop, is in [LINK: how to qualify inquiries on WhatsApp -> /guides/qualify-leads-on-whatsapp].
+More than once, and each time with something new: an open slot, a photo or a date that is filling up. The pattern I use, and when to stop, is in [LINK: how to qualify inquiries on WhatsApp -> /guides/qualify-leads-on-whatsapp].
 
 ### How do I know the new wording is working?
 
 Count before you change anything. Scroll back through last week's chats and note two numbers: how many times you sent a price, and how many of those got any reply afterwards. Count again after a week of the new wording.
 
-Say it was 5 replies from 30 prices, and it becomes 11 from 30. That is your own evidence, and it beats anybody's opinion, mine included. If the number does not move, the leak is somewhere else, and that is worth knowing too.
+Say it was 5 replies from 30 prices, and it becomes 11 from 30. That is your own evidence, and it beats anybody's opinion, mine included. If the number does not move, the leak is somewhere else, and you found that out in a week.
 
 ## faq
 ### Short answers
@@ -96,7 +96,7 @@ The reasons people go quiet are reasoning from how these chats run (research fil
 Platform statements and where each was checked on 24 Nov 2026:
 - WhatsApp Business quick replies: Add, message, shortcut, save; type "/" in a chat to list them; up to 50 stored: WhatsApp help. The parent menu name is left out on purpose because it differs by phone.
 - Labels on chats: WhatsApp help.
-Humanize skill not run on this file.
+Humanize skill run on 24 Nov 2026.
 Sources:
 - https://faq.whatsapp.com/1791149784551042/?cms_platform=android
 - https://faq.whatsapp.com/3398508707096369/?cms_platform=android

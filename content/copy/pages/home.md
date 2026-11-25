@@ -28,18 +28,18 @@ The boosted post found people who enjoy the picture and have no plan to pay.
 #### One reply, then silence
 You answered once. They went quiet, and nobody wrote a second time.
 #### The booking that never shows
-The 2pm slot is empty. Their last message still reads "I'll come tomorrow", and no deposit was asked for.
+The 2pm slot is empty. Their last message still reads "I'll come tomorrow". You never asked for a deposit.
 
 ## split
 eyebrow: Who is on the other side
 ### You get a media buyer, not a score.
-A score by itself fixes nothing. Here it is where I start. On a plan I read the numbers you log each week, answer your messages and write you a note every month. I am one media buyer in Nairobi. That is the whole team.
+A score by itself fixes nothing. It is where I start. On a plan I read the numbers you log each week and answer your messages, and once a month I write you a note. I am one media buyer in Nairobi. That is the whole team.
 [LINK: Who Eugene is -> /about]
 [IMAGE: Eugene at his desk in Nairobi with a client's weekly numbers open on the laptop | 4:3]
 
 ## split
 eyebrow: What you walk away with
-### You are handed the work: files and words.
+### I hand you the work as files and words.
 - Google keywords and words to block, ready to upload
 - Your customer and sales spreadsheets turned into Meta files, on your own device
 - The words to paste for every fix: replies, ad text, form questions
@@ -49,7 +49,7 @@ Clinics, lenders and insurers: ask me before using the customer list file. Meta 
 
 ## ladder
 ### What I do at each plan
-Said plainly, with how often.
+Every row says how often.
 #### Free, KES 0
 One 20 minute call to go through your report, if you ask for it.
 #### Starter, KES 6,500 a month
@@ -72,7 +72,7 @@ A parent asks for the fee structure at 9pm. The reply comes on Tuesday.
 Forty quotes sent as PDFs, each one ending "Kindly advise".
 [LINK: Insurance and finance quotes -> /for/insurance]
 #### Clinics and beauty
-"Bei ya facial?" A price list goes out and no slot is offered.
+"Bei ya facial?" They get a price list and no slot.
 [LINK: Clinic and salon bookings -> /for/clinics]
 #### Law, accounting and consulting
 Forty minutes of free advice by phone, then a request for a small discount.
@@ -81,7 +81,7 @@ Forty minutes of free advice by phone, then a request for a small discount.
 ## split
 eyebrow: Proof
 ### Proof comes as receipts.
-Each case study lays out ad spend, inquiries and buyers, before and after, with dates. No percentage lift without a starting figure. One job is no benchmark for yours, so read them as receipts and nothing more.
+Each case study lays out ad spend, inquiries and buyers, before and after, with dates. Every percentage lift comes with its starting figure. One job is no benchmark for yours, so read each as a receipt.
 [LINK: Read the case studies -> /case-studies]
 [IMAGE: A printed one page table of monthly ad spend, inquiries and buyers, with the dates written across the top | 4:3]
 
@@ -116,6 +116,6 @@ The scenes in the cards and trade cards come from the brief and from part 2 of r
 The case studies are samples until real client material is supplied. This section makes no claim that they are real clients. Hide it or keep it only while the case study pages carry their sample label.
 "There is no pitch to sit through" comes from src/app/home-faqs.ts.
 The old "How do you work out what I am losing?" question is gone on purpose. There is no loss estimate any more.
-Humanize skill was not run on this file.
+Humanize skill run on 24 Nov 2026.
 Sources:
 - Meta does not allow customer lists based on health or financial information: https://www.facebook.com/business/help/170456843145568 and https://www.facebook.com/business/help/606443329504150 (read 24 Nov 2026, per research/kenya-and-demand.md)

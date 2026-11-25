@@ -10,15 +10,15 @@ links_to: /case-studies, /guides/why-google-ads-not-converting, /guides/qualify-
 ## hero
 eyebrow: For advocates, accountants and consultants
 # Forty minutes on succession law. Then "a small discount".
-The advice was what you sell, and it went out free on the phone. Before the ad budget grows, see where a brief turns into a favour.
+That advice is what you sell, and it went out free on the phone. Before the ad budget grows, see where a brief turns into a favour.
 [BUTTON: Show me where clients are lost -> /questionnaire]
 [IMAGE: An advocate at a desk stacked with files, phone on speaker, a notepad filling up with notes from a long call | 4:3]
 
 ## cards
 ### How a paying client becomes a free one
-None of these is fixed by more clicks.
+More clicks fix none of these.
 #### The advice happens in the chat
-A long voice note about a land dispute gets a long, careful answer. They got what they came for, and the consultation fee never came up.
+A long voice note about a land dispute gets a long, careful answer. They get what they came for, and the consultation fee never comes up.
 #### No intake questions
 "How much to register a company?" could come from a founder ready to pay today or a student with an assignment. Without two questions up front, both get your afternoon.
 #### The fee note is never followed up
@@ -26,7 +26,7 @@ It went out on Monday. Nobody asked on Thursday whether it arrived, so it is sti
 
 ## split
 ### What the diagnosis checks for a firm
-Ten questions on numbers you roughly know: ad spend, inquiries, paying clients, how soon someone replies. No client files, no ad account login. You receive:
+Ten questions on numbers you roughly know: ad spend, inquiries, paying clients, how soon someone replies. No client files, no ad account login. You get:
 - Your cost per inquiry and per client signed
 - What one more client in every ten inquiries is worth in fees
 - A score out of 100 and 3 fixes for the week, with no promised result
@@ -34,7 +34,7 @@ Ten questions on numbers you roughly know: ad spend, inquiries, paying clients, 
 
 ## split
 ### What I hand the firm
-One fix is worded for you free. Starter, KES 6,500 a month, words them all:
+I word one fix for you free. Starter, KES 6,500 a month, words them all:
 - A first reply that names the consultation fee, then asks one question
 - Intake questions for your form
 - The fee note follow up
@@ -52,7 +52,7 @@ No law or accounting case study exists yet. The samples from other trades show t
 For when the clicks come from people searching for templates, jobs and free advice.
 [LINK: Read the Google Ads guide -> /guides/why-google-ads-not-converting]
 #### How to qualify inquiries on WhatsApp
-Sorting who will pay for a consultation before you start advising.
+Sort out who will pay for a consultation before you start advising.
 [LINK: Read the WhatsApp guide -> /guides/qualify-leads-on-whatsapp]
 
 ## faq
@@ -60,11 +60,11 @@ Sorting who will pay for a consultation before you start advising.
 #### Are advocates allowed to advertise this way?
 Advocates work under advertising rules, and you should check the current ones before any ad runs. You paste every word yourself, so nothing goes out unread, and none of my wording promises an outcome in a matter.
 #### How do I charge a consultation fee without scaring people off?
-Name it in the first reply, say what the session covers, and ask one question about the matter. Some will leave, and that is the reply doing its job.
+Name it in the first reply, say what the session covers, and ask one question about the matter. Some will leave. That is the reply doing its job.
 #### I am an accountant or a consultant. Is this page for me?
 It is. Swap consultation fee for proposal and brief for scope. The loss is the same: work done before anyone agrees to pay.
 #### Do you run the firm's ads?
-I do not. I show what to fix, hand over the files and wording, and on a paid plan I track your cost per inquiry each week. Full management is something to ask me about by message.
+I do not. I show what to fix, hand over the files and wording, and on a paid plan I track your cost per inquiry each week. For full management, ask me by message.
 
 ## band
 ### Do not pay for more voice notes yet.
@@ -80,7 +80,7 @@ Terms borrowed from that entry: consultation fee, retainer, fee note, brief, fre
 Meta customer file: offered as something the firm can skip, because client lists are confidential. This is my caution, not a Meta rule. A firm whose clients come to it over money matters may also fall under Meta's ban on lists based on financial information (Meta help pages below, read 24 Nov 2026). Decide whether to remove the file from this trade altogether.
 "What I hand the firm": the wording items are examples. Wording is written for each fix out of the firm's own answers, so what a firm receives depends on its report. "Pupillage" is an example of a word to block (job seekers, not clients).
 There is no matching case study in the sitemap, so the card links to /case-studies and says so.
-The humanize skill was not run on this file.
+Humanize skill run on 24 Nov 2026.
 Sources:
 - https://nairobilawmonthly.com/what-is-the-point-in-restricting-advertising-for-legal-services/
 - https://www.facebook.com/business/help/170456843145568

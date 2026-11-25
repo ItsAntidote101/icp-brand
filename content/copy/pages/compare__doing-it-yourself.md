@@ -10,7 +10,7 @@ links_to: /guides/how-to-know-if-ads-are-working, /guides/last-price-and-disappe
 ## hero
 eyebrow: Ideal ICP or doing it yourself
 # You can fix a lot of this yourself, for free.
-Here are five steps that cost nothing. After them, where doing it alone tends to stall, and what changes with a media buyer alongside.
+Start with five steps that cost nothing. Then see where doing it alone tends to stall, and what changes with a media buyer alongside.
 [BUTTON: Start my free diagnosis -> /questionnaire]
 [IMAGE: A shop owner behind the counter checking her ads on a phone between customers | 4:3]
 
@@ -27,7 +27,7 @@ Ask a friend to message your business at 9pm and note when the answer comes. The
 #### Block the searches that never buy
 In Google Ads, open the search terms report and add negative keywords: jobs, free, courses, towns you do not serve. Add each plural too, because Google does not cover it for you.
 #### Ask Meta for inquiries
-Set up your next ad in Ads Manager and pick the objective Meta calls "Leads", in place of boosting a post for likes.
+Set up your next ad in Ads Manager and pick the objective Meta calls "Leads", instead of boosting a post for likes.
 [LINK: Boost post or Ads Manager -> /guides/boost-post-or-ads-manager]
 
 ## split
@@ -44,9 +44,9 @@ From KES 6,500 a month by M-Pesa or card. Nothing renews on its own.
 #### The files are made for you
 Google keywords and words to block arrive as a file ready to upload. Your customer spreadsheet becomes a Meta file on your own device.
 #### The words are written
-A reply, an ad text or a form question to paste for every fix in your plan.
+Every fix in your plan comes with a reply, an ad text or a form question to paste.
 #### Someone reads your numbers
-The dashboard tracks what each inquiry costs you every week. I write you a note every month and answer your messages.
+Every week the dashboard tracks what each inquiry costs you. I write you a note every month and answer your messages.
 #### The hard setup is done with you
 On the Pro plan, one hands-on session a month with me: CRM connection, tracking or campaign setup.
 [LINK: See the plans -> /pricing]
@@ -63,6 +63,7 @@ Ten questions, about 3 minutes, no login to your ad account.
 [BUTTON: Start my free diagnosis -> /questionnaire]
 
 ## notes
+Humanize skill run on 24 Nov 2026.
 The five steps are meant to be usable with no account at Ideal ICP. Steps 1, 3 and 5 follow article angles 8, 15, 2 and 10 in research/kenya-and-demand.md Part 3.
 Step 4 uses two platform facts with sources: the search terms report shows what people typed, and negative keywords do not cover plurals or close variants, so each plural is added separately.
 Step 5 uses the word "Leads" only because it is the label an owner will see in Meta Ads Manager. Check the label is still current before launch.

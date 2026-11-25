@@ -40,7 +40,7 @@ How quickly a new inquiry gets a reply.
 ## cards
 ### What comes back
 #### Your own arithmetic
-Your cost per inquiry, your cost per sale, and what one more buyer in every ten inquiries would be worth. All of it is worked from the figures you gave.
+Your cost per inquiry, your cost per sale, and what one more buyer in every ten inquiries would be worth. All of it comes from the figures you gave.
 #### A score out of 100
 Or a launch plan, if you have not started ads.
 #### Your top problems
@@ -81,9 +81,9 @@ Yes. One diagnosis and one 20 minute call, with no card. You pay only if you lat
 #### What if I do not know my exact numbers?
 Rough numbers from memory are enough. You pick a range for your ad spend and give your best estimate of inquiries.
 #### What if I have not started ads?
-Say so at the first question. You get a launch plan in place of a score.
+Say so at the first question. You get a launch plan instead of a score.
 #### What is the difference between the free report and the full one?
-The free one asks 10 questions and shows your top problems. The full report, on Starter, asks about 10 more on your best customer and your follow up, checks your landing page if your ads use one, and gives every problem with the whole fix plan.
+The free one asks 10 questions and shows your top problems. The full report, on Starter, asks about 10 more on your best customer and your follow up, and checks your landing page if your ads use one. You get every problem, with the whole fix plan.
 
 ## band
 ### You already paid for those inquiries.
@@ -98,4 +98,4 @@ Service page structure borrowed from research/competitors.md: summary box on top
 The free and full report difference comes from src/app/pricing/page.tsx.
 "They will not match an online shop" is a judgement from the brief's reader (owners who sell through inquiries), not a stated product rule. Check with Eugene.
 No market facts are used on this page.
-Humanize skill was not run on this file.
+Humanize skill run on 24 Nov 2026.

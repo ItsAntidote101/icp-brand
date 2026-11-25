@@ -18,16 +18,16 @@ Eleven guides for owners who pay for ads in Kenya. Each opens with the answer, t
 ### Guides for before you spend
 Read these before the next shilling goes into ads.
 #### Google Ads or Facebook ads: which is better?
-Google catches people who are already searching and Meta interrupts people who were not, so start by asking whether your buyers search.
+Google catches people already searching and Meta interrupts people who were not, so start by asking whether your buyers search.
 [LINK: Read the answer -> /guides/google-ads-or-facebook-ads]
 #### Boost post or Ads Manager: which one should I use?
 A boost buys attention, while Ads Manager lets you ask for inquiries and say who should see the ad.
 [LINK: Read the answer -> /guides/boost-post-or-ads-manager]
 #### How do I pay for Facebook ads in Kenya?
-By card, or by M-Pesa if the ad account was opened in shillings with M-Pesa chosen at setup.
+By card, or by M-Pesa if your ad account is in shillings and M-Pesa was chosen at setup.
 [LINK: Read the answer -> /guides/pay-for-facebook-ads-kenya]
 #### Click to WhatsApp ads or lead forms?
-WhatsApp brings faster chats and forms bring details to call back, and both fail without a plan for who replies.
+WhatsApp brings faster chats and forms bring details to call back, but both fail without a plan for who replies.
 [LINK: Read the answer -> /guides/click-to-whatsapp-or-lead-forms]
 #### Should I hire a digital marketing agency?
 Not yet: first find out why the inquiries you already paid for did not buy.
@@ -40,7 +40,7 @@ People ask, then nothing. Start with the one that sounds like your week.
 Usually the clicks come from searches you never meant to pay for.
 [LINK: Read the answer -> /guides/why-google-ads-not-converting]
 #### Why are my Facebook leads not buying?
-The ad reached curious people, and nothing after it sorted them from the ones who were ready.
+The ad reached curious people, and nothing after it sorted them from the ones ready to buy.
 [LINK: Read the answer -> /guides/why-facebook-leads-dont-buy]
 #### Why do people ask for last price and disappear?
 A price sent alone ends the conversation, so reply with the price and one question.
@@ -56,7 +56,7 @@ Two sums you can do in a notebook.
 Put spend, inquiries and buyers on one line each week, and leave likes off it.
 [LINK: Read the answer -> /guides/how-to-know-if-ads-are-working]
 #### What should a lead cost in Kenya?
-There is no single right figure, so work out the most you can afford to pay from your own sales.
+There is no single right figure, so work out from your own sales the most you can afford to pay.
 [LINK: Read the answer -> /guides/cost-per-lead-kenya]
 
 ## cards
@@ -68,12 +68,12 @@ Twenty five terms from Google and Meta reports, each explained in a sentence or 
 What an agency does that Ideal ICP does not, what each costs in shillings and when to pick the agency.
 [LINK: See the comparison -> /compare/hiring-an-agency]
 #### Ideal ICP or doing it yourself
-Five free steps you can take alone, where going it alone stalls and what changes with a media buyer alongside.
+Five free steps you can take alone. Then where going it alone stalls, and what changes with a media buyer alongside.
 [LINK: See the comparison -> /compare/doing-it-yourself]
 
 ## band
 ### Get the answer for your own business.
-Ten questions, about three minutes, no access to your ad account, and nobody calls you unless you ask.
+Ten questions, about three minutes. It needs no access to your ad account, and nobody calls you unless you ask.
 [BUTTON: Start my free diagnosis -> /questionnaire]
 
 ## notes
@@ -83,6 +83,6 @@ One sentence answers: the three live guides are summarised from src/app/guides/c
 The M-Pesa payment line is from the research file, Part 1 (Meta help: Kenya payments).
 Two live guide questions use the word "leads" because that is the question as owners search it and as the live pages are titled.
 The two comparison cards follow the descriptions in compare__hiring-an-agency.md and compare__doing-it-yourself.md as they stood on 24 Nov 2026. The four sibling guides were also present by then and their opening answers match these cards.
-Humanize skill not run on this file.
+Humanize skill run on 24 Nov 2026.
 Sources:
 - https://www.facebook.com/business/help/1946853292237629

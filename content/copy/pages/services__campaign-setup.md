@@ -10,7 +10,7 @@ links_to: /questionnaire, /pricing, /services/done-with-you, /for/schools
 ## hero
 eyebrow: Campaign setup plan, on Pro and Agency
 # A starting plan for your stage, checked against your numbers.
-It says how to set Google bidding and Meta budgets for where you are today. I review it against your real figures before you build anything.
+It says how to set Google bidding and Meta budgets for where you are today. I review it against your real numbers before you build anything.
 [BUTTON: Start my free diagnosis -> /questionnaire]
 [IMAGE: A dashboard screen showing a campaign stage marked Testing, with three Google bidding steps listed below it | 4:3]
 
@@ -34,7 +34,7 @@ Google bidding and Meta budgets for that stage, with the reason beside each.
 #### I review it
 Ask from your dashboard and I check it against your real numbers.
 #### It moves with your numbers
-As more weeks are logged and your cost per inquiry settles, the plan steps up.
+As you log more weeks and your cost per inquiry settles, the plan steps up.
 [LINK: Planning ads for a school intake -> /for/schools]
 
 ## split
@@ -54,7 +54,7 @@ While you are still finding out who responds, ad set budgets give each audience 
 ## split
 eyebrow: Why I review it
 ### Setup is a judgement, not a formula
-The plan is worked out from your numbers by rule. Rules miss things: a seasonal intake, a price change, a month when the phone was off. So I read it against your real figures and tell you where I agree and where I would do it differently.
+The plan is worked out from your numbers by rule. Rules miss things: a seasonal intake, a price change, a month when the phone was off. So I read it against your real numbers and tell you where I agree and where I would do it differently.
 [LINK: See the Pro plan -> /pricing]
 [IMAGE: Eugene comparing a client's weekly numbers with a campaign plan on a second screen | 4:3]
 
@@ -91,7 +91,7 @@ The code moves an owner to Target CPA at about 30 counted inquiries a month with
 The review is asked for by the owner with a button on the dashboard ("Ask Eugene to review my setup"). The hero says "I review it before you build anything". If a review should happen without being asked, the product needs to change, or this line does.
 The examples in "Setup is a judgement" (seasonal intake, price change, phone off) are illustrations, not findings.
 "A judgement, not a formula" is the one contrast of that kind on this page.
-Humanize skill was not run on this file.
+Humanize skill run on 24 Nov 2026.
 Sources:
 - Google bid strategies and names: https://support.google.com/google-ads/answer/2472725?hl=en
 - Target CPA label, including "Maximize conversions with a Target CPA": https://support.google.com/google-ads/answer/10353027?hl=en

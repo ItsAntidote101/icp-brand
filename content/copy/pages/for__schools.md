@@ -16,13 +16,13 @@ By then she had paid another school. Before money goes into the next intake, che
 
 ## cards
 ### How an admission slips away
-The gaps sit between the inquiry and first term fees.
+The gaps are between the inquiry and first term fees.
 #### The fee structure is the last word
 The PDF goes out and nothing follows. No tour offered, no question about which class, so she compares your total with the next school's and stops there.
 #### Evening inquiries wait for the office
-Parents message after work. If the answer waits for 8am, or for the bursar, another school may have offered her a tour by then.
+Parents message after work. If the answer waits for 8am, or for the bursar, another school may have offered a tour by then.
 #### Nobody calls before reporting day
-She toured, she liked it, she said she would think about it. Then admissions got busy with the families who had paid.
+She toured and liked it, and said she would think about it. Then admissions got busy with the families who had paid.
 
 ## split
 ### What the diagnosis checks for admissions
@@ -57,11 +57,11 @@ Whether parents should land in your WhatsApp or fill a form, and what each one a
 ## faq
 ### Questions schools ask
 #### Intake is a few weeks away. Is there time?
-The diagnosis takes about 3 minutes and the 3 fixes are meant for this week. Run it before the intake money goes out.
+The diagnosis takes about 3 minutes and the 3 fixes are for this week. Run it before the intake money goes out.
 #### Who should answer, the director or the bursar?
 Whoever knows roughly what goes into ads, how many parents ask and how many enrol. Rough figures from memory will do.
 #### We have never run ads. Is this for us?
-Yes, say so at the first question and you get a launch plan in place of a score. You start with a plan and not a boosted post.
+Yes. Say so at the first question and you get a launch plan instead of a score. You start with a plan before you boost anything.
 #### Will someone phone the school to sell us a package?
 Nobody phones unless you ask. If you want to talk the report through, there is one free 20 minute call with me, Eugene, the media buyer behind Ideal ICP.
 
@@ -78,4 +78,4 @@ The Meta file made from a parents list is left off this page on purpose. The pro
 "We" appears only inside two FAQ questions, where the school is the one speaking.
 No market figure is used, so no Sources list.
 The case study card says "sample" in the visible copy and must be updated when a real college replaces it.
-The humanize skill was not run on this file.
+Humanize skill run on 24 Nov 2026.

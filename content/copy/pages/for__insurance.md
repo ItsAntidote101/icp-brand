@@ -18,7 +18,7 @@ Then silence. Before you pay for more quote requests, find out why the people yo
 ### Where a policy gets lost
 All three happen after the ad has done its job.
 #### The quote is a PDF and nothing else
-"How much is comprehensive for a 2015 Axio?" gets an attachment and "Kindly advise". No call, no question, no next step for them to take.
+"How much is comprehensive for a 2015 Axio?" gets an attachment and "Kindly advise". Nobody calls or asks them a question, so they have nothing to do next.
 #### Documents are never chased
 They said yes. The logbook copy and the ID never arrived, and nobody asked a second time.
 #### Renewals are forgotten
@@ -26,7 +26,7 @@ A client whose cover ends next month already trusts you. With no list and no rem
 
 ## split
 ### What the diagnosis checks for an agency or lender
-Rough totals only: spend, quote requests, premiums paid or loans funded, how fast a new inquiry gets an answer. No client names, no login. You see:
+Rough totals only: spend, quote requests, premiums paid or loans funded, how fast a new inquiry gets an answer. The diagnosis never asks for client names or a login. You see:
 - Your cost per inquiry and cost per policy
 - What one more policy in every ten inquiries would be worth
 - A score out of 100 and 3 fixes, the first with its wording
@@ -35,7 +35,7 @@ Rough totals only: spend, quote requests, premiums paid or loans funded, how fas
 ## split
 ### What I hand you after the quote goes quiet
 Your first fix comes worded, free. Starter, KES 6,500 a month, words the rest:
-- A quote follow up that ends with a question, not "Kindly advise"
+- A quote follow up that ends with a question instead of "Kindly advise"
 - A message that chases the logbook and ID
 - A renewal reminder
 - Google keywords and blocked words
@@ -46,7 +46,7 @@ Insurers and lenders skip the Meta customer list file. Meta does not accept list
 ## cards
 ### Where to look next
 #### Sample case studies
-There is no insurance case study yet, and I will not invent one. The samples show how receipts are laid out: spend, inquiries, buyers, dates.
+There is no insurance case study yet, and I will not invent one. The samples show how I lay out receipts: spend, inquiries, buyers, dates.
 [LINK: See the sample case studies -> /case-studies]
 #### What should an inquiry cost in Kenya?
 How to work out your own number, and why the cost of each policy matters more.
@@ -68,7 +68,7 @@ Start with the free diagnosis and decide after. Paid plans begin at KES 6,500 a 
 
 ## band
 ### Do not buy more quote requests yet.
-Find out what happened to the ones who already have your PDF. Ten questions, rough numbers, and no call unless you ask for one.
+Find out what happened to the ones who already have your PDF. It takes ten questions and rough numbers, and nobody calls unless you ask.
 [BUTTON: Start my free diagnosis -> /questionnaire]
 
 ## notes
@@ -80,7 +80,7 @@ The Meta file made from a sales spreadsheet is also kept off, out of the same ca
 There is no insurance case study in the sitemap, so the card links to /case-studies and says so plainly.
 No statistic is used. The insurance penetration figure in the research file was left out on purpose.
 "We" appears only inside one FAQ question, where the lender is the one speaking.
-The humanize skill was not run on this file.
+Humanize skill run on 24 Nov 2026.
 Sources:
 - https://www.facebook.com/business/help/170456843145568
 - https://www.facebook.com/business/help/606443329504150

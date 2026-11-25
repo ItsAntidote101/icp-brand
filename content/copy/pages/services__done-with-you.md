@@ -33,7 +33,7 @@ Every inquiry lands in one place, where you can see it.
 #### Your conversion tracking
 So Google and Meta count your inquiries properly.
 #### Your campaigns
-Set up or restructured together, inside your own ad account, from your campaign setup plan.
+We set them up or restructure them together, inside your own ad account, from your campaign setup plan.
 [LINK: The campaign setup plan -> /services/campaign-setup]
 #### Something else
 Tell me what you need a hand with when you ask.
@@ -41,7 +41,7 @@ Tell me what you need a hand with when you ask.
 ## split
 eyebrow: To be clear
 ### A session is not ad management
-In a session we set one thing up and you see every step. Afterwards the account is still yours to run. I do not log in between sessions, change your bids or watch your campaigns day to day. If you want that, ask me about full management by message.
+In a session we set one thing up and you see every step. Afterwards the account is still yours to run. Between sessions I do not log in, and I do not change your bids or watch your campaigns day to day. If you want that, message me and ask about full management.
 [LINK: See Pro and Agency -> /pricing]
 [IMAGE: An owner changing a setting in her own ad account while a call runs on the phone beside her | 4:3]
 
@@ -50,7 +50,7 @@ In a session we set one thing up and you see every step. Afterwards the account 
 #### You are on Free or Starter
 Sessions come with Pro and Agency. On Starter you still have the files, the wording and my replies to your messages.
 #### Nobody from your business can be there
-It is done with you. If no one can sit in, it cannot happen.
+We do the work with you. If no one can sit in, the session cannot happen.
 #### You want a session every week on Pro
 Pro includes one a month. In between, you can message me any time from your dashboard.
 
@@ -67,7 +67,7 @@ Choose "Something else" when you ask and tell me what you need.
 
 ## band
 ### First, find out what needs setting up.
-The diagnosis shows where inquiries are lost, which tells us what to set up first.
+The diagnosis shows where you lose inquiries, and that tells us what to set up first.
 [BUTTON: Start my free diagnosis -> /questionnaire]
 
 ## notes
@@ -78,5 +78,5 @@ Limits come from the brief and the code: one a month on Pro, up to four on Agenc
 "Do I have to give you my password?" follows the brief (no access to your ad account) and the About page (Eugene does not log in to ad accounts). How Eugene sees the owner's screen in a session is not stated anywhere I could read. Confirm.
 Session length and format (call, video, in person) are not stated in the brief or the code, so the page gives neither. The two images assume a call. Change them if sessions are held another way.
 "You see every step" describes the session. It does not promise the owner can do it alone afterwards.
-Humanize skill was not run on this file.
+Humanize skill run on 24 Nov 2026.
 No market facts are used on this page.

@@ -26,17 +26,17 @@ That is real work and worth paying for. Ideal ICP hands you files and wording. Y
 ### Side by side
 Six plain differences.
 #### Who runs the ads
-An agency does, and with Ideal ICP you do, using my files with me alongside.
+An agency does. With Ideal ICP you do, using my files, with me alongside.
 #### Photos and video
-An agency can make them for you, and I do not.
+An agency can make them for you. I do not.
 #### Where the checking starts
 I start after the click: who is asking, how fast you reply and whether anyone follows up.
 #### Access to your account
-An agency needs it to do its job, and my diagnosis needs ten answers and no login.
+An agency needs it to do its job. My diagnosis needs ten answers and no login.
 #### The monthly fee
 Fees published by Nairobi agencies I read in November 2026 started at about KES 35,000 a month before ad spend, and my plans run from KES 6,500 to KES 26,000 a month.
 #### Commitment
-With me you pay one month at a time by M-Pesa or card and nothing renews on its own, so ask any agency for its terms in writing.
+With me you pay one month at a time, by M-Pesa or card, and nothing renews on its own. Ask any agency for its terms in writing.
 
 ## cards
 ### What I did not find on the sites I read
@@ -64,9 +64,9 @@ If the inquiries are not buying yet, find out why first. You will brief the agen
 ## faq
 ### Two questions owners ask
 #### Can I use Ideal ICP while an agency runs my ads?
-Yes. The diagnosis needs no access to the account, and the files and wording can be passed to whoever runs your ads.
+Yes. The diagnosis needs no access to the account, and you can pass the files and wording to whoever runs your ads.
 #### Will you manage my ads if I ask?
-Ideal ICP does not include it. Ask me by message from your dashboard and I will tell you whether I can.
+Ideal ICP does not include it. Message me from your dashboard and I will tell you whether I can.
 
 ## band
 ### Before you sign with anyone, check the inquiries you already paid for.
@@ -74,6 +74,7 @@ Ten questions, about 3 minutes, and nobody calls unless you ask.
 [BUTTON: Show me where they are lost -> /questionnaire]
 
 ## notes
+Humanize skill run on 24 Nov 2026.
 No agency is named in the visible copy, by instruction.
 The fee sentence uses the wording approved in the task. The figures behind it are the sites' own published, unverified fees as recorded in research/competitors.md on 24 November 2026: one site states Ksh 35,000 a month or 12 percent of spend, one states Google Ads management from KES 55,000, one states packages from Ksh 50,000 to 150,000 plus ad spend.
 "What I did not find on the sites I read" rests on the "Gaps nobody fills" list in research/competitors.md, which covers the sites listed under Sources there (agencies, ad software and two one-person businesses). It is a statement about those sites only, not about every agency. Two sites partly touch these points (one mentions follow up as a condition of fit), so the heading says "did not find" and the copy avoids "no agency does this".
