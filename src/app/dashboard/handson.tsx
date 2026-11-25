@@ -3,6 +3,7 @@
 // "Done with you": ask the media buyer to do a hands-on job together.
 // Included on Pro (one a month) and Agency. Each request lands in the control
 // room's Today queue and in his inbox.
+import { cap } from '@/lib/buyer'
 import { useEffect, useState } from 'react'
 import { ChevronRight, Lock } from 'lucide-react'
 import { T } from './overview'
@@ -58,7 +59,7 @@ export default function HandsOnCard({ tier, buyerName, onUpgrade }: { tier: stri
         <button className="ov-card ov-row ov-item" onClick={onUpgrade} style={{ borderRadius: T.radius, alignItems: 'flex-start', width: '100%' }}>
           <Lock size={15} color={T.faint} style={{ flexShrink: 0, marginTop: 3 }} />
           <span style={{ flex: 1, minWidth: 0 }}>
-            <span style={{ display: 'block', fontWeight: 500, color: T.ink2 }}>{buyerName} sets it up with you</span>
+            <span style={{ display: 'block', fontWeight: 500, color: T.ink2 }}>{cap(buyerName)} sets it up with you</span>
             <span style={{ display: 'block', font: `400 13px/1.35 ${T.font}`, color: T.faint, marginTop: 3 }}>CRM connection, conversion tracking and campaign setup, in a session each month</span>
           </span>
           <ChevronRight size={18} color={T.faint} />
@@ -83,7 +84,7 @@ export default function HandsOnCard({ tier, buyerName, onUpgrade }: { tier: stri
         </p>
 
         {sentJob && (
-          <p role="status" style={{ ...small, color: T.good, fontWeight: 600, padding: '0 20px 12px' }}>Request sent: {sentJob}. {buyerName} will message you on WhatsApp to agree a time.</p>
+          <p role="status" style={{ ...small, color: T.good, fontWeight: 600, padding: '0 20px 12px' }}>Request sent: {sentJob}. {cap(buyerName)} will message you on WhatsApp to agree a time.</p>
         )}
         {state && state.requests.filter(r => r.open).length > 0 && !sentJob && (
           <p style={{ ...small, padding: '0 20px 12px' }}>Waiting on {buyerName}: {state.requests.filter(r => r.open).map(r => r.job).join(', ')}.</p>
@@ -123,7 +124,7 @@ export default function HandsOnCard({ tier, buyerName, onUpgrade }: { tier: stri
                         <select style={field} value={time} onChange={e => setTime(e.target.value)}>{TIMES.map(t => <option key={t}>{t}</option>)}</select>
                       </label>
                       <label>
-                        <span style={lab}>{j.id === 'other' ? 'What do you need a hand with?' : 'Anything else he should know? (optional)'}</span>
+                        <span style={lab}>{j.id === 'other' ? 'What do you need a hand with?' : 'Anything else to know? (optional)'}</span>
                         <textarea style={{ ...field, minHeight: 72, resize: 'vertical' }} value={notes} onChange={e => setNotes(e.target.value)} maxLength={1000} required={j.id === 'other'} />
                       </label>
                       <p style={small}>You stay in control of your accounts. You add {buyerName} as a partner on your ad account, and you never share a password.</p>

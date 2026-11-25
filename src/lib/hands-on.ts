@@ -6,7 +6,7 @@ export const JOBS = [
   { id: 'crm',       title: 'Connect my CRM or lead sheet',        sub: 'Every inquiry lands in one place, so none are lost' },
   { id: 'tracking',  title: 'Fix my conversion tracking',          sub: 'So Google and Meta count your inquiries properly' },
   { id: 'campaigns', title: 'Set up or restructure my campaigns',  sub: 'Built together, inside your own ad account' },
-  { id: 'other',     title: 'Something else',                      sub: 'Tell Eugene what you need a hand with' },
+  { id: 'other',     title: 'Something else',                      sub: 'Tell your media buyer what you need a hand with' },
 ] as const
 export type JobId = typeof JOBS[number]['id']
 

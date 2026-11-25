@@ -1,5 +1,6 @@
 'use client'
 
+import { BUYER, BUYER_INITIALS, BUYER_NAME, BUYER_TITLE } from '@/lib/buyer'
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -59,16 +60,17 @@ type MediaBuyer = {
   calLink:      string
 }
 
-// One real media buyer. The previous roster (Aisha, David, Grace, Marcus) and
-// the invented bios were made-up people presented as staff.
+// The client's media buyer, named by role (see src/lib/buyer.ts). The previous
+// roster (Aisha, David, Grace, Marcus) and the invented bios were made-up
+// people presented as staff.
 const MEDIA_BUYERS: MediaBuyer[] = [
   {
-    name: 'Eugene K.', firstName: 'Eugene', initials: 'EK', avatarColor: '#201515',
-    title: 'Founder and B2B Media Buyer', speciality: 'B2B paid acquisition on Google Ads and Meta',
+    name: BUYER_NAME, firstName: BUYER, initials: BUYER_INITIALS, avatarColor: '#201515',
+    title: BUYER_TITLE, speciality: 'B2B paid acquisition on Google Ads and Meta',
     regions: [],
     industries: [],
     yearsExp: 0,
-    bio: 'Runs Google Ads and Meta campaigns for B2B companies, with a background in conversion creative.',
+    bio: 'Reads the numbers you log each week, answers your messages and writes you a note every month.',
     calLink: process.env.NEXT_PUBLIC_BUYER_CALENDAR_URL ?? 'https://calendly.com/ideal-customer-profile/icp-call',
   },
 ]
@@ -315,8 +317,8 @@ const TIER_LABEL: Record<string, string> = { starter: 'Starter', pro: 'Pro', age
 // Base prices in KES
 const TIER_PRICE_KES: Record<string, number> = { starter: 6500, pro: 13000, agency: 26000, free: 0 }
 const TIER_DESC: Record<string, string> = {
-  starter: 'The full report, files ready to upload, weekly tracking and a monthly note from Eugene.',
-  pro:     'Everything in Starter plus a campaign setup plan and one hands-on session with Eugene a month.',
+  starter: 'The full report, files ready to upload, weekly tracking and a monthly note from your media buyer.',
+  pro:     'Everything in Starter plus a campaign setup plan and one hands-on session with your media buyer a month.',
   agency:  'Everything in Pro plus unlimited diagnoses (one per client), up to 4 hands-on sessions and a monthly strategy call.',
   free:    'Basic ICP diagnostic based on questionnaire answers only.',
 }
@@ -1424,7 +1426,7 @@ function FunnelTab({ diag, hasReports, score, isSubscribed, buyer, onUpgrade }: 
             <BuyerAvatar buyer={buyer} size={44} />
             <div style={{ flex: 1 }}>
               <p style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: P, margin: '0 0 4px' }}>
-                Book a Landing Page Review with {buyer.firstName}
+                Book a landing page review with {buyer.firstName}
               </p>
               <p style={{ fontFamily: fontB, fontSize: 13, color: '#605d52', lineHeight: 1.6, margin: '0 0 16px' }}>
                 Get {buyer.firstName} to review your actual page (offer clarity, CTA, trust signals, and conversion friction) on a 30-minute call.
@@ -2235,21 +2237,21 @@ const PLAN_FEATURES: Record<string, string[]> = {
     'Every problem with its fix, and the words to paste',
     'Keywords, blocked words and Meta files ready to upload',
     'Your cost per lead tracked every week',
-    'A monthly note from Eugene',
+    'A monthly note from your media buyer',
     'A weekly market briefing with sources',
   ],
   pro: [
     'Everything in Starter',
     'A campaign setup plan for your stage',
-    'One hands-on session with Eugene a month',
-    'An onboarding call with Eugene',
+    'One hands-on session with your media buyer a month',
+    'An onboarding call with your media buyer',
     'Campaign export analysis',
   ],
   agency: [
     'Everything in Pro',
     'Unlimited diagnoses, one per client',
     'Up to 4 hands-on sessions a month',
-    'Monthly strategy call with Eugene',
+    'Monthly strategy call with your media buyer',
     'White-label reports (coming soon)',
   ],
 }
@@ -3997,7 +3999,7 @@ type ChatMsg = {
   role: 'user' | 'assistant' | 'media_buyer'
   content: string
   timestamp: Date
-  thread?: boolean   // part of the conversation with Eugene, never sent to the AI
+  thread?: boolean   // part of the conversation with the media buyer, never sent to the AI
 }
 
 function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: number | null; diag: DiagnosisData; activeTab: Tab }) {
@@ -4103,13 +4105,13 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
       setLastSuggestions(welcomeSuggestions)
       setInitialized(true)
       setHasUnread(false)
-      // Bring in the conversation with Eugene, so his messages are actually here
+      // Bring in the conversation with the media buyer, so those messages are actually here
       fetch('/api/chat/thread').then(r => r.json()).then((d: { messages?: { id: string; from: 'buyer' | 'client'; body: string; at: string }[] }) => {
         const thread: ChatMsg[] = (d.messages ?? []).map(m => ({ id: `t-${m.id}`, role: m.from === 'buyer' ? 'media_buyer' : 'user', content: m.body, timestamp: new Date(m.at), thread: true }))
         thread.forEach(m => seenThreadIds.current.add(m.id))
         if (thread.length === 0) return
         setMessages(prev => [...prev.filter(m => !m.thread || !m.id.startsWith('t-')), ...thread])
-        // If Eugene spoke last, the next thing they type is most likely for him
+        // If the media buyer spoke last, the next thing they type is most likely a reply
         if (thread[thread.length - 1].role === 'media_buyer') { setSendTo('eugene'); setLastSuggestions([]) }
       }).catch(() => {})
     }
@@ -4120,7 +4122,7 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
     }
   }, [isOpen, initialized, firstName, score, waste, topFinding, welcomeSuggestions])
 
-  // Keep checking for new messages from Eugene, so his reply shows up without
+  // Keep checking for new messages from the media buyer, so a reply shows up without
   // a page reload: every 8 seconds while the chat is open, every 30 when closed.
   useEffect(() => {
     if (!initialized) return
@@ -4130,8 +4132,8 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
       try {
         const d = await (await fetch('/api/chat/thread')).json() as { messages?: { id: string; from: 'buyer' | 'client'; body: string; at: string }[] }
         if (!live) return
-        const fromEugene: ChatMsg[] = (d.messages ?? []).filter(m => m.from === 'buyer').map(m => ({ id: `t-${m.id}`, role: 'media_buyer', content: m.body, timestamp: new Date(m.at), thread: true }))
-        const fresh = fromEugene.filter(m => !seenThreadIds.current.has(m.id))
+        const fromBuyer: ChatMsg[] = (d.messages ?? []).filter(m => m.from === 'buyer').map(m => ({ id: `t-${m.id}`, role: 'media_buyer', content: m.body, timestamp: new Date(m.at), thread: true }))
+        const fresh = fromBuyer.filter(m => !seenThreadIds.current.has(m.id))
         if (fresh.length === 0) return
         fresh.forEach(m => seenThreadIds.current.add(m.id))
         setMessages(prev => { const have = new Set(prev.map(m => m.id)); return [...prev, ...fresh.filter(m => !have.has(m.id))] })
@@ -4147,7 +4149,7 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // Other parts of the dashboard can open the chat straight on Eugene
+  // Other parts of the dashboard can open the chat straight on the media buyer
   useEffect(() => {
     const open = () => { setIsOpen(true); setSendTo('eugene'); setLastSuggestions([]) }
     window.addEventListener('icp-chat-eugene', open)
@@ -4161,14 +4163,14 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
     ta.style.height = Math.min(ta.scrollHeight, 96) + 'px'
   }
 
-  async function sendToEugene(text: string) {
+  async function sendToBuyer(text: string) {
     if (!text.trim() || loading) return
     const mine: ChatMsg = { id: Date.now() + 'u', role: 'user', content: text.trim(), timestamp: new Date(), thread: true }
     setMessages(prev => [...prev, mine])
     setInput('')
     if (textareaRef.current) textareaRef.current.style.height = 'auto'
     setLoading(true)
-    let note = 'Sent to Eugene. He will reply here and by email, usually within a working day.'
+    let note = 'Sent to your media buyer. You will get a reply here and by email, usually within a working day.'
     try {
       const res = await fetch('/api/chat/thread', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: text.trim() }) })
       if (!res.ok) note = ((await res.json()) as { error?: string }).error ?? 'That did not send. Please try again.'
@@ -4179,7 +4181,7 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
 
   async function sendMessage(text: string) {
     if (!text.trim() || loading) return
-    if (sendTo === 'eugene') return sendToEugene(text)
+    if (sendTo === 'eugene') return sendToBuyer(text)
     const userMsg: ChatMsg = { id: Date.now() + 'u', role: 'user', content: text.trim(), timestamp: new Date() }
     const typingMsg: ChatMsg = { id: 'typing', role: 'assistant', content: '', timestamp: new Date() }
     setMessages(prev => [...prev, userMsg, typingMsg])
@@ -4214,7 +4216,7 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
     try {
       const transcript = messages
         .filter(m => m.id !== 'typing')
-        .map(m => `${m.role === 'user' ? 'User' : m.role === 'media_buyer' ? 'Eugene' : 'AI'}: ${m.content}`)
+        .map(m => `${m.role === 'user' ? 'User' : m.role === 'media_buyer' ? 'Media buyer' : 'AI'}: ${m.content}`)
         .join('\n')
       await fetch('/api/chat/escalate', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -4225,7 +4227,7 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
       const confirmMsg: ChatMsg = {
         id: Date.now() + 'confirm',
         role: 'assistant',
-        content: `Request sent. Eugene will review your diagnostic and respond via this chat and email. You'll get a notification when he replies.`,
+        content: `Request sent. Your media buyer will review your diagnostic and respond via this chat and email. You'll get a notification when the reply comes in.`,
         timestamp: new Date(),
       }
       setMessages(prev => [...prev, confirmMsg])
@@ -4282,7 +4284,7 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
               <BrainCircuit size={18} color={P} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ fontFamily: font, fontSize: 15, fontWeight: 600, color: '#fff', margin: 0 }}>{sendTo === 'eugene' ? 'Eugene, your media buyer' : 'ICP assistant'}</p>
+              <p style={{ fontFamily: font, fontSize: 15, fontWeight: 600, color: '#fff', margin: 0 }}>{sendTo === 'eugene' ? 'Your media buyer' : 'ICP assistant'}</p>
               <span style={{ fontFamily: fontB, fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>{sendTo === 'eugene' ? 'A real person. Replies within a working day.' : 'AI. Answers instantly from your diagnosis.'}</span>
             </div>
             <button onClick={() => setIsOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 4 }}>
@@ -4301,7 +4303,7 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
               return (
                 <div key={msg.id} style={{ display: 'flex', flexDirection: 'column', alignItems: isUser ? 'flex-end' : 'flex-start', gap: 4 }}>
                   {isMediaBuyer && (
-                    <span style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, paddingLeft: 4 }}>Eugene, your media buyer</span>
+                    <span style={{ fontFamily: fontB, fontSize: 12, color: Pmuted, paddingLeft: 4 }}>Your media buyer</span>
                   )}
 
                   <div style={{
@@ -4355,10 +4357,10 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
               <div style={{ background: BgAlt, border: `1px solid ${Pborder}`, borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <UserCheck size={18} color={P} />
-                  <span style={{ fontFamily: font, fontSize: 15, fontWeight: 600, color: P }}>Connect with Eugene</span>
+                  <span style={{ fontFamily: font, fontSize: 15, fontWeight: 600, color: P }}>Connect with your media buyer</span>
                 </div>
                 <p style={{ fontFamily: fontB, fontSize: 13, color: P, margin: 0, lineHeight: 1.6 }}>
-                  {"I'll package this conversation and your diagnostic for Eugene to review. He typically responds within 24 hours for Pro subscribers and same-day for Agency subscribers."}
+                  {"I'll package this conversation and your diagnostic for your media buyer to review. A reply usually comes within a working day."}
                 </p>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button onClick={() => setShowEscalation(true)} style={{ flex: 1, background: P, color: '#fff', border: 'none', borderRadius: 10, padding: '10px 0', fontFamily: fontB, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Request Human Review</button>
@@ -4382,7 +4384,7 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
                 <textarea
                   value={escalationNote}
                   onChange={e => setEscalationNote(e.target.value)}
-                  placeholder="Anything specific for Eugene? (optional)"
+                  placeholder="Anything specific for your media buyer? (optional)"
                   rows={2}
                   style={{ fontFamily: fontB, fontSize: 13, color: P, background: '#fff', border: `1px solid ${Pborder}`, borderRadius: 10, padding: '10px 12px', resize: 'none', outline: 'none' }}
                 />
@@ -4399,7 +4401,7 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
           {/* Input area */}
           <div style={{ background: '#fff', borderTop: `1px solid ${Pborder}`, padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 8, flexShrink: 0 }}>
             <div role="tablist" aria-label="Who this message goes to" style={{ display: 'flex', background: 'rgba(201,192,177,0.3)', borderRadius: 10, padding: 2 }}>
-              {([['ai', 'AI assistant'], ['eugene', 'Eugene']] as const).map(([value, label]) => (
+              {([['ai', 'AI assistant'], ['eugene', 'Media buyer']] as const).map(([value, label]) => (
                 <button key={value} role="tab" aria-selected={sendTo === value} onClick={() => setSendTo(value)}
                   style={{ flex: 1, minHeight: 34, border: 'none', borderRadius: 8, cursor: 'pointer', fontFamily: fontB, fontSize: 13, color: P, fontWeight: sendTo === value ? 600 : 500, background: sendTo === value ? '#fff' : 'none', boxShadow: sendTo === value ? '0 1px 3px rgba(32,21,21,0.12)' : 'none' }}>
                   {label}
@@ -4414,7 +4416,7 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
                 onKeyDown={e => {
                   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input) }
                 }}
-                placeholder={sendTo === 'eugene' ? 'Write to Eugene, your media buyer' : 'Ask anything about your marketing...'}
+                placeholder={sendTo === 'eugene' ? 'Write to your media buyer' : 'Ask anything about your marketing...'}
                 rows={1}
                 style={{ flex: 1, fontFamily: fontB, fontSize: 14, color: P, background: BgAlt, border: `1px solid rgba(201,192,177,0.5)`, borderRadius: 12, padding: '10px 14px', outline: 'none', resize: 'none', lineHeight: 1.5 }}
               />
@@ -4426,7 +4428,7 @@ function ChatWidget({ user, score, diag, activeTab }: { user: UserData; score: n
               </button>
             </div>
             <p style={{ fontFamily: fontB, fontSize: 12, color: '#939084', margin: 0 }}>
-              {sendTo === 'eugene' ? 'Goes to Eugene. He replies here and by email.' : 'Instant answers from the AI, based on your diagnosis.'}
+              {sendTo === 'eugene' ? 'Goes to your media buyer, who replies here and by email.' : 'Instant answers from the AI, based on your diagnosis.'}
             </p>
           </div>
         </div>

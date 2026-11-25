@@ -12,7 +12,7 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
 
 // One real media buyer (see dashboard MEDIA_BUYERS). The old roster was invented.
-const BUYER = { name: 'Eugene K.', firstName: 'Eugene', title: 'Founder and B2B Media Buyer' }
+const BUYER = { name: 'Your media buyer', firstName: 'your media buyer', title: 'media buyer' }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getBuyerByRegionIndustry(region: string, industry: string, tier: string) {
@@ -134,7 +134,7 @@ export async function POST(req: NextRequest) {
       : `Their ICP score is ${latestScore}/100.`
     : 'They have not yet run a full diagnosis.'
 
-  const systemPrompt = `You are ${buyer.name}, ${buyer.title} at Ideal ICP. You are writing a brief monthly check-in message to one of your assigned clients. Write in a direct, professional, warm tone. No generic phrases like "I hope this finds you well." No em dashes or en dashes. No emojis. Keep it under 120 words. Sound like a real person who has reviewed their account data.`
+  const systemPrompt = `You are a ${buyer.title} at Ideal ICP. Do not sign with a name or introduce yourself by name. You are writing a brief monthly check-in message to one of your assigned clients. Write in a direct, professional, warm tone. No generic phrases like "I hope this finds you well." No em dashes or en dashes. No emojis. Keep it under 120 words. Sound like a real person who has reviewed their account data.`
 
   const userPrompt = `Write a monthly check-in message for ${monthName} for a client named ${firstName}${user.company_name ? ` at ${user.company_name}` : ''}. They are in the ${industry} industry in ${region}${product ? `, selling ${product}` : ''}. ${scoreLine} Your name is ${buyer.firstName} and your role is ${buyer.title}. The message should acknowledge their current score context, note one specific thing you want them to focus on this month based on the industry/region, and invite them to book a call if they want to go deeper. Sign off with your first name only. Return plain text only, no JSON, no markdown.`
 
@@ -148,7 +148,7 @@ export async function POST(req: NextRequest) {
   const raw = res.content.filter(b => b.type === 'text').map(b => (b as { type: 'text'; text: string }).text).join('').trim()
   const message = (stripDashes(raw) as string)
 
-  const initials = buyer.name.split(' ').map((n: string) => n[0]).join('')
+  const initials = 'MB'
 
   const { data: inserted, error: insertErr } = await supabase
     .from('monthly_checkins')

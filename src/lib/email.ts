@@ -296,8 +296,8 @@ export async function sendSubscriptionEmail({
 
   const featMap: Record<string, string[]> = {
     starter: ['3 diagnoses a month with your real landing page checked', 'All critical findings and the full roadmap', 'Weekly market intelligence', 'AI chat in your dashboard'],
-    pro:     ['Everything in Starter', '20 diagnoses a month and the 6-score performance breakdown', 'Campaign CSV analysis', 'Onboarding call with Eugene'],
-    agency:  ['Everything in Pro', 'Unlimited diagnoses, one per client', 'Monthly strategy call with Eugene', 'White-label reports (coming soon)'],
+    pro:     ['Everything in Starter', '20 diagnoses a month and the 6-score performance breakdown', 'Campaign CSV analysis', 'Onboarding call with your media buyer'],
+    agency:  ['Everything in Pro', 'Unlimited diagnoses, one per client', 'Monthly strategy call with your media buyer', 'White-label reports (coming soon)'],
   }
   const features = featMap[tier.toLowerCase()] ?? featMap.starter
 
@@ -400,11 +400,11 @@ export async function sendUnusedSessionEmail({
 }: { to: string; name?: string; month: string; daysLeft: number; left: number; baseUrl?: string }) {
   const url = `${baseUrl ?? 'https://www.idealicp.com'}/dashboard`
   const first = escapeHtml(name?.split(' ')[0] ?? 'there')
-  const what = left === 1 ? `Your ${month} session with Eugene is unused` : `You have ${left} sessions with Eugene left for ${month}`
+  const what = left === 1 ? `Your ${month} session with your media buyer is unused` : `You have ${left} sessions with your media buyer left for ${month}`
   const content = `
 ${ICON.calendar}
 ${heading(what, 36)}
-${sub(`Hi ${first}, your plan includes hands-on time with Eugene each month, and ${left === 1 ? 'this month\u2019s session has' : 'these sessions have'} not been used. ${left === 1 ? 'It resets' : 'They reset'} on the 1st, in ${daysLeft} days.`)}
+${sub(`Hi ${first}, your plan includes hands-on time with your media buyer each month, and ${left === 1 ? 'this month\u2019s session has' : 'these sessions have'} not been used. ${left === 1 ? 'It resets' : 'They reset'} on the 1st, in ${daysLeft} days.`)}
 ${securityBox(`<p style="margin:0 0 8px;color:${Dark};font-size:14px;font-weight:600;font-family:${font};">What you can use it for</p>
 <p style="margin:0;color:${Muted};font-size:14px;line-height:1.6;font-family:${font};">Connecting your CRM or lead sheet, fixing conversion tracking, setting up or restructuring campaigns, or anything else in your ad account you want a hand with.</p>`)}
 ${cta('Book my session', url)}`
@@ -488,16 +488,16 @@ export async function sendBuyerNoteEmail({
   const url = `${baseUrl ?? 'https://www.idealicp.com'}/dashboard`
   const first = escapeHtml(name?.split(' ')[0] ?? 'there')
   const content = `
-${heading('A note from Eugene', 34)}
-${sub(`Hi ${first}, Eugene looked at your numbers this month and wrote you this.`)}
+${heading('A note from your media buyer', 34)}
+${sub(`Hi ${first}, your media buyer looked at your numbers this month and wrote you this.`)}
 ${securityBox(`<p style="margin:0;color:${Dark};font-size:16px;line-height:1.65;font-family:${font};">${noteHtml(body)}</p>`)}
-${hasMedia ? `<p style="margin:0 0 16px;color:${Muted};font-size:14px;font-family:${font};">He also left you a recording. It is in your dashboard.</p>` : ''}
+${hasMedia ? `<p style="margin:0 0 16px;color:${Muted};font-size:14px;font-family:${font};">There is also a recording for you in your dashboard.</p>` : ''}
 ${cta('Open your dashboard', url)}
-<p style="margin:28px 0 0;color:${Muted};font-size:13px;line-height:1.6;font-family:${font};">Reply to this email and it goes straight to Eugene.</p>`
+<p style="margin:28px 0 0;color:${Muted};font-size:13px;line-height:1.6;font-family:${font};">Reply to this email and it goes straight to your media buyer.</p>`
 
   const { data, error } = await getResend().emails.send({
     from: FROM, to, replyTo: FOUNDER_EMAIL,
-    subject: 'A note from Eugene on your numbers',
+    subject: 'A note from your media buyer on your numbers',
     html: base(content),
   })
   if (error) console.error('[email] buyer note error:', JSON.stringify(error))
@@ -697,9 +697,9 @@ export async function sendCallConfirmationToUser({ to, name }: { to: string; nam
   const content = `
 ${ICON.check}
 ${heading('Got it. Let\'s talk it through.')}
-${sub(`Hi ${escapeHtml(first)}, your request for a free 20-minute call is in. Eugene will message you on WhatsApp to agree a time.`)}
+${sub(`Hi ${escapeHtml(first)}, your request for a free 20-minute call is in. A media buyer will message you on WhatsApp to agree a time.`)}
 ${infoCard(kvRows([
-  ['Before the call', 'Eugene reads your report, so there is nothing to prepare.'],
+  ['Before the call', 'Your report is read before the call, so there is nothing to prepare.'],
   ['On the call', 'We go through your findings and agree what to fix first.'],
   ['Cost', 'Free. No obligation to buy anything.'],
 ]))}
@@ -1169,7 +1169,7 @@ export async function sendEscalationConfirmationToUser({
   const content = `
 ${ICON.check}
 ${heading('Your request has been received.')}
-${sub(`Hi ${first}, your escalation has been sent to Eugene.`)}
+${sub(`Hi ${first}, your question has been sent to your media buyer.`)}
 ${infoCard(`<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
   <tr><td style="padding:10px 0;border-bottom:1px solid ${BorderLight};">
     <p style="margin:0;color:${Dark};font-size:14px;font-weight:600;font-family:${font};">Expected response time</p>
@@ -1181,7 +1181,7 @@ ${infoCard(`<table role="presentation" width="100%" cellpadding="0" cellspacing=
   </td></tr>
   <tr><td style="padding:10px 0;">
     <p style="margin:0;color:${Dark};font-size:14px;font-weight:600;font-family:${font};">How you will hear back</p>
-    <p style="margin:2px 0 0;color:${Muted};font-size:13px;font-family:${font};">Eugene will respond via chat in your dashboard and by email.</p>
+    <p style="margin:2px 0 0;color:${Muted};font-size:13px;font-family:${font};">Your media buyer will respond via chat in your dashboard and by email.</p>
   </td></tr>
 </table>`)}
 ${cta('Go to Dashboard', 'https://idealicp.com/dashboard')}`
@@ -1208,11 +1208,11 @@ export async function sendAdminReplyToUser({
 
   const content = `
 ${ICON.check}
-${heading('Eugene replied to your question.', 36)}
-${sub(`Hi ${first}, Eugene reviewed your diagnostic and left a reply.`)}
+${heading('Your media buyer replied.', 36)}
+${sub(`Hi ${first}, your media buyer reviewed your diagnostic and left a reply.`)}
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:rgba(232,51,10,0.05);border:1.5px solid rgba(232,51,10,0.2);border-radius:4px;margin-bottom:20px;">
   <tr><td style="padding:20px 24px;">
-    <p style="margin:0 0 10px;color:${Orange};font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;font-family:${font};">Reply from Eugene</p>
+    <p style="margin:0 0 10px;color:${Orange};font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;font-family:${font};">Reply from your media buyer</p>
     <p style="margin:0;color:${Dark};font-size:15px;line-height:1.7;font-family:${font};">${escapeHtml(reply)}</p>
   </td></tr>
 </table>
@@ -1220,7 +1220,7 @@ ${cta('View in Dashboard', url)}`
 
   const { data, error } = await getResend().emails.send({
     from: FROM, to,
-    subject: 'Eugene replied to your question',
+    subject: 'Your media buyer replied to your question',
     html: base(content),
   })
   if (error) console.error('[email] admin reply user error:', JSON.stringify(error))

@@ -9,7 +9,7 @@ const DAY_MS = 86_400_000
 type Event = { at: string; who: 'you' | 'eugene' | 'system'; text: string }
 
 // "What happened on your account": the last two weeks of real events, newest
-// first. Every line comes from a row that exists. Nothing is implied: Eugene
+// first. Every line comes from a row that exists. Nothing is implied: the media buyer
 // is only said to have looked at the numbers when he opened the client's page.
 export async function GET() {
   const session = await getVerifiedSession()
@@ -36,21 +36,21 @@ export async function GET() {
     const n = Array.isArray(d.sources) ? d.sources.length : 0
     events.push({ at: b.research_date, who: 'system', text: d.quiet ? 'Your market was researched. Nothing notable this week' : `Your market was researched: ${d.items?.length ?? 0} ${d.items?.length === 1 ? 'thing' : 'things'} worth knowing${n ? `, from ${n} ${n === 1 ? 'source' : 'sources'}` : ''}` })
   }
-  for (const n of notes.data ?? []) if (n.sent_at) events.push({ at: n.sent_at, who: 'eugene', text: 'Eugene sent your monthly note' })
+  for (const n of notes.data ?? []) if (n.sent_at) events.push({ at: n.sent_at, who: 'eugene', text: 'Your media buyer sent your monthly note' })
   // One line per day and direction, so a back-and-forth does not flood the list
   const seen = new Set<string>()
   for (const m of msgs.data ?? []) {
     const key = `${m.direction}-${m.created_at.slice(0, 10)}`
     if (seen.has(key)) continue
     seen.add(key)
-    events.push({ at: m.created_at, who: m.direction === 'out' ? 'eugene' : 'you', text: m.direction === 'out' ? 'Eugene replied to you' : 'You wrote to Eugene' })
+    events.push({ at: m.created_at, who: m.direction === 'out' ? 'eugene' : 'you', text: m.direction === 'out' ? 'Your media buyer replied to you' : 'You wrote to your media buyer' })
   }
   for (const f of fixes.data ?? []) {
     const t = (f.win_text ?? '').trim()
     events.push({ at: f.completed_at, who: 'you', text: t ? `You finished a fix: ${t.length > 70 ? `${t.slice(0, t.lastIndexOf(' ', 70))}…` : t}` : 'You finished a fix' })
   }
   for (const r of reports.data ?? []) events.push({ at: r.generated_at, who: 'system', text: 'A new diagnosis was run' })
-  if (view.data?.last_viewed_at) events.push({ at: view.data.last_viewed_at, who: 'eugene', text: 'Eugene looked at your numbers' })
+  if (view.data?.last_viewed_at) events.push({ at: view.data.last_viewed_at, who: 'eugene', text: 'Your media buyer looked at your numbers' })
 
   events.sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())
   return NextResponse.json({ events: events.slice(0, 12) })

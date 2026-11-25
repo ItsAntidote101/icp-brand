@@ -13,7 +13,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://idealicp.com'
 
 // One real media buyer. The old roster (Aisha Mensah, David Osei, Grace Nakato,
 // Marcus Webb) were invented people writing emails to customers.
-const BUYER = { name: 'Eugene K.', initials: 'EK', title: 'Founder and B2B Media Buyer', tone: 'direct and practical, references the customer\'s own market' }
+const BUYER = { name: 'Your media buyer', initials: 'MB', title: 'media buyer', tone: 'direct and practical, references the customer\'s own market' }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function assignBuyer(region: string, industry: string, tier: string) {
@@ -74,7 +74,12 @@ export async function GET(req: NextRequest) {
       // BUYER INTRO: 2h after first-ever diagnosis or any new diagnosis
       // ──────────────────────────────────────────────────────────────────
       const alreadyIntro = badges.notif_buyer_intro_report === latest.id
-      if (hours >= 2 && hours <= 6 && !alreadyIntro) {
+      // Switched off on 25 Nov 2026. This wrote a first message with the AI and
+      // stored it as if the media buyer had written it, and flagged an unread
+      // reply that no person had sent. A message shown as the media buyer's
+      // must come from the media buyer (the control room), so this stays off.
+      const AUTO_BUYER_INTRO = false
+      if (AUTO_BUYER_INTRO && hours >= 2 && hours <= 6 && !alreadyIntro) {
         try {
           // Load questionnaire context
           const { data: rawQ } = await supabase
@@ -107,7 +112,7 @@ export async function GET(req: NextRequest) {
           } catch { /* noop */ }
 
           const firstName = user.full_name?.split(' ')[0] ?? 'there'
-          const prompt = `You are ${buyer.name}, ${buyer.title} at Ideal ICP. Your tone is ${buyer.tone}.
+          const prompt = `You are a ${buyer.title} at Ideal ICP writing to a new client. Your tone is ${buyer.tone}. Do not sign with a name or introduce yourself by name.
 
 Write a short, personal first message to ${firstName} (${user.email}) who just completed their ICP diagnostic${score !== null ? ` and scored ${score}/100` : ''}.
 

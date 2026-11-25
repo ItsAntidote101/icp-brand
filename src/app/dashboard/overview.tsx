@@ -4,9 +4,10 @@
 //   1. Where do I stand?          (score and estimated waste)
 //   2. What do I do this week?    (three fixes, most important first)
 //   3. What did you find?         (top findings, one line each)
-//   4. Who can help me?           (Eugene)
+//   4. Who can help me?           (the media buyer)
 // Everything else lives in Diagnosis, Market and Progress.
 
+import { cap as capFirst } from '@/lib/buyer'
 import React, { useEffect, useState } from 'react'
 import { Check, ChevronRight, Lock } from 'lucide-react'
 import ReadyToUpload from './ready'
@@ -417,7 +418,7 @@ function FindingList({ p }: { p: OverviewProps }) {
 }
 
 // ─── A note from the media buyer ─────────────────────────────────────────────
-// Written (or edited and approved) by Eugene each month. This is what turns
+// Written (or edited and approved) by the media buyer each month. This is what turns
 // numbers into advice, and the reply box is the client's line to him.
 type Note = { id: string; body: string; media_url: string | null; sent_at: string }
 
@@ -460,14 +461,14 @@ function NoteCard({ buyer }: { buyer: OverviewProps['buyer'] }) {
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 18 }}>
         {note.media_url && <a className="ov-btn ov-btn-quiet" href={note.media_url} target="_blank" rel="noopener noreferrer">Play {buyer.firstName}&apos;s recording</a>}
         {state === 'sent'
-          ? <p role="status" style={{ font: `400 15px/1.4 ${T.font}`, color: T.good, margin: 0, alignSelf: 'center' }}>Sent. {buyer.firstName} will reply by email.</p>
+          ? <p role="status" style={{ font: `400 15px/1.4 ${T.font}`, color: T.good, margin: 0, alignSelf: 'center' }}>Sent. {capFirst(buyer.firstName)} will reply by email.</p>
           : !open && <button className="ov-btn ov-btn-quiet" onClick={() => setOpen(true)}>Reply to {buyer.firstName}</button>}
       </div>
 
       {open && state !== 'sent' && (
         <form onSubmit={send} style={{ marginTop: 14 }}>
           <textarea aria-label={`Your reply to ${buyer.firstName}`} value={reply} onChange={e => setReply(e.target.value)} maxLength={2000} autoFocus
-            placeholder="Ask a question or tell him what happened"
+            placeholder="Ask a question or say what happened"
             style={{ width: '100%', minHeight: 96, resize: 'vertical', boxSizing: 'border-box', border: `1px solid ${T.hairline}`, borderRadius: 14, padding: '12px 14px', font: `400 16px/1.5 ${T.font}`, color: T.ink, background: 'rgba(201,192,177,0.10)' }} />
           {error && <p role="alert" style={{ font: `400 14px/1.4 ${T.font}`, color: T.bad, margin: '8px 0 0' }}>{error}</p>}
           <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
@@ -645,7 +646,7 @@ function NumbersCard({ currency, onWeeks }: { currency: string; onWeeks: (w: Wee
   )
 }
 
-// ─── Eugene ──────────────────────────────────────────────────────────────────
+// ─── The media buyer ─────────────────────────────────────────────────────────
 function HelpCard({ p }: { p: OverviewProps }) {
   const b = p.buyer
   const byTier: Record<string, { title: string; body: string; cta: React.ReactNode }> = {
@@ -656,12 +657,12 @@ function HelpCard({ p }: { p: OverviewProps }) {
     },
     starter: {
       title: `Want ${b.firstName} to run this with you?`,
-      body:  'Tell him what you need help with and he will reply by email.',
+      body:  'Say what you need help with and you will get a reply by email.',
       cta:   <button className="ov-btn ov-btn-primary" onClick={p.onRequestCall}>Message {b.firstName}</button>,
     },
     pro: {
       title: `Your onboarding call with ${b.firstName}`,
-      body:  'Included in Pro. He reads your diagnosis first, so the call goes straight to priorities.',
+      body:  'Included in Pro. Your diagnosis is read first, so the call goes straight to priorities.',
       cta:   <a className="ov-btn ov-btn-primary" href={b.calLink} target="_blank" rel="noopener noreferrer">Book your call</a>,
     },
     agency: {
@@ -738,7 +739,7 @@ function MarketRow({ email, onOpen, onMessage, buyerName }: { email: string; onO
 }
 
 // ─── What happened on your account ───────────────────────────────────────────
-// The work that is otherwise invisible: what the client did, what Eugene did
+// The work that is otherwise invisible: what the client did, what the media buyer did
 // and what the system did, from real records of the last two weeks.
 function ActivityCard() {
   const [events, setEvents] = useState<{ at: string; who: 'you' | 'eugene' | 'system'; text: string }[] | null>(null)

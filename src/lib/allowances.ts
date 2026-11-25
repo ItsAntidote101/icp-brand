@@ -47,7 +47,7 @@ export function buildAllowances(input: {
 
   const items: Allowance[] = []
   const sLimit = input.active ? monthlyLimit(input.tier) : 0
-  if (sLimit > 0) items.push({ key: 'sessions', label: 'Hands-on sessions with Eugene', used: Math.min(history[0].sessions, sLimit), limit: sLimit, left: Math.max(0, sLimit - history[0].sessions) })
+  if (sLimit > 0) items.push({ key: 'sessions', label: 'Hands-on sessions with your media buyer', used: Math.min(history[0].sessions, sLimit), limit: sLimit, left: Math.max(0, sLimit - history[0].sessions) })
   const dLimit = input.active ? DIAGNOSIS_LIMITS[input.tier] ?? null : null
   if (input.active && input.tier !== 'free') items.push({ key: 'diagnoses', label: 'Diagnoses', used: history[0].diagnoses, limit: dLimit, left: dLimit === null ? null : Math.max(0, dLimit - history[0].diagnoses) })
 
