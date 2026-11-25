@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { ArrowRight, X } from 'lucide-react'
-import { OPENER_KEY } from './opener'
+import { loadOpener, loadProgress, saveOpener } from '@/lib/resume'
 
 // A floating bar that carries the first question of the diagnosis onto every
 // page. Tapping an answer starts the same conversation the home page opens
@@ -17,14 +17,16 @@ export default function AskBar({ home, startHref }: { home: boolean; startHref: 
   const [show, setShow] = useState(false)
   const [started, setStarted] = useState(false)
   const [closed, setClosed] = useState(true)
+  const [inQuestions, setInQuestions] = useState(false)   // they got past the conversation last time
 
   useEffect(() => {
     let wasClosed = false
     try {
       wasClosed = sessionStorage.getItem(CLOSED_KEY) === '1'
-      setStarted(Boolean(JSON.parse(sessionStorage.getItem(OPENER_KEY) ?? '{}')[27]))
     } catch { /* storage unavailable: behave as a first visit */ }
     setClosed(wasClosed)
+    setStarted(Boolean(loadOpener()[27]) || Boolean(loadProgress()))
+    setInQuestions(Boolean(loadProgress()))
     if (wasClosed) return
 
     const start = document.getElementById('start')
@@ -34,17 +36,18 @@ export default function AskBar({ home, startHref }: { home: boolean; startHref: 
     const update = () => setShow(window.scrollY > 520 && !overStart)
     update()
     window.addEventListener('scroll', update, { passive: true })
-    const sync = () => { try { setStarted(Boolean(JSON.parse(sessionStorage.getItem(OPENER_KEY) ?? '{}')[27])) } catch { /* ignore */ } }
+    const sync = () => setStarted(Boolean(loadOpener()[27]) || Boolean(loadProgress()))
     window.addEventListener('icp-opener-changed', sync)
     return () => { window.removeEventListener('scroll', update); window.removeEventListener('icp-opener-changed', sync); io?.disconnect() }
   }, [])
 
   const go = () => {
+    if (inQuestions) { window.location.href = '/questionnaire'; return }
     if (home) document.getElementById('start')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' })
     else window.location.href = startHref
   }
   const pick = (value: string) => {
-    try { sessionStorage.setItem(OPENER_KEY, JSON.stringify({ 27: value })) } catch { /* the conversation will simply ask again */ }
+    saveOpener({ 27: value })
     window.dispatchEvent(new Event('icp-ask'))
     go()
   }
