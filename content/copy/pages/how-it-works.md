@@ -81,7 +81,7 @@ Three months of spend, inquiries and buyers sit side by side, with dates. Then y
 ## faq
 ### Questions about how it works
 #### Who writes the report, you or a computer?
-The questions and the report run on software, labelled as AI. The call, the monthly note, the setup review and the replies to your messages come from your media buyer.
+Our software puts the report together from your answers. Everything after that comes from your media buyer: the call, the monthly note, the setup review and the replies to your messages.
 #### Do I have to pay to see my report?
 No. The score, your top problems and three fixes are free. The full report comes with Starter: every problem and the whole fix plan.
 #### Can I stop after one month?

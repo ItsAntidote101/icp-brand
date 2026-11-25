@@ -55,6 +55,7 @@ Other true statements: the diagnosis needs no login to Google or Meta. Nobody ca
 - No exclamation marks. No emoji. No title case headings; use sentence case.
 - No stock phrases: unlock, unleash, elevate, supercharge, seamless, game changer, cutting edge, take it to the next level, in today's digital landscape, leverage, empower, robust, tailored, holistic, journey.
 - No "It's not X, it's Y" pattern more than once per page. No lists of three adjectives. No rhetorical question followed by its own answer more than once per page.
+- Do not lead with AI. The owner wants the site to feel human: say what the media buyer does, and where software is involved say "our software". Never claim a person wrote or checked something that software produced, and never deny that software is used. The privacy policy and the in-dashboard chat label are where AI is named.
 - Never write as if the business is big or old. Never call the reader a "user" or "lead"; they are an owner, and their prospects are "inquiries" or "people who asked".
 
 # The stance: disruptive on purpose
