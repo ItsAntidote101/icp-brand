@@ -38,7 +38,7 @@ You should know which is which.
 #### What your media buyer does
 Takes the free call, reads the numbers you log, writes your monthly note and answers your messages.
 #### What the software does
-Asks the questions, drafts your report from your answers and researches your market every week. The software is labelled as AI and shows its sources.
+Asks the questions, puts your report together from your answers and gathers news on your market every week, with its sources shown.
 #### What neither does
 Log in to your ad accounts, or dress an estimate up as a fact.
 
@@ -85,7 +85,7 @@ This is now the company's page. Order: what Ideal ICP is (hero), why it exists, 
 The founder section is the only place on the site that names a person. His background (graphic designer by training, two years making ads, then media buying) and the international experience (lead generation campaigns on Google and Meta for companies in the United States, the United Kingdom and South Africa, in legal services, claims and consumer brands) are taken from the brief's "Where the experience comes from" section. No employer or client is named. "Ideal ICP is new" is stated so nobody reads the experience as the company's history.
 "In the accounts our founder opened it was almost never the budget" was "In the accounts I opened" on the earlier page, from src/app/about/page.tsx. It is kept as the founder's experience, not as a statistic and not as the company's record. Cut it if the owner would rather the page made no claim from past accounts.
 "What your media buyer does" lists the same four things the earlier page listed under "What I do myself": the free call, reading the logged numbers, the monthly note, answering messages. Nothing was added or removed.
-The "What the software does" row says the software is AI and labelled as AI. That comes from the current about page, not from the brief's facts list. Keep it only if it is still true. The word software describes what sits behind the service, as the earlier page did. The product itself is never called software.
+The "What the software does" row no longer uses the word AI, at the owner's request (25 Nov 2026). The privacy policy names the provider.
 The current about page also says "I reply within a working day". The brief does not list a reply time, so it is left out here.
 Photo slots: the founder section is a photo of Eugene Kwata. The others show a media buyer at work. None should be stock.
 No market fact is used, so there is no Sources list.

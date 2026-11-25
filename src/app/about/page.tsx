@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 
 const WORK = [
   { title: 'What I do myself', body: 'I take the free calls. I read the numbers my clients log, write their monthly notes and answer their messages. When a report says something I disagree with, I say so.' },
-  { title: 'What the software does', body: 'It asks the questions, writes the report from your answers and researches your market each week. It is AI, it is labelled as AI, and it has to show where its market facts came from.' },
+  { title: 'What the software does', body: 'It asks the questions, puts your report together from your answers and gathers news on your market each week, and it has to show where its market facts came from.' },
   { title: 'What neither of us does', body: 'Log in to your ad accounts, run your campaigns without being asked, or dress an estimate up as a fact. Where a number is an estimate, the page says so.' },
 ]
 

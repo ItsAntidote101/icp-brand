@@ -15,7 +15,7 @@ const Pborder = '#c5c0b1'
 const font    = "'PolySans Median', -apple-system, system-ui, sans-serif"
 const fontB   = "'PolySans Neutral', -apple-system, system-ui, sans-serif"
 
-const LAST_UPDATED = '22 May 2025'
+const LAST_UPDATED = '25 November 2026'
 
 export default function PrivacyPage() {
   return (
@@ -105,7 +105,7 @@ export default function PrivacyPage() {
             <li>Improve the accuracy and quality of the platform</li>
             <li>Comply with legal obligations</li>
           </ul>
-          <Para>We do not use your data for advertising, profiling for third parties, or any purpose not listed here.</Para>
+          <Para>If you allow ad measurement (see section 5), we also use limited information to measure how well our own advertising works. We do not sell your data, and we do not use it for any purpose not listed here.</Para>
         </Section>
 
         <Section title="4. Legal Basis for Processing">
@@ -119,15 +119,20 @@ export default function PrivacyPage() {
         </Section>
 
         <Section title="5. Cookies and Local Storage">
-          <Para>We use the following cookies and browser storage mechanisms:</Para>
-          <ul style={{ margin: '8px 0 0 20px', padding: 0, lineHeight: 1.9, color: Pmuted, fontSize: 15 }}>
+          <Para><strong>Always used, because the site needs them to work:</strong></Para>
+          <ul style={{ margin: '8px 0 12px 20px', padding: 0, lineHeight: 1.9, color: Pmuted, fontSize: 15 }}>
             <li><strong>icp_session:</strong> An HttpOnly session cookie used to keep you signed in. It contains a signed token linking to your account. It expires after 30 days</li>
             <li><strong>Supabase auth cookies:</strong> Set during the OAuth login flow to manage the authentication handshake. These are short-lived and cleared after sign-in completes</li>
-            <li><strong>localStorage:</strong> We store your email address, display preferences, and completed quick wins locally in your browser to reduce load times. This data stays on your device</li>
+            <li><strong>Your settings:</strong> Your email address, display preferences, completed quick wins and your answer to the ad measurement question, kept in your browser</li>
             <li><strong>Saved progress:</strong> If you leave the diagnosis part-way, the answers you have given so far are kept in your browser for up to 14 days so you can carry on from where you stopped. They stay on your device and are removed when you finish</li>
-            <li><strong>Visit information:</strong> A random visitor number and, if you arrived from an ad, that ad&apos;s tracking tags from your first visit. These are kept in your browser and sent with the steps you complete, so we can see which ads bring people who finish the diagnosis</li>
+            <li><strong>Visit information:</strong> A random visitor number and, if you arrived from an ad, that ad&apos;s tracking tags from your first visit. These are kept in your browser and sent to our own servers with the steps you complete, so we can see which ads bring people who finish the diagnosis</li>
           </ul>
-          <Para>We do not use advertising cookies or third-party tracking pixels.</Para>
+          <Para><strong>Used only if you choose &quot;Allow&quot; when we ask:</strong></Para>
+          <ul style={{ margin: '8px 0 12px 20px', padding: 0, lineHeight: 1.9, color: Pmuted, fontSize: 15 }}>
+            <li><strong>Google Tag Manager, Google Ads and the Meta pixel:</strong> These load tags from Google and Meta that set their own cookies (for example _gcl, _ga, _fbp) and tell those companies which pages you visit on this site and which steps you complete, so we can measure our advertising and show our ads to people like those who used the diagnosis</li>
+            <li><strong>Matching results to ads:</strong> When you finish a diagnosis, ask for a call or pay, a scrambled (hashed) form of your email address and phone number is passed to Google and Meta so they can match that result to an ad you saw. They receive the scrambled form, never the plain text</li>
+          </ul>
+          <Para>If you choose &quot;No thanks&quot;, none of the Google or Meta tags load. You can change your choice at any time with the &quot;Cookie settings&quot; link at the bottom of every page.</Para>
         </Section>
 
         <Section title="6. How We Share Your Information">
@@ -137,6 +142,8 @@ export default function PrivacyPage() {
             <li><strong>Paystack:</strong> Our payment processor. Paystack handles your card details directly and we never store full card numbers</li>
             <li><strong>Resend:</strong> Our email delivery provider. Your email address is shared with Resend solely to send you transactional and subscription emails</li>
             <li><strong>Google:</strong> If you use Google sign-in, Google shares your profile data with us as described in section 2</li>
+            <li><strong>Anthropic:</strong> Provides the language software that helps prepare your report, your weekly market briefing and the suggested wording for your fixes. Your questionnaire answers are sent to Anthropic for this purpose only</li>
+            <li><strong>Google and Meta (advertising):</strong> Only if you allow ad measurement, as described in section 5</li>
           </ul>
           <Para>We do not sell, rent, or trade your personal information with any other party.</Para>
         </Section>

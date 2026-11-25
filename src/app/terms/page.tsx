@@ -15,7 +15,7 @@ const Pborder = '#c5c0b1'
 const font    = "'PolySans Median', -apple-system, system-ui, sans-serif"
 const fontB   = "'PolySans Neutral', -apple-system, system-ui, sans-serif"
 
-const LAST_UPDATED = '11 November 2026'
+const LAST_UPDATED = '25 November 2026'
 
 export default function TermsPage() {
   return (
@@ -125,9 +125,9 @@ export default function TermsPage() {
           <Para>Reports generated for you are yours to use for your own business purposes. You may not reproduce or redistribute them commercially without permission.</Para>
         </Section>
 
-        <Section title="11. AI-Generated Content">
-          <Para>Diagnostic reports and recommendations on the platform are generated using AI and are intended for informational purposes. They do not constitute professional marketing, legal, or financial advice. You are responsible for verifying findings and making your own business decisions.</Para>
-          <Para>AI outputs may occasionally contain errors or inaccuracies. We recommend using the reports as a starting point for analysis rather than a definitive conclusion.</Para>
+        <Section title="11. Reports and Recommendations">
+          <Para>Diagnostic reports and recommendations are prepared from the answers and figures you give us. They are intended for information and do not constitute professional legal or financial advice. You remain responsible for your own business decisions.</Para>
+          <Para>A report can only be as accurate as the answers behind it. Treat it as a starting point, and if something in it does not match what you see in your business, ask your media buyer before acting on it.</Para>
         </Section>
 
         <Section title="12. Disclaimer of Warranties">

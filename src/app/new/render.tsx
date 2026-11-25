@@ -7,6 +7,7 @@ import ContactForm from './contact-form'
 import Clip from './clip'
 import Explainer from './explainer'
 import HeroStage from './hero-stage'
+import { CookieSettings } from '@/components/GoogleTagManager'
 import AskBar from './ask-bar'
 import { PLANS } from './plans'
 import { MAP_DOTS, MAP_H, MAP_POINTS, MAP_W } from './world-dots'
@@ -431,6 +432,7 @@ export function CopyPageView({ page }: { page: CopyPage }) {
             <nav key={g.title} aria-label={g.title}>
               <h2>{g.title}</h2>
               {g.links.map(([href, label]) => <Link key={href} href={to(href)}>{label}</Link>)}
+              {g.title === 'Ideal ICP' && <CookieSettings className="ic-foot-btn" />}
             </nav>
           ))}
         </div>
@@ -612,6 +614,8 @@ const css = `
 .ic-foot h2{font:600 14px/1.3 var(--body);letter-spacing:0;color:#fff;margin:0 0 4px}
 .ic-foot nav a{font-size:15px;color:rgba(255,255,255,.75);text-decoration:none}
 .ic-foot nav a:hover{color:#fff}
+.ic-foot .ic-foot-btn{font-size:15px!important;color:rgba(255,255,255,.75)!important}
+.ic-foot .ic-foot-btn:hover{color:#fff!important}
 
 @media (min-width:720px){
   .ic-cards-2,.ic-cards-4{grid-template-columns:repeat(2,1fr)}

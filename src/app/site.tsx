@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { CookieSettings } from '@/components/GoogleTagManager'
 import { ArrowRight } from 'lucide-react'
 
 // Shared look and closing section for every public page: home, pricing, about
@@ -212,7 +213,7 @@ export function SiteFooter({ title, lead }: { title: string; lead?: string }) {
         <div className="hp-foot">
           <span>© 2026 Ideal ICP, Nairobi</span>
           <nav aria-label="Footer">
-            <Link href="/pricing">Pricing</Link><Link href="/guides">Guides</Link><Link href="/about">About</Link><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><a href="mailto:info@idealicp.com">Contact</a>
+            <Link href="/pricing">Pricing</Link><Link href="/guides">Guides</Link><Link href="/about">About</Link><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><CookieSettings /><a href="mailto:info@idealicp.com">Contact</a>
           </nav>
         </div>
       </div>
