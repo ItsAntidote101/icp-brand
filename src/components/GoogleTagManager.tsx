@@ -7,10 +7,9 @@ import { getConsent, setConsent } from '@/lib/consent'
 // The cookie notice, the "Cookie settings" panel, and the loader for Google
 // Tag Manager, which carries the ad tags (Meta pixel, Google Ads).
 //
-// Google Tag Manager loads only when the visitor has switched Marketing on.
-// Until then nothing from Google or Meta runs on the page. Funnel steps are
-// still pushed to window.dataLayer by src/lib/track.ts, so if someone allows
-// it later on the same page the tags see what already happened.
+// Google Tag Manager loads unless the visitor has switched Marketing off in
+// "Cookie settings". Ignoring or closing the bar leaves it on. Funnel steps
+// are pushed to window.dataLayer by src/lib/track.ts either way.
 //
 // NEXT_PUBLIC_GTM_ID (e.g. GTM-ABC1234) is set in Vercel.
 
@@ -58,7 +57,7 @@ export default function GoogleTagManager() {
   const valid = Boolean(id && /^GTM-[A-Z0-9]+$/.test(id))
   const [bar, setBar] = useState(false)
   const [panel, setPanel] = useState(false)
-  const [pick, setPick] = useState<Record<Key, boolean>>({ analytics: true, functional: true, marketing: false })
+  const [pick, setPick] = useState<Record<Key, boolean>>({ analytics: true, functional: true, marketing: true })
   const panelRef = useRef<HTMLDivElement>(null)
   const barRef = useRef<HTMLDivElement>(null)
 
@@ -121,13 +120,13 @@ export default function GoogleTagManager() {
         <div className="cc-bar" role="region" aria-label="Cookies" ref={barRef}>
           <div className="cc-bar-text">
             <p className="cc-title">We use cookies and similar technologies</p>
-            <p>Some are needed to make the site work. The rest are optional and you choose which we use. <span className="cc-wide">They show us how the site is used, remember where you stopped, and measure our ads. </span>More in our <Link href="/privacy">Privacy policy</Link>.</p>
+            <p>Some are needed to make the site work. The rest are optional and stay on unless you switch them off in &quot;Cookie settings&quot;. <span className="cc-wide">They show us how the site is used, remember where you stopped, and measure our ads. </span>More in our <Link href="/privacy">Privacy policy</Link>.</p>
           </div>
           <div className="cc-bar-acts">
             <button type="button" className="cc-dark" onClick={openPanel}>Cookie settings</button>
             <button type="button" className="cc-main" onClick={acceptAll}>Accept all</button>
           </div>
-          <button type="button" className="cc-x" aria-label="Close and keep optional marketing off" onClick={() => save({ analytics: true, functional: true, marketing: false })}>
+          <button type="button" className="cc-x" aria-label="Close" onClick={acceptAll}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
           </button>
         </div>
@@ -143,7 +142,7 @@ export default function GoogleTagManager() {
             </div>
             <div className="cc-panel-body">
               <h2 id="cc-h">Your privacy choices</h2>
-              <p>Like most sites, this one keeps small pieces of information in your browser. Some keep you signed in. The rest are optional, and you decide which of those we may use. You can change this at any time from &quot;Cookie settings&quot; at the bottom of every page.</p>
+              <p>Like most sites, this one keeps small pieces of information in your browser. Some keep you signed in. The rest are optional. They are on unless you switch them off here. You can change this at any time from &quot;Cookie settings&quot; at the bottom of every page.</p>
               <p><Link href="/privacy" onClick={() => setPanel(false)}>More information</Link></p>
               <h3>Manage your choices</h3>
               <div className="cc-rows">

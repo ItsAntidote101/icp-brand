@@ -6,14 +6,14 @@
 //   functional saved progress, so someone can leave and carry on
 //   marketing  Google and Meta tags, loaded through Google Tag Manager
 //
-// Until someone chooses, our own analytics and saved progress are on and the
-// Google and Meta tags are off. Nothing from another company loads without a
-// clear yes.
+// Everything is on until someone switches a group off in "Cookie settings".
+// Ignoring the bar or closing it keeps everything on (the founder's decision,
+// 25 Nov 2026). The bar and the privacy policy say so in plain words.
 
 export type Consent = { decided: boolean; analytics: boolean; functional: boolean; marketing: boolean }
 const KEY = 'icp_consent'
 export const CONSENT_CHANGED = 'icp-consent-changed'
-const DEFAULTS: Consent = { decided: false, analytics: true, functional: true, marketing: false }
+const DEFAULTS: Consent = { decided: false, analytics: true, functional: true, marketing: true }
 
 export function getConsent(): Consent {
   try {
@@ -22,7 +22,7 @@ export function getConsent(): Consent {
     if (raw === 'yes') return { decided: true, analytics: true, functional: true, marketing: true }   // earlier simple notice
     if (raw === 'no') return { decided: true, analytics: true, functional: true, marketing: false }
     const c = JSON.parse(raw)
-    return { decided: true, analytics: c.a !== false, functional: c.f !== false, marketing: c.m === true }
+    return { decided: true, analytics: c.a !== false, functional: c.f !== false, marketing: c.m !== false }
   } catch { return DEFAULTS }
 }
 
