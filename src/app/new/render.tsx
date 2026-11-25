@@ -3,6 +3,7 @@ import { ArrowRight, Check, ChevronDown, ImageIcon } from 'lucide-react'
 import { SiteStyles } from '../site'
 import { allCopy, copyByPath, teaser, type Block, type CopyPage, type Item, type Section } from '@/lib/site-copy'
 import Opener from './opener'
+import ContactForm from './contact-form'
 import { PLANS } from './plans'
 import { MAP_DOTS, MAP_H, MAP_POINTS, MAP_W } from './world-dots'
 
@@ -272,19 +273,7 @@ function SectionView({ s, index, page, flip, dark }: { s: Section; index: number
         <section className="ic-sec">
           <div className="ic-wrap ic-two">
             <Head s={s} />
-            <form className="ic-form" aria-describedby="ic-form-note">
-              {fields.map((f, i) => {
-                const id = `ic-f-${i}`
-                const long = i === fields.length - 1
-                return (
-                  <label key={f} htmlFor={id}>{f.charAt(0).toUpperCase() + f.slice(1)}
-                    {long ? <textarea id={id} rows={4} disabled /> : <input id={id} disabled />}
-                  </label>
-                )
-              })}
-              <button type="button" className="ic-btn" disabled>Send message</button>
-              <p id="ic-form-note" className="ic-fine">Preview only. This form is not connected yet.</p>
-            </form>
+            <ContactForm labels={fields.map(f => f.charAt(0).toUpperCase() + f.slice(1))} />
           </div>
         </section>
       )
@@ -565,10 +554,13 @@ const css = `
 .ic-prose h2{font-size:clamp(24px,3vw,32px);margin:44px 0 0}
 .ic-prose .ic-p{max-width:none;font-size:18px;line-height:1.7;color:var(--ink)}
 .ic-prose .ic-ul li{font-size:18px;color:var(--ink)}
-.ic-form{display:grid;gap:16px}
+.ic-form{display:grid;gap:16px;position:relative}
 .ic-form label{display:grid;gap:8px;font:600 15px/1.3 var(--body)}
 .ic-form input,.ic-form textarea{width:100%;padding:14px;border:1.5px solid var(--line);border-radius:6px;font:400 16px/1.4 var(--body);background:#fff;color:var(--ink)}
 .ic-form .ic-btn{justify-self:start}
+.ic-hp{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.ic .ic-form-err{font-size:15px;color:#b42318;margin:0}
+.ic-form-done{border-left:3px solid var(--red);padding:6px 0 6px 20px}
 .ic-map{margin:0 0 clamp(24px,4vw,40px)}
 .ic-map{overflow:hidden}
 .ic .ic-map svg{display:block;width:185%;max-width:none;margin-left:-32%;height:auto}

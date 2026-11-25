@@ -542,6 +542,25 @@ ${securityBox(`<p style="margin:0;color:${Dark};font-size:16px;line-height:1.65;
   return { data, error }
 }
 
+// A message from the public contact page. The sender has no account, so the
+// reply goes to the WhatsApp number they left, not to an email address.
+export async function sendContactToFounder({
+  name, phone, message,
+}: { name: string; phone: string; message: string }) {
+  const content = `
+${heading(`Website message from ${escapeHtml(name)}`, 30)}
+${sub(`Sent from the contact page. They have no account yet. Reply on WhatsApp: <strong>${escapeHtml(phone)}</strong>`)}
+${securityBox(`<p style="margin:0;color:${Dark};font-size:16px;line-height:1.65;font-family:${font};">${noteHtml(message)}</p>`)}`
+
+  const { data, error } = await getResend().emails.send({
+    from: FROM, to: FOUNDER_INBOX,
+    subject: `Website message from ${name}`,
+    html: base(content, { loginBtn: false }),
+  })
+  if (error) console.error('[email] contact message error:', JSON.stringify(error))
+  return { data, error }
+}
+
 // ─── Email 4: Session request, founder notification ─────────────────────────
 
 export async function sendSessionRequestToFounder({
