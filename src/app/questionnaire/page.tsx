@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { clearResume, loadOpener, loadProgress, saveProgress as rememberProgress } from '@/lib/resume'
 import { useRouter } from 'next/navigation'
 import { useSession } from '@/hooks/useSession'
 import { track } from '@/lib/track'
@@ -884,6 +885,8 @@ export default function QuestionnairePage() {
   const [prefillIds,    setPrefillIds]    = useState<Set<number>>(new Set())
   const [prefillBanner, setPrefillBanner] = useState(false)
   const [prefillReady,  setPrefillReady]  = useState(false)
+  const [welcomeBack,   setWelcomeBack]   = useState(false)   // restored from this device
+  const cameBack = useRef(false)
   const [visible,       setVisible]       = useState(false)
   const [submitting,    setSubmitting]    = useState(false)
   const [apiError,      setApiError]      = useState('')
@@ -918,14 +921,28 @@ export default function QuestionnairePage() {
 
       // Answers tapped on the landing page carry over for someone with no
       // saved diagnosis, so they are not asked the same thing twice.
-      let opener: Answers = {}
-      try { opener = keepValidAnswers(JSON.parse(sessionStorage.getItem('icp_opener_answers') ?? '{}')) } catch { /* nothing carried over */ }
-      const hasOpener = Object.keys(opener).length > 0
+      const opener: Answers = keepValidAnswers(loadOpener())
 
-      if (!d?.prefill) { if (hasOpener) setAnswers(opener); setPrefillReady(true); return }
+      // Someone who left part-way on this device carries on from where they
+      // stopped. Their saved answers win over the landing page ones.
+      const saved = loadProgress()
+      const local: Answers = { ...opener, ...(saved ? keepValidAnswers(saved.answers) : {}) }
+      const hasLocal = Object.keys(local).length > 0
+      const sp = saved?.profile
+      const resumeHere = () => {
+        if (hasLocal) setAnswers(local)
+        if (sp && sp.name && sp.email && sp.company) {
+          setProfile({ name: sp.name, email: sp.email, company: sp.company })
+          cameBack.current = true
+          setWelcomeBack(true)
+          setStep('questions')
+        }
+      }
+
+      if (!d?.prefill) { resumeHere(); setPrefillReady(true); return }
       const { profile: p } = d.prefill
       const a = keepValidAnswers(d.prefill.answers)
-      if (Object.keys(a).length === 0 && hasOpener) setAnswers(opener)
+      if (Object.keys(a).length === 0) resumeHere()
 
       if (p.name || p.email || p.company) {
         setProfile({ name: p.name, email: p.email, company: p.company })
@@ -958,7 +975,7 @@ export default function QuestionnairePage() {
   }, [current])
 
   useEffect(() => {
-    if (step === 'questions') track('questionnaire_started', { quick: !fullMode })
+    if (step === 'questions' && !cameBack.current) track('questionnaire_started', { quick: !fullMode })
   }, [step]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const visible_qs = getVisibleQuestions(answers, !fullMode)
@@ -978,6 +995,25 @@ export default function QuestionnairePage() {
     })
     if (first > 0) { setCurrent(first); setResumedAt(first) }
   }, [prefillReady, step, prefillIds, fullMode]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Back on this device: start at the first question they have not answered.
+  const jumped = useRef(false)
+  useEffect(() => {
+    if (jumped.current || !welcomeBack || !prefillReady || step !== 'questions') return
+    jumped.current = true
+    const first = visible_qs.findIndex(v => {
+      const a = answers[v.id]
+      return a === undefined || a === '' || (Array.isArray(a) && a.length === 0)
+    })
+    setCurrent(first === -1 ? Math.max(0, visible_qs.length - 1) : first)
+  }, [welcomeBack, prefillReady, step]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Remember answers on this device as they go, so leaving is not losing.
+  useEffect(() => {
+    if (!prefillReady || step !== 'questions' || showFreeTierGate || prefillIds.size > 0) return
+    if (!profile.email || Object.keys(answers).length === 0) return
+    rememberProgress({ answers, profile })
+  }, [answers, profile, step, prefillReady, showFreeTierGate, prefillIds])
 
   const q          = visible_qs[current]
   const totalQ     = visible_qs.length
@@ -1169,6 +1205,7 @@ export default function QuestionnairePage() {
       localStorage.setItem('dashboard_email', profile.email.trim().toLowerCase())
       if (profile.name) localStorage.setItem('dashboard_name', profile.name)
       track('questionnaire_completed', { quick: !fullMode }, { email: profile.email })
+      clearResume()
       router.push(`/report/${dData.id}`)
     } catch (err) {
       timerRefs.current.forEach(clearTimeout)
@@ -1599,6 +1636,14 @@ export default function QuestionnairePage() {
           <div className="flex-1 px-6 pb-16">
             <div className="transition-all duration-150" style={{ opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(12px)' }}>
 
+              {welcomeBack && (
+                <div className="mb-5 flex items-start gap-3 px-4 py-3 rounded border border-[#c5c0b1] bg-[rgba(201,192,177,0.18)] text-sm text-[#605d52]">
+                  <p className="flex-1 leading-snug text-xs">Welcome back. Your answers were saved on this device, so you carry on from where you stopped. Use Back to change one.</p>
+                  <button type="button" aria-label="Close" onClick={() => setWelcomeBack(false)} className="flex-shrink-0 text-[#939084] hover:text-[#605d52] transition-colors">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M18 6 6 18M6 6l12 12"/></svg>
+                  </button>
+                </div>
+              )}
               {prefillBanner && (
                 <div className="mb-5 flex items-start gap-3 px-4 py-3 rounded border border-[#c5c0b1] bg-[rgba(201,192,177,0.18)] text-sm text-[#605d52]">
                   <svg className="flex-shrink-0 mt-0.5 w-3.5 h-3.5 text-[#939084]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>

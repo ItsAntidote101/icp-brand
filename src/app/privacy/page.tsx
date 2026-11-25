@@ -124,6 +124,8 @@ export default function PrivacyPage() {
             <li><strong>icp_session:</strong> An HttpOnly session cookie used to keep you signed in. It contains a signed token linking to your account. It expires after 30 days</li>
             <li><strong>Supabase auth cookies:</strong> Set during the OAuth login flow to manage the authentication handshake. These are short-lived and cleared after sign-in completes</li>
             <li><strong>localStorage:</strong> We store your email address, display preferences, and completed quick wins locally in your browser to reduce load times. This data stays on your device</li>
+            <li><strong>Saved progress:</strong> If you leave the diagnosis part-way, the answers you have given so far are kept in your browser for up to 14 days so you can carry on from where you stopped. They stay on your device and are removed when you finish</li>
+            <li><strong>Visit information:</strong> A random visitor number and, if you arrived from an ad, that ad&apos;s tracking tags from your first visit. These are kept in your browser and sent with the steps you complete, so we can see which ads bring people who finish the diagnosis</li>
           </ul>
           <Para>We do not use advertising cookies or third-party tracking pixels.</Para>
         </Section>

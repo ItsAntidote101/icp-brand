@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { ArrowRight, MessageCircle } from 'lucide-react'
 import { rangeKind, rangeNumber } from '@/lib/answers'
+import { clearOpener, loadOpener, saveOpener } from '@/lib/resume'
 
 // The first screen of the site is the diagnosis itself, already started.
 // Every figure shown is plain arithmetic on what the visitor just tapped:
@@ -49,8 +50,7 @@ export default function Opener() {
   // from the floating bar, which saves the first answer and then signals.
   useEffect(() => {
     const restore = () => {
-      let saved: Answers = {}
-      try { saved = JSON.parse(sessionStorage.getItem(OPENER_KEY) ?? '{}') ?? {} } catch { return }
+      const saved: Answers = loadOpener()
       if (!saved[27]) return
       setA(saved); setTyped(''); setWarn('')
       setStep(saved[27] === 'Not yet' ? 'notyet' : !saved[13] ? 'spend' : !saved[14] ? 'inquiries' : !saved[35] ? 'buyers' : !saved[6] ? 'worth' : 'done')
@@ -61,7 +61,7 @@ export default function Opener() {
   }, [])
 
   const save = (next: Answers) => {
-    try { sessionStorage.setItem(OPENER_KEY, JSON.stringify(next)) } catch { /* private mode: the questions are simply asked again */ }
+    saveOpener(next)
     window.dispatchEvent(new Event('icp-opener-changed'))
   }
   const answer = (id: number, value: string, to: Step) => {
@@ -69,7 +69,7 @@ export default function Opener() {
     const next = { ...a, [id]: value }
     setA(next); save(next); setTyped(''); setWarn(''); setStep(to)
   }
-  const restart = () => { setA({}); setStep('ads'); setTyped(''); setWarn(''); try { sessionStorage.removeItem(OPENER_KEY) } catch { /* nothing to clear */ } window.dispatchEvent(new Event('icp-opener-changed')) }
+  const restart = () => { setA({}); setStep('ads'); setTyped(''); setWarn(''); clearOpener(); window.dispatchEvent(new Event('icp-opener-changed')) }
 
   const inquiries = Number(a[14] ?? 0)
   const buyers    = Number(a[35] ?? 0)
