@@ -26,7 +26,7 @@ She toured and liked it, and said she would think about it. Then admissions got 
 
 ## split
 ### What the diagnosis checks for admissions
-About 3 minutes of rough figures: spend, parents who asked, students enrolled, how fast the office replies. No ad account access. You receive:
+About 3 minutes of rough figures: spend, parents who asked, students enrolled, how fast the office replies. No ad account access. You get:
 - Cost per inquiry and cost per admission
 - What one more admission in every ten inquiries brings in
 - A score out of 100, or a launch plan, and 3 fixes for this week
@@ -63,7 +63,7 @@ Whoever knows roughly what goes into ads, how many parents ask and how many enro
 #### Is this for a school that has never run ads?
 Yes. Say so at the first question and you get a launch plan instead of a score. You start with a plan before you boost anything.
 #### Will someone phone the school to sell a package?
-Nobody phones unless you ask. If you want to talk the report through, there is one free 20 minute call with a media buyer.
+Nobody phones unless you ask. If you want to talk the report through, one 20 minute call with a media buyer is free.
 
 ## band
 ### Do not boost the intake post yet.
@@ -78,5 +78,5 @@ The Meta file made from a parents list is left off this page on purpose. The pro
 In the visible copy "we" is always Ideal ICP. The FAQ questions were reworded so the school no longer speaks as "we" or "us".
 No market figure is used, so no Sources list.
 The case study card says "sample" in the visible copy and must be updated when a real college replaces it.
-Humanize skill run on 24 Nov 2026.
+Humanize skill run on 24 Nov 2026, and again after the voice change.
 Voice changed to company and role on 25 Nov 2026.

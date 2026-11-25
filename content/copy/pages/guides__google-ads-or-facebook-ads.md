@@ -25,7 +25,7 @@ One answers a question somebody already had. The other starts a conversation wit
 ### Do my buyers search for this?
 You can test it today without spending anything:
 - Type your service the way a customer would, with your town, and see whether ads appear. Businesses paying to be there is a hint that the search brings work, and only a hint.
-- If you have a Google Ads account with billing details added, open Keyword Planner and enter the same phrases. It estimates how many searches each one gets in a month. Treat the number as an estimate.
+- If you have a Google Ads account with billing details added, open Keyword Planner and enter the same phrases. It gives a rough count of the searches each one gets in a month. Treat the number as an estimate.
 - Ask your last five buyers what they did on the day they first needed you. Some will say they searched. Others will say they saw you on Facebook, or that a friend sent your number.
 
 ### When does Google fit?
@@ -35,7 +35,7 @@ You pay for each click, though, and the wrong searches get in alongside the righ
 [LINK: Why Google Ads clicks do not convert -> /guides/why-google-ads-not-converting]
 
 ### When does Meta fit?
-When people would want it but are not searching yet, or when it sells on a picture. A show house in a place they had not considered. A school compound. A short course starting next month.
+When people would want it but are not searching yet, or when it sells on a picture: a show house in a place they had not considered, a school compound, a short course starting next month.
 
 The audience is there. In the Communications Authority's survey for April to June 2026, Facebook and WhatsApp were the two most used platforms in Kenya. And the inquiry can land where you already work: an ad that clicks to WhatsApp opens a chat with your business number, and an instant form opens inside Facebook or Instagram with the person's details filled in.
 
@@ -49,7 +49,7 @@ Say Google takes KES 20,000 and brings 25 inquiries, 5 of whom buy. That is KES 
 Those numbers are invented to show the sum. They are not benchmarks, and with your own figures the result may run the other way.
 
 ### Should I run both at once?
-Not at the start on a small budget. KES 20,000 split two ways is KES 10,000 each, and you learn half as much about either.
+Not at the start, if your budget is small. KES 20,000 split two ways is KES 10,000 each, and you learn half as much about either.
 
 Pick the one your answers above point to. Run it for a month and write down three numbers every week: what you spent, how many people asked, how many paid. Then decide about the second channel with something to go on.
 
@@ -82,7 +82,7 @@ Checked on official help pages, read 24 Nov 2026:
 - Google: Keyword Planner gives estimates of monthly searches and needs account setup with billing information.
 - Meta (via the Meta Ads connector's help article lookup, since the help pages block direct fetching): ads that click to WhatsApp open a chat and need a WhatsApp Business number connected to the Page; ads can be placed across Facebook and Instagram; Meta finds people likely to take the action asked for.
 - From the research file: instant forms open inside Facebook or Instagram with details prefilled.
-Humanize skill run on 24 Nov 2026.
+Humanize skill run on 24 Nov 2026, and again after the voice change.
 Sources:
 - https://www.ca.go.ke/sites/default/files/2026-08/%20Audience%20Measurement%20and%20Industry%20Trends%20Report%20Quarter%204%202025-2026.pdf
 - https://support.google.com/google-ads/answer/7337243?hl=en

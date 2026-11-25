@@ -88,7 +88,7 @@ Shilling examples are arithmetic. From the research file: 20,000 / 40 = 500; 3,0
 "CPL (cost per lead)" keeps the platform's word in the term and uses "inquiry" in the definition, as the brief asks.
 Re-checked by the copywriter on 24 Nov 2026 through the Meta help article lookup (facebook.com blocks direct fetching): learning phase wording ("about 50 results in the week after the ad set's last significant edit"), ads that click to WhatsApp needing a WhatsApp Business account connected to the Page, instant form prefill. Everything else rests on the research file's own check.
 Each faq item renders closed until tapped. If the glossary should show every definition open, that is a layout change, not a copy change.
-Humanize skill run on 24 Nov 2026.
+Humanize skill run on 24 Nov 2026, and again after the voice change.
 Sources:
 - https://www.facebook.com/business/help/877711998984611
 - https://www.facebook.com/business/help/753932008002620

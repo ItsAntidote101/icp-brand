@@ -28,7 +28,7 @@ Three parts, in one message.
 
 - The price, or an honest range. Do not hide it.
 - One thing the price includes, so the number means something.
-- One question that is easy to answer and moves things forward.
+- One question that is easy to answer and points to the next step.
 
 The question does the work. "Which day suits you?" takes one word to answer. "Let me know" asks for nothing, so nothing comes back.
 
@@ -97,7 +97,7 @@ The reasons people go quiet are reasoning from how these chats run (research fil
 Platform statements and where each was checked on 24 Nov 2026:
 - WhatsApp Business quick replies: Add, message, shortcut, save; type "/" in a chat to list them; up to 50 stored: WhatsApp help. The parent menu name is left out on purpose because it differs by phone.
 - Labels on chats: WhatsApp help.
-Humanize skill run on 24 Nov 2026.
+Humanize skill run on 24 Nov 2026, and again after the voice change.
 Sources:
 - https://faq.whatsapp.com/1791149784551042/?cms_platform=android
 - https://faq.whatsapp.com/3398508707096369/?cms_platform=android

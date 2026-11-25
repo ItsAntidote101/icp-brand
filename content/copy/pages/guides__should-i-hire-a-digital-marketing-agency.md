@@ -58,7 +58,7 @@ That is three sites, so treat it as a sample. Another we read shows no price and
 
 Check the inquiries you already paid for. [LINK: The free diagnosis -> /services/diagnosis] is ten questions and takes about three minutes. It needs no login to Google or Meta, and rough numbers from memory are enough. Nobody calls you unless you ask. You get a score out of 100, your top problems and three fixes for this week.
 
-If your numbers are healthy, the report says so. Then hiring someone to run more ads is a sensible next step, and you will walk into that meeting knowing what to ask for.
+If your numbers are healthy, the report says so. Then hiring someone to run more ads makes sense, and you will walk into that meeting knowing what to ask for.
 
 ## faq
 ### Short answers
@@ -84,7 +84,7 @@ Platform statements and where each was checked on 24 Nov 2026:
 - Google Ads access levels (Standard edits campaigns; Admin gives access, changes access levels and unlinks manager accounts) and the path Admin, then Access and security: Google Ads help.
 - Meta: add a partner under Partners in Meta Business Suite settings, give partial access for chosen tasks, remove the partner from the same place, all needing full control of the business portfolio: Meta help, via the Meta help article lookup (facebook.com blocks direct fetching).
 Ideal ICP facts (plan prices, payment, no contract, no login, nobody calls, does not run ads, full management by message) are from the brief.
-Humanize skill run on 24 Nov 2026.
+Humanize skill run on 24 Nov 2026, and again after the voice change.
 Sources:
 - https://akus.co.ke/google-ads-agency-in-kenya
 - https://nairobimarketing.com/google-ads-agency-kenya

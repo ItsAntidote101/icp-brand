@@ -23,11 +23,11 @@ When you boost, you decide five things: a goal, the text, the schedule, the budg
 It takes two minutes, which is the whole appeal.
 
 ### Why did my boost bring likes and no customers?
-Because of the goal. Meta looks for the people most likely to do the thing you asked for. Ask for engagement and it finds people who like and comment. They are real people, and liking is what they do.
+Because of the goal. Meta looks for the people most likely to do what you asked for. Ask for engagement and it finds people who like and comment. They are real people, and liking is what they do.
 
 Meta's own page says boosting fits when you want more engagement on your Page or more awareness of your name. Two hundred likes and no deposit is the boost doing what it was told.
 
-Run this sum on your last boost. Say KES 3,000 brought 200 likes and 2 messages, and neither message turned into a sale. Counted by likes, that is KES 15 each and looks cheap. Counted by messages, it is KES 1,500 each. Counted by buyers, it is KES 3,000 for nothing. Those numbers are made up to show the arithmetic, so do not read them as a benchmark.
+Run this sum on your last boost. Say KES 3,000 brought 200 likes and 2 messages, and neither message turned into a sale. Counted by likes, that is KES 15 each and looks cheap. Counted by messages, it is KES 1,500 each. Counted by buyers, it is KES 3,000 for nothing. We made those numbers up to show the arithmetic, so do not read them as a benchmark.
 
 ### How do I check what my last boost was asking for?
 Open your Facebook Page and go to Ad Center. Find the boosted post and click View results. Meta names the ad after the goal you chose, so a boost that ran for engagement is titled "Post engagements". If that is what you see, you paid for likes and got them.
@@ -41,7 +41,7 @@ That is the cheapest fix on this page. You keep the post and the budget and chan
 Three things that matter when you want inquiries:
 - An objective called Leads. Ads Manager has six objectives (Awareness, Traffic, Engagement, Leads, App promotion, Sales), and Leads is the one built to collect inquiries by message, phone call or sign-up.
 - Instant forms, which open inside Facebook or Instagram with no website involved. The "Higher intent" form type adds a review screen, so people check their details before they send.
-- More say over who sees the ad. You can upload your own customer list as a custom audience, then ask Meta for a lookalike audience of people who resemble it. Two limits to know: Meta does not allow health or financial information in those lists, and lookalike audiences are restricted for some housing and finance ads.
+- More say over who sees the ad. You can upload your own customer list as a custom audience, then ask Meta for a lookalike audience of people who resemble it. Two limits to know: Meta bans health or financial information in those lists, and it restricts lookalike audiences for some housing and finance ads.
 
 The screen has far more switches than the Boost button. That is the price of being able to choose. If you want the choices laid out for your stage, the Pro plan includes a campaign setup plan your media buyer reviews.
 [LINK: See the campaign setup plan -> /services/campaign-setup]
@@ -82,7 +82,7 @@ Checked on Meta Business Help Center, read 24 Nov 2026. The help pages block dir
 - The six objectives and what Leads collects.
 From the research file (confirmed there 24 Nov 2026): instant form types and the "Higher intent" review screen; customer list custom audience and the ban on health or financial information; lookalike audiences being limited for some finance and housing ads (glossary term 13).
 Could not confirm from a help page whether a customer list audience can also be selected inside the boost screen, so the copy only says the list is something Ads Manager adds and makes no claim about the boost screen.
-Humanize skill run on 24 Nov 2026.
+Humanize skill run on 24 Nov 2026, and again after the voice change.
 Sources:
 - https://www.facebook.com/business/help/317083072148603
 - https://www.facebook.com/business/help/299873430094007

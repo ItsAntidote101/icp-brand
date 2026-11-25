@@ -258,7 +258,7 @@ function SectionView({ s, index, page, flip, dark }: { s: Section; index: number
           <div className="ic-wrap">
             <Head s={s} />
             <div className="ic-map">
-              <svg viewBox={`0 0 ${MAP_W} ${MAP_H}`} role="img" aria-label={`World map marking ${shown.map(it => it.title).join(', ')}`}>
+              <svg viewBox={`0 28 ${MAP_W} ${MAP_H - 56}`} role="img" aria-label={`World map marking ${shown.map(it => it.title).join(', ')}`}>
                 <path d={MAP_DOTS} className="ic-map-land" />
                 {shown.filter(it => it.title !== 'Kenya').map(it => {
                   const [x, y] = MAP_POINTS[it.title]
@@ -470,7 +470,8 @@ const css = `
 .ic-form input,.ic-form textarea{width:100%;padding:14px;border:1.5px solid var(--line);border-radius:6px;font:400 16px/1.4 var(--body);background:#fff;color:var(--ink)}
 .ic-form .ic-btn{justify-self:start}
 .ic-map{margin:0 0 clamp(24px,4vw,40px)}
-.ic-map svg{display:block;width:100%;height:auto}
+.ic-map{overflow:hidden}
+.ic .ic-map svg{display:block;width:185%;max-width:none;margin-left:-32%;height:auto}
 .ic-map-land{fill:none;stroke:rgba(255,255,255,.3);stroke-width:3.4;stroke-linecap:round}
 .ic-map-arc{fill:none;stroke:var(--red);stroke-width:2;stroke-dasharray:1 7;stroke-linecap:round}
 .ic-map-halo{fill:var(--red);opacity:.25}
@@ -493,6 +494,7 @@ const css = `
 
 @media (min-width:720px){
   .ic-cards-2,.ic-cards-4{grid-template-columns:repeat(2,1fr)}
+  .ic .ic-map svg{width:100%;margin-left:0}
   .ic-cards-3{grid-template-columns:repeat(3,1fr)}
   .ic-plans{grid-template-columns:repeat(2,1fr)}
   .ic-vows{grid-auto-flow:column;gap:28px}

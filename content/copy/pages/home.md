@@ -33,7 +33,7 @@ The 2pm slot is empty. Their last message still reads "I'll come tomorrow". You 
 ## split
 eyebrow: Who is on the other side
 ### You get a media buyer, not a score.
-A score alone fixes nothing. On a plan, your media buyer reads the numbers you log each week, answers your messages and writes you a monthly note.
+A score alone fixes nothing. On a plan, your media buyer reads the numbers you log each week and answers your messages. Every month the same person writes you a note.
 [LINK: Who is behind Ideal ICP -> /about]
 [IMAGE: A media buyer at a desk in Nairobi with a client's weekly numbers open on the laptop | 4:3]
 
@@ -87,7 +87,7 @@ Each case study lays out ad spend, inquiries and buyers, before and after, with 
 
 ## map
 ### Built on campaigns run in three countries
-Before Ideal ICP, our founder ran paid campaigns for companies in these markets. That experience now works for businesses in Kenya.
+Before Ideal ICP, our founder ran paid campaigns for companies in these markets. Businesses in Kenya now get what those campaigns taught.
 #### South Africa
 Ad campaigns for consumer brands selling online.
 #### United Kingdom
@@ -108,7 +108,7 @@ No. Nobody calls unless you ask. The free 20 minute call is there if you want it
 #### Do you need a login to my Google or Meta account?
 No. You answer questions about your ads, your inquiries and your sales. Rough numbers from memory are enough.
 #### Do you run my ads for me?
-No. We show you what to fix, hand you the files and the wording, and track whether it is working. For full management, ask us by message.
+No. We show you what to fix and hand you the files and the wording. Then we track whether it is working. For full management, ask us by message.
 #### What does it cost?
 The diagnosis and the call are free, with no card. Plans start at KES 6,500 a month, paid by M-Pesa or card, one month at a time. Nothing renews on its own.
 #### I have not started ads yet. Is this for me?
@@ -128,7 +128,7 @@ The scenes in the cards and trade cards come from the brief and from part 2 of r
 The case studies are samples until real client material is supplied. This section makes no claim that they are real clients. Hide it or keep it only while the case study pages carry their sample label.
 "There is no pitch to sit through" comes from src/app/home-faqs.ts.
 The old "How do you work out what I am losing?" question is gone on purpose. There is no loss estimate any more.
-Humanize skill run on 24 Nov 2026.
+Humanize skill run on 24 Nov 2026, and again after the voice change.
 Voice changed to company and role on 25 Nov 2026.
 The international experience sentence sits in the "You get a media buyer, not a score." section. It follows the brief: the campaigns are the founder's, the company is new, no company is named. It appears once on this page.
 The live opener (src/app/new/opener.tsx) still shows a name above its first line. It needs the same voice change, or the page will name a person the copy no longer names.

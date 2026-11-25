@@ -61,7 +61,7 @@ Spend, inquiries and bookings on one line each week. Likes are not on it.
 #### Should a deposit come before the booking?
 That is your decision, and some treatments suit it better than others. If no-shows turn out to be the problem, the fix comes with the words to ask for one politely.
 #### The receptionist has no time for WhatsApp. What then?
-Then she pastes a first reply that was written once: price, two slots, one question. That is the kind of wording you get.
+Then she pastes a first reply written once: price, two slots, one question. That is the kind of wording you get.
 #### Do you need patient names or records?
 None. The diagnosis asks for counts and rough shillings, and patient details stay in your clinic.
 #### Does it work for a salon, a spa or a barbershop?
@@ -81,7 +81,7 @@ The second Meta file, the one made from a sales spreadsheet, is left out here to
 The deposit card says a deposit gives the client a reason to keep the time. It does not say how many more will show up, and no figure should be added.
 Clinics may have their own rules on advertising health services. Nobody has checked them for this page. Worth a look before launch.
 The case study card says "sample" in the visible copy.
-Humanize skill run on 24 Nov 2026.
+Humanize skill run on 24 Nov 2026, and again after the voice change.
 Voice changed to company and role on 25 Nov 2026.
 Sources:
 - https://www.facebook.com/business/help/170456843145568

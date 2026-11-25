@@ -16,7 +16,7 @@ This page has no star ratings. Each review sits beside the numbers it describes:
 
 ## quote
 eyebrow: Property
-> Review slot, property. The owner's own words go here: what the inquiries were like before, what changed in how the agents reply, and how many deposits followed.
+> Review slot, property. The client's own words go here: what the inquiries were like before, what changed in how the agents reply, and how many deposits followed.
 attribution: [Client name, business, town]
 [LINK: See the receipt behind this review -> /case-studies/property-agency]
 [IMAGE: Portrait of the client at their office or on a site | 1:1]
@@ -51,7 +51,7 @@ Ten questions, about 3 minutes. Nobody calls you unless you ask.
 [BUTTON: Start my free diagnosis -> /questionnaire]
 
 ## notes
-Humanize skill run on 24 Nov 2026.
+Humanize skill run on 24 Nov 2026, and again after the voice change.
 Status is sample. The three quote sections are slots that say what a real review should cover. They are not quotes and must not be published as written. Replace each with a real client's words, name, business and town, and link it to that client's real case study.
 Each slot carries its trade tag as an eyebrow and a link to the matching case study, following the "cards tagged by sector, each linked to its matching receipt" structure in research/competitors.md. Builder: the quote layout in src/app/new/render.tsx currently draws only the quote line, the attribution and the image, so the eyebrow and the link will not show until the layout handles them. The trade is also named inside each slot line so the tag is visible today.
 No star ratings anywhere on this page, by instruction.

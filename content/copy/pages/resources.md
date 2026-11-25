@@ -84,6 +84,6 @@ One sentence answers: the three live guides are summarised from src/app/guides/c
 The M-Pesa payment line is from the research file, Part 1 (Meta help: Kenya payments).
 Two live guide questions use the word "leads" because that is the question as owners search it and as the live pages are titled.
 The two comparison cards follow the descriptions in compare__hiring-an-agency.md and compare__doing-it-yourself.md as they stood on 24 Nov 2026. The four sibling guides were also present by then and their opening answers match these cards.
-Humanize skill run on 24 Nov 2026.
+Humanize skill run on 24 Nov 2026, and again after the voice change.
 Sources:
 - https://www.facebook.com/business/help/1946853292237629

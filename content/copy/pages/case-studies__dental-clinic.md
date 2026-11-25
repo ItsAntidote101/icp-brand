@@ -67,7 +67,7 @@ Ten questions, about 3 minutes. Rough numbers from memory are enough.
 [BUTTON: Start my free diagnosis -> /questionnaire]
 
 ## notes
-Humanize skill run on 24 Nov 2026.
+Humanize skill run on 24 Nov 2026, and again after the voice change.
 Status is sample. No real client. The business is described, not named. Every figure and both months are illustrative and must be replaced with a real client's receipt before launch.
 Arithmetic: 60,000 / 200 = 300. 60,000 / 240 = 250. 60,000 / 20 = 3,000. 60,000 / 40 = 1,500.
 The scene (price list sent with no slot offered; no deposit so no-shows; the empty 2pm chair) is the typical clinics scene from research/kenya-and-demand.md Part 2, marked there as unsourced typical phrasing.

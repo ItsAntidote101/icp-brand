@@ -21,7 +21,7 @@ The diagnosis and one 20 minute call are free, with no card. A plan adds the fil
 #### M-Pesa or card
 Checkout runs through Paystack. Prices are in Kenya shillings.
 #### One month at a time
-Nothing renews on its own. A reminder comes a week before your month ends, and you decide whether to pay again.
+Nothing renews on its own. We send a reminder a week before your month ends, and you decide whether to pay again.
 #### Renew early and the days are added
 Pay before your month is up and the new 30 days go on the end of what you have.
 #### Stop any time
@@ -71,5 +71,5 @@ The plans section pulls the four plans from src/app/new/plans.ts. Its Starter li
 "Can I change plans?" and the pay the difference rule come from src/app/pricing/page.tsx.
 The Agency line "Re-run market research up to 3 times a day" is on the old pricing page but not in the brief or in plans.ts, so it is not mentioned.
 No market facts are used on this page.
-Humanize skill run on 24 Nov 2026.
+Humanize skill run on 24 Nov 2026, and again after the voice change.
 Voice changed to company and role on 25 Nov 2026.

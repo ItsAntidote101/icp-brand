@@ -40,13 +40,13 @@ How quickly a new inquiry gets a reply.
 ## cards
 ### What comes back
 #### Your own arithmetic
-Your cost per inquiry, your cost per sale, and what one more buyer in every ten inquiries would be worth. All from the figures you gave.
+Your cost per inquiry, your cost per sale and what one more buyer in every ten inquiries would be worth. All from the figures you gave.
 #### A score out of 100
 Or a launch plan, if you have not started ads.
 #### Your top problems
 In plain language.
 #### Three fixes for this week
-With the words to use for the first one. Wording for every fix comes with Starter.
+With the words to use for the first one. The words for every fix come with Starter.
 [LINK: What the paid plans add -> /pricing]
 #### A call, if you ask for it
 One free 20 minute call with a media buyer. You open your report together and agree what to fix first.
@@ -71,7 +71,7 @@ The questions are about calls, WhatsApp messages and forms. They will not match 
 #### You want your account audited line by line
 That needs account access, and the diagnosis takes none.
 #### You want someone to run the ads
-Ideal ICP does not run ads. Ask us about full management by message.
+Ideal ICP does not run ads. Message us to ask about full management.
 [LINK: Write to us -> /contact]
 
 ## faq
@@ -98,5 +98,5 @@ Service page structure borrowed from research/competitors.md: summary box on top
 The free and full report difference comes from src/app/pricing/page.tsx.
 "They will not match an online shop" is a judgement from the brief's reader (owners who sell through inquiries), not a stated product rule. Check with Eugene.
 No market facts are used on this page.
-Humanize skill run on 24 Nov 2026.
+Humanize skill run on 24 Nov 2026, and again after the voice change.
 Voice changed to company and role on 25 Nov 2026.

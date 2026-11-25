@@ -64,7 +64,7 @@ Ten questions, about 3 minutes, no login to your ad account.
 
 ## notes
 Voice changed to company and role on 25 Nov 2026.
-Humanize skill run on 24 Nov 2026.
+Humanize skill run on 24 Nov 2026, and again after the voice change.
 The five steps are meant to be usable with no account at Ideal ICP. Steps 1, 3 and 5 follow article angles 8, 15, 2 and 10 in research/kenya-and-demand.md Part 3.
 Step 4 uses two platform facts with sources: the search terms report shows what people typed, and negative keywords do not cover plurals or close variants, so each plural is added separately.
 Step 5 uses the word "Leads" only because it is the label an owner will see in Meta Ads Manager. Check the label is still current before launch.

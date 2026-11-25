@@ -54,7 +54,7 @@ While you are still finding out who responds, ad set budgets give each audience 
 ## split
 eyebrow: Why a person reviews it
 ### Setup is a judgement, not a formula
-The plan is worked out from your numbers by rule. Rules miss things: a seasonal intake, a price change, a month when the phone was off. So your media buyer reads it against your real numbers and says where they agree and where they would differ.
+The plan is worked out from your numbers by rule. Rules miss things: a seasonal intake, a price change, a month when the phone was off. So your media buyer reads it against your real numbers and says where they agree with it and where they would differ.
 [LINK: See the Pro plan -> /pricing]
 [IMAGE: A media buyer comparing a client's weekly numbers with a campaign plan on a second screen | 4:3]
 
@@ -91,7 +91,7 @@ The code moves an owner to Target CPA at about 30 counted inquiries a month with
 The review is asked for by the owner with a button on the dashboard ("Ask Eugene to review my setup"). The dashboard button still names a person and needs the same voice change. The hero says "Your media buyer reviews it against your real numbers before you build anything". If a review should happen without being asked, the product needs to change, or this line does.
 The examples in "Setup is a judgement" (seasonal intake, price change, phone off) are illustrations, not findings.
 "A judgement, not a formula" is the one contrast of that kind on this page.
-Humanize skill run on 24 Nov 2026.
+Humanize skill run on 24 Nov 2026, and again after the voice change.
 Voice changed to company and role on 25 Nov 2026.
 Sources:
 - Google bid strategies and names: https://support.google.com/google-ads/answer/2472725?hl=en

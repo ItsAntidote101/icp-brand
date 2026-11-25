@@ -80,7 +80,7 @@ The Meta file made from a sales spreadsheet is also kept off, out of the same ca
 There is no insurance case study in the sitemap, so the card links to /case-studies and says so plainly.
 No statistic is used. The insurance penetration figure in the research file was left out on purpose.
 In the visible copy "we" is Ideal ICP. One FAQ question keeps "us" ("or is it us?"), where the agency is plainly the one speaking.
-Humanize skill run on 24 Nov 2026.
+Humanize skill run on 24 Nov 2026, and again after the voice change.
 Voice changed to company and role on 25 Nov 2026.
 Sources:
 - https://www.facebook.com/business/help/170456843145568

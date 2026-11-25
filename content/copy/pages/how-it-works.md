@@ -16,19 +16,19 @@ The diagnosis needs no login to Google or Meta. Your ad account shows the click,
 
 ## split
 ### Why answers beat account access
-An ad account records everything up to the click. What comes after sits in your phone and your head: who replied, how fast, and whether anyone wrote again. So the diagnosis asks you. Rough numbers from memory are enough.
+An ad account records everything up to the click. The rest is on your phone and in your head: who replied, how fast, and whether anyone wrote again. So the diagnosis asks you. Rough numbers from memory are enough.
 [IMAGE: Two phones side by side, one showing ad results full of clicks, the other an unanswered WhatsApp inquiry | 4:3]
 
 ## steps
 ### Day one, free
 #### The conversation
-It opens with what a media buyer asks every new client: what goes into ads, how many inquiries come, how many buy. Ten questions, about three minutes.
+It opens with what a media buyer asks every new client: what you spend on ads, how many inquiries come, how many buy. Ten questions, about three minutes.
 #### Your own numbers
 You see your cost per inquiry, your cost per sale, and what one more buyer in every ten inquiries would be worth.
 #### The report
 A score out of 100 and your top problems, in plain language, or a launch plan if you have not started ads. If your numbers are healthy, the report says so.
 #### Three fixes for this week
-Most important first, with the words to use for that one.
+Most important first, and that one comes with the words to use.
 #### A call, if you ask
 One free 20 minute call with a media buyer to go through the report. Nobody calls you otherwise.
 
@@ -77,13 +77,13 @@ Three months of spend, inquiries and buyers sit side by side, with dates. Then y
 #### Who writes the report, you or a computer?
 The questions and the report run on software, labelled as AI. The call, the monthly note, the setup review and the replies to your messages come from your media buyer.
 #### Do I have to pay to see my report?
-No. The score, your top problems and three fixes are free. The full report, with every problem and the whole fix plan, comes with Starter.
+No. The score, your top problems and three fixes are free. The full report comes with Starter: every problem and the whole fix plan.
 #### Can I stop after one month?
 Yes. You pay one month at a time by M-Pesa or card, and nothing renews on its own.
 
 ## band
 ### Day one costs nothing.
-Ten questions, about three minutes, and nobody calls unless you ask.
+Ten questions take about three minutes, and nobody calls unless you ask.
 [BUTTON: Start my free diagnosis -> /questionnaire]
 
 ## notes
@@ -94,7 +94,7 @@ The three figures under "Your own numbers" are the ones the opener works out fro
 "Who writes the report": the split between software and the media buyer follows the "Who does what" block on the About page. The word software describes what sits behind the business, as the brief allows. The product itself is never called software.
 The hands-on jobs are the four in src/lib/hands-on.ts. The image assumes a session happens on a call. Confirm the format before choosing the photo.
 "Three months, if you do the work" describes what the owner does and what is on the dashboard by then. It promises no result.
-Humanize skill run on 24 Nov 2026.
+Humanize skill run on 24 Nov 2026, and again after the voice change.
 Voice changed to company and role on 25 Nov 2026.
 The international experience sentence sits in the "A written note from your media buyer" section, beside the About link. It follows the brief: the campaigns are the founder's, the company is new, no company is named. It appears once on this page.
 Several sentences elsewhere on the page were tightened on 25 Nov 2026 so the page is no longer than before the experience sentence was added. No fact, number or link was removed.

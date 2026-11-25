@@ -10,13 +10,13 @@ links_to: /case-studies/property-agency, /case-studies/college-intake, /case-stu
 ## hero
 eyebrow: Sample. Replace with a real client before this page goes live.
 # Spend, inquiries, buyers. Before and after, with dates.
-A case study here is a receipt for one business in one season, not a benchmark for yours.
+A case study here is a receipt for one business in one season. It is no benchmark for yours.
 [BUTTON: Show me where mine are lost -> /questionnaire]
 [IMAGE: A notebook page with three handwritten columns, spend, inquiries and buyers, beside a phone showing an M-Pesa statement | 4:3]
 
 ## cards
 ### Three receipts
-These three are samples. The real ones will be campaigns our founder ran for companies in the United States, the United Kingdom and South Africa before Ideal ICP existed, shown as that, with the receipts.
+These three are samples. The real ones will be campaigns our founder ran for companies in the United States, the United Kingdom and South Africa before Ideal ICP existed. We will show them as that, with the receipts.
 #### A property agency in Kilimani
 Inquiries fell from 240 a month to 150. Deposits went from 2 to 5 on the same KES 120,000.
 [LINK: Read the property receipt -> /case-studies/property-agency]
@@ -45,7 +45,7 @@ Ten questions, about 3 minutes, no ad account login.
 [BUTTON: Start my free diagnosis -> /questionnaire]
 
 ## notes
-Humanize skill run on 24 Nov 2026.
+Humanize skill run on 24 Nov 2026, and again after the voice change.
 Status is sample. The three cards repeat the headline figures from the three sample case study files; if a figure changes there, change it here.
 The receipts idea (spend, inquiries, buyers, dates) and the "one job is no benchmark" warning are borrowed structures named in research/competitors.md. No market fact is used, so there is no Sources list.
 The list of what a case study never contains comes from "The sameness" items 5, 6 and 7 in research/competitors.md. No competitor is named.

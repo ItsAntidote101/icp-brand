@@ -34,7 +34,7 @@ Ten questions on numbers you roughly know: ad spend, inquiries, paying clients, 
 
 ## split
 ### What we hand the firm
-One fix is worded for you free. Starter, KES 6,500 a month, words them all:
+We word one fix for you free. Starter, KES 6,500 a month, words them all:
 - A first reply that names the consultation fee, then asks one question
 - Intake questions for your form
 - The fee note follow up
@@ -58,13 +58,13 @@ Sort out who will pay for a consultation before you start advising.
 ## faq
 ### Questions firms ask
 #### Are advocates allowed to advertise this way?
-Advocates work under advertising rules, and you should check the current ones before any ad runs. You paste every word yourself, so nothing goes out unread, and none of our wording promises an outcome in a matter.
+Advocates work under advertising rules, so check the current ones before any ad runs. You paste every word yourself, so nothing goes out unread, and none of our wording promises an outcome in a matter.
 #### How does a firm charge a consultation fee without scaring people off?
 Name it in the first reply, say what the session covers, and ask one question about the matter. Some will leave. That is the reply doing its job.
 #### Is this page for accountants and consultants too?
 It is. Swap consultation fee for proposal and brief for scope. The loss is the same: work done before anyone agrees to pay.
 #### Do you run the firm's ads?
-We do not. You are shown what to fix and handed the files and wording, and on a paid plan your cost per inquiry is tracked each week. For full management, ask by message.
+We do not. We show you what to fix and hand you the files and wording, and on a paid plan we track your cost per inquiry each week. For full management, ask by message.
 
 ## band
 ### Do not pay for more voice notes yet.
@@ -80,7 +80,7 @@ Terms borrowed from that entry: consultation fee, retainer, fee note, brief, fre
 Meta customer file: offered as something the firm can skip, because client lists are confidential. This is the copywriter's caution, not a Meta rule. A firm whose clients come to it over money matters may also fall under Meta's ban on lists based on financial information (Meta help pages below, read 24 Nov 2026). Decide whether to remove the file from this trade altogether.
 "What we hand the firm": the wording items are examples. Wording is written for each fix out of the firm's own answers, so what a firm receives depends on its report. "Pupillage" is an example of a word to block (job seekers, not clients).
 There is no matching case study in the sitemap, so the card links to /case-studies and says so.
-Humanize skill run on 24 Nov 2026.
+Humanize skill run on 24 Nov 2026, and again after the voice change.
 Voice changed to company and role on 25 Nov 2026.
 Sources:
 - https://nairobilawmonthly.com/what-is-the-point-in-restricting-advertising-for-legal-services/

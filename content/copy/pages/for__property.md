@@ -78,7 +78,7 @@ The third loss card (trust) leans on the research note that a Nairobi agent told
 The Meta customer list file is offered here without saying what it is used for, because Meta limits some audience features for housing ads (research glossary, lookalike audience entry). Do not add a lookalike promise. The list is converted in the owner's browser and is not sent to Ideal ICP (src/lib/customer-list.ts).
 The case study card is labelled as a sample in the visible copy. Update the card when a real client replaces it.
 Plan facts from the brief and src/app/pricing/page.tsx.
-Humanize skill run on 24 Nov 2026.
+Humanize skill run on 24 Nov 2026, and again after the voice change.
 Voice changed to company and role on 25 Nov 2026.
 Sources:
 - https://nation.africa/kenya/life-and-style/realtors-lean-on-tiktok-youtube-to-grow-business--4510164

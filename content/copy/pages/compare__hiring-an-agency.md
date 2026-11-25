@@ -17,7 +17,7 @@ Those are two different jobs, and sometimes the agency is the right one. This pa
 ## split
 ### What an agency does that Ideal ICP does not
 - Runs the ads for you, inside your account.
-- Makes the photos, the videos, the designs.
+- Makes the photos, videos and designs.
 
 That is real work and worth paying for. Ideal ICP hands you files and wording. You still press the buttons yourself.
 [IMAGE: A small video shoot in a Nairobi showroom, one person filming a product on a phone gimbal | 4:3]
@@ -75,7 +75,7 @@ Ten questions, about 3 minutes, no login.
 
 ## notes
 Voice changed to company and role on 25 Nov 2026.
-Humanize skill run on 24 Nov 2026.
+Humanize skill run on 24 Nov 2026, and again after the voice change.
 No agency is named in the visible copy, by instruction.
 The fee sentence uses the wording approved in the task; on 25 Nov 2026 only its voice changed ("Nairobi agencies I read" became "the Nairobi agency sites we read", "my plans" became "our plans"). The figures behind it are the sites' own published, unverified fees as recorded in research/competitors.md on 24 November 2026: one site states Ksh 35,000 a month or 12 percent of spend, one states Google Ads management from KES 55,000, one states packages from Ksh 50,000 to 150,000 plus ad spend.
 "What we did not find on the sites we read" rests on the "Gaps nobody fills" list in research/competitors.md, which covers the sites listed under Sources there (agencies, ad software and two one-person businesses). It is a statement about those sites only, not about every agency. Two sites partly touch these points (one mentions follow up as a condition of fit), so the heading says "did not find" and the copy avoids "no agency does this".

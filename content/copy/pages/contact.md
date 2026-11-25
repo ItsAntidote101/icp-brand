@@ -32,19 +32,19 @@ If you are asking why your ads are not bringing buyers, ten questions will tell 
 ## faq
 ### Before you write
 #### Will someone call me after I send this?
-No. Nobody calls unless you ask. The free diagnosis comes with one 20 minute call with a media buyer, and you choose whether to take it.
+No. Nobody calls unless you ask. The free diagnosis includes one 20 minute call with a media buyer, and you choose whether to take it.
 #### Can you run my ads for me?
-Ideal ICP does not run your ads. We hand you the files and the wording, and a media buyer works alongside you. For full management, say so in your message.
+Ideal ICP does not run your ads. We hand you the files and the wording, and a media buyer works alongside you. If you want full management, say so in your message.
 #### I am already on a paid plan. Should I write here?
 Use your dashboard instead. Messages there go to your media buyer.
 
 ## band
 ### Or skip the message and see for yourself.
-Ten questions about your inquiries, about 3 minutes, no access to your ad account.
+Ten questions on your inquiries, about 3 minutes, no access to your ad account.
 [BUTTON: Show me where they are lost -> /questionnaire]
 
 ## notes
-Humanize skill run on 24 Nov 2026.
+Humanize skill run on 24 Nov 2026, and again after the voice change.
 Voice changed to company and role on 25 Nov 2026.
 "The form below comes to me and to nobody else" became "goes to a media buyer, not a bot or a sales desk". The promise kept is that a person who buys media reads and answers every message. The page no longer says it is one named person, and it does not say how many people there are.
 The WhatsApp number is a placeholder: "[WhatsApp number to come]". No phone number, address or reply time is stated anywhere on the page, by instruction. Replace the placeholder with the real number, and consider making it a tappable WhatsApp button beside the form.

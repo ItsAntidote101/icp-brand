@@ -38,7 +38,7 @@ You should know which is which.
 #### What your media buyer does
 Takes the free call, reads the numbers you log, writes your monthly note and answers your messages.
 #### What the software does
-It asks the questions, drafts your report from your answers and researches your market every week. It is labelled as AI and shows its sources.
+Asks the questions, drafts your report from your answers and researches your market every week. The software is labelled as AI and shows its sources.
 #### What neither does
 Log in to your ad accounts, or dress an estimate up as a fact.
 
@@ -63,7 +63,7 @@ Eugene Kwata trained as a graphic designer and spent two years making ads, then 
 
 ## map
 ### Built on campaigns run in three countries
-Before Ideal ICP, our founder ran paid campaigns for companies in these markets. That experience now works for businesses in Kenya.
+Before Ideal ICP, our founder ran paid campaigns for companies in these markets. What he learned there now goes to businesses in Kenya.
 #### South Africa
 Ad campaigns for consumer brands selling online.
 #### United Kingdom
@@ -79,7 +79,7 @@ Ten questions, about 3 minutes. If the numbers are healthy, we will say so.
 [BUTTON: Start my free diagnosis -> /questionnaire]
 
 ## notes
-Humanize skill run on 24 Nov 2026.
+Humanize skill run on 24 Nov 2026, and again after the voice change.
 Voice changed to company and role on 25 Nov 2026.
 This is now the company's page. Order: what Ideal ICP is (hero), why it exists, what it believes, the name, who does what (a media buyer and software), what it will not do, the founder. The page does not say how many people work at Ideal ICP, and the old "whole team" line is gone.
 The founder section is the only place on the site that names a person. His background (graphic designer by training, two years making ads, then media buying) and the international experience (lead generation campaigns on Google and Meta for companies in the United States, the United Kingdom and South Africa, in legal services, claims and consumer brands) are taken from the brief's "Where the experience comes from" section. No employer or client is named. "Ideal ICP is new" is stated so nobody reads the experience as the company's history.

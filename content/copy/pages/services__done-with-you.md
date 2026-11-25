@@ -17,7 +17,7 @@ One job per session: your CRM connection, your tracking or your campaign setup. 
 ## ladder
 ### In short
 #### Who it suits
-An owner who knows something needs setting up and wants it done once, properly, with a media buyer alongside.
+An owner who knows something needs setting up and wants it done properly the first time, with a media buyer alongside.
 #### Plan
 One session a month on Pro and up to four on Agency.
 #### Price
@@ -36,12 +36,12 @@ So Google and Meta count your inquiries properly.
 Set up or restructured together, inside your own ad account, from your campaign setup plan.
 [LINK: The campaign setup plan -> /services/campaign-setup]
 #### Something else
-Say what you need a hand with when you ask.
+When you ask, say what you need a hand with.
 
 ## split
 eyebrow: To be clear
 ### A session is not ad management
-In a session you set one thing up together and see every step. Afterwards the account is still yours to run. Between sessions nobody from Ideal ICP logs in, changes your bids or watches your campaigns day to day. For that, ask us about full management by message.
+In a session you set one thing up together and see every step. The account stays yours to run. Between sessions nobody from Ideal ICP logs in, changes your bids or watches your campaigns day to day. That is full management. Ask us about it by message.
 [LINK: See Pro and Agency -> /pricing]
 [IMAGE: An owner changing a setting in her own ad account while a call runs on the phone beside her | 4:3]
 
@@ -50,7 +50,7 @@ In a session you set one thing up together and see every step. Afterwards the ac
 #### You are on Free or Starter
 Sessions come with Pro and Agency. On Starter you still have the files, the wording and your media buyer's replies to your messages.
 #### Nobody from your business can be there
-The work is done with you. If no one can sit in, the session cannot happen.
+Your media buyer does the work with you. If no one can sit in, the session cannot happen.
 #### You want a session every week on Pro
 Pro includes one a month. In between, message your media buyer any time from your dashboard.
 
@@ -78,6 +78,6 @@ Limits come from the brief and the code: one a month on Pro, up to four on Agenc
 "Do I have to give you my password?" follows the brief (no access to your ad account) and the About page (nobody logs in to ad accounts). How the media buyer sees the owner's screen in a session is not stated anywhere I could read. Confirm.
 Session length and format (call, video, in person) are not stated in the brief or the code, so the page gives neither. The two images assume a call. Change them if sessions are held another way.
 "You see every step" describes the session. It does not promise the owner can do it alone afterwards.
-Humanize skill run on 24 Nov 2026.
+Humanize skill run on 24 Nov 2026, and again after the voice change.
 Voice changed to company and role on 25 Nov 2026.
 No market facts are used on this page.

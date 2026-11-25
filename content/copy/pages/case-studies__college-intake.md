@@ -22,7 +22,7 @@ A college in Thika, between its January and May intakes. Ad spend came down by K
 ## steps
 ### What changed
 #### The boosted posts were switched off
-They brought likes and no paid fees, so the fix plan cut them first. That is the KES 20,000 a month that came off the spend.
+They brought likes and no paid fees, so the fix plan cut them first. That took KES 20,000 a month off the spend.
 #### The fee structure reply got a second half
 The office pasted new wording: the PDF, then one question about the course and start date, and a named day to visit.
 #### Overnight inquiries landed on one list
@@ -63,11 +63,11 @@ The hands-on session in this receipt is on the Pro plan, KES 13,000 a month. The
 
 ## band
 ### Check the gap before your next intake.
-Ten questions, about 3 minutes, and no login to your ad account.
+Ten questions, about 3 minutes. No login to your ad account.
 [BUTTON: Start my free diagnosis -> /questionnaire]
 
 ## notes
-Humanize skill run on 24 Nov 2026.
+Humanize skill run on 24 Nov 2026, and again after the voice change.
 Status is sample. No real client. The business is described, not named. Every figure and both intakes are illustrative and must be replaced with a real client's receipt before launch.
 Arithmetic: 80,000 / 400 = 200. 60,000 / 400 = 150. 80,000 / 8 = 10,000. 60,000 / 16 = 3,750. Spend difference 80,000 minus 60,000 = 20,000.
 The scene (fee structure PDF and nothing after; evening inquiries waiting for the office) is the typical schools scene from research/kenya-and-demand.md Part 2, marked there as unsourced typical phrasing.

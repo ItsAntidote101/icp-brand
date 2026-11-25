@@ -54,7 +54,7 @@ Then there is your own selling time. A salon booking can close the same afternoo
 
 One buyer costs you less than you keep from the sale, with room to spare, and that holds for several weeks running. That is the whole test.
 
-If your line passes it, the ads are working and we will say so. If inquiries are steady and buyers are thin, the ads may be fine and the leak sits after the inquiry: who is asking, how fast they get a reply, whether anyone follows up. Putting more money in will not fix that part. On a paid plan, the Ideal ICP dashboard tracks your cost per lead every week, so it keeps the first half of the line for you. See [LINK: how the dashboard works -> /how-it-works].
+If your line passes it, the ads are working and we will say so. If inquiries are steady and buyers are thin, the ads may be fine and the leak is after the inquiry: who is asking, how fast they get a reply, whether anyone follows up. Putting more money in will not fix that part. On a paid plan, the Ideal ICP dashboard tracks your cost per lead every week, so it keeps the first half of the line for you. See [LINK: how the dashboard works -> /how-it-works].
 
 ### What should I stop counting?
 
@@ -86,7 +86,7 @@ Platform statements and where each was checked on 24 Nov 2026:
 - WhatsApp Business labels: WhatsApp help.
 - "Conversion is the action you told the platform to count": research file glossary, term 6.
 Not included because it could not be confirmed: any statement about where Google's Conversions column sits or what it shows by default.
-Humanize skill run on 24 Nov 2026.
+Humanize skill run on 24 Nov 2026, and again after the voice change.
 Sources:
 - https://www.facebook.com/business/help/592742404263530
 - https://www.facebook.com/business/help/840929489608411
