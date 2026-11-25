@@ -4,6 +4,8 @@
 // brought them (utm_* / fbclid / gclid from their first visit) in localStorage,
 // and sends each step to /api/track. Never throws.
 
+import { getConsent } from './consent'
+
 type Utm = Record<string, string>
 const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'fbclid', 'gclid']
 
@@ -103,15 +105,21 @@ export async function pushWithUserData(data: Record<string, unknown>, contact?: 
 
 export function track(event: string, meta?: Record<string, unknown>, contact?: Contact): void {
   try {
-    const body = JSON.stringify({
-      event,
-      anonId: getAnonId(),
-      path: window.location.pathname,
-      utm: captureUtm(),
-      meta: meta ?? null,
-    })
-    fetch('/api/track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, keepalive: true }).catch(() => {})
-    // Same step to GTM, e.g. event: 'questionnaire_completed'
-    void pushWithUserData({ event, ...(meta ?? {}) }, contact)
+    const consent = getConsent()
+    // Our own count of steps, only while analytics is allowed.
+    if (consent.analytics) {
+      const body = JSON.stringify({
+        event,
+        anonId: getAnonId(),
+        path: window.location.pathname,
+        utm: captureUtm(),
+        meta: meta ?? null,
+      })
+      fetch('/api/track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, keepalive: true }).catch(() => {})
+    }
+    // Same step to GTM, e.g. event: 'questionnaire_completed'. The hashed
+    // contact details are attached only when marketing is allowed.
+    if (consent.marketing) void pushWithUserData({ event, ...(meta ?? {}) }, contact)
+    else pushDataLayer({ event, ...(meta ?? {}) })
   } catch { /* tracking must never break the page */ }
 }
