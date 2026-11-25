@@ -113,7 +113,7 @@ One or two sentences.
 
 `status` is `ready` or `sample`. Every section starts with `## kind` on its own line. Only these kinds exist; pick the one whose layout fits:
 
-- `## hero` : eyebrow (optional), one `#` headline, short text, one button, one image.
+- `## hero` : eyebrow (optional), one `#` headline, short text, one button, one image. On the home page only, the hero may add `rotate: line one | line two | line three` (three short scenes that turn above the fixed headline, each matched to a drawn panel) and one `[LINK: ...]` as a second button.
 - `## opener` : no content. Places the live conversation that starts the diagnosis (home page only, directly after the hero).
 - `## split` : a `###` heading, up to 60 words or a short `- ` list, optional button, one image. Text beside a photo. Consecutive splits alternate sides.
 - `## cards` : optional `###` heading and one line, then 2 to 6 items, each written as `#### Item title` followed by one or two sentences and an optional `[LINK: text -> /path]`. An item may carry an `[IMAGE: ...]`.

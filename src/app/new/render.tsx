@@ -5,6 +5,8 @@ import { allCopy, copyByPath, teaser, type Block, type CopyPage, type Item, type
 import Opener from './opener'
 import ContactForm from './contact-form'
 import Clip from './clip'
+import HeroStage from './hero-stage'
+import AskBar from './ask-bar'
 import { PLANS } from './plans'
 import { MAP_DOTS, MAP_H, MAP_POINTS, MAP_W } from './world-dots'
 
@@ -158,6 +160,21 @@ function SectionView({ s, index, page, flip, dark }: { s: Section; index: number
           {img && <div className="ic-wrap"><Photo alt={img.alt} ratio="16:9" className="ic-top-photo" /></div>}
         </section>
       )
+      if (s.meta.rotate) {
+        // The home hero: a turning line, a fixed headline and three panels.
+        const text = (k: 'h1' | 'p') => { const b = s.blocks.find(x => x.t === k); return b && 'text' in b ? b.text.replace(/\*\*/g, '') : '' }
+        type Act = { t: 'button' | 'link'; text: string; href: string }
+        const btn = s.blocks.find((b): b is Act => b.t === 'button')
+        const more = s.blocks.find((b): b is Act => b.t === 'link')
+        return (
+          <HeroStage
+            eyebrow={s.meta.eyebrow} lines={s.meta.rotate.split('|').map(l => l.trim()).filter(Boolean)}
+            headline={text('h1')} text={text('p')}
+            primary={btn && { text: btn.text, href: btn.href.startsWith('#') ? btn.href : to(btn.href) }}
+            secondary={more && { text: more.text, href: to(more.href) }}
+          />
+        )
+      }
       return (
         <section className="ic-hero">
           <div className="ic-wrap ic-hero-in">
@@ -398,6 +415,7 @@ export function CopyPageView({ page }: { page: CopyPage }) {
           return <SectionView key={i} s={sec} index={i} page={page} flip={flip} dark={dark} />
         })}
       </main>
+      <AskBar home={hasOpener} startHref={`${BASE || '/'}#start`} />
       <footer className="ic-foot">
         <div className="ic-wrap ic-foot-in">
           <div>
@@ -579,7 +597,7 @@ const css = `
 .ic-band-in{display:grid;gap:8px;align-items:center}
 .ic-band .ic-btn{background:#fff;border-color:#fff;color:var(--navy)!important}
 .ic-band .ic-btn:hover{background:var(--navy);border-color:var(--navy);color:#fff!important}
-.ic-foot{background:#170f0f;color:rgba(255,255,255,.7);padding:56px 0 48px}
+.ic-foot{background:#170f0f;color:rgba(255,255,255,.7);padding:56px 0 130px}
 .ic-foot-in{display:grid;gap:34px}
 .ic-foot .ic-logo{color:#fff}
 .ic-foot p{font-size:15px;line-height:1.6;max-width:34ch;margin:14px 0 0}
