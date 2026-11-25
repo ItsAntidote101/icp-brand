@@ -4,7 +4,7 @@ title: For clinics, dentists, salons and spas | Ideal ICP
 description: They ask the price, book for tomorrow and never come. A free diagnosis shows how many inquiries become bookings that show up.
 question: How do I stop no-shows and price shoppers at my clinic or salon?
 status: ready
-links_to: /case-studies/dental-clinic, /guides/last-price-and-disappear, /guides/how-to-know-if-ads-are-working, /services/ready-to-upload, /questionnaire
+links_to: /guides/last-price-and-disappear, /guides/how-to-know-if-ads-are-working, /services/ready-to-upload, /questionnaire
 ---
 
 ## hero
@@ -45,10 +45,7 @@ This trade skips the Meta customer list file. Meta bars lists based on health in
 [IMAGE: A receptionist pasting a saved reply into WhatsApp on the clinic phone | 4:3]
 
 ## cards
-### A sample and two guides
-#### Sample case study: a dental clinic
-Ad spend, inquiries and bookings that showed up, before and after, with the months named. A sample for now, and labelled as one.
-[LINK: Read the sample dental case study -> /case-studies/dental-clinic]
+### Two guides for clinics and salons
 #### Last price, then silence
 The guide on what to send with the price so the chat does not end there.
 [LINK: Read last price and disappear -> /guides/last-price-and-disappear]
@@ -86,3 +83,4 @@ Voice changed to company and role on 25 Nov 2026.
 Sources:
 - https://www.facebook.com/business/help/170456843145568
 - https://www.facebook.com/business/help/606443329504150
+Case studies and reviews are held back until real clients replace the samples (25 Nov 2026). The card or section that pointed to them was taken out of this page for launch; put one back when the first real case study is published.

@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { ArrowRight, Check, ChevronDown, ImageIcon } from 'lucide-react'
 import { SiteStyles } from '../site'
-import { allCopy, copyByPath, teaser, type Block, type CopyPage, type Item, type Section } from '@/lib/site-copy'
+import { allCopy, copyByPath, heldBack, teaser, type Block, type CopyPage, type Item, type Section } from '@/lib/site-copy'
 import Opener from './opener'
 import ContactForm from './contact-form'
 import Clip from './clip'
@@ -9,16 +9,27 @@ import Explainer from './explainer'
 import HeroStage from './hero-stage'
 import { CookieSettings } from '@/components/GoogleTagManager'
 import AskBar from './ask-bar'
+import LandingView from './landing-view'
 import { PLANS } from './plans'
 import { MAP_DOTS, MAP_H, MAP_POINTS, MAP_W } from './world-dots'
 
 // Draws a page from its copy file (content/copy/pages) in the Ohio look:
 // Demo 23 for the home sections, with the plans beside questions block from
-// Demo 27. Type and colours are the brand's own. Photos are placeholders
-// until real ones are supplied; each box says what the photo should show.
+// Demo 27. Type and colours are the brand's own.
+//
+// Live on the domain since 25 Nov 2026. Two things are held back until the
+// real material exists: photos (see SHOW_PHOTO_BOXES) and the case studies
+// and reviews (pages marked `status: sample`, see src/lib/site-copy.ts).
 
-/** Where the new pages live while they are a hidden preview. Set to '' at launch. */
-export const BASE = '/new'
+/** Prefix for the copy pages. '' means they are served at the root of the site. */
+export const BASE = ''
+
+/**
+ * The copy marks where each photo goes ([IMAGE: ...]). Until real photos are
+ * supplied the boxes are left out and the layouts close up around the words.
+ * Set to true to see the striped boxes that say what each photo should show.
+ */
+const SHOW_PHOTO_BOXES = false
 
 type MenuLink = [href: string, label: string, note?: string]
 interface MenuItem {
@@ -29,6 +40,8 @@ interface MenuItem {
 }
 /** The main menu. Items with columns open a wide panel on desktop; on a phone they are listed in the menu. */
 const menu = (): MenuItem[] => {
+  const held = heldBack()
+  const open = (href: string) => !held.includes(href)
   const guides = allCopy().filter(c => c.path.startsWith('/guides/')).slice(0, 5)
     .map((c): MenuLink => [c.path, teaser(c).title])
   return [
@@ -64,8 +77,9 @@ const menu = (): MenuItem[] => {
       ],
     },
     { href: '/pricing', label: 'Pricing' },
-  ]
+  ].filter(m => open(m.href)).map(m => m.cols ? { ...m, cols: m.cols.map(c => ({ ...c, links: c.links.filter(([href]) => open(href)) })) } : m) as MenuItem[]
 }
+const foot = () => { const held = heldBack(); return FOOT.map(g => ({ ...g, links: g.links.filter(([href]) => !held.includes(href)) })) }
 const FOOT = [
   { title: 'Start', links: [['/how-it-works', 'How it works'], ['/pricing', 'Pricing'], ['/questionnaire', 'Free diagnosis'], ['/auth', 'Log in']] },
   { title: 'Who it is for', links: [['/for/property', 'Property'], ['/for/schools', 'Schools and colleges'], ['/for/insurance', 'Insurance and finance'], ['/for/clinics', 'Clinics and beauty'], ['/for/professional-services', 'Professional services']] },
@@ -73,7 +87,7 @@ const FOOT = [
   { title: 'Ideal ICP', links: [['/about', 'About us'], ['/contact', 'Contact'], ['/privacy', 'Privacy'], ['/terms', 'Terms']] },
 ]
 
-/** Pages that exist as copy are linked inside the preview; everything else keeps its live address. */
+/** Turns an address in the copy into a link. Copy pages get the prefix; everything else keeps its own address. */
 export const to = (href: string) => {
   if (!href.startsWith('/')) return href
   const [p, hash] = href.split('#')
@@ -92,6 +106,7 @@ const inline = (text: string) => {
 }
 
 function Photo({ alt, ratio, className = '' }: { alt: string; ratio: string; className?: string }) {
+  if (!SHOW_PHOTO_BOXES) return null
   const [w, h] = ratio.split(':').map(Number)
   return (
     <div className={`ic-photo ${className}`} style={{ aspectRatio: `${w || 4} / ${h || 3}` }} role="img" aria-label={`Photo to come: ${alt}`}>
@@ -181,6 +196,20 @@ function SectionView({ s, index, page, flip, dark }: { s: Section; index: number
           />
         )
       }
+      if (!SHOW_PHOTO_BOXES) return (
+        // No photo yet: the red block carries the page on its own, with the circle as a shape behind the words.
+        <section className="ic-hero ic-hero-solo">
+          <div className="ic-wrap">
+            <div className="ic-slab">
+              <i className="ic-slab-ring" aria-hidden="true" />
+              <div className="ic-slab-in">
+                {s.meta.eyebrow && <p className="ic-eye">{s.meta.eyebrow}</p>}
+                <Blocks blocks={s.blocks} skip={['image']} light />
+              </div>
+            </div>
+          </div>
+        </section>
+      )
       return (
         <section className="ic-hero">
           <div className="ic-wrap ic-hero-in">
@@ -209,6 +238,15 @@ function SectionView({ s, index, page, flip, dark }: { s: Section; index: number
     )
     case 'split': {
       const img = imageOf(s.blocks)
+      if (!videoOf(s.blocks) && !(img && SHOW_PHOTO_BOXES)) return (
+        // Words only: heading on the left, the rest beside it.
+        <section className="ic-sec">
+          <div className="ic-wrap ic-two">
+            <div className="ic-head">{s.meta.eyebrow && <p className="ic-eye">{s.meta.eyebrow}</p>}<Blocks blocks={s.blocks.filter(b => b.t === 'h3')} /></div>
+            <div className="ic-solo"><Blocks blocks={s.blocks} skip={['image', 'video', 'h3']} /></div>
+          </div>
+        </section>
+      )
       return (
         <section className="ic-sec">
           <div className={`ic-wrap ic-split${flip ? ' ic-flip' : ''}`}>
@@ -345,15 +383,19 @@ function SectionView({ s, index, page, flip, dark }: { s: Section; index: number
   }
 }
 
-export function CopyPageView({ page }: { page: CopyPage }) {
-  let splits = 0
-  let seenGrid = false
-  const hasOpener = page.sections.some(s => s.kind === 'opener')
+/**
+ * The header, footer and styles every public page shares. `home` is the page
+ * that carries the conversation (its header button jumps to it); `ask` shows
+ * the floating bar that offers the first diagnosis question.
+ */
+export function SiteShell({ home = false, ask = true, children }: { home?: boolean; ask?: boolean; children: React.ReactNode }) {
+  const hasOpener = home
   const MENU = menu()
   return (
-    <div className={`hp oh ic${hasOpener ? ' ic-home' : ''}`}>
+    <div className={`hp oh ic${home ? ' ic-home' : ''}`}>
       <SiteStyles />
       <style dangerouslySetInnerHTML={{ __html: css }} />
+      <LandingView />
       <header className="ic-nav">
         <div className="ic-wrap ic-nav-in">
           <Link href={to('/')} className="ic-logo"><i aria-hidden="true" />Ideal ICP</Link>
@@ -389,6 +431,7 @@ export function CopyPageView({ page }: { page: CopyPage }) {
               ))}
             </ul>
           </nav>
+          <Link href="/auth?tab=login" className="ic-login">Log in</Link>
           <Link href={hasOpener ? '#start' : '/questionnaire'} className="ic-btn ic-btn-sm">Free diagnosis</Link>
           <details className="ic-menu">
             <summary aria-label="Menu"><span /><span /><span /></summary>
@@ -408,27 +451,15 @@ export function CopyPageView({ page }: { page: CopyPage }) {
           </details>
         </div>
       </header>
-      {page.status === 'sample' && <p className="ic-sample">Sample. Replace with a real client before this page goes live.</p>}
-      <main>
-        {page.sections.map((s, i) => {
-          const flip = s.kind === 'split' || s.kind === 'quote' ? splits++ % 2 === 1 : false
-          const dark = (s.kind === 'cards' || s.kind === 'steps') && !seenGrid
-          if (s.kind === 'cards' || s.kind === 'steps') seenGrid = true
-          // On the home page the conversation sits right under the hero, so the hero button goes to it.
-          const sec = hasOpener && s.kind === 'hero'
-            ? { ...s, blocks: s.blocks.map(b => b.t === 'button' ? { ...b, href: '#start' } : b) }
-            : s
-          return <SectionView key={i} s={sec} index={i} page={page} flip={flip} dark={dark} />
-        })}
-      </main>
-      <AskBar home={hasOpener} startHref={`${BASE || '/'}#start`} />
+      {children}
+      {ask && <AskBar home={home} startHref={`${BASE || '/'}#start`} />}
       <footer className="ic-foot">
         <div className="ic-wrap ic-foot-in">
           <div>
             <p className="ic-logo"><i aria-hidden="true" />Ideal ICP</p>
             <p>A media buying service in Nairobi for businesses whose ads bring inquiries that do not buy.</p>
           </div>
-          {FOOT.map(g => (
+          {foot().map(g => (
             <nav key={g.title} aria-label={g.title}>
               <h2>{g.title}</h2>
               {g.links.map(([href, label]) => <Link key={href} href={to(href)}>{label}</Link>)}
@@ -441,7 +472,40 @@ export function CopyPageView({ page }: { page: CopyPage }) {
   )
 }
 
-export const previewPaths = () => allCopy().map(c => c.path)
+export function CopyPageView({ page }: { page: CopyPage }) {
+  let splits = 0
+  let seenGrid = false
+  const hasOpener = page.sections.some(s => s.kind === 'opener')
+  const faqs = page.sections.filter(s => s.kind === 'faq').flatMap(s => s.items)
+    .map(it => ({ q: it.title, a: it.blocks.map(b => b.t === 'p' ? plain(b.text) : b.t === 'ul' ? b.items.map(plain).join(' ') : '').filter(Boolean).join(' ') }))
+    .filter(f => f.a)
+  return (
+    <SiteShell home={hasOpener}>
+      {faqs.length > 0 && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          '@context': 'https://schema.org', '@type': 'FAQPage',
+          mainEntity: faqs.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+        }) }} />
+      )}
+      <main>
+        {page.sections.map((s, i) => {
+          const flip = s.kind === 'split' || s.kind === 'quote' ? splits++ % 2 === 1 : false
+          const dark = (s.kind === 'cards' || s.kind === 'steps') && !seenGrid
+          if (s.kind === 'cards' || s.kind === 'steps') seenGrid = true
+          // On the home page the conversation sits right under the hero, so the hero button goes to it.
+          const sec = hasOpener && s.kind === 'hero'
+            ? { ...s, blocks: s.blocks.map(b => b.t === 'button' ? { ...b, href: '#start' } : b) }
+            : s
+          return <SectionView key={i} s={sec} index={i} page={page} flip={flip} dark={dark} />
+        })}
+      </main>
+    </SiteShell>
+  )
+}
+
+/** Copy text without its marks, for search engines. */
+const plain = (t: string) => t.replace(/\[LINK:\s*(.+?)\s*->\s*.+?\]/g, '$1').replace(/\*\*/g, '')
+
 
 const css = `
 .ic{--blush:#fbeee6;--navy:#201515;--red:var(--accent);background:#fff;color:var(--ink)}
@@ -523,6 +587,19 @@ const css = `
 .ic-disc .ic-p{color:rgba(255,255,255,.92);margin-top:14px}
 .ic .ic-disc h1{font-size:clamp(34px,8.6vw,46px);color:#fff}
 .ic .ic-disc strong{color:#fff}
+.ic-slab{position:relative;overflow:hidden;background:var(--red);color:#fff;border-radius:6px;margin-top:clamp(16px,3vw,28px);padding:clamp(34px,7vw,92px) clamp(22px,6vw,84px)}
+.ic-slab-in{position:relative;max-width:720px}
+.ic-slab-ring{position:absolute;right:-9%;top:50%;width:min(52%,620px);aspect-ratio:1;border-radius:50%;background:#d32c06;transform:translateY(-50%)}
+.ic-slab-ring::after{content:'';position:absolute;inset:17%;border-radius:50%;background:#c12605}
+.ic-slab .ic-eye{color:rgba(255,255,255,.85)}
+.ic-slab .ic-p{color:rgba(255,255,255,.93);margin-top:16px;max-width:56ch}
+.ic .ic-slab h1{color:#fff;font-size:clamp(34px,5.2vw,62px)}
+.ic .ic-slab strong{color:#fff}
+.ic-slab .ic-act{margin-top:26px}
+.ic-solo>:first-child{margin-top:0}
+.ic .ic-login{display:none;font:500 15px/1 var(--body);color:var(--ink);text-decoration:none;padding:0 6px;height:40px;align-items:center}
+.ic .ic-login:hover{color:var(--red)}
+.ic .ic-legal section{padding:0}
 .ic-home .ic-hero-photo{display:none}
 .ic-home .ic-disc{margin-top:0;border-radius:4px}
 
@@ -645,6 +722,10 @@ const css = `
   .ic-flip>:first-child{order:2}
   .ic-two{grid-template-columns:1fr 1.25fr;gap:clamp(40px,6vw,88px);align-items:start}
   .ic-two .ic-head{margin:0;position:sticky;top:96px}
+  .ic-slab-ring{right:-4%}
+}
+@media (min-width:1180px){
+  .ic .ic-login{display:inline-flex}
   .ic-cards-4{grid-template-columns:repeat(4,1fr)}
   .ic-plans{grid-template-columns:repeat(4,1fr)}
   .ic-ladder li{grid-template-columns:190px 1fr;gap:24px}

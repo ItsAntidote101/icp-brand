@@ -1,11 +1,5 @@
-import Link from 'next/link'
-import { CookieSettings } from '@/components/GoogleTagManager'
-import { ArrowRight } from 'lucide-react'
-
-// Shared look and closing section for every public page: home, pricing, about
-// and the guides. One set of styles, one button wording.
-
-export const CTA = 'Get my free diagnosis'
+// Base styles (fonts, colours, buttons) shared by the public pages. The header,
+// footer and page layouts live in src/app/new/render.tsx.
 
 export const siteCss = `
 .hp{--ink:#201515;--ink2:#36342e;--muted:#605d52;--faint:#8a877b;--bg:#f8f4f0;--card:#fff;--line:rgba(201,192,177,.55);--fill:rgba(32,21,21,.05);--accent:#e8330a;--good:#15803d;
@@ -197,26 +191,4 @@ export const siteCss = `
 
 export function SiteStyles() {
   return <style dangerouslySetInnerHTML={{ __html: siteCss }} />
-}
-
-export function SiteFooter({ title, lead }: { title: string; lead?: string }) {
-  return (
-    <footer className="hp-dark">
-      <section className="hp-end">
-        <div className="hp-wrap">
-          <h2>{title}</h2>
-          <p className="hp-lead">{lead ?? '10 questions, about 3 minutes. Your score and your first fixes, free.'}</p>
-          <Link href="/questionnaire" className="hp-btn hp-btn-light">{CTA} <ArrowRight size={18} aria-hidden="true" /></Link>
-        </div>
-      </section>
-      <div className="hp-wrap">
-        <div className="hp-foot">
-          <span>© 2026 Ideal ICP, Nairobi</span>
-          <nav aria-label="Footer">
-            <Link href="/pricing">Pricing</Link><Link href="/guides">Guides</Link><Link href="/about">About</Link><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><CookieSettings /><a href="mailto:info@idealicp.com">Contact</a>
-          </nav>
-        </div>
-      </div>
-    </footer>
-  )
 }

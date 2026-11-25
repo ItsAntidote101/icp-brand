@@ -130,13 +130,22 @@ export function parseCopy(slug: string, raw: string): CopyPage {
 }
 
 let cache: CopyPage[] | null = null
-export function allCopy(): CopyPage[] {
+/** Every copy file, including pages still marked `status: sample`. */
+export function everyCopy(): CopyPage[] {
   if (cache) return cache
   let files: string[] = []
   try { files = fs.readdirSync(DIR).filter(f => f.endsWith('.md')) } catch { /* no copy yet */ }
   cache = files.map(f => parseCopy(f.replace(/\.md$/, ''), fs.readFileSync(path.join(DIR, f), 'utf8')))
   return cache
 }
+/**
+ * The pages the public can reach. A page marked `status: sample` (the case
+ * studies and reviews, until real clients replace them) is not built, not
+ * linked and not in the sitemap. Change its status to `ready` to publish it.
+ */
+export const allCopy = (): CopyPage[] => everyCopy().filter(c => c.status !== 'sample')
+/** Addresses of the pages held back, so menus can leave them out. */
+export const heldBack = (): string[] => everyCopy().filter(c => c.status === 'sample').map(c => c.path)
 export const copyByPath = (p: string) => allCopy().find(c => c.path === p)
 
 /** First headline and image of a page, for cards that link to it. */

@@ -4,7 +4,7 @@ title: For advocates, accountants and consultants | Ideal ICP
 description: Inquiries take free advice and never pay the consultation fee. A free diagnosis shows what each inquiry and each client costs you in ads.
 question: Why do people who contact my firm want free advice and never pay a consultation fee?
 status: ready
-links_to: /case-studies, /guides/why-google-ads-not-converting, /guides/qualify-leads-on-whatsapp, /services/ready-to-upload, /questionnaire
+links_to: /guides/why-google-ads-not-converting, /guides/qualify-leads-on-whatsapp, /services/ready-to-upload, /questionnaire
 ---
 
 ## hero
@@ -45,9 +45,6 @@ Your client list is confidential, so the Meta customer file is yours to skip.
 
 ## cards
 ### Further reading for a firm
-#### The sample case studies so far
-No law or accounting case study exists yet. The samples from other trades show the layout a real one will follow: dates, spend, inquiries, clients.
-[LINK: Browse the sample case studies -> /case-studies]
 #### Why Google Ads are not converting
 For when the clicks come from people searching for templates, jobs and free advice.
 [LINK: Read the Google Ads guide -> /guides/why-google-ads-not-converting]
@@ -86,3 +83,4 @@ Sources:
 - https://nairobilawmonthly.com/what-is-the-point-in-restricting-advertising-for-legal-services/
 - https://www.facebook.com/business/help/170456843145568
 - https://www.facebook.com/business/help/606443329504150
+Case studies and reviews are held back until real clients replace the samples (25 Nov 2026). The card or section that pointed to them was taken out of this page for launch; put one back when the first real case study is published.
