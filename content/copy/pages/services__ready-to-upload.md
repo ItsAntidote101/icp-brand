@@ -10,7 +10,7 @@ links_to: /questionnaire, /pricing, /services/done-with-you, /for/clinics
 ## hero
 eyebrow: Ready to upload, from Starter
 # A score fixes nothing. You get the files and the words.
-A Google keyword file, your own spreadsheets turned into Meta files, and the wording for every fix. Upload or paste them the same day.
+A Google keyword file, your spreadsheets turned into Meta files, and the wording for every fix. Upload or paste them the same day.
 [BUTTON: Start my free diagnosis -> /questionnaire]
 [IMAGE: A laptop with Google Ads Editor open and a keyword file being imported | 4:3]
 
@@ -28,13 +28,13 @@ Your customer or sales records in Excel or CSV, and someone who can open the ad 
 ## split
 eyebrow: Google
 ### Keywords and words to block, in one file
-A starter list for Google Search, built from what you sell and who buys it. Import the CSV in Google Ads Editor under Account, Import, From file. The rows arrive as proposed changes to keep or reject, and the words to block go in as negative keywords. The list has no search volumes, because I have no honest source for them.
+A starter list for Google Search, built from what you sell and who buys it. Import the CSV in Google Ads Editor under Account, Import, From file. The rows arrive as proposed changes to keep or reject, and the words to block go in as negative keywords. The list has no search volumes, because we have no honest source for them.
 [IMAGE: Google Ads Editor showing imported keywords and negative keywords as proposed changes | 4:3]
 
 ## split
 eyebrow: Meta
 ### Your customer list, converted on your own device
-Choose the spreadsheet you already keep. It becomes the CSV Meta accepts for a customer list custom audience, with country codes added to the phone numbers. The file is read on your device and never sent to me. Clinics, lenders and insurers: ask me before using it. Meta does not allow lists based on health or financial information.
+Choose the spreadsheet you already keep. It becomes the CSV Meta accepts for a customer list custom audience, with country codes added to the phone numbers. The file is read on your device and never sent to us. Clinics, lenders and insurers: ask your media buyer before using it. Meta does not allow lists based on health or financial information.
 [IMAGE: A customer spreadsheet on a laptop with names and Kenyan phone numbers, a download button beside it | 4:3]
 
 ## split
@@ -46,7 +46,7 @@ Your sales spreadsheet becomes a CSV for your dataset in Events Manager. Each sa
 ## split
 eyebrow: Words
 ### The words to paste for every fix
-Each fix in your plan comes with the thing itself: a first WhatsApp reply, ad text, the questions for an Instant form, or the exact values for a setting. Anything only you know, such as a price, stays in square brackets for you to fill in. I invent nothing.
+Each fix in your plan comes with the thing itself: a first WhatsApp reply, ad text, the questions for an Instant form, or the exact values for a setting. Anything only you know, such as a price, stays in square brackets for you to fill in. We invent nothing.
 [LINK: See what Starter includes -> /pricing]
 [IMAGE: A phone with a drafted first WhatsApp reply being pasted into a chat, the price still in square brackets | 3:4]
 
@@ -58,15 +58,15 @@ A file needs someone to upload it. If you want it done together, that is a hands
 #### You want search volumes and cost forecasts
 The keyword list has none. It is a starting list, and your own search terms after a week tell you more.
 #### You keep no record of customers or sales
-The Meta files are made from your spreadsheets. With no list there is no file, though the keywords and the wording still apply.
+The Meta files come from your spreadsheets. With no list there is no file, though the keywords and the wording still apply.
 #### Your list holds health or financial details
-Meta does not allow customer lists based on that. Clinics, lenders and insurers should ask me first.
+Meta does not allow customer lists based on that. Clinics, lenders and insurers should ask their media buyer first.
 [LINK: Ads for clinics and beauty -> /for/clinics]
 
 ## faq
 ### Questions about the files
 #### Is my customer list sent to Ideal ICP?
-No. The spreadsheet is read and converted on your own device. It is not sent to me or stored anywhere.
+No. The spreadsheet is read and converted on your device. It is not sent to us or stored anywhere.
 #### Will the keyword file change my campaigns by itself?
 No. In Google Ads Editor the rows arrive as proposed changes, and you keep or reject them. Put your campaign's exact name in the Campaign column first, or Editor creates a new campaign.
 #### If I block "job", is "jobs" blocked too?
@@ -78,7 +78,7 @@ Only people who gave you their details themselves. Meta scrambles the list befor
 
 ## band
 ### The diagnosis comes first. The files follow.
-The keyword list is built from your answers, so it starts with the ten questions.
+We build the keyword list from your answers, so it starts with the ten questions.
 [BUTTON: Start my free diagnosis -> /questionnaire]
 
 ## notes
@@ -91,7 +91,8 @@ Product details checked against the code, not only the brief:
 - Wording forms (WhatsApp reply, ad text, form questions, setting values, square brackets for facts only the owner knows) are in src/lib/fix-draft.ts.
 The health and financial caution is repeated in the customer list split, the sales file split and the "not a fit" card on purpose. The owner asked for it wherever the customer list file is mentioned. Extending it to the sales file is my addition. Confirm with Eugene.
 The dashboard also tells owners to upload sales every week or two "because Meta only uses recent sales". That reason has no source in the research file, so it is left out.
-Humanize skill run on 24 Nov 2026.
+Humanize skill run on 24 Nov 2026, and again after the voice change.
+Voice changed to company and role on 25 Nov 2026.
 Sources:
 - Google Ads Editor, import a CSV file, rows arrive as proposed changes: https://support.google.com/google-ads/editor/answer/30564?hl=en
 - Google Ads Editor, add multiple keywords: https://support.google.com/google-ads/editor/answer/56501?hl=en

@@ -22,7 +22,7 @@ If your inquiries already turn into buyers, more of them is what you need. If fo
 
 ### What does the sum look like?
 
-I made these numbers up to show the order of things. They are not a forecast.
+These numbers are made up to show the order of things. They are not a forecast.
 
 You spend KES 40,000 a month on ads and get 40 inquiries and 1 buyer. That buyer cost KES 40,000.
 
@@ -32,13 +32,13 @@ Now fix the replies first, so that 4 of the 40 buy. Same KES 40,000, no fee, KES
 
 ### What does an agency cost in Kenya?
 
-These fees are published on Kenyan agency sites. I read them on 24 November 2026, and all of them are before ad spend.
+These fees are published on Kenyan agency sites. We read them on 24 November 2026, and all of them are before ad spend.
 
 - One states Google Ads management from KES 35,000 a month or 12 percent of ad spend, whichever is higher.
 - One charges KES 55,000 to set up Google Ads campaigns and quotes monthly management separately.
 - One lists Facebook ads management at KES 80,000 and KES 150,000 a month, with a one time 30 day campaign at KES 50,000.
 
-That is three sites, so treat it as a sample. Another I read shows no price and asks you to request a quote. Your ad spend goes to Google or Meta on top of the fee, and Meta adds VAT to ad charges in Kenya.
+That is three sites, so treat it as a sample. Another we read shows no price and asks you to request a quote. Your ad spend goes to Google or Meta on top of the fee, and Meta adds VAT to ad charges in Kenya.
 
 ### When does hiring one make sense?
 
@@ -52,20 +52,20 @@ That is three sites, so treat it as a sample. Another I read shows no price and 
 - Who pays Google and Meta? You should, from your own account, so you see every charge.
 - What will the monthly report show? Ask for spend, inquiries and buyers. If they cannot report buyers, ask how the two of you will count them.
 - Who replies to the inquiries, and how fast? If the answer is "that is your side", you now know what to fix first.
-- How do I leave? Ask for the notice period in writing.
+- How does it end? Ask for the notice period in writing.
 
 ### What can I do before deciding?
 
 Check the inquiries you already paid for. [LINK: The free diagnosis -> /services/diagnosis] is ten questions and takes about three minutes. It needs no login to Google or Meta, and rough numbers from memory are enough. Nobody calls you unless you ask. You get a score out of 100, your top problems and three fixes for this week.
 
-If your numbers are healthy, the report says so. Then hiring someone to run more ads is a sensible next step, and you will walk into that meeting knowing what to ask for.
+If your numbers are healthy, the report says so. Then hiring someone to run more ads makes sense, and you will walk into that meeting knowing what to ask for.
 
 ## faq
 ### Short answers
 #### Is an agency better than a freelancer?
 Not by default. Put the same five questions to both. The answers matter more than the size of the office.
 #### Does Ideal ICP run my ads for me?
-No. I show you where buyers are lost and hand you the files and the words to fix it. You can message me to ask about full management.
+No. We show you where buyers are lost and hand you the files and the words to fix it. You can ask about full management by message.
 #### What does Ideal ICP cost?
 The diagnosis is free. Paid plans are KES 6,500, KES 13,000 and KES 26,000 a month, by M-Pesa or card, with no contract and nothing that renews on its own. The detail is on [LINK: the pricing page -> /pricing].
 
@@ -75,6 +75,7 @@ Ten questions, about three minutes, no access to your ad account.
 [BUTTON: Start my free diagnosis -> /questionnaire]
 
 ## notes
+Voice changed to company and role on 25 Nov 2026.
 Article for topic 12 in research/kenya-and-demand.md. Opening answer follows the research line for that topic. The research suggested linking to pricing; the task asks for one service or trade link in the prose, so the prose links to /services/diagnosis and the pricing link sits in the last faq answer. Remove the faq link if only two links are wanted.
 The agency sum uses made-up inputs and says so (40,000 / 1; 75,000 / 2 = 37,500; 40,000 / 4 = 10,000; 75,000 / 8 = 9,375, written as "about KES 9,400"; 35,000 of 65,000 is 54 percent). "Inquiries double" is an assumption inside the illustration, introduced with "Say". No outcome is promised.
 Agency fees: taken from research/competitors.md and re-read on the agencies' own pages on 24 Nov 2026. They are the sites' own published figures. Agencies are not named in the visible copy. Note one correction to the research file: the KES 55,000 figure is a campaign setup fee, with monthly management quoted separately, so the copy says that. The "no price, request a quote" site is the fourth Kenyan agency in competitors.md, also re-read on 24 Nov 2026.
@@ -83,7 +84,7 @@ Platform statements and where each was checked on 24 Nov 2026:
 - Google Ads access levels (Standard edits campaigns; Admin gives access, changes access levels and unlinks manager accounts) and the path Admin, then Access and security: Google Ads help.
 - Meta: add a partner under Partners in Meta Business Suite settings, give partial access for chosen tasks, remove the partner from the same place, all needing full control of the business portfolio: Meta help, via the Meta help article lookup (facebook.com blocks direct fetching).
 Ideal ICP facts (plan prices, payment, no contract, no login, nobody calls, does not run ads, full management by message) are from the brief.
-Humanize skill run on 24 Nov 2026.
+Humanize skill run on 24 Nov 2026, and again after the voice change.
 Sources:
 - https://akus.co.ke/google-ads-agency-in-kenya
 - https://nairobimarketing.com/google-ads-agency-kenya

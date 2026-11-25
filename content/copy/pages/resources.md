@@ -77,12 +77,13 @@ Ten questions, about three minutes. It needs no access to your ad account, and n
 [BUTTON: Start my free diagnosis -> /questionnaire]
 
 ## notes
+Voice changed to company and role on 25 Nov 2026.
 Hub page. The guides are split into three cards sections because a cards section holds 2 to 6 items; together they list all eleven guides in the sitemap (five, four and two). The order follows an owner's situation: before spending, when inquiries do not buy, reading the numbers.
 The first cards section on a page renders dark in the current layout. If that is not wanted for the guides, the builder can change it in the renderer; the copy does not depend on it.
 One sentence answers: the three live guides are summarised from src/app/guides/content.tsx. The eight new guides use the opening answer set for each topic in research/kenya-and-demand.md, Part 3. Four of those guides (Google ads not converting, boost or Ads Manager, paying for Facebook ads, Google or Facebook) were written separately, so if their opening answers change, update these cards to match.
 The M-Pesa payment line is from the research file, Part 1 (Meta help: Kenya payments).
 Two live guide questions use the word "leads" because that is the question as owners search it and as the live pages are titled.
 The two comparison cards follow the descriptions in compare__hiring-an-agency.md and compare__doing-it-yourself.md as they stood on 24 Nov 2026. The four sibling guides were also present by then and their opening answers match these cards.
-Humanize skill run on 24 Nov 2026.
+Humanize skill run on 24 Nov 2026, and again after the voice change.
 Sources:
 - https://www.facebook.com/business/help/1946853292237629

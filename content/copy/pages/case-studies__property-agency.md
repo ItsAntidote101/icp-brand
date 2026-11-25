@@ -67,10 +67,11 @@ Ten questions, about 3 minutes. Nobody calls you unless you ask.
 [BUTTON: Start my free diagnosis -> /questionnaire]
 
 ## notes
-Humanize skill run on 24 Nov 2026.
+Humanize skill run on 24 Nov 2026, and again after the voice change.
 Status is sample. No real client. The business is described, not named. Every figure and both months are illustrative and must be replaced with a real client's receipt before launch.
 Arithmetic: 120,000 / 240 = 500. 120,000 / 150 = 800. 120,000 / 2 = 60,000. 120,000 / 5 = 24,000. The KES 300 in "What took longer" is 800 minus 500.
 This is the case where inquiries go down while buyers go up, and cost per inquiry rises while cost per sale falls. Keep that shape if the figures are replaced, or move the point to another case study.
 The scene (price sent, no reply; eleven confirmed, three showed up) is the typical property scene from research/kenya-and-demand.md Part 2, which is marked there as unsourced typical phrasing, not recorded speech.
 The changes use Starter plan items only: ad text and reply wording to paste, and the Google file of words to block.
 The quote section is a slot, not a quote. Do not publish it as written.
+Voice changed to company and role on 25 Nov 2026.

@@ -33,7 +33,7 @@ Rough totals only: spend, quote requests, premiums paid or loans funded, how fas
 [IMAGE: An insurance agent reading a report on her phone with a stack of proposal forms on the desk | 3:4]
 
 ## split
-### What I hand you after the quote goes quiet
+### What we hand you after the quote goes quiet
 Your first fix comes worded, free. Starter, KES 6,500 a month, words the rest:
 - A quote follow up that ends with a question instead of "Kindly advise"
 - A message that chases the logbook and ID
@@ -41,12 +41,12 @@ Your first fix comes worded, free. Starter, KES 6,500 a month, words the rest:
 - Google keywords and blocked words
 Insurers and lenders skip the Meta customer list file. Meta does not accept lists built on financial information.
 [LINK: See the ready to upload files -> /services/ready-to-upload]
-[IMAGE: Eugene on a call with a renewals spreadsheet open on his laptop | 4:3]
+[IMAGE: A media buyer on a call with a renewals spreadsheet open on a laptop | 4:3]
 
 ## cards
 ### Where to look next
 #### Sample case studies
-There is no insurance case study yet, and I will not invent one. The samples show how I lay out receipts: spend, inquiries, buyers, dates.
+We have no insurance case study yet and will not invent one. The samples show how a receipt is laid out: spend, inquiries, buyers, dates.
 [LINK: See the sample case studies -> /case-studies]
 #### What should an inquiry cost in Kenya?
 How to work out your own number, and why the cost of each policy matters more.
@@ -57,13 +57,13 @@ Someone typing "comprehensive cover for Axio" is already shopping. This guide he
 
 ## faq
 ### Questions agents and brokers ask
-#### Do you see my clients' details?
+#### Do you see client details?
 The diagnosis asks for rough totals and never for a client's name, number or policy. Their details stay with you.
 #### Is it the tire kickers, or is it us?
 That is what the diagnosis separates: people who were never going to buy, and people who might have if someone had called after the quotation.
-#### We are a lender or a SACCO. Does it fit?
+#### Does it fit a lender or a SACCO?
 It does. Read "buyers" as funded loans when you answer. The Meta rule on financial lists applies to lenders too.
-#### I am one agent, not a brokerage. Is a plan too much?
+#### Is a plan too much for an agent working alone?
 Start with the free diagnosis and decide after. Paid plans begin at KES 6,500 a month by M-Pesa or card, one month at a time.
 
 ## band
@@ -73,14 +73,15 @@ Find out what happened to the ones who already have your PDF. It takes ten quest
 
 ## notes
 Hero scene (forty quotes sent this month, each a PDF, each ending "Kindly advise") is the insurance scene in research/kenya-and-demand.md part 2. Part 2 is general knowledge written as typical phrasing. Nobody was recorded and nothing was measured. "Forty" is an illustration, not a statistic about any agency.
-Vocabulary lifted from the insurance entry: quotation, went quiet after the quote, tire kickers, renewals, premium, policy issued, funded loan. The 2015 Axio question is the example inquiry from that section. "Logbook copy and ID" is my own example of documents a motor client is asked for and should be checked by someone in the trade.
+Vocabulary lifted from the insurance entry: quotation, went quiet after the quote, tire kickers, renewals, premium, policy issued, funded loan. The 2015 Axio question is the example inquiry from that section. "Logbook copy and ID" is the copywriter's own example of documents a motor client is asked for and should be checked by someone in the trade.
 Meta customer list is kept off this page. The research file records that Meta does not allow customer lists based on health or financial information (Meta help pages below, read 24 Nov 2026). The last line of the second split states this. Do not add the Meta file back to this page.
 The Meta file made from a sales spreadsheet is also kept off, out of the same caution. Confirm whether that is the intended product behaviour for insurers and lenders.
-"What I hand you after the quote goes quiet": the three messages are illustrations of fix wording. The product writes wording per fix from what the owner answered, so the exact messages depend on their report.
+"What we hand you after the quote goes quiet": the three messages are illustrations of fix wording. The product writes wording per fix from what the owner answered, so the exact messages depend on their report.
 There is no insurance case study in the sitemap, so the card links to /case-studies and says so plainly.
 No statistic is used. The insurance penetration figure in the research file was left out on purpose.
-"We" appears only inside one FAQ question, where the lender is the one speaking.
-Humanize skill run on 24 Nov 2026.
+In the visible copy "we" is Ideal ICP. One FAQ question keeps "us" ("or is it us?"), where the agency is plainly the one speaking.
+Humanize skill run on 24 Nov 2026, and again after the voice change.
+Voice changed to company and role on 25 Nov 2026.
 Sources:
 - https://www.facebook.com/business/help/170456843145568
 - https://www.facebook.com/business/help/606443329504150

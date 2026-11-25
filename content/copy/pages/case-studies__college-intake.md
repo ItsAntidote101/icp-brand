@@ -22,13 +22,13 @@ A college in Thika, between its January and May intakes. Ad spend came down by K
 ## steps
 ### What changed
 #### The boosted posts were switched off
-They brought likes and no paid fees, so the fix plan cut them first. That is the KES 20,000 a month that came off the spend.
+They brought likes and no paid fees, so the fix plan cut them first. That took KES 20,000 a month off the spend.
 #### The fee structure reply got a second half
 The office pasted new wording: the PDF, then one question about the course and start date, and a named day to visit.
 #### Overnight inquiries landed on one list
-In a hands-on session I connected the form on their ads to the list admissions already kept. By morning every evening inquiry was waiting in order.
+Their media buyer used a hands-on session to connect the ad form to the list admissions already kept. By morning every evening inquiry was waiting in order.
 #### Enrolled students left the audience
-Their student spreadsheet became a Meta file on their own computer, so the list never came to me. The ads stopped following people who had already paid.
+Their student spreadsheet became a Meta file on their own computer, so the list never left the college. The ads stopped following people who had already paid.
 
 ## receipts
 ### The receipts
@@ -49,7 +49,7 @@ attribution: [Client name, business, town]
 
 ## split
 ### What did not work
-Nobody answers WhatsApp at 9pm, and that did not change. The office is closed. The college settled for a list it clears first thing every morning. The extra question on the form also turned away some people in a hurry, and I cannot tell you whether any of them would have enrolled.
+Nobody answers WhatsApp at 9pm, and that did not change. The office is closed. The college settled for a list it clears first thing every morning. The extra question on the form also turned away some people in a hurry, and nobody can say whether any of them would have enrolled.
 [IMAGE: A closed admissions office door in the evening with the lights off | 4:3]
 
 ## cards
@@ -63,16 +63,17 @@ The hands-on session in this receipt is on the Pro plan, KES 13,000 a month. The
 
 ## band
 ### Check the gap before your next intake.
-Ten questions, about 3 minutes, and no login to your ad account.
+Ten questions, about 3 minutes. No login to your ad account.
 [BUTTON: Start my free diagnosis -> /questionnaire]
 
 ## notes
-Humanize skill run on 24 Nov 2026.
+Humanize skill run on 24 Nov 2026, and again after the voice change.
 Status is sample. No real client. The business is described, not named. Every figure and both intakes are illustrative and must be replaced with a real client's receipt before launch.
 Arithmetic: 80,000 / 400 = 200. 60,000 / 400 = 150. 80,000 / 8 = 10,000. 60,000 / 16 = 3,750. Spend difference 80,000 minus 60,000 = 20,000.
 The scene (fee structure PDF and nothing after; evening inquiries waiting for the office) is the typical schools scene from research/kenya-and-demand.md Part 2, marked there as unsourced typical phrasing.
 "Buyers" here means students who paid fees. The trade page may prefer "enrolled".
 Plan facts: hands-on sessions (CRM connection, tracking, campaign setup) start on Pro. Spreadsheets turned into Meta files, converted on the client's device, are on Starter. Using a customer list to leave people out of an audience is described in Meta's help page listed below.
 The quote section is a slot, not a quote. Do not publish it as written.
+Voice changed to company and role on 25 Nov 2026.
 Sources:
 - https://www.facebook.com/business/help/170456843145568 (customer list custom audience, read 24 Nov 2026 per research/kenya-and-demand.md)

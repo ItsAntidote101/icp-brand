@@ -16,7 +16,7 @@ Each trade loses them in its own way. Find yours below and see where, before ano
 
 ## cards
 ### Pick your trade
-Your page shows where the sale goes missing and what I hand you to fix it.
+Your page shows where the sale goes missing and what we hand you to fix it.
 #### Property and real estate
 Joyriders fill the site visit list while the serious buyers ghost after the price.
 [LINK: Go to the property page -> /for/property]
@@ -26,7 +26,7 @@ The fee structure goes out and the parent stops replying. Reporting day arrives 
 [LINK: Go to the schools page -> /for/schools]
 [IMAGE: A parent and child at a school admissions desk with a printed fee structure | 4:3]
 #### Insurance and financial services
-The quotation leaves as a PDF and the client goes quiet after the quote.
+The quotation leaves as a PDF and the client goes quiet.
 [LINK: Go to the insurance page -> /for/insurance]
 [IMAGE: An insurance agent at a small desk with a motor quotation on the laptop screen | 4:3]
 #### Clinics and beauty
@@ -54,4 +54,5 @@ Index page, kept short on purpose: hero, five trade cards, one split for trades 
 The five card sentences use each trade's own vocabulary from research/kenya-and-demand.md part 2. That part is typical phrasing from general knowledge, not recorded speech, so the lines are written as description and not as quotes from anyone.
 No market figure is used on this page, so there is no Sources list.
 Product facts (ten questions, about 3 minutes, no ad account login, nobody calls unless asked) come from the brief and src/app/pricing/page.tsx.
-Humanize skill run on 24 Nov 2026.
+Humanize skill run on 24 Nov 2026, and again after the voice change.
+Voice changed to company and role on 25 Nov 2026.

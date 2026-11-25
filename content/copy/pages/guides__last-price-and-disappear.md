@@ -28,7 +28,7 @@ Three parts, in one message.
 
 - The price, or an honest range. Do not hide it.
 - One thing the price includes, so the number means something.
-- One question that is easy to answer and moves things forward.
+- One question that is easy to answer and points to the next step.
 
 The question does the work. "Which day suits you?" takes one word to answer. "Let me know" asks for nothing, so nothing comes back.
 
@@ -66,13 +66,13 @@ Whoever holds the phone on Saturday now answers the way you would.
 
 ### How many times should I follow up?
 
-More than once, and each time with something new: an open slot, a photo or a date that is filling up. The pattern I use, and when to stop, is in [LINK: how to qualify inquiries on WhatsApp -> /guides/qualify-leads-on-whatsapp].
+More than once, and each time with something new: an open slot, a photo or a date that is filling up. The pattern to use, and when to stop, is in [LINK: how to qualify inquiries on WhatsApp -> /guides/qualify-leads-on-whatsapp].
 
 ### How do I know the new wording is working?
 
 Count before you change anything. Scroll back through last week's chats and note two numbers: how many times you sent a price, and how many of those got any reply afterwards. Count again after a week of the new wording.
 
-Say it was 5 replies from 30 prices, and it becomes 11 from 30. That is your own evidence, and it beats anybody's opinion, mine included. If the number does not move, the leak is somewhere else, and you found that out in a week.
+Say it was 5 replies from 30 prices, and it becomes 11 from 30. That is your own evidence, and it beats anybody's opinion, ours included. If the number does not move, the leak is somewhere else, and you found that out in a week.
 
 ## faq
 ### Short answers
@@ -89,6 +89,7 @@ The free diagnosis gives you three fixes for this week, with the words to use fo
 [BUTTON: Start my free diagnosis -> /questionnaire]
 
 ## notes
+Voice changed to company and role on 25 Nov 2026.
 Article for topic 15 in research/kenya-and-demand.md. Opening answer follows the research line for that topic. The research suggested linking to clinics and beauty or property; the task allows one trade link, so it goes to /for/clinics and the plot wording covers property readers.
 Every price, plot size, deposit and day in the reply wording is a placeholder and the copy says so. None is a market figure. "[name]" is left as a placeholder on purpose so no invented person appears.
 "5 replies from 30" and "11 from 30" are a made-up illustration of how to count, introduced with "Say". No result is promised.
@@ -96,7 +97,7 @@ The reasons people go quiet are reasoning from how these chats run (research fil
 Platform statements and where each was checked on 24 Nov 2026:
 - WhatsApp Business quick replies: Add, message, shortcut, save; type "/" in a chat to list them; up to 50 stored: WhatsApp help. The parent menu name is left out on purpose because it differs by phone.
 - Labels on chats: WhatsApp help.
-Humanize skill run on 24 Nov 2026.
+Humanize skill run on 24 Nov 2026, and again after the voice change.
 Sources:
 - https://faq.whatsapp.com/1791149784551042/?cms_platform=android
 - https://faq.whatsapp.com/3398508707096369/?cms_platform=android

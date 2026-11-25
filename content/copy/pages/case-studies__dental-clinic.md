@@ -22,13 +22,13 @@ A dental clinic in Westlands, on the same KES 60,000 a month. The budget stayed 
 ## steps
 ### What changed
 #### The price came with a slot
-New wording to paste: the price, then two appointment times to choose from. A price list sent alone ends the chat.
+New wording to paste: the price, then two times to choose from. A price list sent alone ends the chat.
 #### A deposit held the booking
 The fix plan added a small M-Pesa deposit to confirm a slot, and a message that asks for it politely.
 #### Google stopped paying for job seekers
 One uploaded file blocked searches for dental jobs, dental courses and free clinics.
 #### The numbers went in every Friday
-The front desk logged spend, inquiries and patients in the dashboard. My monthly note pointed out that Sunday messages waited until Monday.
+The front desk logged spend, inquiries and patients in the dashboard. Their media buyer's monthly note flagged that Sunday messages waited until Monday.
 
 ## receipts
 ### The receipts
@@ -67,13 +67,14 @@ Ten questions, about 3 minutes. Rough numbers from memory are enough.
 [BUTTON: Start my free diagnosis -> /questionnaire]
 
 ## notes
-Humanize skill run on 24 Nov 2026.
+Humanize skill run on 24 Nov 2026, and again after the voice change.
 Status is sample. No real client. The business is described, not named. Every figure and both months are illustrative and must be replaced with a real client's receipt before launch.
 Arithmetic: 60,000 / 200 = 300. 60,000 / 240 = 250. 60,000 / 20 = 3,000. 60,000 / 40 = 1,500.
 The scene (price list sent with no slot offered; no deposit so no-shows; the empty 2pm chair) is the typical clinics scene from research/kenya-and-demand.md Part 2, marked there as unsourced typical phrasing.
 The changes use Starter plan items only: wording to paste, the Google file of words to block, weekly tracking in the dashboard and the monthly note.
 One platform fact is used: Meta does not allow health information in customer lists. Source below.
 The quote section is a slot, not a quote. Do not publish it as written.
+Voice changed to company and role on 25 Nov 2026.
 Sources:
 - https://www.facebook.com/business/help/170456843145568 (create a customer list custom audience, read 24 Nov 2026 per research/kenya-and-demand.md)
 - https://www.facebook.com/business/help/606443329504150 (prepare customer list data, read 24 Nov 2026 per research/kenya-and-demand.md)

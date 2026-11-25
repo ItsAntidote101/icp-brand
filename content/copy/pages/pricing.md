@@ -10,7 +10,7 @@ links_to: /questionnaire, /services/diagnosis, /services/done-with-you, /contact
 ## hero
 eyebrow: Pricing
 # From KES 6,500 a month by M-Pesa. Nothing renews on its own.
-The diagnosis and one 20 minute call are free, with no card. A plan adds the files, the wording, your weekly numbers and me.
+The diagnosis and one 20 minute call are free, with no card. A plan adds the files, the wording, your weekly numbers and a media buyer.
 [BUTTON: Start my free diagnosis -> /questionnaire]
 [IMAGE: A phone showing an M-Pesa payment confirmation beside a laptop with the dashboard open | 4:3]
 
@@ -21,11 +21,11 @@ The diagnosis and one 20 minute call are free, with no card. A plan adds the fil
 #### M-Pesa or card
 Checkout runs through Paystack. Prices are in Kenya shillings.
 #### One month at a time
-Nothing renews on its own. A reminder comes a week before your month ends, and you decide whether to pay again.
+Nothing renews on its own. We send a reminder a week before your month ends, and you decide whether to pay again.
 #### Renew early and the days are added
-Pay before your month is up and the new 30 days go on the end of what you already have.
+Pay before your month is up and the new 30 days go on the end of what you have.
 #### Stop any time
-There is no contract. If you do not renew, you keep everything until the end of the month you paid for.
+There is no contract. If you do not renew, you keep everything until the month you paid for ends.
 #### Start free, choose later
 The free diagnosis sets up your account. You pick a plan from your dashboard, or stay free.
 [LINK: What the diagnosis covers -> /services/diagnosis]
@@ -33,12 +33,12 @@ The free diagnosis sets up your account. You pick a plan from your dashboard, or
 ## cards
 ### What is not included
 #### Running your ads
-Ideal ICP does not manage campaigns. If you want full management, message me.
-[LINK: Write to Eugene -> /contact]
+Ideal ICP does not manage campaigns. For full management, ask us by message.
+[LINK: Write to us -> /contact]
 #### Your ad spend
-A plan pays for my work. What you pay Google and Meta is a separate bill, and it stays yours.
+A plan pays for your media buyer's work. Google and Meta bill you separately, and that bill stays yours.
 #### Artwork, video and websites
-You get the words for ads and pages. The pictures and the pages themselves are yours to make.
+You get the words for ads and pages. The pictures and the pages are yours to make.
 #### Extra hands-on sessions
 One a month on Pro, up to four on Agency, and none on Free or Starter.
 [LINK: How sessions work -> /services/done-with-you]
@@ -48,9 +48,9 @@ No plan comes with a guarantee. You get what is listed, as often as it is listed
 ## faq
 ### Questions about plans
 #### Why do I start with the free diagnosis?
-Because the plans build on it. The diagnosis creates your account and your first report. From there you choose a plan or stay free.
+Because the plans build on it. It creates your account and your first report. From there you choose a plan or stay free.
 #### Which plan should I pick?
-Starter if you run your own ads and want them watched. Pro if you want me to review your campaign setup plan and set one thing up with you each month. Agency if you run ads for several clients.
+Starter if you run your own ads and want them watched. Pro if you want a media buyer to review your campaign setup plan and set one thing up with you each month. Agency if you run ads for several clients.
 #### What does the full report add to the free one?
 About 10 more questions on your best customer and your follow up, and a check of your landing page if your ads use one. You see every problem and the whole fix plan. It comes with Starter.
 #### Can I change plans?
@@ -60,7 +60,7 @@ No. One 20 minute call comes with the free diagnosis, if you ask for it.
 
 ## band
 ### Decide after you have seen your report.
-Run the diagnosis and talk it through with me if you like. Pay only if you want a plan.
+Run the diagnosis and talk it through with a media buyer if you like. Pay only if you want a plan.
 [BUTTON: Start my free diagnosis -> /questionnaire]
 
 ## notes
@@ -71,4 +71,5 @@ The plans section pulls the four plans from src/app/new/plans.ts. Its Starter li
 "Can I change plans?" and the pay the difference rule come from src/app/pricing/page.tsx.
 The Agency line "Re-run market research up to 3 times a day" is on the old pricing page but not in the brief or in plans.ts, so it is not mentioned.
 No market facts are used on this page.
-Humanize skill run on 24 Nov 2026.
+Humanize skill run on 24 Nov 2026, and again after the voice change.
+Voice changed to company and role on 25 Nov 2026.

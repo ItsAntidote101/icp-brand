@@ -10,19 +10,19 @@ links_to: /case-studies/property-agency, /case-studies/college-intake, /case-stu
 ## hero
 eyebrow: Sample. Replace with a real client before this page goes live.
 # Spend, inquiries, buyers. Before and after, with dates.
-A case study here is a receipt. Each one is a single business in a single season, so do not read it as a benchmark for yours.
+A case study here is a receipt for one business in one season. It is no benchmark for yours.
 [BUTTON: Show me where mine are lost -> /questionnaire]
 [IMAGE: A notebook page with three handwritten columns, spend, inquiries and buyers, beside a phone showing an M-Pesa statement | 4:3]
 
 ## cards
 ### Three receipts
-These are samples so the page can be designed. Real clients replace them.
+These three are samples. The real ones will be campaigns our founder ran for companies in the United States, the United Kingdom and South Africa before Ideal ICP existed. We will show them as that, with the receipts.
 #### A property agency in Kilimani
 Inquiries fell from 240 a month to 150. Deposits went from 2 to 5 on the same KES 120,000.
 [LINK: Read the property receipt -> /case-studies/property-agency]
 [IMAGE: An agent opening the door of a show apartment in Kilimani for two visitors | 4:3]
 #### A college in Thika before an intake
-Ad spend came down by KES 20,000 a month. Students who paid fees went from 8 to 16.
+Ad spend fell by KES 20,000 a month. Students who paid fees went from 8 to 16.
 [LINK: Read the college receipt -> /case-studies/college-intake]
 [IMAGE: An admissions desk in Thika with a fee structure printout and a phone | 4:3]
 #### A dental clinic in Westlands
@@ -31,21 +31,22 @@ The same KES 60,000 a month. Patients who showed up went from 20 to 40 in eight 
 [IMAGE: A dental chair with a patient in it and a receptionist on WhatsApp in the background | 4:3]
 
 ## split
-### What you will never find in a case study here
+### What a case study here never contains
 - A percentage lift with no starting figure. Three times two buyers is still six buyers.
 - A wall of logos.
-- Star ratings borrowed from another website.
+- Star ratings borrowed from elsewhere.
 
-If a job went badly or took longer than I hoped, that goes in the case study too.
-[IMAGE: Eugene's hand marking a printed table of figures with a pen, two columns headed before and after | 4:3]
+A job that went badly or took longer than hoped goes in too.
+[IMAGE: A media buyer's hand marking a printed table with a pen, two columns headed before and after | 4:3]
 
 ## band
 ### Start with your own before column.
-Ten questions, about 3 minutes, and no login to your ad account.
+Ten questions, about 3 minutes, no ad account login.
 [BUTTON: Start my free diagnosis -> /questionnaire]
 
 ## notes
-Humanize skill run on 24 Nov 2026.
+Humanize skill run on 24 Nov 2026, and again after the voice change.
 Status is sample. The three cards repeat the headline figures from the three sample case study files; if a figure changes there, change it here.
 The receipts idea (spend, inquiries, buyers, dates) and the "one job is no benchmark" warning are borrowed structures named in research/competitors.md. No market fact is used, so there is no Sources list.
 The list of what a case study never contains comes from "The sameness" items 5, 6 and 7 in research/competitors.md. No competitor is named.
+Voice changed to company and role on 25 Nov 2026.
