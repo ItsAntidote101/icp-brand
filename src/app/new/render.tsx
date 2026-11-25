@@ -4,6 +4,7 @@ import { SiteStyles } from '../site'
 import { allCopy, copyByPath, teaser, type Block, type CopyPage, type Item, type Section } from '@/lib/site-copy'
 import Opener from './opener'
 import ContactForm from './contact-form'
+import Clip from './clip'
 import { PLANS } from './plans'
 import { MAP_DOTS, MAP_H, MAP_POINTS, MAP_W } from './world-dots'
 
@@ -110,6 +111,7 @@ function Blocks({ blocks, skip = [] as string[], light = false }: { blocks: Bloc
           case 'button': return <p key={i} className="ic-act"><Link href={to(b.href)} className={`ic-btn${light ? ' ic-btn-light' : ''}`}>{b.text}<ArrowRight size={18} aria-hidden="true" /></Link></p>
           case 'link': return <p key={i} className="ic-act"><Link href={to(b.href)} className="ic-more">{b.text}<ArrowRight size={16} aria-hidden="true" /></Link></p>
           case 'image': return <Photo key={i} alt={b.alt} ratio={b.ratio} />
+          case 'video': return <Clip key={i} src={b.src} alt={b.alt} ratio={b.ratio} />
           case 'table': return (
             <div key={i} className="ic-table"><table>
               <thead><tr>{b.head.map(h => <th key={h} scope="col">{h}</th>)}</tr></thead>
@@ -127,6 +129,7 @@ const Head = ({ s }: { s: Section }) => {
   if (!h.length && !s.meta.eyebrow) return null
   return <div className="ic-head">{s.meta.eyebrow && <p className="ic-eye">{s.meta.eyebrow}</p>}<Blocks blocks={h} /></div>
 }
+const videoOf = (blocks: Block[]) => blocks.find((b): b is Extract<Block, { t: 'video' }> => b.t === 'video')
 const imageOf = (blocks: Block[]) => blocks.find((b): b is Extract<Block, { t: 'image' }> => b.t === 'image')
 
 function ItemCard({ item, n }: { item: Item; n?: number }) {
@@ -186,8 +189,8 @@ function SectionView({ s, index, page, flip, dark }: { s: Section; index: number
       return (
         <section className="ic-sec">
           <div className={`ic-wrap ic-split${flip ? ' ic-flip' : ''}`}>
-            <div>{s.meta.eyebrow && <p className="ic-eye">{s.meta.eyebrow}</p>}<Blocks blocks={s.blocks} skip={['image']} /></div>
-            {img && <Photo alt={img.alt} ratio={img.ratio} />}
+            <div>{s.meta.eyebrow && <p className="ic-eye">{s.meta.eyebrow}</p>}<Blocks blocks={s.blocks} skip={['image', 'video']} /></div>
+            {videoOf(s.blocks) ? <Clip {...videoOf(s.blocks)!} /> : img && <Photo alt={img.alt} ratio={img.ratio} />}
           </div>
         </section>
       )
@@ -481,6 +484,7 @@ const css = `
 
 .ic-photo{position:relative;width:100%;display:grid;place-content:center;justify-items:center;gap:8px;padding:20px;text-align:center;color:#6b5f55;border-radius:4px;overflow:hidden;
   background:repeating-linear-gradient(135deg,#efe6dd 0 14px,#e9dfd4 14px 28px)}
+.ic-clip{display:block;width:100%;height:auto;border-radius:4px;background:#FBF6F1}
 .ic .ic-photo p{font:500 14.5px/1.4 var(--body);max-width:30ch;margin:0;color:#4a4039}
 .ic-photo span{font:500 12px/1 var(--body);color:#8a7d70}
 

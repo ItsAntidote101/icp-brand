@@ -4,7 +4,7 @@ title: Why your ad inquiries are not buying | Ideal ICP
 description: A free 10 question diagnosis for Kenyan businesses that pay for ads. See where inquiries are lost and get 3 fixes this week. No login, no sales call.
 question: Why do my ads bring inquiries but no sales?
 status: ready
-links_to: /questionnaire, /about, /services/ready-to-upload, /for/property, /for/schools, /for/insurance, /for/clinics, /for/professional-services, /case-studies
+links_to: /questionnaire, /about, /services/ready-to-upload, /for/property, /for/schools, /for/insurance, /for/clinics, /for/professional-services, /case-studies, /how-it-works
 ---
 
 ## hero
@@ -15,6 +15,13 @@ You already paid for the inquiries you have. Answer a few questions and see wher
 [IMAGE: A phone showing a WhatsApp chat where the customer asked "How much?", the business sent a price, and nothing follows | 4:3]
 
 ## opener
+
+## split
+eyebrow: The short version
+### The whole thing in 27 seconds
+Money goes into ads and inquiries come out. Most go quiet. A few questions find where, and your media buyer works on it with you.
+[LINK: See how it works, step by step -> /how-it-works]
+[VIDEO: /media/idealicp-explainer.mp4 | 4:3 | Animation with no sound: ad spend becomes inquiries, most go quiet, a few questions find why, and a media buyer hands over files and wording]
 
 ## cards
 ### Where a sale goes missing

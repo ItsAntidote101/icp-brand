@@ -10,6 +10,7 @@ export type Block =
   | { t: 'ul'; items: string[] }
   | { t: 'button' | 'link'; text: string; href: string }
   | { t: 'image'; alt: string; ratio: string }
+  | { t: 'video'; src: string; alt: string; ratio: string }
   | { t: 'table'; head: string[]; rows: string[][] }
 
 export interface Item { title: string; blocks: Block[] }
@@ -44,10 +45,13 @@ function parseBlocks(lines: string[], meta: Record<string, string>): Block[] {
     if (!line) { flush(); continue }
     const kv = line.match(/^([a-z]+):\s*(.+)$/)
     if (kv && META_KEYS.includes(kv[1])) { flush(); meta[kv[1]] = kv[2]; continue }
-    const mark = line.match(/^\[(BUTTON|LINK|IMAGE):\s*(.+)\]$/)
+    const mark = line.match(/^\[(BUTTON|LINK|IMAGE|VIDEO):\s*(.+)\]$/)
     if (mark) {
       flush()
-      if (mark[1] === 'IMAGE') {
+      if (mark[1] === 'VIDEO') {
+        const [src, ratio, alt] = mark[2].split('|').map(s => s.trim())
+        if (src?.startsWith('/')) out.push({ t: 'video', src, alt: alt ?? '', ratio: /^\d+:\d+$/.test(ratio ?? '') ? ratio : '4:3' })
+      } else if (mark[1] === 'IMAGE') {
         const [alt, ratio] = mark[2].split('|').map(s => s.trim())
         out.push({ t: 'image', alt, ratio: /^\d+:\d+$/.test(ratio ?? '') ? ratio : '4:3' })
       } else {

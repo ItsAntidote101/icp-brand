@@ -15,6 +15,12 @@ The diagnosis needs no login to Google or Meta. Your ad account shows the click,
 [IMAGE: An owner at a shop counter answering a question on a phone between customers | 4:3]
 
 ## split
+eyebrow: Watch it first
+### Half a minute, no sound needed
+Coins go in and chats come out, but only a few chats turn into buyers. Then come the questions, the report, your media buyer and the files.
+[VIDEO: /media/idealicp-explainer.mp4 | 4:3 | Animation with no sound: ad spend becomes inquiries, most go quiet, a few questions find why, and a media buyer hands over files and wording]
+
+## split
 ### Why answers beat account access
 An ad account records everything up to the click. The rest is on your phone and in your head: who replied, how fast, and whether anyone wrote again. So the diagnosis asks you. Rough numbers from memory are enough.
 [IMAGE: Two phones side by side, one showing ad results full of clicks, the other an unanswered WhatsApp inquiry | 4:3]
