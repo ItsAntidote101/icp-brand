@@ -33,7 +33,7 @@ for f in files:
     low = shown.lower()
     if re.search(r'\btools?\b', low): bad(f, 'says "tool"')
     if f.name != 'about.md' and 'eugene' in (meta.get('title','') + meta.get('description','') + shown).lower(): bad(f, 'names Eugene outside the About page')
-    voice = re.sub(r'"[^"]*"', '', re.sub(r'^(> .*|\[BUTTON.*|\[LINK.*|#{1,4} .*\?)$', '', shown, flags=re.M))   # quoted wording an owner would say or paste may use I
+    voice = re.sub(r'"[^"]*"', '', re.sub(r'^(> .*|\[BUTTON.*|\[LINK.*|\[VIDEO.*|#{1,4} .*\?)$', '', shown, flags=re.M))   # quoted wording an owner would say or paste may use I
     hits = re.findall(r"(?<![A-Za-z'])(?:I|I'm|I'll|I've|me|my|myself)(?![A-Za-z'])", voice)
     hits = [h for h in hits if h not in ()]
     if f.name != 'about.md' and hits: print(f'  check {f.name}: {len(hits)} first person words outside quotes')

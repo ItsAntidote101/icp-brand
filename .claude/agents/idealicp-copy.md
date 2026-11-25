@@ -128,6 +128,8 @@ One or two sentences.
 - `## map` : a `###` heading, one line, then rows written as `#### Country` plus one sentence. Draws a world map with a marker on each country named (only United States, United Kingdom, South Africa and Kenya have markers). Use it only to show where the founder's campaign experience comes from, within the limits above.
 - `## band` : the closing dark strip. A `###` heading, one sentence, one button.
 
+A `split` may carry `[VIDEO: /media/file.mp4 | 4:3 | what it shows]` in place of its image. The only clip so far is `/media/idealicp-explainer.mp4`, a silent 27 second explainer.
+
 Other marks you may use inside a section: `[BUTTON: text -> /path]`, `[LINK: text -> /path]`, `[IMAGE: description | ratio]` (ratios: 4:3, 3:4, 16:9, 1:1), `**bold**` for at most one phrase per section. No other markdown, no HTML, no nested lists.
 
 After the last section add `## notes` (for the builder: anything unusual, which facts came from where, and a `Sources:` list of URLs if any market fact was used). The notes section is never shown on the site.
