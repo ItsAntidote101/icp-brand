@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ArrowRight, X } from 'lucide-react'
 import { loadOpener, loadProgress, saveOpener } from '@/lib/resume'
 
@@ -41,6 +41,20 @@ export default function AskBar({ home, startHref }: { home: boolean; startHref: 
     return () => { window.removeEventListener('scroll', update); window.removeEventListener('icp-opener-changed', sync); io?.disconnect() }
   }, [])
 
+  // Tell the small "Cookie settings" button how tall this bar is, so on narrow
+  // screens it can sit above it and never underneath.
+  const barRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const el = barRef.current
+    const root = document.documentElement
+    if (!el || !show || closed) { root.style.removeProperty('--ab-h'); return }
+    const fit = () => root.style.setProperty('--ab-h', `${el.offsetHeight + 10}px`)
+    fit()
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(fit) : null
+    ro?.observe(el)
+    return () => { ro?.disconnect(); root.style.removeProperty('--ab-h') }
+  }, [show, closed])
+
   const go = () => {
     if (inQuestions) { window.location.href = '/questionnaire'; return }
     if (home) document.getElementById('start')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' })
@@ -55,7 +69,7 @@ export default function AskBar({ home, startHref }: { home: boolean; startHref: 
 
   if (closed) return null
   return (
-    <div className={`ab${show ? ' ab-in' : ''}`} role="region" aria-label="Start your diagnosis" aria-hidden={!show}>
+    <div ref={barRef} className={`ab${show ? ' ab-in' : ''}`} role="region" aria-label="Start your diagnosis" aria-hidden={!show}>
       <style dangerouslySetInnerHTML={{ __html: css }} />
       <span className="ab-glow" aria-hidden="true" />
       <div className="ab-body">

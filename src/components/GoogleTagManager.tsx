@@ -2,13 +2,17 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { getConsent, setConsent } from '@/lib/consent'
 
-// The cookie notice, the "Cookie settings" panel, and the loader for Google
-// Tag Manager, which carries the ad tags (Meta pixel, Google Ads).
+// The small "Cookie settings" button, the settings panel, and the loader for
+// Google Tag Manager, which carries the ad tags (Meta pixel, Google Ads).
+//
+// There is no banner: a small button sits at the bottom left until the visitor
+// has made a choice in the panel. The footer link opens the panel at any time.
 //
 // Google Tag Manager loads unless the visitor has switched Marketing off in
-// "Cookie settings". Ignoring or closing the bar leaves it on. Funnel steps
+// "Cookie settings". Leaving the button alone keeps it on. Funnel steps
 // are pushed to window.dataLayer by src/lib/track.ts either way.
 //
 // NEXT_PUBLIC_GTM_ID (e.g. GTM-ABC1234) is set in Vercel.
@@ -55,11 +59,12 @@ type Key = 'analytics' | 'functional' | 'marketing'
 export default function GoogleTagManager() {
   const id = process.env.NEXT_PUBLIC_GTM_ID
   const valid = Boolean(id && /^GTM-[A-Z0-9]+$/.test(id))
-  const [bar, setBar] = useState(false)
+  const [pill, setPill] = useState(false)
   const [panel, setPanel] = useState(false)
   const [pick, setPick] = useState<Record<Key, boolean>>({ analytics: true, functional: true, marketing: true })
   const panelRef = useRef<HTMLDivElement>(null)
-  const barRef = useRef<HTMLDivElement>(null)
+  const path = usePathname() || ''
+  const inApp = /^\/(dashboard|admin)(\/|$)/.test(path)   // signed-in screens: no floating button over their controls
 
   // Always open on what is saved, so switches flipped and then abandoned do not linger.
   const openPanel = () => { const now = getConsent(); setPick({ analytics: now.analytics, functional: now.functional, marketing: now.marketing }); setPanel(true) }
@@ -68,27 +73,15 @@ export default function GoogleTagManager() {
     const c = getConsent()
     setPick({ analytics: c.analytics, functional: c.functional, marketing: c.marketing })
     if (valid && c.marketing) loadGtm(id as string)
-    if (!c.decided) setBar(true)
+    if (!c.decided) setPill(true)
     window.addEventListener(CONSENT_OPEN_EVENT, openPanel)
     return () => window.removeEventListener(CONSENT_OPEN_EVENT, openPanel)
   }, [valid, id])
 
   useEffect(() => {
-    if (bar || panel) document.documentElement.setAttribute('data-consent-open', '')
+    if (panel) document.documentElement.setAttribute('data-consent-open', '')
     else document.documentElement.removeAttribute('data-consent-open')
-  }, [bar, panel])
-
-  // While the bar is up, leave room under the page so nothing sits behind it for good.
-  useEffect(() => {
-    const el = barRef.current
-    if (!bar || panel || !el) return
-    const prev = document.body.style.paddingBottom
-    const fit = () => { document.body.style.paddingBottom = `${el.offsetHeight}px` }
-    fit()
-    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(fit) : null
-    ro?.observe(el)
-    return () => { ro?.disconnect(); document.body.style.paddingBottom = prev }
-  }, [bar, panel])
+  }, [panel])
 
   useEffect(() => {
     if (!panel) return
@@ -103,33 +96,21 @@ export default function GoogleTagManager() {
   const save = (c: Record<Key, boolean>) => {
     const had = Boolean(window.__icpGtm)
     setConsent(c)
-    setPick(c); setBar(false); setPanel(false)
+    setPick(c); setPill(false); setPanel(false)
     if (c.marketing) { if (valid) loadGtm(id as string); return }
     clearAdCookies()
     if (had) window.location.reload()   // the tags were already running on this page: stop them
   }
   const acceptAll = () => save({ analytics: true, functional: true, marketing: true })
 
-  if (!bar && !panel) return null
+  if (!panel && (!pill || inApp)) return null
 
   return (
     <div className="cc">
       <style dangerouslySetInnerHTML={{ __html: css }} />
 
-      {bar && !panel && (
-        <div className="cc-bar" role="region" aria-label="Cookies" ref={barRef}>
-          <div className="cc-bar-text">
-            <p className="cc-title">We use cookies and similar technologies</p>
-            <p>Some are needed to make the site work. The rest are optional and stay on unless you switch them off in &quot;Cookie settings&quot;. <span className="cc-wide">They show us how the site is used, remember where you stopped, and measure our ads. </span>More in our <Link href="/privacy">Privacy policy</Link>.</p>
-          </div>
-          <div className="cc-bar-acts">
-            <button type="button" className="cc-dark" onClick={openPanel}>Cookie settings</button>
-            <button type="button" className="cc-main" onClick={acceptAll}>Accept all</button>
-          </div>
-          <button type="button" className="cc-x" aria-label="Close" onClick={acceptAll}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
-          </button>
-        </div>
+      {pill && !panel && !inApp && (
+        <button type="button" className="cc-pill" onClick={openPanel}>Cookie settings</button>
       )}
 
       {panel && (
@@ -199,14 +180,8 @@ const css = `
 .cc-x{flex-shrink:0;width:44px;height:44px;display:grid;place-items:center;border:0;border-radius:50%;background:transparent;color:#201515}
 .cc-x:hover{background:rgba(32,21,21,.07)}
 
-.cc-bar{position:fixed;z-index:80;left:0;right:0;bottom:0;background:#fff;box-shadow:0 -18px 50px -20px rgba(32,21,21,.35);border-top:1px solid rgba(201,192,177,.7);
-  display:grid;grid-template-columns:1fr auto;gap:14px 12px;align-items:start;padding:20px clamp(16px,3.4vw,44px) max(20px,env(safe-area-inset-bottom))}
-.cc-bar-text{grid-column:1;display:grid;gap:10px}
-.cc-title{font-size:18px;font-weight:700;line-height:1.25;letter-spacing:-.01em}
-.cc-bar-text p:not(.cc-title){font-size:15px;line-height:1.55;color:#36342e}
-.cc-bar .cc-x{grid-column:2;grid-row:1;margin:-8px -8px 0 0}
-.cc-wide{display:none}
-.cc-bar-acts{grid-column:1 / -1;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cc-pill{position:fixed;z-index:49;left:12px;bottom:calc(max(12px,env(safe-area-inset-bottom)) + var(--ab-h,0px));min-height:44px;padding:0 14px;border-radius:8px;border:1px solid rgba(201,192,177,.95);background:rgba(255,255,255,.94);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#36342e;font-size:13px;font-weight:600;line-height:1;box-shadow:0 6px 18px -10px rgba(32,21,21,.45);transition:bottom .3s ease,background .15s,color .15s}
+.cc-pill:hover{background:#fff;color:#201515;border-color:#201515}
 
 .cc-shade{position:fixed;z-index:90;inset:0;background:rgba(23,15,15,.55);display:grid;place-items:center;padding:16px}
 .cc-panel{width:min(640px,100%);max-height:min(720px,calc(100dvh - 32px));display:grid;grid-template-rows:auto 1fr auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 40px 90px -30px rgba(0,0,0,.6);outline:0}
@@ -232,11 +207,9 @@ const css = `
 .cc-panel-foot button{flex:1 1 160px}
 html[data-consent-open] .ab{display:none}
 @media (min-width:860px){
-  .cc-bar{grid-template-columns:1fr auto auto;gap:28px;align-items:center;padding-top:26px;padding-bottom:26px}
-  .cc-bar-acts{grid-column:2;grid-row:1;grid-template-columns:1fr;width:230px}
-  .cc-bar .cc-x{grid-column:3;margin:0}
-  .cc-wide{display:inline}
   .cc-panel-foot button{flex:0 0 auto}
+  .cc-pill{min-height:36px}
 }
+@media (min-width:1100px){.cc-pill{bottom:12px}}
 @media (prefers-reduced-motion:reduce){.cc *{transition:none!important}}
 `
