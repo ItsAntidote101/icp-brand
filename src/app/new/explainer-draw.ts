@@ -1,0 +1,272 @@
+/* eslint-disable */
+// @ts-nocheck
+// The explainer animation, drawn straight into an <svg> so it has no
+// background of its own and takes on whatever section it sits in.
+// Ported from media-src/explainer.html (the same drawing renders the mp4),
+// which is why it is plain script and not typed. Everything on screen is a
+// function of time: buildExplainer() returns seek(t), which draws the frame
+// at t seconds.
+
+export const EXPLAINER_SECONDS = 27
+
+export function buildExplainer(svg) {
+  // Ideal ICP explainer, 27 seconds, no words until the end card.
+  const NS='http://www.w3.org/2000/svg'
+  const BG='#FBF6F1', INK='#201515', RED='#E8320A', GREY='#D9D0C7', QUIET='#EFE8E0', MID='#8A7D70', BLUSH='#FBE4D8', LINE='#EADFD5', WHITE='#FFFFFF'
+  const DUR=27
+
+  const el=(tag,attrs={},parent=svg)=>{const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);parent.appendChild(e);return e}
+  const set=(e,attrs)=>{for(const k in attrs)e.setAttribute(k,attrs[k])}
+  const cl=x=>Math.max(0,Math.min(1,x))
+  const pr=(t,a,b)=>cl((t-a)/(b-a))
+  const eo=x=>1-Math.pow(1-x,3)
+  const eio=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2
+  const back=x=>{const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2)}
+  const lerp=(a,b,x)=>a+(b-a)*x
+  const hex=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16))
+  const mix=(a,b,x)=>{const A=hex(a),B=hex(b);return '#'+A.map((v,i)=>Math.round(lerp(v,B[i],x)).toString(16).padStart(2,'0')).join('')}
+  const tf=(x,y,s=1,r=0)=>`translate(${x.toFixed(2)} ${y.toFixed(2)}) rotate(${r.toFixed(2)}) scale(${s.toFixed(4)})`
+  // a short bump that rises and settles, for "something just happened"
+  const pulse=(t,at,len=.45,amt=.12)=>{const x=pr(t,at,at+len);return x<=0||x>=1?1:1+amt*Math.sin(Math.PI*x)}
+
+
+  /* ───────── shared: the inquiries (speech bubbles) ───────── */
+  const BUBBLE='M-18,-24 H18 A14,14 0 0 1 32,-10 V6 A14,14 0 0 1 18,20 H-4 L-20,33 L-17,20 H-18 A14,14 0 0 1 -32,6 V-10 A14,14 0 0 1 -18,-24 Z'
+  const N=24, COLS=6
+  const gridPos=i=>[300+(i%COLS)*120, 250+Math.floor(i/COLS)*110]
+  // scene 1: the first twelve pop out of the phone into a loose cluster on the right
+  const cluster=[[860,300],[960,285],[1060,310],[905,385],[1010,395],[1100,410],[850,470],[955,490],[1060,505],[900,575],[1005,590],[1095,600]]
+  const firstTwelve=[1,8,14,20,3,10,17,22,5,7,12,19]
+  const BUYERS=[4,13,21]
+  const quietOrder=[0,23,6,11,18,2,15,9,1,20,7,16,22,3,10,19,5,12,17,8,14]
+  const LATER=[[9,22.4],[16,23.1],[2,23.8],[19,23.95],[11,24.6]]   // inquiries that become buyers at the end
+
+  const gBub=el('g')
+  const bubbles=[...Array(N)].map((_,i)=>{
+    const g=el('g',{},gBub)
+    const shape=el('path',{d:BUBBLE,'stroke-width':3.2,'stroke-linejoin':'round'},g)
+    const dots=[-11,0,11].map(x=>el('circle',{cx:x,cy:-2,r:3.6,fill:INK},g))
+    const check=el('path',{d:'M-11,-3 l7,7.5 l14,-15',fill:'none',stroke:WHITE,'stroke-width':5,'stroke-linecap':'round','stroke-linejoin':'round','stroke-dasharray':34},g)
+    return {g,shape,dots,check}
+  })
+  // the "how many buy" bar
+  const gBar=el('g')
+  const barTrack=el('rect',{x:300,y:716,width:600,height:14,rx:7,fill:GREY},gBar)
+  const barFill=el('rect',{x:300,y:716,width:0,height:14,rx:7,fill:RED},gBar)
+  // four week ticks, top right of the grid (end of the film)
+  const gWeeks=el('g')
+  const weeks=[0,1,2,3].map(i=>el('rect',{x:796+i*28,y:166,width:20,height:20,rx:6,fill:GREY},gWeeks))
+
+  /* ───────── scene 1: money in, inquiries out ───────── */
+  const g1=el('g')
+  const phone=el('g',{},g1)
+  el('rect',{x:-112,y:-200,width:224,height:400,rx:36,fill:WHITE,stroke:INK,'stroke-width':4},phone)
+  el('rect',{x:-30,y:-184,width:60,height:8,rx:4,fill:INK},phone)
+  el('rect',{x:-84,y:-140,width:168,height:150,rx:14,fill:BLUSH},phone)
+  el('circle',{cx:44,cy:-96,r:18,fill:RED},phone)
+  el('path',{d:'M-84,10 L-30,-56 L8,-18 L34,-44 L84,10 Z',fill:'#F3C9B5'},phone)
+  el('rect',{x:-84,y:34,width:150,height:12,rx:6,fill:GREY},phone)
+  el('rect',{x:-84,y:58,width:104,height:12,rx:6,fill:GREY},phone)
+  const adBtn=el('rect',{x:-84,y:96,width:120,height:40,rx:10,fill:RED},phone)
+  const coins=[0,1,2].map(()=>{const g=el('g',{},g1);el('circle',{r:36,fill:RED},g);el('circle',{r:23,fill:'none',stroke:WHITE,'stroke-width':3.5,opacity:.55},g);el('rect',{x:-3,y:-11,width:6,height:22,rx:3,fill:WHITE,opacity:.85},g);return g})
+  // a small wallet the coins leave from
+  const wallet=el('g',{},g1)
+  el('rect',{x:-70,y:-46,width:140,height:96,rx:20,fill:INK},wallet)
+  el('rect',{x:22,y:-12,width:58,height:30,rx:12,fill:WHITE,stroke:INK,'stroke-width':4},wallet)
+  el('circle',{cx:42,cy:3,r:5,fill:INK},wallet)
+
+  /* ───────── scene 3: a few questions, then the answer ───────── */
+  const g3=el('g')
+  const card=el('g',{},g3)
+  el('rect',{x:130,y:170,width:440,height:560,rx:30,fill:WHITE,stroke:LINE,'stroke-width':2},card)
+  el('circle',{cx:182,cy:226,r:22,fill:INK},card)
+  el('rect',{x:218,y:210,width:150,height:12,rx:6,fill:INK},card)
+  el('rect',{x:218,y:232,width:96,height:10,rx:5,fill:GREY},card)
+  el('rect',{x:130,y:270,width:440,height:2,fill:LINE},card)
+  const qs=[0,1,2].map(i=>{
+    const y=306+i*138, g=el('g',{},card)
+    el('rect',{x:166,y,width:[250,210,280][i],height:44,rx:16,fill:'#F3EFE9'},g)
+    const chips=[0,1,2].map(c=>el('rect',{x:166+c*122,y:y+60,width:108,height:44,rx:22,fill:WHITE,stroke:INK,'stroke-width':2.5},g))
+    const tap=el('circle',{r:0,fill:'none',stroke:RED,'stroke-width':4},g)
+    return {g,chips,tap,y,pick:[1,0,2][i]}
+  })
+  // the path from inquiry to money, with the three places a sale goes missing
+  const route=el('g',{},g3)
+  const RX=870, stops=[340,465,590]
+  const routeLine=el('path',{d:`M${RX},236 V694`,fill:'none',stroke:GREY,'stroke-width':6,'stroke-linecap':'round','stroke-dasharray':458},route)
+  const startB=el('g',{transform:tf(RX,212,1.05)},route); el('path',{d:BUBBLE,fill:WHITE,stroke:INK,'stroke-width':3.2,'stroke-linejoin':'round'},startB); [-11,0,11].forEach(x=>el('circle',{cx:x,cy:-2,r:3.6,fill:INK},startB))
+  const endCoin=el('g',{},route); el('circle',{r:34,fill:WHITE,stroke:INK,'stroke-width':4},endCoin); el('circle',{r:20,fill:'none',stroke:INK,'stroke-width':3,opacity:.5},endCoin); el('rect',{x:-3,y:-10,width:6,height:20,rx:3,fill:INK},endCoin)
+  const nodes=stops.map((y,i)=>{
+    const g=el('g',{},route), disc=el('circle',{r:40,'stroke-width':4},g), icon=el('g',{fill:'none','stroke-width':4.5,'stroke-linecap':'round','stroke-linejoin':'round'},g)
+    if(i===0){ el('circle',{r:19},icon); el('circle',{r:8},icon) }                                             // the wrong people
+    if(i===1){ el('circle',{r:19},icon); el('path',{d:'M0,-10 V1 L8,7'},icon) }                                 // a slow reply
+    if(i===2){ el('path',{d:'M-15,6 A16,16 0 1 1 6,15'},icon); el('path',{d:'M6,4 V16 H18'},icon) }             // no follow up
+    const ring=el('circle',{r:40,fill:'none',stroke:RED,'stroke-width':4},g)
+    return {g,disc,icon,ring,y}
+  })
+  // the report that comes back
+  const report=el('g',{},g3)
+  el('rect',{x:130,y:170,width:440,height:560,rx:30,fill:WHITE,stroke:LINE,'stroke-width':2},report)
+  el('circle',{cx:350,cy:330,r:86,fill:'none',stroke:QUIET,'stroke-width':20},report)
+  const gauge=el('circle',{cx:350,cy:330,r:86,fill:'none',stroke:RED,'stroke-width':20,'stroke-linecap':'round','stroke-dasharray':540.4,transform:'rotate(-90 350 330)'},report)
+  el('rect',{x:316,y:318,width:68,height:12,rx:6,fill:INK},report)
+  el('rect',{x:328,y:340,width:44,height:10,rx:5,fill:GREY},report)
+  const rows=[0,1,2].map(i=>{const y=480+i*74,g=el('g',{},report);el('rect',{x:166,y,width:368,height:56,rx:16,fill:'#F8F4F0'},g);el('circle',{cx:196,cy:y+28,r:10,fill:RED},g);el('rect',{x:222,y:y+16,width:[210,170,240][i],height:11,rx:5.5,fill:INK},g);el('rect',{x:222,y:y+34,width:[130,150,110][i],height:9,rx:4.5,fill:GREY},g);return g})
+
+  /* ───────── scene 4: a person, and the work handed over ───────── */
+  const g4=el('g')
+  const person=(g,R,body,head)=>{el('circle',{cx:0,cy:-R*.2,r:R*.26,fill:head},g);el('path',{d:`M${-R*.5},${R*.62} a${R*.5},${R*.44} 0 0 1 ${R},0 Z`,fill:body},g)}
+  const link=el('path',{d:'M318,450 H500',fill:'none',stroke:GREY,'stroke-width':5,'stroke-linecap':'round','stroke-dasharray':'2 14'},g4)
+  const owner=el('g',{},g4); el('circle',{r:70,fill:WHITE,stroke:INK,'stroke-width':4},owner); const ownerClip=el('g',{},owner); person(ownerClip,70,INK,INK)
+  const buyer=el('g',{},g4); const buyerHalo=el('circle',{r:96,fill:RED,opacity:.14},buyer); el('circle',{r:96,fill:RED},buyer); person(buyer,96,WHITE,WHITE)
+  const msgs=[0,1,2,3].map(i=>{const g=el('g',{},g4);el('path',{d:BUBBLE,fill:i%2?RED:WHITE,stroke:i%2?RED:INK,'stroke-width':3.2,'stroke-linejoin':'round'},g);[-11,0,11].forEach(x=>el('circle',{cx:x,cy:-2,r:3.6,fill:i%2?WHITE:INK},g));return g})
+  const docs=[0,1,2].map(i=>{
+    const g=el('g',{},g4)
+    el('rect',{x:-86,y:-62,width:172,height:124,rx:18,fill:WHITE,stroke:INK,'stroke-width':3.5},g)
+    if(i===0){ // a file of rows, ready to upload
+      el('rect',{x:-66,y:-44,width:132,height:16,rx:6,fill:INK},g); [0,1,2].forEach(r=>{el('rect',{x:-66,y:-16+r*20,width:58,height:10,rx:5,fill:GREY},g);el('rect',{x:2,y:-16+r*20,width:[50,64,40][r],height:10,rx:5,fill:GREY},g)})
+      el('circle',{cx:64,cy:42,r:22,fill:RED},g); el('path',{d:'M64,52 V32 M55,40 L64,31 L73,40',fill:'none',stroke:WHITE,'stroke-width':4.5,'stroke-linecap':'round','stroke-linejoin':'round'},g)
+    }
+    if(i===1){ // the words to paste
+      el('path',{d:BUBBLE,fill:BLUSH,stroke:'none',transform:'translate(-34 -6) scale(1.5)'},g); [0,1,2].forEach(r=>el('rect',{x:-70,y:-30+r*16,width:[70,58,44][r],height:8,rx:4,fill:INK},g))
+      el('rect',{x:28,y:-18,width:36,height:44,rx:8,fill:WHITE,stroke:INK,'stroke-width':3.5},g); el('rect',{x:16,y:-30,width:36,height:44,rx:8,fill:WHITE,stroke:INK,'stroke-width':3.5},g)
+    }
+    if(i===2){ // set up together, on a call
+      el('rect',{x:-66,y:-44,width:132,height:76,rx:10,fill:'#F8F4F0'},g)
+      const a=el('g',{transform:'translate(-30 -4)'},g); el('circle',{r:22,fill:INK},a); person(a,22,WHITE,WHITE)
+      const b=el('g',{transform:'translate(30 -4)'},g); el('circle',{r:22,fill:RED},b); person(b,22,WHITE,WHITE)
+      el('rect',{x:-24,y:42,width:48,height:8,rx:4,fill:INK},g)
+    }
+    return g
+  })
+
+  /* ───────── end card ───────── */
+  const gEnd=el('g')
+  const endDot=el('circle',{cx:0,cy:0,r:20,fill:RED},gEnd)
+  const endName=el('text',{x:0,y:0,'font-size':92,'font-weight':700,'letter-spacing':-3.5,fill:INK,'dominant-baseline':'central'},gEnd); endName.textContent='Ideal ICP'
+  const endUrl=el('text',{x:600,y:548,'font-size':30,'font-weight':500,fill:MID,'text-anchor':'middle'},gEnd); endUrl.textContent='idealicp.com'
+
+  const seek=function(t){
+    t=Math.max(0,Math.min(DUR,t))
+
+    /* ── bubbles: visible in scenes 1, 2 and 5 ── */
+    const bubVis = t<10.5 ? 1-pr(t,10.1,10.6) : pr(t,21.3,21.9)*(1-pr(t,25.0,25.5))
+    gBub.setAttribute('opacity',bubVis.toFixed(3))
+    let buyersNow=0
+    bubbles.forEach((b,i)=>{
+      const [gx,gy]=gridPos(i)
+      const k=firstTwelve.indexOf(i)
+      let x=gx,y=gy,s=1,op=1
+      if(k>=0){
+        const born=0.9+Math.floor(k/4)*1.1+0.72+(k%4)*0.13            // pops out when its coin lands
+        const [cx,cy]=cluster[k]
+        const out=pr(t,born,born+.5)
+        const toGrid=eio(pr(t,5.5,6.5))
+        x=lerp(lerp(600,cx,eo(out)),gx,toGrid); y=lerp(lerp(450,cy,eo(out)),gy,toGrid)
+        s=out<=0?0:back(out); op=out>0?1:0
+      } else {
+        const a=pr(t,6.0+(i%7)*.07,6.6+(i%7)*.07); s=a<=0?0:back(a); op=a>0?1:0
+      }
+      // going quiet, or buying
+      let fill=WHITE,stroke=INK,dotOp=1,chk=0
+      const q=quietOrder.indexOf(i)
+      const later=LATER.find(l=>l[0]===i)
+      if(q>=0){
+        const at=6.9+q*.105, a=pr(t,at,at+.35)
+        fill=mix(WHITE,QUIET,a); stroke=mix(INK,GREY,a); dotOp=1-a; s*=lerp(1,.9,a)
+        if(later){ const c=eo(pr(t,later[1],later[1]+.4)); fill=mix(QUIET,RED,c); stroke=mix(GREY,RED,c); chk=c; s*=lerp(1,1/.9,c)*pulse(t,later[1],.5,.22); if(c>.5)buyersNow++ }
+      } else {
+        const at=9.2+BUYERS.indexOf(i)*.22, c=eo(pr(t,at,at+.4))
+        fill=mix(WHITE,RED,c); stroke=mix(INK,RED,c); dotOp=1-c; chk=c; s*=pulse(t,at,.5,.22); if(c>.5)buyersNow++
+      }
+      set(b.g,{transform:tf(x,y,s),opacity:op})
+      set(b.shape,{fill,stroke})
+      b.dots.forEach(d=>d.setAttribute('opacity',dotOp.toFixed(3)))
+      set(b.check,{'stroke-dashoffset':(34*(1-chk)).toFixed(2),opacity:chk>0?1:0})
+    })
+    // the bar under the grid: how many of them bought
+    const barIn = t<10.5 ? pr(t,9.0,9.5)*(1-pr(t,10.1,10.6)) : pr(t,21.5,22.0)*(1-pr(t,25.0,25.5))
+    gBar.setAttribute('opacity',barIn.toFixed(3))
+    let target=0
+    BUYERS.forEach((_,j)=>{target+=eo(pr(t,9.3+j*.22,9.8+j*.22))})
+    LATER.forEach(l=>{target+=eio(pr(t,l[1],l[1]+.5))})
+    barFill.setAttribute('width',Math.max(0,600*target/N).toFixed(2))
+    gWeeks.setAttribute('opacity',(pr(t,21.6,22.1)*(1-pr(t,25.0,25.5))).toFixed(3))
+    weeks.forEach((w,i)=>{const at=[22.4,23.1,23.8,24.6][i],a=eo(pr(t,at,at+.3));set(w,{fill:mix(GREY,INK,a),transform:`translate(${806+i*28} 176) scale(${pulse(t,at,.4,.25)}) translate(${-(806+i*28)} -176)`})})
+
+    /* ── scene 1 ── */
+    const s1=pr(t,0,.5)*(1-pr(t,5.3,5.9))
+    g1.setAttribute('opacity',s1.toFixed(3))
+    let pop=1; [0,1,2].forEach(i=>{pop*=pulse(t,0.9+i*1.1+.66,.4,.05)})
+    phone.setAttribute('transform',tf(600,450+lerp(26,0,eo(pr(t,0,.7))),pop))
+    adBtn.setAttribute('fill',mix(RED,'#B92706',[0,1,2].reduce((a,i)=>Math.max(a,Math.sin(Math.PI*pr(t,0.9+i*1.1+.6,0.9+i*1.1+1.0))),0)))
+    wallet.setAttribute('transform',tf(210+lerp(-30,0,eo(pr(t,.1,.8))),450,[0,1,2].reduce((a,i)=>a*pulse(t,0.9+i*1.1-.05,.3,-.06),1)))
+    coins.forEach((c,i)=>{
+      const at=0.9+i*1.1, f=pr(t,at,at+.7), e=eio(f)
+      const x=lerp(250,600,e), y=450-Math.sin(Math.PI*e)*150
+      const s=f<=0?0:f<.15?f/.15:f>.86?Math.max(0,(1-f)/.14):1
+      set(c,{transform:tf(x,y,s*lerp(1,.8,e)),opacity:f>0&&f<1?1:0})
+    })
+
+    /* ── scene 3 ── */
+    const s3=pr(t,10.5,11.0)*(1-pr(t,15.9,16.4))
+    g3.setAttribute('opacity',s3.toFixed(3))
+    const flip=eio(pr(t,14.2,14.9))                                   // questions give way to the report
+    card.setAttribute('opacity',(1-flip).toFixed(3))
+    card.setAttribute('transform',`translate(0 ${(-18*flip).toFixed(2)})`)
+    report.setAttribute('opacity',flip.toFixed(3))
+    report.setAttribute('transform',`translate(0 ${(26*(1-flip)).toFixed(2)})`)
+    qs.forEach((q,i)=>{
+      const show=eo(pr(t,11.0+i*1.0,11.4+i*1.0)), tapAt=11.65+i*1.0, picked=eo(pr(t,tapAt,tapAt+.25))
+      set(q.g,{opacity:show.toFixed(3),transform:`translate(0 ${(14*(1-show)).toFixed(2)})`})
+      q.chips.forEach((c,j)=>{const on=j===q.pick?picked:0;set(c,{fill:mix(WHITE,INK,on),transform:j===q.pick?`translate(${220+j*122} ${q.y+82}) scale(${pulse(t,tapAt,.35,.08)}) translate(${-(220+j*122)} ${-(q.y+82)})`:''})})
+      const r=pr(t,tapAt-.05,tapAt+.45)
+      set(q.tap,{cx:220+q.pick*122,cy:q.y+82,r:(r*46).toFixed(2),opacity:r<=0||r>=1?0:(1-r).toFixed(3)})
+    })
+    routeLine.setAttribute('stroke-dashoffset',(458*(1-eio(pr(t,10.8,12.0)))).toFixed(2))
+    startB.setAttribute('opacity',pr(t,10.6,11.0).toFixed(3))
+    set(endCoin,{transform:tf(RX,724,back(pr(t,11.7,12.2))||0.001),opacity:pr(t,11.7,11.9).toFixed(3)})
+    nodes.forEach((n,i)=>{
+      const inn=pr(t,11.0+i*.3,11.45+i*.3), found=11.75+i*1.0, a=eo(pr(t,found,found+.3))
+      set(n.g,{transform:tf(RX,n.y,(inn<=0?0.001:back(inn))*pulse(t,found,.5,.16)),opacity:inn>0?1:0})
+      set(n.disc,{fill:mix(WHITE,RED,a),stroke:mix(INK,RED,a)})
+      n.icon.setAttribute('stroke',mix(INK,WHITE,a))
+      const r=pr(t,found,found+.7); set(n.ring,{r:(40+r*34).toFixed(2),opacity:r<=0||r>=1?0:(0.7*(1-r)).toFixed(3)})
+    })
+    gauge.setAttribute('stroke-dashoffset',(540.4*(1-0.58*eio(pr(t,14.7,15.6)))).toFixed(2))
+    rows.forEach((r,i)=>{const a=eo(pr(t,14.9+i*.18,15.3+i*.18));set(r,{opacity:a.toFixed(3),transform:`translate(0 ${(12*(1-a)).toFixed(2)})`})})
+
+    /* ── scene 4 ── */
+    const s4=pr(t,16.1,16.6)*(1-pr(t,21.2,21.7))
+    g4.setAttribute('opacity',s4.toFixed(3))
+    const bIn=pr(t,16.2,16.8)
+    set(buyer,{transform:tf(600,450,(bIn<=0?0.001:back(bIn))*pulse(t,17.25,.4,.05)*pulse(t,17.95,.4,.05)*pulse(t,18.65,.4,.05))})
+    buyerHalo.setAttribute('r',(96+22*(0.5+0.5*Math.sin((t-16)*2.6))).toFixed(2))
+    const oIn=pr(t,16.4,17.0)
+    set(owner,{transform:tf(230,450,(oIn<=0?0.001:back(oIn))*pulse(t,20.75,.5,.1))})
+    link.setAttribute('opacity',pr(t,16.8,17.2).toFixed(3))
+    link.setAttribute('stroke-dashoffset',(-(t-16)*22).toFixed(2))
+    msgs.forEach((m,i)=>{
+      const at=16.95+i*.62, f=pr(t,at,at+.8), e=eio(f), toBuyer=i%2===0
+      const x=toBuyer?lerp(318,492,e):lerp(492,318,e)
+      set(m,{transform:tf(x,404-Math.sin(Math.PI*e)*34,.82*(f<=0?0:f<.2?f/.2:f>.8?(1-f)/.2:1)),opacity:f>0&&f<1?1:0})
+    })
+    docs.forEach((d,i)=>{
+      const at=17.2+i*.7, out=pr(t,at,at+.6), restX=[910,960,910][i], restY=[250,450,650][i], restR=[-5,0,5][i]
+      const give=eio(pr(t,19.5+i*.22,20.5+i*.22))                    // handed across to the owner
+      const hx=[200,230,260][i], hy=[236,228,236][i]
+      let x=lerp(lerp(600,restX,eo(out)),hx,give), y=lerp(lerp(450,restY,eo(out)),hy,give)-Math.sin(Math.PI*give)*110
+      const s=(out<=0?0.001:lerp(.3,1,back(out)))*lerp(1,.46,give)
+      set(d,{transform:tf(x,y,s,lerp(restR,[-10,0,10][i],give)),opacity:out>0?1:0})
+    })
+
+    /* ── end card ── */
+    const e=pr(t,25.3,25.9)
+    gEnd.setAttribute('opacity',e.toFixed(3))
+    const w=endName.getComputedTextLength(), total=40+22+w, left=600-total/2
+    set(endDot,{cx:left+20,cy:440,r:(20*(pr(t,25.3,25.9)<=0?0:back(pr(t,25.3,25.9)))).toFixed(2)})
+    set(endName,{x:left+62+lerp(22,0,eo(pr(t,25.4,26.1))),y:440})
+    endUrl.setAttribute('opacity',pr(t,25.9,26.4).toFixed(3))
+  }
+  return seek
+}
