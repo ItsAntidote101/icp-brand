@@ -119,7 +119,7 @@ export default function PrivacyPage() {
         </Section>
 
         <Section title="5. Cookies and Local Storage">
-          <Para>We keep small pieces of information in your browser. They fall into four groups. The first is always on. You control the other three from &quot;Cookie settings&quot; at the bottom of every page, and you can change your mind at any time.</Para>
+          <Para>We keep small pieces of information in your browser. They fall into four groups. The first is always on. The other three are on unless you switch them off in &quot;Cookie settings&quot; at the bottom of every page. You can change your mind at any time.</Para>
           <Para><strong>Strictly necessary. Always on, because the site cannot work without them:</strong></Para>
           <ul style={{ margin: '8px 0 12px 20px', padding: 0, lineHeight: 1.9, color: Pmuted, fontSize: 15 }}>
             <li><strong>icp_session:</strong> An HttpOnly session cookie used to keep you signed in. It contains a signed token linking to your account. It expires after 30 days</li>
@@ -134,12 +134,12 @@ export default function PrivacyPage() {
           <ul style={{ margin: '8px 0 12px 20px', padding: 0, lineHeight: 1.9, color: Pmuted, fontSize: 15 }}>
             <li><strong>Saved progress:</strong> If you leave the diagnosis part-way, the answers you have given so far are kept in your browser for up to 14 days so you can carry on from where you stopped. They stay on your device and are removed when you finish. If you switch Functional off, nothing is saved and anything already saved is removed</li>
           </ul>
-          <Para><strong>Marketing. Off unless you choose &quot;Accept all&quot; or switch it on:</strong></Para>
+          <Para><strong>Marketing. On unless you switch it off:</strong></Para>
           <ul style={{ margin: '8px 0 12px 20px', padding: 0, lineHeight: 1.9, color: Pmuted, fontSize: 15 }}>
             <li><strong>Google Tag Manager, Google Ads and the Meta pixel:</strong> These load tags from Google and Meta that set their own cookies (for example _gcl, _ga, _fbp) and tell those companies which pages you visit on this site and which steps you complete, so we can measure our advertising and show our ads to people like those who used the diagnosis</li>
             <li><strong>Matching results to ads:</strong> When you finish a diagnosis, ask for a call or pay, a scrambled (hashed) form of your email address and phone number is passed to Google and Meta so they can match that result to an ad you saw. They receive the scrambled form, never the plain text</li>
           </ul>
-          <Para>While Marketing is off, none of the Google or Meta tags load. If you switch it off after having allowed it, we stop the tags and remove the advertising cookies they set on this site.</Para>
+          <Para>If you close the cookie notice or carry on without opening &quot;Cookie settings&quot;, all three optional groups stay on. If you switch Marketing off, we stop the Google and Meta tags and remove the advertising cookies they set on this site. While it is off, none of those tags load.</Para>
         </Section>
 
         <Section title="6. How We Share Your Information">
