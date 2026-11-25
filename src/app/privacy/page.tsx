@@ -119,20 +119,27 @@ export default function PrivacyPage() {
         </Section>
 
         <Section title="5. Cookies and Local Storage">
-          <Para><strong>Always used, because the site needs them to work:</strong></Para>
+          <Para>We keep small pieces of information in your browser. They fall into four groups. The first is always on. You control the other three from &quot;Cookie settings&quot; at the bottom of every page, and you can change your mind at any time.</Para>
+          <Para><strong>Strictly necessary. Always on, because the site cannot work without them:</strong></Para>
           <ul style={{ margin: '8px 0 12px 20px', padding: 0, lineHeight: 1.9, color: Pmuted, fontSize: 15 }}>
             <li><strong>icp_session:</strong> An HttpOnly session cookie used to keep you signed in. It contains a signed token linking to your account. It expires after 30 days</li>
             <li><strong>Supabase auth cookies:</strong> Set during the OAuth login flow to manage the authentication handshake. These are short-lived and cleared after sign-in completes</li>
-            <li><strong>Your settings:</strong> Your email address, display preferences, completed quick wins and your answer to the ad measurement question, kept in your browser</li>
-            <li><strong>Saved progress:</strong> If you leave the diagnosis part-way, the answers you have given so far are kept in your browser for up to 14 days so you can carry on from where you stopped. They stay on your device and are removed when you finish</li>
-            <li><strong>Visit information:</strong> A random visitor number and, if you arrived from an ad, that ad&apos;s tracking tags from your first visit. These are kept in your browser and sent to our own servers with the steps you complete, so we can see which ads bring people who finish the diagnosis</li>
+            <li><strong>Your settings:</strong> Your email address, display preferences, completed quick wins and the cookie choices you make, kept in your browser</li>
           </ul>
-          <Para><strong>Used only if you choose &quot;Allow&quot; when we ask:</strong></Para>
+          <Para><strong>Analytics. On unless you switch it off:</strong></Para>
+          <ul style={{ margin: '8px 0 12px 20px', padding: 0, lineHeight: 1.9, color: Pmuted, fontSize: 15 }}>
+            <li><strong>Visit information:</strong> A random visitor number and, if you arrived from an ad, that ad&apos;s tracking tags. These are kept in your browser and sent to our own servers with the steps you complete, so we can see which pages and ads bring people who finish the diagnosis. No other company receives this. If you switch Analytics off, we stop sending it and remove the visitor number and ad tags from your browser</li>
+          </ul>
+          <Para><strong>Functional. On unless you switch it off:</strong></Para>
+          <ul style={{ margin: '8px 0 12px 20px', padding: 0, lineHeight: 1.9, color: Pmuted, fontSize: 15 }}>
+            <li><strong>Saved progress:</strong> If you leave the diagnosis part-way, the answers you have given so far are kept in your browser for up to 14 days so you can carry on from where you stopped. They stay on your device and are removed when you finish. If you switch Functional off, nothing is saved and anything already saved is removed</li>
+          </ul>
+          <Para><strong>Marketing. Off unless you choose &quot;Accept all&quot; or switch it on:</strong></Para>
           <ul style={{ margin: '8px 0 12px 20px', padding: 0, lineHeight: 1.9, color: Pmuted, fontSize: 15 }}>
             <li><strong>Google Tag Manager, Google Ads and the Meta pixel:</strong> These load tags from Google and Meta that set their own cookies (for example _gcl, _ga, _fbp) and tell those companies which pages you visit on this site and which steps you complete, so we can measure our advertising and show our ads to people like those who used the diagnosis</li>
             <li><strong>Matching results to ads:</strong> When you finish a diagnosis, ask for a call or pay, a scrambled (hashed) form of your email address and phone number is passed to Google and Meta so they can match that result to an ad you saw. They receive the scrambled form, never the plain text</li>
           </ul>
-          <Para>If you choose &quot;No thanks&quot;, none of the Google or Meta tags load. You can change your choice at any time with the &quot;Cookie settings&quot; link at the bottom of every page.</Para>
+          <Para>While Marketing is off, none of the Google or Meta tags load. If you switch it off after having allowed it, we stop the tags and remove the advertising cookies they set on this site.</Para>
         </Section>
 
         <Section title="6. How We Share Your Information">

@@ -6,12 +6,15 @@ const TTL_MS = 14 * 24 * 60 * 60 * 1000
 const OPENER = 'icp_opener_answers'      // the conversation on the home page
 const PROGRESS = 'icp_q_progress'        // the questions that follow it
 
+import { getConsent } from './consent'
+
 type Saved<T> = { at: number; data: T }
 export type AnswerMapLoose = Record<number, string | number | string[]>
 export interface Progress { answers: AnswerMapLoose; profile: { name: string; email: string; company: string } }
 
 function read<T>(key: string): T | null {
   try {
+    if (!getConsent().functional) return null
     const raw = window.localStorage.getItem(key)
     if (!raw) return null
     const saved = JSON.parse(raw) as Saved<T>
@@ -20,6 +23,7 @@ function read<T>(key: string): T | null {
   } catch { return null }
 }
 function write<T>(key: string, data: T) {
+  if (!getConsent().functional) return
   try { window.localStorage.setItem(key, JSON.stringify({ at: Date.now(), data } satisfies Saved<T>)) } catch { /* private mode: nothing is remembered */ }
 }
 function drop(key: string) { try { window.localStorage.removeItem(key) } catch { /* nothing to clear */ } }
